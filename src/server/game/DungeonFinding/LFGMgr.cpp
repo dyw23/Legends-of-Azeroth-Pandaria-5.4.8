@@ -195,7 +195,8 @@ void QueueAnnounceContextLFG::Announce() const
 }
 
 LFGMgr::LFGMgr(): m_QueueTimer(0), m_ShortageCheckTimer(0), m_lfgProposalId(1),
-    m_options(sWorld->getIntConfig(CONFIG_LFG_OPTIONSMASK))
+    m_options(sWorld->getIntConfig(CONFIG_LFG_OPTIONSMASK)),
+    m_isSoloLFG(false)
 {
     new LFGPlayerScript();
     new LFGGroupScript();
@@ -1796,7 +1797,7 @@ void LFGMgr::UpdateProposal(uint32 proposalId, uint64 guid, bool accept)
     for (auto&& it : proposal.players)
         SendLfgUpdateProposal(it.first, proposal);
 
-    if (!allAnswered)
+    if (!sLFGMgr->IsSoloLFG() && !allAnswered)
         return;
 
     bool flex = GetLFGDungeon(proposal.dungeonId)->difficulty == RAID_DIFFICULTY_1025MAN_FLEX;
@@ -3255,6 +3256,11 @@ GroupQueueDataMap const* LFGMgr::GetGroupQueues(uint64 guid) const
         return nullptr;
     auto& queues = itr->second.GetQueues();
     return queues.empty() ? nullptr : &queues;
+}
+
+void LFGMgr::ToggleSoloLFG()
+{
+    m_isSoloLFG = !m_isSoloLFG;
 }
 
 } // namespace lfg

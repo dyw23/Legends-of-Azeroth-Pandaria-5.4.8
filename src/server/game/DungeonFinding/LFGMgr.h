@@ -443,7 +443,10 @@ class LFGMgr
         void RemoveGroupQueues(uint64 guid);
         // Leaves lfg
         void LeaveLfg(uint64 guid, uint32 queuId);
-
+        /// Toggle LFG in debug mode
+        void ToggleSoloLFG();
+        /// Check if debug mode
+        bool IsSoloLFG() const { return m_isSoloLFG; }
         // LfgQueue
         LfgQueueManagerContainer const& GetQueueManagers() const { return QueueManagers; }
         QueueManager& GetQueueManager(uint64 guid);
@@ -511,7 +514,7 @@ class LFGMgr
         uint32 m_lfgProposalId;                            ///< used as internal counter for proposals
         uint32 m_options;                                  ///< Stores config options
         uint32 m_queueId = 0;
-
+ bool m_isSoloLFG; /// solo lfg
         LfgQueueManagerContainer QueueManagers;            ///< Queues
         LfgCachedDungeonContainer CachedDungeonMapStore;   ///< Stores all dungeons by groupType
         // Reward System
