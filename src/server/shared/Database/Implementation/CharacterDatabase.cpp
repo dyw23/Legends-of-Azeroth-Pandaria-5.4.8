@@ -335,6 +335,10 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     // Character battleground data
     PrepareStatement(CHAR_INS_PLAYER_BGDATA, "INSERT INTO character_battleground_data (guid, instanceId, team, joinX, joinY, joinZ, joinO, joinMapId, taxiStart, taxiEnd, taxiPathPoint, mountSpell) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_DEL_PLAYER_BGDATA, "DELETE FROM character_battleground_data WHERE guid = ?", CONNECTION_ASYNC);
+    conn.prepareStatement(CHAR_SEL_RATED_BG_STATS, "SELECT personalRating, matchmakerRating, seasonGames, weekGames,"
+                          " thisWeekWins, prevWeekWins, bestWeekRating, bestSeasonRating FROM character_rated_bg_stats WHERE guid = ?");
+    conn.prepareStatement(CHAR_REP_RATED_BG_STATS, "REPLACE INTO character_rated_bg_stats (guid, personalRating, matchmakerRating,"
+                          " seasonGames, weekGames, thisWeekWins, prevWeekWins, bestWeekRating, bestSeasonRating) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     // Character homebind
     PrepareStatement(CHAR_INS_PLAYER_HOMEBIND, "INSERT INTO character_homebind (guid, mapId, zoneId, posX, posY, posZ) VALUES (?, ?, ?, ?, ?, ?)", CONNECTION_ASYNC);
@@ -731,4 +735,3 @@ void CharacterDatabaseConnection::DoPrepareStatements()
 
     PrepareStatement(CHAR_UPD_CHAR_LAST_LOGIN, "UPDATE characters SET last_login = UNIX_TIMESTAMP() WHERE guid = ?", CONNECTION_ASYNC);
 }
-

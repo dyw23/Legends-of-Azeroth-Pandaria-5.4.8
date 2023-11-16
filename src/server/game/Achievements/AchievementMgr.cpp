@@ -3065,6 +3065,8 @@ bool AchievementMgr::RequirementsSatisfied(CriteriaEntry const* achievementCrite
 {
     switch (AchievementCriteriaTypes(achievementCriteria->Type))
     {
+        case ACHIEVEMENT_CRITERIA_TYPE_REACH_BG_RATING:
+            return progress->counter >= achievementCriteria->reach_battleground_rating.count;
         case ACHIEVEMENT_CRITERIA_TYPE_ACCEPTED_SUMMONINGS:
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST:
         case ACHIEVEMENT_CRITERIA_TYPE_CREATE_AUCTION:
@@ -3091,7 +3093,9 @@ bool AchievementMgr::RequirementsSatisfied(CriteriaEntry const* achievementCrite
         case ACHIEVEMENT_CRITERIA_TYPE_MONEY_FROM_VENDORS:
         case ACHIEVEMENT_CRITERIA_TYPE_NUMBER_OF_TALENT_RESETS:
         case ACHIEVEMENT_CRITERIA_TYPE_QUEST_ABANDONED:
+        case ACHIEVEMENT_CRITERIA_TYPE_REACH_BG_RATING:
         case ACHIEVEMENT_CRITERIA_TYPE_REACH_GUILD_LEVEL:
+        case ACHIEVEMENT_CRITERIA_TYPE_REACH_BG_RATING:
         case ACHIEVEMENT_CRITERIA_TYPE_ROLL_GREED:
         case ACHIEVEMENT_CRITERIA_TYPE_ROLL_NEED:
         case ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL:
@@ -3101,6 +3105,7 @@ bool AchievementMgr::RequirementsSatisfied(CriteriaEntry const* achievementCrite
         case ACHIEVEMENT_CRITERIA_TYPE_VISIT_BARBER_SHOP:
         case ACHIEVEMENT_CRITERIA_TYPE_WIN_DUEL:
         case ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA:
+        case ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_BATTLEGROUND:
         case ACHIEVEMENT_CRITERIA_TYPE_WON_AUCTIONS:
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_GUILD_CHALLENGE:
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_SCENARIO:
@@ -3838,8 +3843,8 @@ char const* AchievementGlobalMgr::GetCriteriaTypeString(AchievementCriteriaTypes
             return "BG_OBJECTIVE_CAPTURE";
         case ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL_AT_AREA:
             return "HONORABLE_KILL_AT_AREA";
+        case ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_BATTLEGROUND:
         case ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA:
-            return "WIN_ARENA";
         case ACHIEVEMENT_CRITERIA_TYPE_PLAY_ARENA:
             return "PLAY_ARENA";
         case ACHIEVEMENT_CRITERIA_TYPE_LEARN_SPELL:

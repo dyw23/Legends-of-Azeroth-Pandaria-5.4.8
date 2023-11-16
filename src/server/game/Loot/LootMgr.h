@@ -425,8 +425,8 @@ struct Loot
     void AddItem(LootStoreItem const& item, uint32 count);
 
     LootItem* LootItemInSlot(uint32 lootslot, Player* player, QuestItem** qitem = nullptr, QuestItem** ffaitem = nullptr, QuestItem** conditem = nullptr, QuestItem** currency = nullptr, QuestItem** personal = nullptr);
-    uint32 GetMaxSlotInLootFor(Player* player) const;
-    bool hasItemFor(Player* player) const;
+    uint32 GetMaxSlotInLootFor(Player const *player) const;
+    bool hasItemFor(Player const *player) const;
     bool hasOverThresholdItem() const;
 
     ItemPickupSourceType GetItemPickupSourceType() const;

@@ -57,7 +57,8 @@ bool BattlefieldWG::SetupBattlefield()
 
     InitStalker(BATTLEFIELD_WG_NPC_STALKER, WintergraspStalkerPos[0], WintergraspStalkerPos[1], WintergraspStalkerPos[2], WintergraspStalkerPos[3]);
 
-    m_Guid = (MAKE_NEW_GUID(m_TypeId, 0, HIGHGUID_BATTLEGROUND) | 0x20000) + 1; // BATTLEFIELD_TYPE_WORLD_PVP 5.0.5
+    m_Guid = MAKE_NEW_GUID(m_TypeId, 0, HIGHGUID_BATTLEGROUND);
+    m_Guid |= 0x20000; // BATTLEFIELD_TYPE_WORLD_PVP 5.0.5
 
     m_MaxPlayer = sWorld->getIntConfig(CONFIG_WINTERGRASP_PLR_MAX);
     m_IsEnabled = sWorld->getBoolConfig(CONFIG_WINTERGRASP_ENABLE);
