@@ -35,7 +35,6 @@ file(GLOB_RECURSE sources_Groups Groups/*.cpp Groups/*.h)
 file(GLOB_RECURSE sources_Guilds Guilds/*.cpp Guilds/*.h)
 file(GLOB_RECURSE sources_Handlers Handlers/*.cpp Handlers/*.h)
 file(GLOB_RECURSE sources_Instances Instances/*.cpp Instances/*.h)
-file(GLOB_RECURSE sources_CustomLogs CustomLogs/*.cpp CustomLogs/*.h)
 file(GLOB_RECURSE sources_Loot Loot/*.cpp Loot/*.h)
 file(GLOB_RECURSE sources_Mails Mails/*.cpp Mails/*.h)
 file(GLOB_RECURSE sources_Maps Maps/*.cpp Maps/*.h)
@@ -79,7 +78,6 @@ source_group(Chat FILES ${sources_Chat})
 source_group(Combat FILES ${sources_Combat})
 source_group(Conditions FILES ${sources_Conditions})
 source_group(CustomTransmogrification FILES ${sources_CustomTransmogrification})
-source_group(CustomLogs FILES ${sources_CustomLogs})
 source_group(DataStores FILES ${sources_DataStores})
 source_group(DungeonFinding FILES ${sources_DungeonFinding})
 source_group(Entities FILES ${sources_Entities})
@@ -137,7 +135,6 @@ set(game_STAT_SRCS
   ${sources_Chat}
   ${sources_Combat}
   ${sources_Conditions}
-  ${sources_CustomLogs}
   ${sources_CustomTransmogrification}
   ${sources_DataStores}
   ${sources_DungeonFinding}
@@ -198,8 +195,8 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/server/collision/Management
     ${CMAKE_SOURCE_DIR}/src/server/collision/Models
     ${CMAKE_SOURCE_DIR}/src/server/collision/Maps
+    ${CMAKE_SOURCE_DIR}/src/server/database/Database
     ${CMAKE_SOURCE_DIR}/src/server/shared
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Database
     ${CMAKE_SOURCE_DIR}/src/server/shared/DataStores
     ${CMAKE_SOURCE_DIR}/src/server/shared/Debugging
     ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic/LinkedReference
@@ -232,7 +229,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/Chat/Channels
     ${CMAKE_CURRENT_SOURCE_DIR}/Combat
     ${CMAKE_CURRENT_SOURCE_DIR}/Conditions
-    ${CMAKE_CURRENT_SOURCE_DIR}/CustomLogs
     ${CMAKE_CURRENT_SOURCE_DIR}/CustomTransmogrification
     ${CMAKE_CURRENT_SOURCE_DIR}/DataStores
     ${CMAKE_CURRENT_SOURCE_DIR}/DungeonFinding
@@ -327,6 +323,7 @@ target_link_libraries(game
     Detour
     zlib
     common
+    database
     shared
     ${ACE_LIBRARY}
 )

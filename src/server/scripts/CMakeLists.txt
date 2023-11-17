@@ -93,9 +93,11 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/common/Debugging  
     ${CMAKE_SOURCE_DIR}/src/common/Logging  
     ${CMAKE_SOURCE_DIR}/src/common/Utilities
+    ${CMAKE_SOURCE_DIR}/src/server/database/Database
+    ${CMAKE_SOURCE_DIR}/src/server/database/Logging    
     ${CMAKE_SOURCE_DIR}/src/server/shared
     ${CMAKE_SOURCE_DIR}/src/server/shared/Configuration
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Database
+    #${CMAKE_SOURCE_DIR}/src/server/shared/Database
     ${CMAKE_SOURCE_DIR}/src/server/shared/DataStores
     ${CMAKE_SOURCE_DIR}/src/server/shared/Debugging
     ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic/LinkedReference
@@ -104,7 +106,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/server/shared/Packets
     ${CMAKE_SOURCE_DIR}/src/server/shared/Threading
     ${CMAKE_SOURCE_DIR}/src/server/shared/Utilities
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Database    
     ${CMAKE_SOURCE_DIR}/src/server/collision
     ${CMAKE_SOURCE_DIR}/src/server/collision/Management
     ${CMAKE_SOURCE_DIR}/src/server/collision/Models
@@ -130,7 +131,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/server/game/Chat
     ${CMAKE_SOURCE_DIR}/src/server/game/Chat/Channels
     ${CMAKE_SOURCE_DIR}/src/server/game/Conditions
-    ${CMAKE_SOURCE_DIR}/src/server/game/CustomLogs
     ${CMAKE_SOURCE_DIR}/src/server/game/CustomTransmogrification
     ${CMAKE_SOURCE_DIR}/src/server/game/Combat
     ${CMAKE_SOURCE_DIR}/src/server/game/DataStores

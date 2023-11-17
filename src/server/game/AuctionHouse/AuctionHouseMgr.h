@@ -21,9 +21,7 @@
 #include "Common.h"
 #include "DBCStructure.h"
 #include "DatabaseEnv.h"
-
-#include <ace/Method_Request.h>
-#include <ace/Activation_Queue.h>
+#include "ProducerConsumerQueue.h"
 
 class Item;
 class Player;
@@ -95,15 +93,15 @@ struct AuctionEntry
     uint32 GetAuctionCut() const;
     uint32 GetAuctionOutBid() const;
     bool BuildAuctionInfo(WorldPacket & data) const;
-    void DeleteFromDB(SQLTransaction& trans) const;
-    void SaveToDB(SQLTransaction& trans) const;
+    void DeleteFromDB(CharacterDatabaseTransaction trans) const;
+    void SaveToDB(CharacterDatabaseTransaction trans) const;
     bool LoadFromDB(Field* fields);
     bool LoadFromFieldList(Field* fields);
     std::string BuildAuctionMailSubject(MailAuctionAnswers response) const;
     std::string BuildAuctionMailBody(MailAuctionAnswers response) const;
 };
 
-struct AuctionQueryContext : public ACE_Method_Request
+struct AuctionQueryContext
 {
     ~AuctionQueryContext();
 
@@ -196,12 +194,12 @@ class AuctionHouseMgr
         }
 
         //auction messages
-        void SendAuctionWonMail(AuctionEntry* auction, SQLTransaction& trans);
-        void SendAuctionSalePendingMail(AuctionEntry* auction, SQLTransaction& trans);
-        void SendAuctionSuccessfulMail(AuctionEntry* auction, SQLTransaction& trans);
-        void SendAuctionExpiredMail(AuctionEntry* auction, SQLTransaction& trans);
-        void SendAuctionOutbiddedMail(AuctionEntry* auction, uint32 newPrice, Player* newBidder, SQLTransaction& trans);
-        void SendAuctionCancelledToBidderMail(AuctionEntry* auction, SQLTransaction& trans, Item* item);
+        void SendAuctionWonMail(AuctionEntry* auction, CharacterDatabaseTransaction trans);
+        void SendAuctionSalePendingMail(AuctionEntry* auction, CharacterDatabaseTransaction trans);
+        void SendAuctionSuccessfulMail(AuctionEntry* auction, CharacterDatabaseTransaction trans);
+        void SendAuctionExpiredMail(AuctionEntry* auction, CharacterDatabaseTransaction trans);
+        void SendAuctionOutbiddedMail(AuctionEntry* auction, uint32 newPrice, Player* newBidder, CharacterDatabaseTransaction trans);
+        void SendAuctionCancelledToBidderMail(AuctionEntry* auction, CharacterDatabaseTransaction trans, Item* item);
 
         static uint32 GetAuctionDeposit(AuctionHouseEntry const* entry, uint32 time, Item* pItem, uint32 count);
         static AuctionHouseEntry const* GetAuctionHouseEntry(uint32 factionTemplateId, bool forClient = false);
@@ -225,8 +223,6 @@ class AuctionHouseMgr
             uint32 inventoryType, uint32 itemClass, uint32 itemSubClass, uint32 quality,
             bool getAll, std::vector<int8> const& sortOrder);
 
-        LogFile* GetLogger() const { return logger.get(); }
-
     private:
 
         AuctionHouseObject mHordeAuctions;
@@ -235,8 +231,7 @@ class AuctionHouseMgr
 
         ItemMap mAitems;
         std::thread searchThread;
-        ACE_Activation_Queue searchQueries;
-        std::unique_ptr<LogFile> logger;
+        ProducerConsumerQueue<AuctionQueryContext*> searchQueries;
 };
 
 #define sAuctionMgr AuctionHouseMgr::instance()

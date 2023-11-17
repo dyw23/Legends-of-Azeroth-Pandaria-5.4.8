@@ -299,7 +299,6 @@ GroupQueueInfo* BattlegroundQueue::AddGroup(Player* leader, Group* grp, Battlegr
 
     //add GroupInfo to m_QueuedGroups
     {
-        //ACE_Guard<ACE_Recursive_Thread_Mutex> guard(m_Lock);
         m_QueuedGroups[bracketId][index].push_back(ginfo);
 
         //announce to world, this code needs mutex
@@ -1205,10 +1204,6 @@ void SoloGroup::AddPlayer(SoloPlayer const& p)
 SoloQueue::SoloQueue()
 {
     m_isSolo = true;
-    std::string str = sConfigMgr->GetStringDefault("LogsDir", "");
-    if (!str.empty())
-        str += '/';
-    m_log.Open(str + "solo_queue.log", "a");
 }
 
 bool SoloQueue::IsCompatible(SoloGroup const* lhs, SoloGroup const* rhs, bool strong)
@@ -1512,14 +1507,6 @@ void SoloQueue::DoMatchmaking(GroupQueueInfo* ginfo, uint32 extraDiff, bool stro
     });
 
     uint32 now = getMSTime();
-    m_log.Write("%u - %u rating", lower, upper);
-    for (auto&& it : m_selection)
-    {
-        auto& i = it->Current.front();
-        m_log.Write("%u (%s) - %u rating (%u in queue)", i.Target->GetGUIDLow(),
-            i.Role == SoloQueueRole::Healer ? "healer" : "damager", i.Info->ArenaMatchmakerRating, (now - i.Info->JoinTime) / IN_MILLISECONDS);
-    }
-    m_log.Write("Total queued: %u", uint32(m_selection.size()));
 
     if (m_selection.size() < sWorld->getIntConfig(CONFIG_SOLO_QUEUE_MIN_QUEUE_SIZE))
         return;
@@ -1579,19 +1566,19 @@ void SoloQueue::DoMatchmaking(GroupQueueInfo* ginfo, uint32 extraDiff, bool stro
     {
         if (!strong)
             return;
-        TaskMgr::Default()->ScheduleInvocation([=]
-        {
-            auto& a = m_QueuedGroups[bracketId][BG_QUEUE_PREMADE_ALLIANCE];
-            auto& h = m_QueuedGroups[bracketId][BG_QUEUE_PREMADE_HORDE];
-            auto it = std::find(a.begin(), a.end(), ginfo);
-            if (it == a.end())
-            {
-                it = std::find(h.begin(), h.end(), ginfo);
-                if (it == h.end())
-                    return;
-            }
-            DoMatchmaking(*it, extraDiff, false);
-        });
+        // TaskMgr::Default()->ScheduleInvocation([=]
+        // {
+        //     auto& a = m_QueuedGroups[bracketId][BG_QUEUE_PREMADE_ALLIANCE];
+        //     auto& h = m_QueuedGroups[bracketId][BG_QUEUE_PREMADE_HORDE];
+        //     auto it = std::find(a.begin(), a.end(), ginfo);
+        //     if (it == a.end())
+        //     {
+        //         it = std::find(h.begin(), h.end(), ginfo);
+        //         if (it == h.end())
+        //             return;
+        //     }
+        //     DoMatchmaking(*it, extraDiff, false);
+        // });
         return;
     }
 
@@ -1601,7 +1588,7 @@ void SoloQueue::DoMatchmaking(GroupQueueInfo* ginfo, uint32 extraDiff, bool stro
     m_buff << "vs ";
     for (auto&& it : hTeam->Current)
         m_buff << it.Target->GetGUIDLow() << ' ';
-    m_log.Write(m_buff.str().c_str());
+
     m_buff.str(std::string());
 
     // Invite to arena
@@ -1730,22 +1717,22 @@ void SoloQueue::DynamicUpdate()
                 }
 
                 ++i;
-                TaskMgr::Default()->ScheduleInvocation([=]
-                {
-                    if (team->size() <= i)
-                        return;
+                // TaskMgr::Default()->ScheduleInvocation([=]
+                // {
+                //     if (team->size() <= i)
+                //         return;
 
-                    auto itr = team->begin();
-                    std::advance(itr, i);
+                //     auto itr = team->begin();
+                //     std::advance(itr, i);
 
-                    if ((*itr)->IsInvitedToBGInstanceGUID)
-                        return;
+                //     if ((*itr)->IsInvitedToBGInstanceGUID)
+                //         return;
 
-                    uint32 extradiff = (timeinq / sWorld->getIntConfig(CONFIG_ARENA_PROGRESSIVE_MMR_TIMER)) * sWorld->getIntConfig(CONFIG_ARENA_PROGRESSIVE_MMR_STEPSIZE);
-                    if (!heal)
-                        extradiff /= 2;
-                    DoMatchmaking(*itr, extradiff, false);
-                });
+                //     uint32 extradiff = (timeinq / sWorld->getIntConfig(CONFIG_ARENA_PROGRESSIVE_MMR_TIMER)) * sWorld->getIntConfig(CONFIG_ARENA_PROGRESSIVE_MMR_STEPSIZE);
+                //     if (!heal)
+                //         extradiff /= 2;
+                //     DoMatchmaking(*itr, extradiff, false);
+                // });
             }
         }
     }

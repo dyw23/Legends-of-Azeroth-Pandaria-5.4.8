@@ -68,7 +68,6 @@
 #include "BattlePetMgr.h"
 #include "PetBattle.h"
 #include "UpdateFieldFlags.h"
-#include "CustomLogs.h"
 #include "ServiceMgr.h"
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
@@ -1738,9 +1737,6 @@ void Spell::DoCreateItem(uint32 /*i*/, uint32 itemtype)
             return;
         }
 
-        if (player->GetSession()->HasFlag(ACC_FLAG_ITEM_LOG))
-            logs::ItemLog(player, pItem, num_to_add, "Created");
-
         // set the "Crafted by ..." property of the item
         if (pItem->GetTemplate()->Class != ITEM_CLASS_CONSUMABLE && pItem->GetTemplate()->Class != ITEM_CLASS_QUEST && newitemid != 6265 && newitemid != 6948)
             pItem->SetUInt32Value(ITEM_FIELD_CREATOR, player->GetGUIDLow());
@@ -3346,11 +3342,11 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
 
     pet->InitTalentForLevel();
 
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
     player->AddNewPet(newPetSlot, pet);
     player->SetCurrentPetId(pet->GetCharmInfo()->GetPetNumber(), trans);
     pet->SavePetToDB(trans);
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_PET_SLOT_BY_ID);
+    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_PET_SLOT_BY_ID);
     stmt->setUInt8(0, newPetSlot);
     stmt->setUInt32(1, player->GetGUIDLow());
     stmt->setUInt32(2, pet->GetCharmInfo()->GetPetNumber());
@@ -6324,11 +6320,11 @@ void Spell::EffectCreateTamedPet(SpellEffIndex effIndex)
 
     pet->InitTalentForLevel();
 
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
     player->AddNewPet(newPetSlot, pet);
     player->SetCurrentPetId(pet->GetCharmInfo()->GetPetNumber(), trans);
     pet->SavePetToDB(trans);
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_PET_SLOT_BY_ID);
+    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_PET_SLOT_BY_ID);
     stmt->setUInt8(0, newPetSlot);
     stmt->setUInt32(1, player->GetGUIDLow());
     stmt->setUInt32(2, pet->GetCharmInfo()->GetPetNumber());
@@ -6876,8 +6872,32 @@ void Spell::EffectResurrectWithAura(SpellEffIndex effIndex)
     SpellInfo const* spellInfo = m_spellInfo;
 
     // Shitty workaround but still better than unsafe access
-    TaskMgr::Default()->ScheduleInvocation([playerGuid, casterGuid, effectValue, spellInfo, effIndex]
-    {
+//     TaskMgr::Default()->ScheduleInvocation([playerGuid, casterGuid, effectValue, spellInfo, effIndex]
+//     {
+//         Player* player = ObjectAccessor::FindPlayerInOrOutOfWorld(playerGuid);
+//         Player* caster = ObjectAccessor::FindPlayerInOrOutOfWorld(casterGuid);
+//         if (!player || !caster)
+//             return;
+
+//         if (player->IsRessurectRequested())       // already have one active request
+//             return;
+
+//         uint32 health = player->CountPctFromMaxHealth(effectValue);
+//         uint32 mana = CalculatePct(player->GetMaxPower(POWER_MANA), effectValue);
+
+//         uint32 resurrectAura = 0;
+//         if (sSpellMgr->GetSpellInfo(spellInfo->Effects[effIndex].TriggerSpell))
+//             resurrectAura = spellInfo->Effects[effIndex].TriggerSpell;
+//         if (resurrectAura && player->HasAura(resurrectAura))
+//             return;
+
+//         player->SetResurrectRequestData(caster, health, mana, resurrectAura);
+// #pragma warning(push)
+// #pragma warning(disable : 4573)
+//         Spell::SendResurrectRequest(caster, player, spellInfo->Id);
+// #pragma warning(pop)
+//     });
+
         Player* player = ObjectAccessor::FindPlayerInOrOutOfWorld(playerGuid);
         Player* caster = ObjectAccessor::FindPlayerInOrOutOfWorld(casterGuid);
         if (!player || !caster)
@@ -6900,7 +6920,8 @@ void Spell::EffectResurrectWithAura(SpellEffIndex effIndex)
 #pragma warning(disable : 4573)
         Spell::SendResurrectRequest(caster, player, spellInfo->Id);
 #pragma warning(pop)
-    });
+
+    
     ExecuteLogEffectResurrect(effIndex, target);
 }
 
