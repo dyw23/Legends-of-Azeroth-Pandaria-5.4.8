@@ -52,6 +52,7 @@
 #include "World.h"
 #include "Battleground.h"
 #include "Util.h"
+#include "DBCStructure.h"
 
 ScriptMapMap sSpellScripts;
 ScriptMapMap sEventScripts;
@@ -3550,6 +3551,82 @@ void ObjectMgr::LoadPlayerInfo()
         }
     }
 
+    // Load playercreate skills
+    TC_LOG_INFO("server.loading", "Loading Player Create Skill Data...");
+    {
+        uint32 oldMSTime = getMSTime();
+
+        QueryResult result = WorldDatabase.PQuery("SELECT raceMask, classMask, skill, `rank` FROM playercreateinfo_skills");
+
+        if (!result)
+        {
+            TC_LOG_INFO("server.loading", ">> Loaded 0 player create skills. DB table `playercreateinfo_skills` is empty.");
+        }
+        else
+        {
+            uint32 count = 0;
+
+            do
+            {
+                Field* fields = result->Fetch();
+                uint32 raceMask = fields[0].GetUInt32();
+                uint32 classMask = fields[1].GetUInt32();
+                // PlayerCreateInfoSkill skill;
+                // skill.SkillId = fields[2].GetUInt16();
+                // skill.Rank = fields[3].GetUInt16();
+                uint32 rank = fields[3].GetUInt16();
+                uint32 skill = fields[2].GetUInt16();
+
+                if (rank >= MAX_SKILL_STEP)
+                {
+                    TC_LOG_ERROR("sql.sql", "Skill rank value %hu set for skill %hu raceMask %u classMask %u is too high, max allowed value is %d", rank, skill, raceMask, classMask, MAX_SKILL_STEP);
+                    continue;
+                }
+
+                if (raceMask != 0 && !(raceMask & RACEMASK_ALL_PLAYABLE))
+                {
+                    TC_LOG_ERROR("sql.sql", "Wrong race mask %u in `playercreateinfo_skills` table, ignoring.", raceMask);
+                    continue;
+                }
+
+                if (classMask != 0 && !(classMask & CLASSMASK_ALL_PLAYABLE))
+                {
+                    TC_LOG_ERROR("sql.sql", "Wrong class mask %u in `playercreateinfo_skills` table, ignoring.", classMask);
+                    continue;
+                }
+
+                if (!sSkillLineStore.LookupEntry(skill))
+                {
+                    TC_LOG_ERROR("sql.sql", "Wrong skill id %u in `playercreateinfo_skills` table, ignoring.", skill);
+                    continue;
+                }
+
+                for (uint32 raceIndex = RACE_HUMAN; raceIndex < MAX_RACES; ++raceIndex)
+                {
+                    if (raceMask == 0 || ((1 << (raceIndex - 1)) & raceMask))
+                    {
+                        for (uint32 classIndex = CLASS_WARRIOR; classIndex < MAX_CLASSES; ++classIndex)
+                        {
+                            if (classMask == 0 || ((1 << (classIndex - 1)) & classMask))
+                            {
+                                if (!GetSkillRaceClassInfo(skill, raceIndex, classIndex))
+                                    continue;
+
+                                if (auto& info = _playerInfo[raceIndex][classIndex])
+                                {
+                                    info->skills.push_back(skill);
+                                    ++count;
+                                }
+                            }
+                        }
+                    }
+                }
+            } while (result->NextRow());
+
+            TC_LOG_INFO("server.loading", ">> Loaded %u player create skills in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+        }
+    }
+
     // Load playercreate spells
     TC_LOG_INFO("server.loading", "Loading Player Create Spell Data...");
     {
@@ -3626,6 +3703,68 @@ void ObjectMgr::LoadPlayerInfo()
             TC_LOG_INFO("server.loading", ">> Loaded %u player create actions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
         }
     }
+
+    // Load playercreate spells
+    // TC_LOG_INFO("server.loading", "Loading Player Create Spell Data...");
+    // {
+    //     uint32 oldMSTime = getMSTime();
+
+    //     QueryResult result = WorldDatabase.PQuery("SELECT racemask, classmask, Spell FROM playercreateinfo_spell_custom");
+
+    //     if (!result)
+    //     {
+    //         TC_LOG_INFO("server.loading", ">> Loaded 0 player create spells. DB table `playercreateinfo_spell_custom` is empty.");
+    //     }
+    //     else
+    //     {
+    //         uint32 count = 0;
+
+    //         do
+    //         {
+    //             Field* fields = result->Fetch();
+    //             uint32 raceMask = fields[0].GetUInt32();
+    //             uint32 classMask = fields[1].GetUInt32();
+    //             uint32 spellId = fields[2].GetUInt32();
+
+    //             if (raceMask != 0 && !(raceMask & RACEMASK_ALL_PLAYABLE))
+    //             {
+    //                 TC_LOG_ERROR("sql.sql", "Wrong race mask %u in `playercreateinfo_spell_custom` table, ignoring.", raceMask);
+    //                 continue;
+    //             }
+
+    //             if (classMask != 0 && !(classMask & CLASSMASK_ALL_PLAYABLE))
+    //             {
+    //                 TC_LOG_ERROR("sql.sql", "Wrong class mask %u in `playercreateinfo_spell_custom` table, ignoring.", classMask);
+    //                 continue;
+    //             }
+
+    //             for (uint32 raceIndex = RACE_HUMAN; raceIndex < MAX_RACES; ++raceIndex)
+    //             {
+    //                 if (raceMask == 0 || ((1 << (raceIndex - 1)) & raceMask))
+    //                 {
+    //                     for (uint32 classIndex = CLASS_WARRIOR; classIndex < MAX_CLASSES; ++classIndex)
+    //                     {
+    //                         if (classMask == 0 || ((1 << (classIndex - 1)) & classMask))
+    //                         {
+    //                             if (auto& info = _playerInfo[raceIndex][classIndex])
+    //                             {
+    //                                 info->customSpells.push_back(spellId);
+    //                                 ++count;
+    //                             }
+    //                             // We need something better here, the check is not accounting for spells used by multiple races/classes but not all of them.
+    //                             // Either split the masks per class, or per race, which kind of kills the point yet.
+    //                             // else if (raceMask != 0 && classMask != 0)
+    //                             //     TC_LOG_ERROR("sql.sql", "Racemask/classmask (%u/%u) combination was found containing an invalid race/class combination (%u/%u) in `%s` (Spell %u), ignoring.", raceMask, classMask, raceIndex, classIndex, tableName.c_str(), spellId);
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //         while (result->NextRow());
+
+    //         TC_LOG_INFO("server.loading", ">> Loaded %u custom player create spells in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    //     }
+    // }
 
     // Loading levels data (class/race dependent)
     TC_LOG_INFO("server.loading", "Loading Player Create Level Stats Data...");
