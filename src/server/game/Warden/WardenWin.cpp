@@ -115,8 +115,8 @@ void WardenWin::HandleHashResult(ByteBuffer &buff)
     TC_LOG_DEBUG("warden", "%u - Request hash reply: succeed", _session->GetAccountId());
 
     // reinit crypto keys
-    _inputCrypto.Init(_module.clientKeySeed.first);
-    _outputCrypto.Init(_module.serverKeySeed.first);
+    _inputCrypto.Init(_module.clientKeySeed.first, _module.clientKeySeed.second);
+    _outputCrypto.Init(_module.serverKeySeed.first, _module.serverKeySeed.second);
 
     _initialized = true;
     _previousTimestamp = getMSTime();
