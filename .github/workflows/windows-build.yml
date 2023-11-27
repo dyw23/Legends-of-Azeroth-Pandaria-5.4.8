@@ -33,7 +33,6 @@ jobs:
     - uses: FranzDiebold/github-env-vars-action@v2
     - name: Create Build Environment
       run: |
-        echo "BOOST_ROOT=${{env.BOOST_INSTALL_DIR}}/boost/boost-${{env.BOOST_VERSION}}-win32-${{env.BOOST_TOOLSET}}-x86_64" >> $env:GITHUB_ENV
         echo "ARCHIVE_FILENAME=$env:CI_REPOSITORY_NAME-${{matrix.TYPE}}-$env:CI_SHA_SHORT.zip" >> $env:GITHUB_ENV
         cmake -E make_directory ${{ env.BUILD_DIR }}
     # install dependencies
@@ -79,6 +78,8 @@ jobs:
 
     #build and install
     - name: windows build & install
+      env:
+          BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
       run: |
         cd $GITHUB_WORKSPACE
         
