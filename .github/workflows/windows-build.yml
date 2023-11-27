@@ -20,7 +20,6 @@ env:
   BUILD_DIR: ${{github.workspace}}/bin/builddir
   BOOST_TOOLSET: "msvc"
   BOOST_VERSION: "1.73.0"
-  BOOST_INSTALL_DIR: "${{github.workspace}}/bin"
   
 jobs:
   build:
@@ -35,16 +34,8 @@ jobs:
       run: |
         echo "ARCHIVE_FILENAME=$env:CI_REPOSITORY_NAME-${{matrix.TYPE}}-$env:CI_SHA_SHORT.zip" >> $env:GITHUB_ENV
         cmake -E make_directory ${{ env.BUILD_DIR }}
-    # install dependencies
-    - name: Cache Windows boost
-      uses: actions/cache@v2
-      id: cache-boost
-      with:
-          path: "${{env.BOOST_INSTALL_DIR}}/boost"
-          key: ${{ runner.os }}-${{ hashFiles('.github/workflows/windows.yml') }}
-
-    - if: steps.cache-boost.outputs.cache-hit != 'true'
-      name: Install boost
+ 
+    - name: Install boost
       uses: MarkusJx/install-boost@v2.4.4
       id: install-boost
       with:
