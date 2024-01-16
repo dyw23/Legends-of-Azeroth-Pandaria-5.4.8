@@ -32,6 +32,13 @@
 //#include <ace/Guard_T.h>
 //#include <ace/Unbounded_Queue.h>
 #include <ace/Message_Block.h>
+#include "Common.h"
+#include "Opcodes.h"
+
+namespace WorldPackets
+{
+    class ServerPacket;
+}
 
 struct AuthSession;
 
@@ -39,6 +46,7 @@ struct AuthSession;
 #pragma once
 #endif /* ACE_LACKS_PRAGMA_ONCE */
 #include "Common.h"
+#include "Opcodes.h"
 #include "AuthCrypt.h"
 #include "Duration.h"
 #include "AsyncCallbackProcessor.h"
@@ -139,7 +147,7 @@ class WorldSocket : public WorldHandler
 
     private:
         /// Helper functions for processing incoming data.
-        int handle_input_header(void);
+        
         int handle_input_payload(void);
         int handle_input_missing_data(void);
 
@@ -160,12 +168,14 @@ class WorldSocket : public WorldHandler
         void HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSession, PreparedQueryResult result);
 
         /// Called by ProcessIncoming() on CMSG_PING.
-        int HandlePing(WorldPacket& recvPacket);
+        bool HandlePing(WorldPacket& recvPacket);
 
         /// Called by MSG_VERIFY_CONNECTIVITY_RESPONSE
         int HandleSendAuthSession();
 
     protected:
+        bool ReadHeaderHandler();
+        
         enum class ReadDataHandlerResult
         {
             Ok = 0,
@@ -188,7 +198,7 @@ class WorldSocket : public WorldHandler
 
         std::array<uint8, 4> _authSeed;
         /// Class used for managing encryption of the headers
-        AuthCrypt m_Crypt;
+        AuthCrypt _authCrypt;
 
         /// Mutex lock to protect m_Session
         std::mutex m_SessionLock;
