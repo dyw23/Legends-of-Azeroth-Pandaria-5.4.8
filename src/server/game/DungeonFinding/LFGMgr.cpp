@@ -2136,7 +2136,7 @@ void LFGMgr::FinishDungeon(uint64 gguid, uint32 dungeonId, Map* map)
 
         bool done = false;
         Quest const* quest = sObjectMgr->GetQuestTemplate(reward->firstQuest);
-        Quest const* ctaQuest = NULL;
+        Quest const* ctaQuest = nullptr;
         if (quest)
         {
             // if we can take the quest, means that we haven't done this kind of "run", IE: First Heroic Random of Day.

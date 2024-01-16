@@ -185,7 +185,7 @@ int WorldSocket::SendPacket(WorldPacket const& pct)
 
     sScriptMgr->OnPacketSend(m_Session, *pkt);
 
-    ServerPktHeader header(!m_Crypt.IsInitialized() ? pkt->size() + 2 : pct.size(), opcodeNumber, &m_Crypt);
+    ServerPktHeader header(!_authCrypt.IsInitialized() ? pkt->size() + 2 : pct.size(), opcodeNumber, &_authCrypt);
 
     if (m_OutBuffer->space() >= pkt->size() + header.getHeaderLength() && msg_queue()->is_empty())
     {
@@ -482,36 +482,36 @@ int WorldSocket::Update (void)
     return ret;
 }
 
-int WorldSocket::handle_input_header (void)
+bool WorldSocket::ReadHeaderHandler (void)
 {
     ASSERT(m_RecvWPct == NULL);
 
-
-    if (m_Crypt.IsInitialized())
+    if (_authCrypt.IsInitialized())
     {
-        ASSERT(m_WorldHeader.length() == sizeof(WorldClientPktHeader));
+
         uint8* uintHeader = (uint8*)m_WorldHeader.rd_ptr();
-        m_Crypt.DecryptRecv(uintHeader, sizeof(WorldClientPktHeader));
-        WorldClientPktHeader& header = *(WorldClientPktHeader*)uintHeader;
+        _authCrypt.DecryptRecv(uintHeader, sizeof(WorldClientPktHeader));
+        ASSERT(m_WorldHeader.length() == sizeof(WorldClientPktHeader));
+        WorldClientPktHeader* header = reinterpret_cast<WorldClientPktHeader*>(m_WorldHeader.rd_ptr());
 
         uint32 value = *(uint32*)uintHeader;
-        header.cmd = value & 0x1FFF;
-        header.size = ((value & ~(uint32)0x1FFF) >> 13);
+        header->cmd = value & 0x1FFF;
+        header->size = ((value & ~(uint32)0x1FFF) >> 13);
 
-        if (header.size > 10236)
+        if (header->size > 10236)
         {
-            Player* _player = m_Session ? m_Session->GetPlayer() : NULL; // Removed this because it crashes the server if the player disconnects right before the log
+            Player* _player = m_Session ? m_Session->GetPlayer() : nullptr; // Removed this because it crashes the server if the player disconnects right before the log
             errno = EINVAL;
-            return -1;
+            return false;
         }
 
-        uint16 opcodeNumber = PacketFilter::DropHighBytes(header.cmd);
-        ACE_NEW_RETURN(m_RecvWPct, WorldPacket(clientOpcodeTable.GetOpcodeByNumber(opcodeNumber), header.size), -1);
-        m_RecvWPct->SetReceivedOpcode(opcodeNumber);
+        OpcodeClient opcode = static_cast<OpcodeClient>(header->cmd);
+        ACE_NEW_RETURN(m_RecvWPct, WorldPacket(opcode, header->size), -1);
+        m_RecvWPct->SetReceivedOpcode(opcode);
 
-        if (header.size > 0)
+        if (header->size > 0)
         {
-            m_RecvWPct->resize(header.size);
+            m_RecvWPct->resize(header->size);
             m_RecvPct.base ((char*) m_RecvWPct->contents(), m_RecvWPct->size());
         }
         else
@@ -520,40 +520,40 @@ int WorldSocket::handle_input_header (void)
     else
     {
         ASSERT(m_Header.length() == sizeof(AuthClientPktHeader));
-        uint8* uintHeader = (uint8*)m_Header.rd_ptr();
-        AuthClientPktHeader& header = *((AuthClientPktHeader*)uintHeader);
-
-        if ((header.size < 4) || (header.size > 10240))
+        AuthClientPktHeader* header = reinterpret_cast<AuthClientPktHeader*>(m_Header.rd_ptr());
+        
+        if ((header->size < 4) || (header->size > 10240))
         {
-            Player* _player = m_Session ? m_Session->GetPlayer() : NULL; // Removed this because it crashes the server if the player disconnects right before the log
+            Player* _player = m_Session ? m_Session->GetPlayer() : nullptr; // Removed this because it crashes the server if the player disconnects right before the log
 
             errno = EINVAL;
-            return -1;
+            return false;
         }
 
-        header.size -= 4;
+        header->size -= sizeof(header->cmd);
 
-        uint16 opcodeNumber = PacketFilter::DropHighBytes(header.cmd);
-        ACE_NEW_RETURN(m_RecvWPct, WorldPacket(clientOpcodeTable.GetOpcodeByNumber(opcodeNumber), header.size), -1);
-        m_RecvWPct->SetReceivedOpcode(opcodeNumber);
+        OpcodeClient opcode = static_cast<OpcodeClient>(header->cmd);
+        ACE_NEW_RETURN(m_RecvWPct, WorldPacket(opcode, header->size), -1);
+        m_RecvWPct->SetReceivedOpcode(opcode);
 
-        if (header.size > 0)
+        if (header->size > 0)
         {
-            m_RecvWPct->resize(header.size);
+            m_RecvWPct->resize(header->size);
             m_RecvPct.base ((char*) m_RecvWPct->contents(), m_RecvWPct->size());
         }
         else
             ASSERT(m_RecvPct.space() == 0);
     }
 
-    return 0;
+    return true;
 }
+
 int WorldSocket::handle_input_payload (void)
 {
     // set errno properly here on error !!!
     // now have a header and payload
 
-    if (m_Crypt.IsInitialized())
+    if (_authCrypt.IsInitialized())
     {
         ASSERT (m_RecvPct.space() == 0);
         ASSERT (m_WorldHeader.space() == 0);
@@ -621,7 +621,7 @@ int WorldSocket::handle_input_missing_data (void)
 
     while (message_block.length() > 0)
     {
-        if (m_Crypt.IsInitialized())
+        if (_authCrypt.IsInitialized())
         {
             if (m_WorldHeader.space() > 0)
             {
@@ -639,7 +639,7 @@ int WorldSocket::handle_input_missing_data (void)
                 }
 
                 // We just received nice new header
-                if (handle_input_header() == -1)
+                if (!ReadHeaderHandler())
                 {
                     ASSERT ((errno != EWOULDBLOCK) && (errno != EAGAIN));
                     return -1;
@@ -664,7 +664,7 @@ int WorldSocket::handle_input_missing_data (void)
                 }
 
                 // We just received nice new header
-                if (handle_input_header() == -1)
+                if (!ReadHeaderHandler())
                 {
                     ASSERT ((errno != EWOULDBLOCK) && (errno != EAGAIN));
                     return -1;
@@ -763,7 +763,7 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
 
     std::string opcodeName = GetOpcodeNameForLogging(opcode, false);
     if (m_Session)
-        TC_LOG_TRACE("network.opcode", "C->S: %u %s", m_Session->GetAccountId(), GetOpcodeNameForLogging(opcode,false).c_str());
+        TC_LOG_TRACE("network.opcode", "C->S: %u %s", m_Session->GetAccountId(), opcodeName.c_str());
 
     try
     {
@@ -1118,7 +1118,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     LoginDatabase.Execute(stmt);
 
-    m_Crypt.Init(account.SessionKey);
+    _authCrypt.Init(account.SessionKey);
 
     // NOTE ATM the socket is single-threaded, have this in mind ...
     ACE_NEW_RETURN(m_Session, WorldSession(account.Id, this, AccountTypes(security), account.Expansion, account.MuteTime, account.Locale, account.Recruiter, account.Flags, isRecruiter, hasBoost), -1);
