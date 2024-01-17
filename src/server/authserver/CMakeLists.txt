@@ -51,7 +51,6 @@ endif()
 include_directories(
   PUBLIC
     ${CMAKE_BINARY_DIR}
-    ${OPENSSL_INCLUDE_DIR}
   PRIVATE
     ${CMAKE_SOURCE_DIR}/src/common
     ${CMAKE_SOURCE_DIR}/src/common/Asio
@@ -77,6 +76,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/Server
     ${MYSQL_INCLUDE_DIR}
     ${Boost_INCLUDE_DIRS}
+    ${OPENSSL_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/dep/fmt/include
 )
 

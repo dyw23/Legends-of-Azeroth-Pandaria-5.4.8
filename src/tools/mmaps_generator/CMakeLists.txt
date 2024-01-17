@@ -35,6 +35,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/server/collision/Management
     ${CMAKE_SOURCE_DIR}/src/server/collision/Maps
     ${CMAKE_SOURCE_DIR}/src/server/collision/Models
+    ${OPENSSL_INCLUDE_DIR}
 )
 
 add_executable(mmaps_generator ${mmap_gen_sources})

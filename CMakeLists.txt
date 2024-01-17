@@ -60,6 +60,9 @@ include(CheckPlatform)
 set(ACE_EXPECTED_VERSION 5.8.3)
 
 find_package(ACE REQUIRED)
+if(WIN32)
+  set(OPENSSL_USE_STATIC_LIBS TRUE)
+endif()
 find_package(OpenSSL REQUIRED)
 find_package(Threads REQUIRED)
 
@@ -85,8 +88,6 @@ if(WIN32)
     list(APPEND BOOST_LIBRARYDIR
       ${BOOST_ROOT}/lib${PLATFORM}-msvc-14.2 )
   endif()
-
-
   set(Boost_USE_STATIC_LIBS        ON)
   set(Boost_USE_MULTITHREADED      ON)
   set(Boost_USE_STATIC_RUNTIME     OFF)

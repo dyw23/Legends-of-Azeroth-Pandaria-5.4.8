@@ -34,6 +34,24 @@
 #include <ace/Message_Block.h>
 #include "Common.h"
 #include "Opcodes.h"
+#include "MPSCQueue.h"
+#include "WorldPacket.h"
+
+class EncryptablePacket : public WorldPacket
+{
+public:
+    EncryptablePacket(WorldPacket const& packet, bool encrypt) : WorldPacket(packet), _encrypt(encrypt)
+    {
+        SocketQueueLink.store(nullptr, std::memory_order_relaxed);
+    }
+
+    bool NeedsEncryption() const { return _encrypt; }
+
+    std::atomic<EncryptablePacket*> SocketQueueLink;
+
+private:
+    bool _encrypt;
+};
 
 namespace WorldPackets
 {
@@ -143,7 +161,7 @@ class WorldSocket : public WorldHandler
             ACE_Reactor_Mask = ACE_Event_Handler::ALL_EVENTS_MASK);
 
         /// Called by WorldSocketMgr/ReactorRunnable.
-        int Update(void);
+        int Update();
 
     private:
         /// Helper functions for processing incoming data.
@@ -161,7 +179,7 @@ class WorldSocket : public WorldHandler
 
         /// process one incoming packet.
         /// @param new_pct received packet, note that you need to delete it.
-        int ProcessIncoming(WorldPacket* new_pct);
+        bool ProcessIncoming(WorldPacket* new_pct);
 
         /// Called by ProcessIncoming() on CMSG_AUTH_SESSION.
         int HandleAuthSession(WorldPacket& recvPacket);
@@ -174,6 +192,8 @@ class WorldSocket : public WorldHandler
         int HandleSendAuthSession();
 
     protected:
+        void DelayedCloseSocket() { closing_ = true; }
+
         bool ReadHeaderHandler();
         
         enum class ReadDataHandlerResult
@@ -200,12 +220,6 @@ class WorldSocket : public WorldHandler
         /// Class used for managing encryption of the headers
         AuthCrypt _authCrypt;
 
-        /// Mutex lock to protect m_Session
-        std::mutex m_SessionLock;
-
-        /// Session to which received packets are routed
-        WorldSession* m_Session;
-
         /// here are stored the fragments of the received data
         WorldPacket* m_RecvWPct;
 
@@ -229,6 +243,12 @@ class WorldSocket : public WorldHandler
 
         /// True if the socket is registered with the reactor for output
         bool m_OutActive;
+
+        std::mutex _worldSessionLock;
+        WorldSession* _worldSession;
+        bool _authed;        
+
+        MPSCQueue<EncryptablePacket, &EncryptablePacket::SocketQueueLink> _bufferQueue;
 
         QueryCallbackProcessor _queryProcessor;
         std::string _ipCountry;
