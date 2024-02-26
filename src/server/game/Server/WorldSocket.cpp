@@ -435,12 +435,16 @@ struct AccountInfo
     LocaleConstant Locale;
     uint32 Recruiter;
     std::string OS;
+    bool IsBanned;
+    bool IsRecruiter;
     uint32 Flags;
+    AccountTypes Security;
+    bool HasBoost;
 
     explicit AccountInfo(Field* fields)
     {
-        //         0          1       2       3         4        5           6         7      8           9    10              11             12
-        // SELECT id, sessionkey, last_ip, locked, lock_country, expansion, mutetime, locale, recruiter, os, flags, online_mute_timer, active_mute_id FROM account WHERE username = ?
+        //         0          1       2            3         4                5           6         7          8           9        10         11      12                                                            13     14 
+        // SELECT a.id, a.sessionkey, a.last_ip, a.locked, a.lock_country, a.expansion, a.mutetime, a.locale, a.recruiter, a.os, a.flags, aa.gmlevel, ab.unbandate > UNIX_TIMESTAMP() OR ab.unbandate = ab.bandate, r.id, abo.id FROM account a LEFT JOIN account r ON a.id = r.recruiter LEFT JOIN account_access aa ON a.id = aa.id AND aa.RealmID IN (-1, ?) LEFT JOIN account_banned ab ON a.id = ab.id AND ab.active = 1 LEFT JOIN account_boost abo ON a.id=abo.id AND abo.realmid IN (-1, ?) WHERE a.username = ?
         Id = fields[0].GetUInt32();
         SessionKey = HexStrToByteArray<SESSION_KEY_LENGTH>(std::string_view(fields[1].GetString())); 
         LastIP = fields[2].GetString();
@@ -452,6 +456,10 @@ struct AccountInfo
         Recruiter = fields[8].GetUInt32();
         OS = fields[9].GetString();
         Flags = fields[10].GetUInt32();
+        Security = AccountTypes(fields[11].GetUInt8());
+        IsBanned = fields[12].GetUInt64() != 0;
+        IsRecruiter = fields[13].GetUInt32() != 0;
+        HasBoost = fields[14].GetUInt32() != 0;
 
         uint32 world_expansion = sWorld->getIntConfig(CONFIG_EXPANSION);
         if (Expansion > world_expansion)
@@ -550,7 +558,6 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
 
             case CMSG_LOG_DISCONNECT:
                 packet.rfinish(); // contains uint32 disconnectReason;
-                //sScriptMgr->OnPacketReceive(_worldSession, WorldPacket(*new_pct));
                 DelayedCloseSocket();
                 return ReadDataHandlerResult::Ok;
 
@@ -704,19 +711,14 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     authSession->Account = recvPacket.ReadString(accountNameLength);
 
-    // if (sWorld->IsClosed())
-    // {
-    //     SendAuthResponseError(AUTH_REJECT);
-    //     TC_LOG_ERROR("network", "WorldSocket::HandleAuthSession: World closed, denying client (%s).", GetRemoteAddress().c_str());
-    //     return;
-    // }
-
     // Get the account information from the realmd database
-    //         0           1        2       3          4         5       6          7   8   9         10                    11
-    // SELECT id, sessionkey, last_ip, locked, expansion, mutetime, locale, recruiter, os, flags, online_mute_timer, active_mute_id FROM account WHERE username = ?
+    //         0           1        2         3          4              5              6          7        8            9       10       11        12                                                            13    14
+    // SELECT a.id, a.sessionkey, a.last_ip, a.locked, a.lock_country, a.expansion, a.mutetime, a.locale, a.recruiter, a.os, a.flags, aa.gmlevel, ab.unbandate > UNIX_TIMESTAMP() OR ab.unbandate = ab.bandate, r.id, abo.id FROM account a LEFT JOIN account r ON a.id = r.recruiter LEFT JOIN account_access aa ON a.id = aa.id AND aa.RealmID IN (-1, ?) LEFT JOIN account_banned ab ON a.id = ab.id AND ab.active = 1 LEFT JOIN account_boost abo ON a.id=abo.id AND abo.realmid IN (-1, ?) WHERE a.username = ?
     // size_t hashPos = authSession->account.find_last_of('#');
     LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_INFO_BY_NAME);
-    stmt->setString(0, authSession->Account);
+    stmt->setInt32(0, int32(realm.Id.Realm));
+    stmt->setInt32(1, int32(realm.Id.Realm));
+    stmt->setString(2, authSession->Account);
 
     //_queryProcessor.AddCallback(LoginDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSocket::HandleAuthSessionCallback, this, authSession, std::placeholders::_1)));
     PreparedQueryResult result = LoginDatabase.Query(stmt);
@@ -909,15 +911,6 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
         return;
     }
 
-    // get boost info
-    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_BOOST);
-    stmt->setUInt32(0, account.Id);
-    stmt->setUInt32(1, realm.Id.Realm);
-
-    bool hasBoost = false;
-    if (LoginDatabase.Query(stmt))
-        hasBoost = true;
-
     // Get mute info
     std::string mutedBy = "";
     std::string muteReason = "";
@@ -934,34 +927,7 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
         onlineMuteTimer = fields[3].GetUInt32();
     }
 
-    // Checks gmlevel per Realm
-    stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_GMLEVEL_BY_REALMID);
-
-    stmt->setUInt32(0, account.Id);
-    stmt->setInt32(1, int32(realm.Id.Realm));
-
-    result = LoginDatabase.Query(stmt);
-
-    uint8 security;
-    if (!result)
-        security = 0;
-    else
-    {
-        fields = result->Fetch();
-        security = fields[0].GetUInt8();
-    }
-
-    // Re-check account ban (same check as in realmd)
-    stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_BANS);
-
-    stmt->setUInt32(0, account.Id);
-    //stmt->setString(1, GetRemoteAddress());
-    stmt->setString(1, GetRemoteIpAddress().to_string().c_str());
-    
-
-    PreparedQueryResult banresult = LoginDatabase.Query(stmt);
-
-    if (banresult) // if account banned
+    if (account.IsBanned) // if account banned
     {
         SendAuthResponseError(AUTH_BANNED);
         TC_LOG_ERROR("network", "WorldSocket::HandleAuthSession: Sent Auth Response (Account banned).");
@@ -971,8 +937,8 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
 
     // Check locked state for server
     AccountTypes allowedAccountType = sWorld->GetPlayerSecurityLimit();
-    TC_LOG_DEBUG("network", "Allowed Level: %u Player Level %u", allowedAccountType, AccountTypes(security));
-    if (allowedAccountType > SEC_PLAYER && AccountTypes(security) < allowedAccountType)
+    TC_LOG_DEBUG("network", "Allowed Level: %u Player Level %u", allowedAccountType, account.Security);
+    if (allowedAccountType > SEC_PLAYER && account.Security < allowedAccountType)
     {
         SendAuthResponseError(AUTH_UNAVAILABLE);
         TC_LOG_INFO("network", "WorldSocket::HandleAuthSession: User tries to login but his security level is not enough");
@@ -1010,18 +976,9 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
         authSession->Account.c_str(),
         address.c_str());
 
-    // Check if this user is by any chance a recruiter
-    stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_RECRUITER);
-    stmt->setUInt32(0, account.Id);
-    result = LoginDatabase.Query(stmt);
-
-    bool isRecruiter = false;
-    if (result)
-        isRecruiter = true;
-
     // Update the last_ip in the database
 
-    stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_LAST_IP);
+    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_LAST_IP);
     stmt->setString(0, address);
     stmt->setString(1, authSession->Account);
     LoginDatabase.Execute(stmt);
@@ -1039,12 +996,14 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
     }
 
     _authed = true;
-    _worldSession = new WorldSession(account.Id, shared_from_this(), AccountTypes(security), account.Expansion, account.MuteTime, account.Locale, account.Recruiter, account.Flags, isRecruiter, hasBoost);
+    _worldSession = new WorldSession(account.Id, shared_from_this(), account.Security, account.Expansion, account.MuteTime, account.Locale, account.Recruiter, account.Flags, account.IsRecruiter, account.HasBoost);
     _worldSession->SetMute({ onlineMuteTimer, mutedBy, muteReason, mutedInPublicChannelsOnly });
+    _worldSession->ReadAddonsInfo(authSession->addonsData);
+    sWorld->AddSession(_worldSession);
 
     _worldSession->LoadGlobalAccountData();
     _worldSession->LoadTutorialsData();
-    _worldSession->ReadAddonsInfo(authSession->addonsData);
+    
     // Initialize Warden system only if it is enabled by config
     if (sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED))
         _worldSession->InitWarden(&k, account.OS);
@@ -1052,7 +1011,7 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
     // Sleep this Network thread for
     // uint32 sleepTime = sWorld->getIntConfig(CONFIG_SESSION_ADD_DELAY);
     // std::this_thread::sleep_for(Microseconds(sleepTime));
-    sWorld->AddSession(_worldSession);
+    
 
     //_queryProcessor.AddCallback(_worldSession->LoadPermissionsAsync().WithPreparedCallback(std::bind(&WorldSocket::LoadSessionPermissionsCallback, this, std::placeholders::_1)));
     
