@@ -48,6 +48,7 @@ struct CompressedWorldPacket
 std::string const WorldSocket::ServerConnectionInitialize("WORLD OF WARCRAFT CONNECTION - SERVER TO CLIENT");
 std::string const WorldSocket::ClientConnectionInitialize("WORLD OF WARCRAFT CONNECTION - CLIENT TO SERVER");
 uint32 const WorldSocket::MinSizeForCompression = 0x400;
+uint32 const SizeOfHeader = sizeof(uint16) + sizeof(uint16);
 
 // uint32 const SizeOfClientHeader = sizeof(uint32) + sizeof(uint16);
 // uint32 const SizeOfServerHeader = sizeof(uint32) + sizeof(uint16);
@@ -166,20 +167,18 @@ bool WorldSocket::Update()
         //     _authCrypt.EncryptSend(header.header, header.getHeaderLength());
 
         uint32 packetSize = queued->size();
-        uint32 sizeOfHeader = 4;
         if (packetSize > MinSizeForCompression && _authCrypt.IsInitialized())
             packetSize = compressBound(packetSize) + sizeof(CompressedWorldPacket);
 
-
         //if (buffer.GetRemainingSpace() < queued->size() + header.getHeaderLength())
-        if (buffer.GetRemainingSpace() < sizeOfHeader + packetSize)
+        if (buffer.GetRemainingSpace() < SizeOfHeader + packetSize)
         {
             QueuePacket(std::move(buffer));
             buffer.Resize(_sendBufferSize);
         }
 
         //if (buffer.GetRemainingSpace() >= queued->size() + header.getHeaderLength())
-        if (buffer.GetRemainingSpace() >=  sizeOfHeader + packetSize)
+        if (buffer.GetRemainingSpace() >=  SizeOfHeader + packetSize)
         {
             WritePacketToBuffer(*queued, buffer);
             // buffer.Write(header.header, header.getHeaderLength());
@@ -188,12 +187,12 @@ bool WorldSocket::Update()
         }
         else    // single packet larger than 4096 bytes
         {
-            MessageBuffer packetBuffer(queued->size() + header.getHeaderLength());
-            packetBuffer.Write(header.header, header.getHeaderLength());
-            if (!queued->empty())
-                packetBuffer.Write(queued->contents(), queued->size());
-            // MessageBuffer packetBuffer(sizeOfHeader + packetSize);
-            // WritePacketToBuffer(*queued, packetBuffer);
+            // MessageBuffer packetBuffer(queued->size() + header.getHeaderLength());
+            // packetBuffer.Write(header.header, header.getHeaderLength());
+            // if (!queued->empty())
+            //     packetBuffer.Write(queued->contents(), queued->size());
+            MessageBuffer packetBuffer(SizeOfHeader + packetSize);
+            WritePacketToBuffer(*queued, packetBuffer);
             QueuePacket(std::move(packetBuffer));
         }
 
@@ -345,20 +344,18 @@ bool WorldSocket::ReadHeaderHandler()
 
 void WorldSocket::WritePacketToBuffer(EncryptablePacket const& packet, MessageBuffer& buffer)
 {
-    //ServerPktHeader header;
-    uint32 sizeOfHeader = 4;    
-    uint16 opcode = packet.GetOpcode();
+    uint32 opcode = packet.GetOpcode();
     uint32 packetSize = packet.size();
 
     // Reserve space for buffer
     uint8* headerPos = buffer.GetWritePointer();
-    buffer.WriteCompleted(sizeOfHeader);
+    buffer.WriteCompleted(SizeOfHeader);
 
-    if (packetSize > MinSizeForCompression && _authCrypt.IsInitialized())
+    if (packetSize > MinSizeForCompression && packet.NeedsEncryption())
     {
         CompressedWorldPacket cmp;
-        cmp.UncompressedSize = packetSize + 4;
-        cmp.UncompressedAdler = adler32(adler32(0x9827D8F1, (Bytef*)&opcode, 4), packet.contents(), packetSize);
+        cmp.UncompressedSize = packetSize + 2;
+        cmp.UncompressedAdler = adler32(adler32(0x9827D8F1, reinterpret_cast<Bytef*>(&opcode), 2), packet.contents(), packetSize);
 
         // Reserve space for compression info - uncompressed size and checksums
         uint8* compressionInfo = buffer.GetWritePointer();
@@ -377,10 +374,12 @@ void WorldSocket::WritePacketToBuffer(EncryptablePacket const& packet, MessageBu
     else if (!packet.empty())
         buffer.Write(packet.contents(), packet.size());
 
-    ServerPktHeader header(_authCrypt.IsInitialized() ? packetSize : packetSize + 2, opcode, packet.NeedsEncryption(), &_authCrypt);
-    memcpy(headerPos, &header, 4);
+    //packetSize += 2 /*opcode*/;
 
-    //memcpy(headerPos, &header, sizeOfHeader);
+    ServerPktHeader header(!_authCrypt.IsInitialized() ? packetSize : packetSize, packet.GetOpcode(), packet.NeedsEncryption(), &_authCrypt);
+    //_authCrypt.EncryptSend(reinterpret_cast<uint8*>(&header), 4);
+
+    memcpy(headerPos, &header, SizeOfHeader);
 }
 
 uint32 WorldSocket::CompressPacket(uint8* buffer, WorldPacket const& packet)
