@@ -50,17 +50,6 @@ std::string const WorldSocket::ClientConnectionInitialize("WORLD OF WARCRAFT CON
 uint32 const WorldSocket::MinSizeForCompression = 0x400;
 uint32 const SizeOfHeader = sizeof(uint16) + sizeof(uint16);
 
-// uint32 const SizeOfClientHeader = sizeof(uint32) + sizeof(uint16);
-// uint32 const SizeOfServerHeader = sizeof(uint32) + sizeof(uint16);
-
-uint32 const SizeOfClientHeader[2][2] =
-{
-    { 2, 0 },
-    { 6, 4 }
-};
-
-uint32 const SizeOfServerHeader[2] = { sizeof(uint16) + sizeof(uint32), sizeof(uint32) };
-
 struct ServerPktHeader
 {
     ServerPktHeader(uint32 size, uint32 cmd, bool encrypt, AuthCrypt* _authCrypt) : size(size)
@@ -69,7 +58,7 @@ struct ServerPktHeader
         {
             uint32 data = (size << 13) | (cmd & MAX_OPCODE);
             memcpy(&header[0], &data, 4);
-            _authCrypt->EncryptSend((uint8*)&header[0], getHeaderLength());
+            _authCrypt->EncryptSend(reinterpret_cast<uint8*>(&header[0]), getHeaderLength());
         }
         else
         {
@@ -156,41 +145,23 @@ bool WorldSocket::Update()
     MessageBuffer buffer(_sendBufferSize);
     while (_bufferQueue.Dequeue(queued))
     {
-        // if (_authCrypt.IsInitialized() && queued->size() > 0x400 && !queued->IsCompressed())
-        //     queued->Compress(_compressionStream);
-        //ServerPktHeader header(queued->size() + 2, queued->GetOpcode(), &_authCrypt);
-        //ServerPktHeader header(!_authCrypt.IsInitialized() ? queued->size() + 2 : queued->size(), queued->GetOpcode(), &_authCrypt);
-        //ServerPktHeader header(!_authCrypt.IsInitialized() ? queued->size() + 2 : queued->size(), queued->GetOpcode(), queued->NeedsEncryption(), &_authCrypt);
-        ServerPktHeader header(!_authCrypt.IsInitialized() ? queued->size() + 2 : queued->size(), queued->GetOpcode(), queued->NeedsEncryption(), &_authCrypt);
-        //ServerPktHeader header(!_authCrypt.IsInitialized() ? queued->size() + 2 : queued->size(), queued->GetOpcode(), false, &_authCrypt);
-        // if (queued->NeedsEncryption())
-        //     _authCrypt.EncryptSend(header.header, header.getHeaderLength());
 
         uint32 packetSize = queued->size();
-        if (packetSize > MinSizeForCompression && _authCrypt.IsInitialized())
+        if (packetSize > MinSizeForCompression && queued->NeedsEncryption())
             packetSize = compressBound(packetSize) + sizeof(CompressedWorldPacket);
 
-        //if (buffer.GetRemainingSpace() < queued->size() + header.getHeaderLength())
         if (buffer.GetRemainingSpace() < SizeOfHeader + packetSize)
         {
             QueuePacket(std::move(buffer));
             buffer.Resize(_sendBufferSize);
         }
 
-        //if (buffer.GetRemainingSpace() >= queued->size() + header.getHeaderLength())
         if (buffer.GetRemainingSpace() >=  SizeOfHeader + packetSize)
         {
             WritePacketToBuffer(*queued, buffer);
-            // buffer.Write(header.header, header.getHeaderLength());
-            // if (!queued->empty())
-            //     buffer.Write(queued->contents(), queued->size());
         }
         else    // single packet larger than 4096 bytes
         {
-            // MessageBuffer packetBuffer(queued->size() + header.getHeaderLength());
-            // packetBuffer.Write(header.header, header.getHeaderLength());
-            // if (!queued->empty())
-            //     packetBuffer.Write(queued->contents(), queued->size());
             MessageBuffer packetBuffer(SizeOfHeader + packetSize);
             WritePacketToBuffer(*queued, packetBuffer);
             QueuePacket(std::move(packetBuffer));
@@ -354,8 +325,8 @@ void WorldSocket::WritePacketToBuffer(EncryptablePacket const& packet, MessageBu
     if (packetSize > MinSizeForCompression && packet.NeedsEncryption())
     {
         CompressedWorldPacket cmp;
-        cmp.UncompressedSize = packetSize + 2;
-        cmp.UncompressedAdler = adler32(adler32(0x9827D8F1, reinterpret_cast<Bytef*>(&opcode), 2), packet.contents(), packetSize);
+        cmp.UncompressedSize = packetSize + 4;
+        cmp.UncompressedAdler = adler32(adler32(0x9827D8F1, reinterpret_cast<Bytef*>(&opcode), 4), packet.contents(), packetSize);
 
         // Reserve space for compression info - uncompressed size and checksums
         uint8* compressionInfo = buffer.GetWritePointer();
@@ -374,12 +345,12 @@ void WorldSocket::WritePacketToBuffer(EncryptablePacket const& packet, MessageBu
     else if (!packet.empty())
         buffer.Write(packet.contents(), packet.size());
 
-    //packetSize += 2 /*opcode*/;
+    // packetSize += 2 /*opcode*/;
 
-    ServerPktHeader header(!_authCrypt.IsInitialized() ? packetSize : packetSize, packet.GetOpcode(), packet.NeedsEncryption(), &_authCrypt);
+    ServerPktHeader header(!packet.NeedsEncryption() ? packetSize + 2 : packetSize, opcode, packet.NeedsEncryption(), &_authCrypt);
     //_authCrypt.EncryptSend(reinterpret_cast<uint8*>(&header), 4);
 
-    memcpy(headerPos, &header, SizeOfHeader);
+    memcpy(headerPos, &header.header, SizeOfHeader);
 }
 
 uint32 WorldSocket::CompressPacket(uint8* buffer, WorldPacket const& packet)
@@ -632,18 +603,18 @@ void WorldSocket::LogOpcodeText(OpcodeClient opcode, std::unique_lock<std::mutex
 {
     if (!guard)
     {
-        TC_LOG_INFO("network.opcode", "C->S: %s %s", GetRemoteIpAddress().to_string().c_str(), GetOpcodeNameForLogging(opcode,false).c_str());
+        TC_LOG_TRACE("network.opcode", "C->S: %s %s", GetRemoteIpAddress().to_string().c_str(), GetOpcodeNameForLogging(opcode,false).c_str());
     }
     else
     {
-        TC_LOG_INFO("network.opcode", "C->S: %s %s", (_worldSession ? _worldSession->GetPlayerInfo() : GetRemoteIpAddress().to_string()).c_str(),
+        TC_LOG_TRACE("network.opcode", "C->S: %s %s", (_worldSession ? _worldSession->GetPlayerInfo() : GetRemoteIpAddress().to_string()).c_str(),
             GetOpcodeNameForLogging(opcode,false).c_str());
     }
 }
 
 void WorldSocket::SendPacketAndLogOpcode(WorldPacket const& packet)
 {
-    TC_LOG_INFO("network.opcode", "S->C: %s %s", GetRemoteIpAddress().to_string().c_str(), GetOpcodeNameForLogging(static_cast<OpcodeServer>(packet.GetOpcode()),true).c_str());
+    TC_LOG_TRACE("network.opcode", "S->C: %s %s", GetRemoteIpAddress().to_string().c_str(), GetOpcodeNameForLogging(static_cast<OpcodeServer>(packet.GetOpcode()),true).c_str());
     SendPacket(packet);
 }
 
