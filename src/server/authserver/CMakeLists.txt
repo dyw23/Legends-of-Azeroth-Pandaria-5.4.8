@@ -98,7 +98,7 @@ target_link_libraries(authserver
   database
   ${JEMALLOC_LIBRARY}
   ${MYSQL_LIBRARY}
-  ${OPENSSL_LIBRARIES}
+  openssl
   ${CMAKE_THREAD_LIBS_INIT}
   ${CMAKE_DL_LIBS}
   ${Boost_LIBRARIES}

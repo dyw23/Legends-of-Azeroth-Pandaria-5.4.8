@@ -204,12 +204,12 @@ target_link_libraries(worldserver
     gsoap
     #Detour
     ${JEMALLOC_LIBRARY}
-    ${READLINE_LIBRARY}
+    readline
     ${TERMCAP_LIBRARY}
     ${Boost_LIBRARIES}
     ${MYSQL_LIBRARY}
-    ${OPENSSL_LIBRARIES}
-    ${ZLIB_LIBRARIES}
+    openssl
+    zlib
     ${CMAKE_THREAD_LIBS_INIT}
     ${CMAKE_DL_LIBS}
 )

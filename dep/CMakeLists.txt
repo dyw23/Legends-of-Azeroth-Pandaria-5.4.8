@@ -33,9 +33,11 @@ add_subdirectory(g3dlite)
 add_subdirectory(recastnavigation)
 add_subdirectory(fmt)
 add_subdirectory(SFMT)
+add_subdirectory(openssl)
 
 if(SERVERS)
   add_subdirectory(gsoap)
+  add_subdirectory(readline)
 endif()
 
 if(TOOLS)
