@@ -161,17 +161,11 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/RemoteAccess
     ${CMAKE_CURRENT_SOURCE_DIR}/TCSoap
     ${CMAKE_CURRENT_SOURCE_DIR}/WorldThread
+    ${Boost_INCLUDE_DIRS}
     ${MYSQL_INCLUDE_DIR}
     ${OPENSSL_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/dep/fmt/include
 )
-
-if (Boost_FOUND)
-  include_directories(
-    PRIVATE
-      ${Boost_INCLUDE_DIRS}
-  )
-endif()
 
 add_executable(worldserver
   ${worldserver_SRCS}
@@ -206,7 +200,7 @@ target_link_libraries(worldserver
     ${JEMALLOC_LIBRARY}
     readline
     ${TERMCAP_LIBRARY}
-    ${Boost_LIBRARIES}
+    boost
     ${MYSQL_LIBRARY}
     openssl
     zlib

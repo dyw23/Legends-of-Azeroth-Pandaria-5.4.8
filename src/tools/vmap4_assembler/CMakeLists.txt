@@ -18,7 +18,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/server/collision
     ${CMAKE_SOURCE_DIR}/src/server/collision/Maps
     ${CMAKE_SOURCE_DIR}/src/server/collision/Models
-    ${ACE_INCLUDE_DIR}
     ${ZLIB_INCLUDE_DIR}
 )
 
@@ -29,7 +28,7 @@ target_link_libraries(vmap4assembler
   common
   collision
   g3dlib
-  ${ZLIB_LIBRARIES}
+  zlib
   Threads::Threads
 )
 

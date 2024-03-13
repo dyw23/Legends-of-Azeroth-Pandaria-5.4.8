@@ -32,6 +32,7 @@ set(collision_STAT_SRCS
 include_directories(
   PUBLIC
     ${CMAKE_BINARY_DIR}
+    ${Boost_INCLUDE_DIRS}
   PRIVATE
     ${CMAKE_SOURCE_DIR}/src/common
     ${CMAKE_SOURCE_DIR}/src/common/Asio
@@ -83,7 +84,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/Maps
     ${CMAKE_CURRENT_SOURCE_DIR}/Models
     ${MYSQL_INCLUDE_DIR}
-    ${Boost_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/dep/fmt/include
 )
 

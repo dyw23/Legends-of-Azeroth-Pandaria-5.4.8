@@ -55,8 +55,14 @@ set(common_STAT_SRCS
   ${sources_localdir}
 )
 
-include_directories(
+add_library(common STATIC
+  ${common_STAT_SRCS}
+)
+
+target_include_directories(common
   PUBLIC
+    openssl
+    boost  
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/Asio
     ${CMAKE_CURRENT_SOURCE_DIR}/Configuration
@@ -66,28 +72,24 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/Hacks
     ${CMAKE_CURRENT_SOURCE_DIR}/IPLocation
     ${CMAKE_CURRENT_SOURCE_DIR}/Logging
+    ${CMAKE_CURRENT_SOURCE_DIR}/Threading
     ${CMAKE_CURRENT_SOURCE_DIR}/Utilities
     ${CMAKE_BINARY_DIR}
-    ${OPENSSL_INCLUDE_DIR} 
-    ${Boost_INCLUDE_DIRS} 
     ${CMAKE_SOURCE_DIR}/dep/fmt/include 
   PRIVATE
     ${CMAKE_SOURCE_DIR}/dep/SFMT
     ${CMAKE_SOURCE_DIR}/dep/utf8cpp
 )
 
-add_library(common STATIC
-  ${common_STAT_SRCS}
-)
-
 target_link_libraries(common
-  PRIVATE
+  PUBLIC
     sfmt
     fmt
-    ${OPENSSL_LIBRARIES}
-    ${Boost_LIBRARIES}
+    openssl
+    boost
 )
 
+add_dependencies(common revision.h)
 
 # Generate precompiled header
 if (USE_COREPCH)

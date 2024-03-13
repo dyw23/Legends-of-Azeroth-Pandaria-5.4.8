@@ -16,7 +16,6 @@ cmake_minimum_required(VERSION 3.16)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
-
 # Set projectname (must be done AFTER setting configurationtypes)
 project(Pandaria_5.4.8)
 
@@ -24,6 +23,7 @@ project(Pandaria_5.4.8)
 cmake_policy(SET CMP0005 NEW)
 cmake_policy(SET CMP0043 NEW) # Ignore COMPILE_DEFINITIONS_<Config> properties
 cmake_policy(SET CMP0054 NEW) # Only interpret if() arguments as variables or keywords when unquoted - prevents intepreting if(SOME_STRING_VARIABLE MATCHES "MSVC") as if(SOME_STRING_VARIABLE MATCHES "1")
+cmake_policy(SET CMP0067 NEW) # Honor language standard in try_compile() source-file signature
 cmake_policy(SET CMP0074 NEW) # find_package() uses <PackageName>_ROOT variables
 
 if(POLICY CMP0144)
@@ -44,7 +44,10 @@ list(APPEND CMAKE_MODULE_PATH
   "${CMAKE_SOURCE_DIR}/cmake/macros")
 
 # build in Release-mode by default if not explicitly set
-if( NOT CMAKE_BUILD_TYPE )
+if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
+  set(CMAKE_DEFAULT_BUILD_TYPE "RelWithDebInfo" CACHE INTERNAL "")
+endif()
+if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
 endif()
 
@@ -68,31 +71,6 @@ find_package(Threads REQUIRED)
 #Debug compile time
 set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
 set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK "${CMAKE_COMMAND} -E time")
-
-if( UNIX )
-  find_package(BZip2)
-endif()
-
-if(WIN32)
-  add_definitions(-DBOOST_DATE_TIME_NO_LIB -DBOOST_REGEX_NO_LIB -DBOOST_CHRONO_NO_LIB -DBOOST_SERIALIZATION_NO_LIB)
-  set(BOOST_DEBUG OFF)
-  if(DEFINED ENV{BOOST_ROOT})
-    set(BOOST_ROOT $ENV{BOOST_ROOT})
-    list(APPEND BOOST_LIBRARYDIR
-      ${BOOST_ROOT}/lib${PLATFORM}-msvc-14.2 )
-  endif()
-
-
-  set(Boost_USE_STATIC_LIBS        ON)
-  set(Boost_USE_MULTITHREADED      ON)
-  set(Boost_USE_STATIC_RUNTIME     OFF)
-else()
-  set(Boost_USE_STATIC_LIBS ON)
-endif()
-
-find_package(Boost COMPONENTS system locale thread serialization filesystem program_options iostreams regex
-    REQUIRED
-)
 
 # find mysql client binary (needed by genrev)
 find_package(MySQL OPTIONAL_COMPONENTS binary)

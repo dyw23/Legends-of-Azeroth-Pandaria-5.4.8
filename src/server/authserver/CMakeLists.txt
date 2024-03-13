@@ -101,7 +101,7 @@ target_link_libraries(authserver
   openssl
   ${CMAKE_THREAD_LIBS_INIT}
   ${CMAKE_DL_LIBS}
-  ${Boost_LIBRARIES}
+  boost
 )
 
 if( WIN32 )

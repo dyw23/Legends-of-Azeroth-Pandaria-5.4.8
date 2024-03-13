@@ -47,8 +47,8 @@ target_link_libraries(mmaps_generator
     g3dlib
     Recast
     Detour
-    ${BZIP2_LIBRARIES}
-    ${ZLIB_LIBRARIES}
+    bzip2
+    zlib
     ${Boost_LIBRARIES}
     Threads::Threads
 )
