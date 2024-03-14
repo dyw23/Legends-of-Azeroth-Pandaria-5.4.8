@@ -4801,7 +4801,7 @@ class spell_druid_astral_communion : public SpellScriptLoader
                     if (Aura* aura = caster->GetAura(145138))
                     {
                         int32 _amount = 100 * direction;
-                        caster->CastCustomSpell(caster, 89265, &_amount, NULL, NULL, true);
+                        caster->CastCustomSpell(caster, 89265, &_amount, nullptr, nullptr, true);
                         aura->Remove(AURA_REMOVE_BY_DEFAULT);
                         GetAura()->Remove();
                     }
@@ -4819,7 +4819,7 @@ class spell_druid_astral_communion : public SpellScriptLoader
 
                 int32 mod = aurEff->GetAmount() * direction;
                 // energize
-                player->CastCustomSpell(player, 89265, &mod, NULL, NULL, true);
+                player->CastCustomSpell(player, 89265, &mod, nullptr, nullptr, true);
             }
 
             void Register()
