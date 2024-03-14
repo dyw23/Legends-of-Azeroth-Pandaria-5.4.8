@@ -191,7 +191,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/server/game/Weather
     ${CMAKE_SOURCE_DIR}/src/server/game/World
     ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
-    ${ACE_INCLUDE_DIR}
+    ${Boost_INCLUDE_DIRS}
     ${MYSQL_INCLUDE_DIR}
     ${OPENSSL_INCLUDE_DIR} 
     ${CMAKE_SOURCE_DIR}/dep/fmt/include   
@@ -208,12 +208,6 @@ if (ELUNA)
   )  
 endif()
 
-if (Boost_FOUND)
-  include_directories(
-    PUBLIC 
-      ${Boost_INCLUDE_DIRS}
-  )
-endif()
 if( USE_SCRIPTPCH AND MSVC )
   set(scripts_STAT_SRCS
     ${scripts_STAT_SRCS}

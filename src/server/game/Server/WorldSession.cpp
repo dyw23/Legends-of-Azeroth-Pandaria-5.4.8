@@ -20,7 +20,6 @@
 */
 
 #include "WorldSocket.h"                                    // must be first to make ACE happy with ACE includes in it
-#include <zlib.h>
 #include "Config.h"
 #include "Common.h"
 #include "DatabaseEnv.h"
@@ -32,6 +31,7 @@
 #include "Player.h"
 #include "Vehicle.h"
 #include "ObjectMgr.h"
+#include "GameTime.h"
 #include "GuildMgr.h"
 #include "Group.h"
 #include "Guild.h"
@@ -100,7 +100,7 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
 }
 
 /// WorldSession constructor
-WorldSession::WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, uint32 flags, bool isARecruiter, bool hasBoost):
+WorldSession::WorldSession(uint32 id, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, uint32 flags, bool isARecruiter, bool hasBoost):
     m_muteTime(mute_time),
     m_timeOutTime(0),
     AntiDOS(this),
@@ -130,23 +130,12 @@ WorldSession::WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, uint8
 {
     if (sock)
     {
-        m_Address = sock->GetRemoteAddress();
-        sock->AddReference();
-        ResetTimeOutTime();
+        m_Address = sock->GetRemoteIpAddress().to_string();
+        ResetTimeOutTime(false);
         LoginDatabase.PExecute("UPDATE account SET online = 1 WHERE id = %u;", GetAccountId());     // One-time query
     }
 
     // At current time it will never be removed from container, so pointer must be valid all of the session life time.
-
-    _compressionStream = new z_stream();
-    _compressionStream->zalloc = (alloc_func)NULL;
-    _compressionStream->zfree = (free_func)NULL;
-    _compressionStream->opaque = (voidpf)NULL;
-    _compressionStream->avail_in = 0;
-    _compressionStream->next_in = NULL;
-    int32 z_res = deflateInit(_compressionStream, sWorld->getIntConfig(CONFIG_COMPRESSION));
-    if (z_res != Z_OK)
-        TC_LOG_ERROR("network", "Can't initialize packet compression (zlib: deflateInit) Error code: %i (%s)", z_res, zError(z_res));
 
     _achievementMgr.reset(new AccountAchievementMgr(this));
 }
@@ -162,25 +151,19 @@ WorldSession::~WorldSession()
     if (m_Socket)
     {
         m_Socket->CloseSocket();
-        m_Socket->RemoveReference();
-        m_Socket = NULL;
+        m_Socket.reset();
     }
 
     delete _warden;
     delete m_charBooster;
 
     ///- empty incoming packet queue
-    WorldPacket* packet = NULL;
+    WorldPacket* packet = nullptr;
     while (_recvQueue.next(packet))
         delete packet;
 
     LoginDatabase.PExecute("UPDATE account SET online = 0 WHERE id = %u;", GetAccountId());     // One-time query
 
-    int32 z_res = deflateEnd(_compressionStream);
-    if (z_res != Z_OK && z_res != Z_DATA_ERROR) // Z_DATA_ERROR signals that internal state was BUSY
-        TC_LOG_ERROR("network", "Can't close packet compression stream (zlib: deflateEnd) Error code: %i (%s)", z_res, zError(z_res));
-
-    delete _compressionStream;
 }
 
 std::string const & WorldSession::GetPlayerName() const
@@ -193,7 +176,7 @@ std::string WorldSession::GetPlayerInfo() const
     std::ostringstream ss;
 
     ss << "[Player: " << GetPlayerName()
-       << " (Guid: " << (_player != NULL ? _player->GetGUID() : 0)
+       << " (Guid: " << (_player != NULL ? _player->GetGUIDLow() : 0)
        << ", Account: " << GetAccountId() << ")]";
 
     return ss.str();
@@ -271,8 +254,7 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
     }
 #endif                                                      // !TRINITY_DEBUG
 
-    if (m_Socket->SendPacket(*packet) == -1)
-        m_Socket->CloseSocket();
+    m_Socket->SendPacket(*packet);
 }
 
 /// Add an incoming packet to the queue
@@ -323,12 +305,9 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
     ///- Retrieve packets from the receive queue and call the appropriate handlers
     /// not process packets if socket already closed
-    WorldPacket* packet = NULL;
+    WorldPacket* packet = nullptr;
     //! Delete packet after processing by default
     bool deletePacket = true;
-    //! To prevent infinite loop
-    WorldPacket* firstDelayedPacket = NULL;
-    //! If _recvQueue.peek() == firstDelayedPacket it means that in this Update call, we've processed all
     //! *properly timed* packets, and we're now at the part of the queue where we find
     //! delayed packets that were re-enqueued due to improper timing. To prevent an infinite
     //! loop caused by re-enqueueing the same packets over and over again, we stop updating this session
@@ -337,11 +316,8 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     uint32 processedPackets = 0;
     time_t currentTime = time(nullptr);
 
-    while (m_Socket && !m_Socket->IsClosed() &&
-            !_recvQueue.empty() && _recvQueue.peek(true) != firstDelayedPacket &&
-            _recvQueue.next(packet, updater))
+    while (m_Socket && _recvQueue.next(packet, updater))
     {
-
 
         OpcodeHandler const* opHandle = clientOpcodeTable[packet->GetOpcode()];
         try
@@ -356,9 +332,6 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         //! the client to be in world yet. We will re-add the packets to the bottom of the queue and process them later.
                         if (!m_playerRecentlyLogout)
                         {
-                            //! Prevent infinite loop
-                            if (!firstDelayedPacket)
-                                firstDelayedPacket = packet;
                             //! Because checking a bool is faster than reallocating memory
                             deletePacket = false;
                             QueuePacket(packet);
@@ -370,7 +343,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     else if (_player->IsInWorld() && AntiDOS.EvaluateOpcode(*packet, currentTime))
                     {
                         auto start = TimeValue::Now();
-                        sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
+                        sScriptMgr->OnPacketReceive(this, WorldPacket(*packet));
                         (this->*opHandle->Handler)(*packet);
                         LogUnprocessedTail(packet);
                         sWorld->RecordTimeDiffLocal(start, "WorldSession::Update %s %s", opHandle->Name, GetPlayerInfo().c_str());
@@ -384,7 +357,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     else if (AntiDOS.EvaluateOpcode(*packet, currentTime))
                     {
                         // not expected _player or must checked in packet hanlder
-                        sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
+                        sScriptMgr->OnPacketReceive(this, WorldPacket(*packet));
                         (this->*opHandle->Handler)(*packet);
                         LogUnprocessedTail(packet);
                     }
@@ -396,7 +369,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         LogUnexpectedOpcode(packet, "STATUS_TRANSFER", "the player is still in world");
                     else if (AntiDOS.EvaluateOpcode(*packet, currentTime))
                     {
-                        sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
+                        sScriptMgr->OnPacketReceive(this, WorldPacket(*packet));
                         (this->*opHandle->Handler)(*packet);
                         LogUnprocessedTail(packet);
                     }
@@ -417,7 +390,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
                     if (AntiDOS.EvaluateOpcode(*packet, currentTime))
                     {
-                          sScriptMgr->OnPacketReceive(m_Socket, WorldPacket(*packet));
+                          sScriptMgr->OnPacketReceive(this, WorldPacket(*packet));
                           (this->*opHandle->Handler)(*packet);
                            LogUnprocessedTail(packet);
                               break;
@@ -456,7 +429,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             break;
     }
 
-    if (m_Socket && !m_Socket->IsClosed() && _warden)
+    if (m_Socket && m_Socket->IsOpen() && _warden)
         _warden->Update();
 
     ProcessQueryCallbacks();
@@ -476,11 +449,12 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             }
         }
     }
+
     //check if we are safe to proceed with logout
     //logout procedure should happen only in World::UpdateSessions() method!!!
     if (updater.ProcessLogout())
     {
-        time_t currTime = time(NULL);
+        time_t currTime = time(nullptr);
         ///- If necessary, log the player out
         if (ShouldLogOut(currTime) && !m_playerLoading)
             LogoutPlayer(true);
@@ -489,10 +463,9 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             _warden->Update();
 
         ///- Cleanup socket pointer if need
-        if (m_Socket && m_Socket->IsClosed())
+        if (m_Socket && !m_Socket->IsOpen())
         {
-            m_Socket->RemoveReference();
-            m_Socket = NULL;
+            m_Socket = nullptr;
         }
 
         if (!m_Socket)
@@ -773,6 +746,14 @@ const char *WorldSession::GetTrinityString(int32 entry) const
     return sObjectMgr->GetTrinityString(entry, GetSessionDbLocaleIndex());
 }
 
+void WorldSession::ResetTimeOutTime(bool onlyActive)
+{
+    if (GetPlayer())
+        m_timeOutTime = GameTime::GetGameTime() + time_t(sWorld->getIntConfig(CONFIG_SOCKET_TIMEOUTTIME_ACTIVE));
+    else if (!onlyActive)
+        m_timeOutTime = GameTime::GetGameTime() + time_t(sWorld->getIntConfig(CONFIG_SOCKET_TIMEOUTTIME));
+}
+
 void WorldSession::AddFlag(AccountFlags flag)
 {
     m_flags |= flag;
@@ -925,17 +906,18 @@ void WorldSession::SendAccountDataTimes(uint32 mask)
     SendPacket(&data);
 }
 
-void WorldSession::LoadTutorialsData()
+void WorldSession::LoadTutorialsData(PreparedQueryResult result)
 {
     memset(m_Tutorials, 0, sizeof(uint32) * MAX_ACCOUNT_TUTORIAL_VALUES);
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_TUTORIALS);
-    stmt->setUInt32(0, GetAccountId());
-    if (PreparedQueryResult result = CharacterDatabase.Query(stmt))
+    if (result)
+    {
         for (uint8 i = 0; i < MAX_ACCOUNT_TUTORIAL_VALUES; ++i)
             m_Tutorials[i] = (*result)[i].GetUInt32();
+        m_TutorialsChanged |= TUTORIALS_FLAG_LOADED_FROM_DB;
+    }
 
-    m_TutorialsChanged = false;
+    m_TutorialsChanged &= ~TUTORIALS_FLAG_CHANGED;
 }
 
 void WorldSession::SendTutorialsData()
@@ -1241,6 +1223,69 @@ void WorldSession::InitWarden(BigNumber* k, std::string const& os)
     }
 }
 
+class AccountInfoQueryHolderPerRealm : public CharacterDatabaseQueryHolder
+{
+public:
+    enum
+    {
+        GLOBAL_ACCOUNT_DATA = 0,
+        TUTORIALS,
+
+        MAX_QUERIES
+    };
+
+    AccountInfoQueryHolderPerRealm() { SetSize(MAX_QUERIES); }
+
+    bool Initialize(uint32 accountId)
+    {
+        bool ok = true;
+
+        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ACCOUNT_DATA);
+        stmt->setUInt32(0, accountId);
+        ok = SetPreparedQuery(GLOBAL_ACCOUNT_DATA, stmt) && ok;
+
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_TUTORIALS);
+        stmt->setUInt32(0, accountId);
+        ok = SetPreparedQuery(TUTORIALS, stmt) && ok;
+
+        return ok;
+    }
+};
+
+void WorldSession::InitializeSession()
+{
+    std::shared_ptr<AccountInfoQueryHolderPerRealm> realmHolder = std::make_shared<AccountInfoQueryHolderPerRealm>();
+    if (!realmHolder->Initialize(GetAccountId()))
+    {
+        SendAuthResponse(AUTH_SYSTEM_ERROR, false);
+        return;
+    }
+
+    AddQueryHolderCallback(CharacterDatabase.DelayQueryHolder(realmHolder)).AfterComplete([this](SQLQueryHolderBase const& holder)
+    {
+            InitializeSessionCallback(static_cast<AccountInfoQueryHolderPerRealm const&>(holder));
+    });
+}
+
+void WorldSession::InitializeSessionCallback(CharacterDatabaseQueryHolder const& realmHolder)
+{
+    LoadAccountData(realmHolder.GetPreparedResult(AccountInfoQueryHolderPerRealm::GLOBAL_ACCOUNT_DATA), GLOBAL_CACHE_MASK);
+    LoadTutorialsData(realmHolder.GetPreparedResult(AccountInfoQueryHolderPerRealm::TUTORIALS));
+
+    if (!m_inQueue)
+        SendAuthResponse(AUTH_OK, false);
+    else
+        SendAuthWaitQue(0);
+
+    SetInQueue(false);
+    ResetTimeOutTime(false);
+
+    SendAddonsInfo();
+    SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
+    SendTutorialsData();
+}
+
+
 bool WorldSession::DosProtection::EvaluateOpcode(WorldPacket& p, time_t time) const
 {
     uint32 maxPacketCounterAllowed = GetMaxPacketCounterAllowed(p.GetOpcode());
@@ -1291,17 +1336,6 @@ bool WorldSession::DosProtection::EvaluateOpcode(WorldPacket& p, time_t time) co
 }
 
 
-void WorldSession::HandlePingUpdate(uint32 latency)
-{
-
-    if (latency >= sWorld->getIntConfig(CONFIG_ICORE_ARENA_HIGH_LATENCY_THRESHOLD))
-        if (Player* player = GetPlayer())
-            if (Battleground* bg = player->GetBattleground())
-                bg->UpdatePlayerScore(player, SCORE_HIGH_LATENCY_TIMES, 1);
-}
-
-
-
 uint32 WorldSession::DosProtection::GetMaxPacketCounterAllowed(uint16 opcode) const
 {
     uint32 maxPacketCounterAllowed;
@@ -1325,7 +1359,7 @@ uint32 WorldSession::DosProtection::GetMaxPacketCounterAllowed(uint16 opcode) co
     case CMSG_REQUEST_PARTY_MEMBER_STATS:           //   0               1.5
     case CMSG_SET_ACTION_BUTTON:                    //   0               1.5
     case CMSG_RESET_INSTANCES:                      //   0               1.5
-    case CMSG_HEARTH_AND_RESURRECT:                 //   0               1.5
+    //case CMSG_HEARTH_AND_RESURRECT:                 //   0               1.5
     case CMSG_TOGGLE_PVP:                           //   0               1.5
     case CMSG_PET_ABANDON:                          //   0               1.5
     case CMSG_ACTIVATE_TAXI:                        //   0               1.5
@@ -1394,14 +1428,14 @@ uint32 WorldSession::DosProtection::GetMaxPacketCounterAllowed(uint16 opcode) co
     case CMSG_PETITION_SIGN:                        //   9               4         2 sync 1 async db queries
     case CMSG_TURN_IN_PETITION:                     //   8               5.5       2 sync db query
     case CMSG_GROUP_CHANGE_SUB_GROUP:
-    case CMSG_GROUP_SWAP_SUB_GROUP:
+    //case CMSG_GROUP_SWAP_SUB_GROUP:
     case CMSG_PETITION_QUERY:                       //   4               3.5       1 sync db query
     case CMSG_CHAR_CUSTOMIZE:                       //   5               5         1 sync db query
     case CMSG_CHAR_FACTION_OR_RACE_CHANGE:          //   5               5         1 sync db query
     case CMSG_CHAR_DELETE:                          //   4               4         1 sync db query
     case CMSG_DEL_FRIEND:                           //   7               5         1 async db query
     case CMSG_ADD_FRIEND:                           //   6               4         1 async db query
-    case CMSG_GUILD_CHANGE_NAME_REQUEST:             //   5               3         1 async db query
+    //case CMSG_GUILD_CHANGE_NAME_REQUEST:             //   5               3         1 async db query
     case CMSG_SUBMIT_BUG:                           //   1               1         1 async db query
     case CMSG_GROUP_SET_LEADER:                     //   1               2         1 async db query
     case CMSG_GROUP_RAID_CONVERT:                         //   1               5         1 async db query
@@ -1461,14 +1495,14 @@ uint32 WorldSession::DosProtection::GetMaxPacketCounterAllowed(uint16 opcode) co
     case CMSG_CONFIRM_RESPEC_WIPE:                  // not profiled
     case CMSG_SET_DUNGEON_DIFFICULTY:               // not profiled
     case CMSG_SET_RAID_DIFFICULTY:                  // not profiled
-    case MSG_PARTY_ASSIGNMENT:                 // not profiled
+    //case MSG_PARTY_ASSIGNMENT:                 // not profiled
     case CMSG_RAID_READY_CHECK:                       // not profiled
     case CMSG_JOIN_CHANNEL:
     case CMSG_LEAVE_CHANNEL:
     case CMSG_CHANNEL_LIST:
     case CMSG_CHANNEL_INVITE:
     case CMSG_GUILD_ACHIEVEMENT_PROGRESS_QUERY:
-    case CMSG_PLAYER_LOGOUT:
+    //case CMSG_PLAYER_LOGOUT:
     case SMSG_AUTH_RESPONSE:
     case SMSG_AUTH_CHALLENGE:
     case CMSG_PING:
@@ -1476,8 +1510,8 @@ uint32 WorldSession::DosProtection::GetMaxPacketCounterAllowed(uint16 opcode) co
     case CMSG_AUTH_CONTINUED_SESSION:
     case CMSG_KEEP_ALIVE:
     case CMSG_LOG_DISCONNECT:
-    case CMSG_ENABLE_NAGLE:
-    case CMSG_CONNECT_TO_FAILED:
+    //case CMSG_ENABLE_NAGLE:
+    //case CMSG_CONNECT_TO_FAILED:
     {
         maxPacketCounterAllowed = 25;
         break;

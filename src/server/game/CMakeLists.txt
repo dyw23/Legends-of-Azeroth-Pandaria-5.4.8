@@ -48,7 +48,7 @@ file(GLOB_RECURSE sources_Quests Quests/*.cpp Quests/*.h)
 file(GLOB_RECURSE sources_Reputation Reputation/*.cpp Reputation/*.h)
 file(GLOB_RECURSE sources_Scenarios Scenarios/*.cpp Scenarios/*.h)
 file(GLOB_RECURSE sources_Scripting Scripting/*.cpp Scripting/*.h)
-file(GLOB_RECURSE sources_Server Server/*.cpp Server/*.h)
+file(GLOB_RECURSE sources_Server Server/*.cpp Server/*.h Server/Packets/*.h Server/Packets/*.cpp Server/Protocol/*.h Server/Protocol/*.cpp)
 file(GLOB_RECURSE sources_Services Services/*.cpp Services/*.h)
 file(GLOB_RECURSE sources_Skills Skills/*.cpp Skills/*.h)
 file(GLOB_RECURSE sources_Spells Spells/*.cpp Spells/*.h)
@@ -175,27 +175,23 @@ set(game_STAT_SRCS
   ${sources_Cfbg}
 )
 
-include_directories(
+add_library(game STATIC
+  ${game_STAT_SRCS}
+)
+
+target_include_directories(game
   PUBLIC
     ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/src/common/Utilities    
+    openssl
+    boost
+    zlib
+    common
   PRIVATE
     ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
     ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Include
     ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
     ${CMAKE_SOURCE_DIR}/dep/SFMT
-    ${ACE_INCLUDE_DIR}
     ${MYSQL_INCLUDE_DIR}
-    ${OPENSSL_INCLUDE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/common
-    ${CMAKE_SOURCE_DIR}/src/common/Asio
-    ${CMAKE_SOURCE_DIR}/src/common/Configuration
-    ${CMAKE_SOURCE_DIR}/src/common/Cryptography
-    ${CMAKE_SOURCE_DIR}/src/common/Cryptography/Authentication
-    ${CMAKE_SOURCE_DIR}/src/common/Debugging
-    ${CMAKE_SOURCE_DIR}/src/common/IPLocation
-    ${CMAKE_SOURCE_DIR}/src/common/Logging
-    ${CMAKE_SOURCE_DIR}/src/common/Threading
     ${CMAKE_SOURCE_DIR}/src/server/collision
     ${CMAKE_SOURCE_DIR}/src/server/collision/Management
     ${CMAKE_SOURCE_DIR}/src/server/collision/Models
@@ -293,16 +289,8 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/Warden/Modules
     ${CMAKE_CURRENT_SOURCE_DIR}/Weather
     ${CMAKE_CURRENT_SOURCE_DIR}/World
-    ${CMAKE_SOURCE_DIR}/dep/zlib
     ${CMAKE_SOURCE_DIR}/dep/fmt/include
 )
-
-if (Boost_FOUND)
-  include_directories(
-    PRIVATE
-      ${Boost_INCLUDE_DIRS}
-  )
-endif()
 
 if (ELUNA)
   file(GLOB_RECURSE sources_LuaEngine LuaEngine/*.cpp LuaEngine/*.h)
@@ -320,18 +308,13 @@ if (ELUNA)
   )
 endif()
 
-add_library(game STATIC
-  ${game_STAT_SRCS}
-)
-
 target_link_libraries(game
-  PRIVATE
+  PUBLIC
     Detour
     zlib
     common
     database
     shared
-    ${ACE_LIBRARY}
 )
 
 if (ELUNA)
@@ -356,8 +339,6 @@ if (ELUNA)
     endif()
   endif()      
 endif()
-
-
 
 add_dependencies(game revision.h)
 

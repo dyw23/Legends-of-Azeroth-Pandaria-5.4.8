@@ -15,10 +15,12 @@
 * with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Util.h"
+
 #include "Common.h"
-#include "utf8.h"
 #include "Errors.h" // for ASSERT
+#include "IpAddress.h"
+#include "Util.h"
+#include "utf8.h"
 #include <memory>
 #include <random>
 #include <cstring>
@@ -218,6 +220,17 @@ std::string TimeToTimestampStr(time_t t)
     char buf[20];
     snprintf(buf, 20, "%04d-%02d-%02d_%02d-%02d-%02d", aTm.tm_year+1900, aTm.tm_mon+1, aTm.tm_mday, aTm.tm_hour, aTm.tm_min, aTm.tm_sec);
     return std::string(buf);
+}
+
+/// Check if the string is a valid ip address representation
+bool IsIPAddress(char const* ipaddress)
+{
+    if (!ipaddress)
+        return false;
+
+    boost::system::error_code error;
+    Trinity::Net::make_address(ipaddress, error);
+    return !error;
 }
 
 /// create PID file
@@ -559,6 +572,17 @@ void vutf8printf(FILE* out, const char *str, va_list* ap)
 #else
     vfprintf(out, str, *ap);
 #endif
+}
+
+bool Utf8ToUpperOnlyLatin(std::string& utf8String)
+{
+    std::wstring wstr;
+    if (!Utf8toWStr(utf8String, wstr))
+        return false;
+
+    std::transform(wstr.begin(), wstr.end(), wstr.begin(), wcharToUpperOnlyLatin);
+
+    return WStrToUtf8(wstr, utf8String);
 }
 
 TC_COMMON_API Optional<std::size_t> RemoveCRLF(std::string & str)

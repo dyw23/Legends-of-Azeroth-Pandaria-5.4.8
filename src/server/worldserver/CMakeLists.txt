@@ -61,6 +61,8 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/common
     ${CMAKE_SOURCE_DIR}/src/common/Asio
     ${CMAKE_SOURCE_DIR}/src/common/Configuration
+    ${CMAKE_SOURCE_DIR}/src/common/Cryptography
+    ${CMAKE_SOURCE_DIR}/src/common/Cryptography/Authentication    
     ${CMAKE_SOURCE_DIR}/src/common/Debugging
     ${CMAKE_SOURCE_DIR}/src/common/IPLocation
     ${CMAKE_SOURCE_DIR}/src/common/Logging
@@ -70,8 +72,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/server/collision/Management
     ${CMAKE_SOURCE_DIR}/src/server/collision/Models
     ${CMAKE_SOURCE_DIR}/src/server/shared
-    ${CMAKE_SOURCE_DIR}/src/common/Cryptography
-    ${CMAKE_SOURCE_DIR}/src/common/Cryptography/Authentication
     ${CMAKE_SOURCE_DIR}/src/server/database/Database
     ${CMAKE_SOURCE_DIR}/src/server/database/Logging    
     ${CMAKE_SOURCE_DIR}/src/server/shared/DataStores
@@ -161,18 +161,11 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/RemoteAccess
     ${CMAKE_CURRENT_SOURCE_DIR}/TCSoap
     ${CMAKE_CURRENT_SOURCE_DIR}/WorldThread
-    ${ACE_INCLUDE_DIR}
+    ${Boost_INCLUDE_DIRS}
     ${MYSQL_INCLUDE_DIR}
     ${OPENSSL_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/dep/fmt/include
 )
-
-if (Boost_FOUND)
-  include_directories(
-    PRIVATE
-      ${Boost_INCLUDE_DIRS}
-  )
-endif()
 
 add_executable(worldserver
   ${worldserver_SRCS}
@@ -205,13 +198,12 @@ target_link_libraries(worldserver
     gsoap
     #Detour
     ${JEMALLOC_LIBRARY}
-    ${READLINE_LIBRARY}
+    readline
     ${TERMCAP_LIBRARY}
-    ${ACE_LIBRARY}
-    ${Boost_LIBRARIES}
+    boost
     ${MYSQL_LIBRARY}
-    ${OPENSSL_LIBRARIES}
-    ${ZLIB_LIBRARIES}
+    openssl
+    zlib
     ${CMAKE_THREAD_LIBS_INIT}
     ${CMAKE_DL_LIBS}
 )

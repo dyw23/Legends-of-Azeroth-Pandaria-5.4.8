@@ -1252,7 +1252,7 @@ struct CharmInfo
     void InitEmptyActionBar(bool withAttack = true);
 
     //return true if successful
-    bool AddSpellToActionBar(SpellInfo const* spellInfo, ActiveStates newstate = ACT_DECIDE);
+    bool AddSpellToActionBar(SpellInfo const* spellInfo, ActiveStates newstate = ACT_DECIDE, uint8 preferredSlot = 0);
     bool RemoveSpellFromActionBar(uint32 spell_id);
     void LoadPetActionBar(const std::string& data);
     void BuildActionBar(WorldPacket* data);
@@ -2555,7 +2555,7 @@ public:
     void RemoveAreaTrigger(AuraEffect const* eff);
     void RemoveAllAreasTrigger();
 
-    void AddAuraAreaTrigger(IAreaTrigger* interface);
+    void AddAuraAreaTrigger(IAreaTrigger* interfaceAreaTrigger);
     IAreaTrigger* RemoveAuraAreaTrigger(AuraEffect const* auraEffect, AuraApplication const* auraApplication);
 
     GameObject* GetGameObject(uint32 spellId) const;

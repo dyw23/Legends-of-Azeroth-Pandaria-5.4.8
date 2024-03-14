@@ -23,6 +23,7 @@
 #include "Chat.h"
 #include "Common.h"
 #include "DatabaseEnv.h"
+#include "GitRevision.h"
 #include "Group.h"
 #include "Guild.h"
 #include "GuildMgr.h"
@@ -352,9 +353,8 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
 void WorldSession::HandleCharEnumOpcode(WorldPacket & /*recvData*/)
 {
     // remove expired bans
-    //PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_EXPIRED_BANS);
-    //CharacterDatabase.Execute(stmt);
-    CharacterDatabasePreparedStatement* stmt;
+    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_EXPIRED_BANS);
+    CharacterDatabase.Execute(stmt);
 
     /// get all the data necessary for loading all characters (along with their pets) on the account
 
@@ -920,9 +920,6 @@ void WorldSession::HandleLoadScreenOpcode(WorldPacket& recvPacket)
     TC_LOG_INFO("general", "WORLD: Recvd CMSG_LOAD_SCREEN");
     uint32 mapID = recvPacket.read<uint32>();
     bool loading = recvPacket.ReadBit();
-
-    if (!loading)
-        sWorld->SendRaidQueueInfo(GetPlayer());
 }
 
 void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
@@ -1037,7 +1034,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
 
         // send server info
         if (sWorld->getIntConfig(CONFIG_ENABLE_SINFO_LOGIN) == 1)
-            chH.PSendSysMessage(_FULLVERSION);
+            chH.PSendSysMessage(GitRevision::GetFullVersion());
 
         TC_LOG_DEBUG("network", "WORLD: Sent server info");
     }

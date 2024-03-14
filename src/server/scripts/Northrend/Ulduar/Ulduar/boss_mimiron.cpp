@@ -24,7 +24,7 @@
 
 #include <limits>
 #include <map>
-#include "ace/Mutex.h"
+#include <mutex>
 
 enum Yells
 {
@@ -381,27 +381,29 @@ class boss_mimiron : public CreatureScript
                 if (_phase != PHASE_COMBAT)
                     return;
 
-                _mapMutex.acquire();
-                bool res = true;
-                // Check if there is still a false value.
-                std::for_each(_isSelfRepairing.begin(), _isSelfRepairing.end(), EqualHelper(res));
-                _mapMutex.release();
-                if (res)
+                if (_mapMutex.try_lock())
                 {
-                    // We're down, baby.
-                    Creature* Leviathan = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_LEVIATHAN_MK_II));
-                    Creature* VX_001 = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_VX_001));
-                    Creature* AerialUnit = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_AERIAL_UNIT));
-                    if (Leviathan && VX_001 && AerialUnit)
+                    bool res = true;
+                    // Check if there is still a false value.
+                    std::for_each(_isSelfRepairing.begin(), _isSelfRepairing.end(), EqualHelper(res));
+                    _mapMutex.unlock();
+                    if (res)
                     {
-                        Leviathan->DisappearAndDie();
-                        VX_001->DisappearAndDie();
-                        AerialUnit->DisappearAndDie();
-                        DespawnCreatures(NPC_FLAMES_INITIAL, 100.0f);
-                        DespawnCreatures(NPC_PROXIMITY_MINE, 100.0f);
-                        DespawnCreatures(NPC_ROCKET, 100);
-                        me->ExitVehicle();
-                        EncounterPostProgress();
+                        // We're down, baby.
+                        Creature* Leviathan = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_LEVIATHAN_MK_II));
+                        Creature* VX_001 = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_VX_001));
+                        Creature* AerialUnit = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_AERIAL_UNIT));
+                        if (Leviathan && VX_001 && AerialUnit)
+                        {
+                            Leviathan->DisappearAndDie();
+                            VX_001->DisappearAndDie();
+                            AerialUnit->DisappearAndDie();
+                            DespawnCreatures(NPC_FLAMES_INITIAL, 100.0f);
+                            DespawnCreatures(NPC_PROXIMITY_MINE, 100.0f);
+                            DespawnCreatures(NPC_ROCKET, 100);
+                            me->ExitVehicle();
+                            EncounterPostProgress();
+                        }
                     }
                 }
             }
@@ -866,37 +868,49 @@ class boss_mimiron : public CreatureScript
                         break;
                     // Repair stuff
                     case DO_LEVIATHAN_SELF_REPAIR_START:
-                        _mapMutex.acquire();
-                        _isSelfRepairing[DATA_LEVIATHAN_MK_II] = true;
-                        _mapMutex.release();
+                        if (_mapMutex.try_lock())
+                        {
+                            _isSelfRepairing[DATA_LEVIATHAN_MK_II] = true;
+                            _mapMutex.unlock();
+                        }                        
                         BotAliveCheck();
                         break;
                     case DO_LEVIATHAN_SELF_REPAIR_END:
-                        _mapMutex.acquire();
-                        _isSelfRepairing[DATA_LEVIATHAN_MK_II] = false;
-                        _mapMutex.release();
+                        if (_mapMutex.try_lock())
+                        {
+                            _isSelfRepairing[DATA_LEVIATHAN_MK_II] = false;
+                            _mapMutex.unlock();
+                        } 
                         break;
                     case DO_VX001_SELF_REPAIR_START:
-                        _mapMutex.acquire();
-                        _isSelfRepairing[DATA_VX_001] = true;
-                        _mapMutex.release();
+                        if (_mapMutex.try_lock())
+                        {
+                            _isSelfRepairing[DATA_VX_001] = true;
+                            _mapMutex.unlock();
+                        }                         
                         BotAliveCheck();
                         break;
                     case DO_VX001_SELF_REPAIR_END:
-                        _mapMutex.acquire();
-                        _isSelfRepairing[DATA_VX_001] = false;
-                        _mapMutex.release();
+                        if (_mapMutex.try_lock())
+                        {
+                            _isSelfRepairing[DATA_VX_001] = false;
+                            _mapMutex.unlock();
+                        }                         
                         break;
                     case DO_AERIAL_SELF_REPAIR_START:
-                        _mapMutex.acquire();
-                        _isSelfRepairing[DATA_AERIAL_UNIT] = true;
-                        _mapMutex.release();
+                        if (_mapMutex.try_lock())
+                        {
+                            _isSelfRepairing[DATA_AERIAL_UNIT] = true;
+                            _mapMutex.unlock();
+                        }                        
                         BotAliveCheck();
                         break;
                     case DO_AERIAL_SELF_REPAIR_END:
-                        _mapMutex.acquire();
-                        _isSelfRepairing[DATA_AERIAL_UNIT] = false;
-                        _mapMutex.release();
+                        if (_mapMutex.try_lock())
+                        {
+                            _isSelfRepairing[DATA_AERIAL_UNIT] = false;
+                            _mapMutex.unlock();
+                        }                         
                         break;
                     // Achiev
                     case DATA_AVOIDED_ROCKET_STRIKES:
@@ -917,7 +931,7 @@ class boss_mimiron : public CreatureScript
             }
 
             private:
-                ACE_Mutex _mapMutex;
+                std::mutex _mapMutex;
                 std::map<uint32, bool> _isSelfRepairing;
                 std::map<BombIndices, bool> _setUpUsTheBomb;
                 Phases _phase;

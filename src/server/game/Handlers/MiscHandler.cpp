@@ -208,7 +208,7 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
         }
         else if (go)
         {
-            go->AI()->GossipSelectCode(_player, menuId, gossipListId, code.c_str());
+            go->AI()->OnGossipSelectCode(_player, menuId, gossipListId, code.c_str());
             sScriptMgr->OnGossipSelectCode(_player, go, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId), code.c_str());
         }
         else if (item)
@@ -235,7 +235,7 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
         }
         else if (go)
         {
-            go->AI()->GossipSelect(_player, menuId, gossipListId);
+            go->AI()->OnGossipSelect(_player, menuId, gossipListId);
             if (!sScriptMgr->OnGossipSelect(_player, go, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId)))
                 _player->OnGossipSelect(go, gossipListId, menuId);
         }
@@ -1763,46 +1763,47 @@ void WorldSession::HandleWhoisOpcode(WorldPacket& recvData)
         GetPlayer()->GetName().c_str(), charname.c_str());
 }
 
-void WorldSession::HandleComplainOpcode(WorldPacket& recvData)
-{
-    TC_LOG_DEBUG("network", "WORLD: CMSG_COMPLAIN");
+// not in 5.4.8
+// void WorldSession::HandleComplainOpcode(WorldPacket& recvData)
+// {
+//     TC_LOG_DEBUG("network", "WORLD: CMSG_COMPLAIN");
 
-    uint8 spam_type;                                        // 0 - mail, 1 - chat
-    uint64 spammer_guid;
-    uint32 unk1 = 0;
-    uint32 unk2 = 0;
-    uint32 unk3 = 0;
-    uint32 unk4 = 0;
-    std::string description = "";
-    recvData >> spam_type;                                 // unk 0x01 const, may be spam type (mail/chat)
-    recvData >> spammer_guid;                              // player guid
-    switch (spam_type)
-    {
-        case 0:
-            recvData >> unk1;                              // const 0
-            recvData >> unk2;                              // probably mail id
-            recvData >> unk3;                              // const 0
-            break;
-        case 1:
-            recvData >> unk1;                              // probably language
-            recvData >> unk2;                              // message type?
-            recvData >> unk3;                              // probably channel id
-            recvData >> unk4;                              // time
-            recvData >> description;                       // spam description string (messagetype, channel name, player name, message)
-            break;
-    }
+//     uint8 spam_type;                                        // 0 - mail, 1 - chat
+//     uint64 spammer_guid;
+//     uint32 unk1 = 0;
+//     uint32 unk2 = 0;
+//     uint32 unk3 = 0;
+//     uint32 unk4 = 0;
+//     std::string description = "";
+//     recvData >> spam_type;                                 // unk 0x01 const, may be spam type (mail/chat)
+//     recvData >> spammer_guid;                              // player guid
+//     switch (spam_type)
+//     {
+//         case 0:
+//             recvData >> unk1;                              // const 0
+//             recvData >> unk2;                              // probably mail id
+//             recvData >> unk3;                              // const 0
+//             break;
+//         case 1:
+//             recvData >> unk1;                              // probably language
+//             recvData >> unk2;                              // message type?
+//             recvData >> unk3;                              // probably channel id
+//             recvData >> unk4;                              // time
+//             recvData >> description;                       // spam description string (messagetype, channel name, player name, message)
+//             break;
+//     }
 
-    // NOTE: all chat messages from this spammer automatically ignored by spam reporter until logout in case chat spam.
-    // if it's mail spam - ALL mails from this spammer automatically removed by client
+//     // NOTE: all chat messages from this spammer automatically ignored by spam reporter until logout in case chat spam.
+//     // if it's mail spam - ALL mails from this spammer automatically removed by client
 
-    // Complaint Received message
-    WorldPacket data(SMSG_COMPLAIN_RESULT, 2);
-    data << uint8(0); // value 1 resets CGChat::m_complaintsSystemStatus in client. (unused?)
-    data << uint8(0); // value 0xC generates a "CalendarError" in client.
-    SendPacket(&data);
+//     // Complaint Received message
+//     WorldPacket data(SMSG_COMPLAIN_RESULT, 2);
+//     data << uint8(0); // value 1 resets CGChat::m_complaintsSystemStatus in client. (unused?)
+//     data << uint8(0); // value 0xC generates a "CalendarError" in client.
+//     SendPacket(&data);
 
-    TC_LOG_DEBUG("network", "REPORT SPAM: type %u, guid %u, unk1 %u, unk2 %u, unk3 %u, unk4 %u, message %s", spam_type, GUID_LOPART(spammer_guid), unk1, unk2, unk3, unk4, description.c_str());
-}
+//     TC_LOG_DEBUG("network", "REPORT SPAM: type %u, guid %u, unk1 %u, unk2 %u, unk3 %u, unk4 %u, message %s", spam_type, GUID_LOPART(spammer_guid), unk1, unk2, unk3, unk4, description.c_str());
+// }
 
 void WorldSession::HandleRealmSplitOpcode(WorldPacket& recvData)
 {

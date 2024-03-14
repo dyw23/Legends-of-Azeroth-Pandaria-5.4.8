@@ -166,6 +166,13 @@ enum AccountFlags
     ACC_FLAG_VALOR_CAP_REACHED   = 0x00000004,
 };
 
+enum TutorialsFlag : uint8
+{
+    TUTORIALS_FLAG_NONE                           = 0x00,
+    TUTORIALS_FLAG_CHANGED                        = 0x01,
+    TUTORIALS_FLAG_LOADED_FROM_DB                 = 0x02
+};
+
 //class to deal with packet processing
 //allows to determine if next packet is safe to be processed
 class PacketFilter
@@ -257,7 +264,7 @@ struct MuteInfo
 class TC_GAME_API WorldSession 
 {
     public:
-        WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, uint32 flags, bool isARecruiter, bool hasBoost);
+        WorldSession(uint32 id, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, uint32 flags, bool isARecruiter, bool hasBoost);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -285,6 +292,9 @@ class TC_GAME_API WorldSession
 
         void SendAuthResponse(uint8 code, bool queued, uint32 queuePos = 0);
         void SendClientCacheVersion(uint32 version);
+
+        void InitializeSession();
+        void InitializeSessionCallback(CharacterDatabaseQueryHolder const& realmHolder);
 
         void SendFeatureSystemStatusGlueScreen();
         void SendDanceStudioCreateResult();
@@ -380,7 +390,7 @@ class TC_GAME_API WorldSession
         void LoadGlobalAccountData();
         void LoadAccountData(PreparedQueryResult result, uint32 mask);
 
-        void LoadTutorialsData();
+        void LoadTutorialsData(PreparedQueryResult result);
         void SendTutorialsData();
         void SaveTutorialsData(CharacterDatabaseTransaction trans);
         uint32 GetTutorialInt(uint8 index) const { return m_Tutorials[index]; }
@@ -389,7 +399,7 @@ class TC_GAME_API WorldSession
             if (m_Tutorials[index] != value)
             {
                 m_Tutorials[index] = value;
-                m_TutorialsChanged = true;
+                m_TutorialsChanged |= TUTORIALS_FLAG_CHANGED;
             }
         }
         //used with item_page table
@@ -399,7 +409,7 @@ class TC_GAME_API WorldSession
         void SendAuctionCommandResult(AuctionEntry* auction, uint32 Action, uint32 ErrorCode, uint32 bidError = 0);
         void SendAuctionBidderNotification(uint32 location, uint32 auctionId, uint64 bidder, uint32 bidSum, uint32 diff, uint32 item_template);
         void SendAuctionOwnerNotification(AuctionEntry* auction);
-        void SendAuctionRemovedNotification(uint32 auctionId, uint32 itemEntry, int32 randomPropertyId);
+        //void SendAuctionRemovedNotification(uint32 auctionId, uint32 itemEntry, int32 randomPropertyId);
 
         //Item Enchantment
         void SendEnchantmentLog(uint64 target, uint64 caster, uint64 item, uint32 itemId, uint32 enchantId, uint8 slot);
@@ -442,7 +452,9 @@ class TC_GAME_API WorldSession
             else
                 m_timeOutTime -= diff;
         }
-        void ResetTimeOutTime() { m_timeOutTime = sWorld->getIntConfig(CONFIG_SOCKET_TIMEOUTTIME); }
+        //void ResetTimeOutTime() { m_timeOutTime = sWorld->getIntConfig(CONFIG_SOCKET_TIMEOUTTIME); }
+        void ResetTimeOutTime(bool onlyActive);
+
         bool IsConnectionIdle() const { return (m_timeOutTime <= 0 && !m_inQueue); }
 
         // Recruit-A-Friend Handling
@@ -453,7 +465,6 @@ class TC_GAME_API WorldSession
         void SetBoost(bool boost) { m_hasBoost = boost; }
         CharacterBooster* GetBoost() { return m_charBooster; }
 
-        z_stream_s* GetCompressionStream() { return _compressionStream; }
         AccountAchievementMgr& GetAchievementMgr() const { return *_achievementMgr; }
 
         bool HasFlag(AccountFlags flag) const { return m_flags & flag; }
@@ -854,7 +865,7 @@ class TC_GAME_API WorldSession
         void HandleChannelModerate(WorldPacket& recvPacket);
         void HandleChannelDeclineInvite(WorldPacket& recvPacket);
         void HandleChannelDisplayListQuery(WorldPacket& recvPacket);
-        void HandleGetChannelMemberCount(WorldPacket& recvPacket);
+        //void HandleGetChannelMemberCount(WorldPacket& recvPacket);
         void HandleSetChannelWatch(WorldPacket& recvPacket);
 
         void HandleCompleteCinematic(WorldPacket& recvPacket);
@@ -904,7 +915,7 @@ class TC_GAME_API WorldSession
         void HandleBattlemasterJoinArena(WorldPacket& recvData);
         void HandleBattlemasterJoinRated(WorldPacket& recvData);
         void HandleReportPvPAFK(WorldPacket& recvData);
-        void HandleRequestRatedBgInfo(WorldPacket& recvData);
+        //void HandleRequestRatedBgInfo(WorldPacket& recvData); 
         void HandleRequestPvpOptions(WorldPacket& recvData);
         void HandleRequestPvpReward(WorldPacket& recvData);
         void HandleRequestRatedBgStats(WorldPacket& recvData);
@@ -967,7 +978,7 @@ class TC_GAME_API WorldSession
         void HandleAreaSpiritHealerQueueOpcode(WorldPacket& recvData);
         void HandleCancelMountAuraOpcode(WorldPacket& recvData);
         void HandleSelfResOpcode(WorldPacket& recvData);
-        void HandleComplainOpcode(WorldPacket& recvData);
+        //void HandleComplainOpcode(WorldPacket& recvData);
         void HandleRequestPetInfoOpcode(WorldPacket& recvData);
 
         // Socket gem
@@ -1136,11 +1147,21 @@ class TC_GAME_API WorldSession
         void HandleResetChallengeMode(WorldPacket& recvData);
         void SendChallengeModeMapStatsUpdate(uint32 mapId);
 
-        void HandlePingUpdate(uint32 latency);
-
         // chat
 
         bool ChannelCheck(std::string channel);
+
+        union ConnectToKey
+        {
+            struct
+            {
+                uint64 AccountId : 32;
+                uint64 ConnectionType : 1;
+                uint64 Key : 31;
+            } Fields;
+
+            uint64 Raw;
+        };
 
     public:
         QueryCallbackProcessor& GetQueryProcessor() { return _queryProcessor; }
@@ -1215,7 +1236,7 @@ class TC_GAME_API WorldSession
 
         uint32 m_GUIDLow;                                   // set loggined or recently logout player (while m_playerRecentlyLogout set)
         Player* _player;
-        WorldSocket* m_Socket;
+        std::shared_ptr<WorldSocket> m_Socket;
         std::string m_Address;
 
         AccountTypes _security;
@@ -1252,7 +1273,6 @@ class TC_GAME_API WorldSession
         bool m_hasBoost;
         LockedQueue<WorldPacket*> _recvQueue;
         time_t timeLastWhoCommand;
-        z_stream_s* _compressionStream;
 
         std::unique_ptr<AccountAchievementMgr> _achievementMgr;
 

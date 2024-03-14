@@ -54,8 +54,8 @@ set(shared_STAT_SRCS
 include_directories(
   PUBLIC
     ${CMAKE_BINARY_DIR}
-    ${ACE_INCLUDE_DIR} 
-    ${OPENSSL_INCLUDE_DIR}   
+    ${OPENSSL_INCLUDE_DIR} 
+    ${Boost_INCLUDE_DIRS}  
   PRIVATE
     ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour
     ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
@@ -88,13 +88,6 @@ if(CMAKE_SYSTEM_NAME MATCHES "Windows")
   )
 endif()
 
-if (Boost_FOUND)
-  include_directories(
-    PRIVATE
-      ${Boost_INCLUDE_DIRS}
-  )
-endif()
-
 add_library(shared STATIC
   ${shared_STAT_SRCS}
 )
@@ -104,7 +97,6 @@ target_link_libraries(shared
     sfmt
     fmt
     common
-    ${ACE_LIBRARY}
     ${OPENSSL_LIBRARIES}
 )
 

@@ -21,6 +21,6 @@ option(WITH_SANITIZER   "Build with AddressSanitizer"                           
 option(AUTH_SERVER      "Build authserver"                                            1)
 option(UPDATER          "Build updater"                                               0)
 if (UNIX)
-option(BUILD_DEPLOY     "Option of a build for deployment"                            1)
+option(BUILD_DEPLOY     "Option of a build for deployment"                            0)
 endif()
 option(BUILD_DEV        "Experimental build for development under Windows"            0)

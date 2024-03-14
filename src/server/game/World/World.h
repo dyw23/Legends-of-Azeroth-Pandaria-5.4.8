@@ -176,6 +176,7 @@ enum WorldBoolConfigs
     CONFIG_LFG_OVERRIDE_ROLES_REQUIRED,
     CONFIG_LFG_MULTIQUEUE_ENABLED,
     CONFIG_LFG_KEEP_QUEUES_IN_DUNGEON,
+    CONFIG_LFG_SOLO,
     CONFIG_DBC_ENFORCE_ITEM_ATTRIBUTES,
     CONFIG_PRESERVE_CUSTOM_CHANNELS,
     CONFIG_PDUMP_NO_PATHS,
@@ -209,7 +210,6 @@ enum WorldBoolConfigs
     CONFIG_TRANSPORT_DISABLE_LOCAL_PRESPAWN,
     CONFIG_TRANSPORT_PREFER_SERVER_WORLD_POSITION,
     CONFIG_TRANSPORT_LOAD_GRIDS,
-    CONFIG_DEBUG_OPCODES,
     CONFIG_ANTICHEAT_ENABLE,
     CONFIG_BONUS_RATES_ENABLED,
     CONFIG_TRANSFER_MAIL_ENABLED,
@@ -609,6 +609,7 @@ enum WorldIntConfigs
     CONFIG_WORD_FILTER_MUTE_DURATION,
     CONFIG_PLAYED_TIME_REWARD,
     CONFIG_AUTO_SERVER_RESTART_HOUR,
+    CONFIG_SOCKET_TIMEOUTTIME_ACTIVE,
     INT_CONFIG_VALUE_COUNT
 };
 
@@ -1150,8 +1151,6 @@ class TC_GAME_API World
         // Dumb shit for arena logging, ignore
         bool IsArenaPrecastSpell(uint32 spellID) const { return m_arenaPrecastSpells.find(spellID) != m_arenaPrecastSpells.end(); }
         std::set<uint32> m_arenaPrecastSpells;
-
-        void SendRaidQueueInfo(Player* player = nullptr);
 
         union DebugValue { uint32 UInt32; float Float; };
         DebugValue & GetDebugValue(uint32 id) { return m_debugValues[id]; }
