@@ -59,6 +59,14 @@
 #endif //!COREDEBUG
 
 #if TRINITY_COMPILER == TRINITY_COMPILER_GNU
+#  define ATTR_NORETURN __attribute__((noreturn))
+#  define ATTR_DEPRECATED __attribute__((deprecated))
+#else //COMPILER != COMPILER_GNU
+#  define ATTR_NORETURN
+#  define ATTR_DEPRECATED
+#endif //COMPILER == COMPILER_GNU
+
+#if TRINITY_COMPILER == TRINITY_COMPILER_GNU
 #  define ATTR_PRINTF(F, V) __attribute__ ((__format__ (__printf__, F, V)))
 #else //TRINITY_COMPILER != TRINITY_COMPILER_GNU
 #  define ATTR_PRINTF(F, V)
