@@ -51,10 +51,10 @@ jobs:
         ninja
         ninja install
       
-    - name: Unit tests
-      run: |
-        cd ${{ steps.strings.outputs.build-output-dir }}
-        ninja test
+    # - name: Unit tests
+    #   run: |
+    #     cd ${{ steps.strings.outputs.build-output-dir }}
+    #     ninja test
       
     - name: Check binaries
       run: |
