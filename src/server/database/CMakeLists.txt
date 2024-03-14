@@ -58,7 +58,7 @@ target_include_directories(database
     ${CMAKE_SOURCE_DIR}/src/server
     ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic
     ${CMAKE_SOURCE_DIR}/src/server/shared/Threading
-    ${MYSQL_INCLUDE_DIR}
+    mysql
     boost
     openssl 
 )
@@ -67,7 +67,7 @@ target_link_libraries(database
   PRIVATE
     fmt
     common
-    ${MYSQL_LIBRARY}
+    mysql
     boost
 )
 
