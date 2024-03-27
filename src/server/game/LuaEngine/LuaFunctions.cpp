@@ -4,6 +4,7 @@
 * Please see the included DOCS/LICENSE.TXT for more information
 */
 
+#include "LuaFunctions.h"
 #include "Includes.h"
 #include "LuaEngine.h"
 #include "Define.h"
