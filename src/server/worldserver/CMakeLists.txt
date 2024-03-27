@@ -104,6 +104,14 @@ target_link_libraries(worldserver
     ${CMAKE_DL_LIBS}
 )
 
+if (ELUNA)
+  add_dependencies(worldserver lua)
+  target_link_libraries(game
+    PRIVATE
+      lua
+  )
+endif()
+
 if( WIN32 )
   if ( MSVC )
     add_custom_command(TARGET worldserver
