@@ -7,7 +7,7 @@
 #ifndef LUA_GUILDMETHODS_H
 #define LUA_GUILDMETHODS_H
 
-class lua_State;
+struct lua_State;
 class Guild;
 
 namespace LuaGuild

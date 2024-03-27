@@ -7,7 +7,7 @@
 #ifndef LUA_CORPSEMETHODS_H
 #define LUA_CORPSEMETHODS_H
 
-class lua_State;
+struct lua_State;
 class Corpse;
 
 namespace LuaCorpse

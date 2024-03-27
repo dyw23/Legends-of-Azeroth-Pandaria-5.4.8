@@ -7,7 +7,7 @@
 #ifndef LUA_OBJECTMETHODS_H
 #define LUA_OBJECTMETHODS_H
 
-class lua_State;
+struct lua_State;
 class Object;
 
 namespace LuaObject

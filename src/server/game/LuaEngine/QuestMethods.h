@@ -7,7 +7,7 @@
 #ifndef LUA_QUESTMETHODS_H
 #define LUA_QUESTMETHODS_H
 
-class lua_State;
+struct lua_State;
 class Quest;
 
 namespace LuaQuest

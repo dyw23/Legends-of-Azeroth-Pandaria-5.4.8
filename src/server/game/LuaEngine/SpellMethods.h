@@ -7,7 +7,7 @@
 #ifndef LUA_SPELLMETHODS_H
 #define LUA_SPELLMETHODS_H
 
-class lua_State;
+struct lua_State;
 class Spell;
 
 namespace LuaSpell

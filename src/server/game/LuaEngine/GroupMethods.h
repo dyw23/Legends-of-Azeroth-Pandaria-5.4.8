@@ -7,7 +7,7 @@
 #ifndef LUA_GROUPMETHODS_H
 #define LUA_GROUPMETHODS_H
 
-class lua_State;
+struct lua_State;
 class Group;
 
 namespace LuaGroup

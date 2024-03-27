@@ -7,7 +7,7 @@
 #ifndef VEHICLEMETHODS_H
 #define VEHICLEMETHODS_H
 
-class lua_State;
+struct lua_State;
 class Vehicle;
 
 namespace LuaVehicle

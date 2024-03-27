@@ -7,7 +7,7 @@
 #ifndef LUA_AURAMETHODS_H
 #define LUA_AURAMETHODS_H
 
-class lua_State;
+struct lua_State;
 class Aura;
 
 namespace LuaAura

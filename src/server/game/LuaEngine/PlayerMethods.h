@@ -7,7 +7,7 @@
 #ifndef ELUNA_PLAYERMETHODS_H
 #define ELUNA_PLAYERMETHODS_H
 
-class lua_State;
+struct lua_State;
 class player;
 
 namespace LuaPlayer

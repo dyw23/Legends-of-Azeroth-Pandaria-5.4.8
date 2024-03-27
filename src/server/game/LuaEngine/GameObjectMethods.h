@@ -7,7 +7,7 @@
 #ifndef LUA_GAMEOBJECTMETHODS_H
 #define LUA_GAMEOBJECTMETHODS_H
 
-class lua_State;
+struct lua_State;
 class GameObject;
 
 namespace LuaGameObject

@@ -7,8 +7,8 @@
 #ifndef WORLDOBJECTMETHODS_H
 #define WORLDOBJECTMETHODS_H
 
+struct lua_State;
 class WorldObject;
-class lua_State;
 
 namespace LuaWorldObject
 {

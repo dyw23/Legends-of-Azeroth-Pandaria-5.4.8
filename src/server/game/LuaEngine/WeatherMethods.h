@@ -7,21 +7,16 @@
 #ifndef ELUNA_WEATHERMETHODS_H
 #define ELUNA_WEATHERMETHODS_H
 
-class lua_State;
+struct lua_State;
 class Weather;
 
 namespace LuaWeather
 {
     int GetScriptId(lua_State* L, Weather* weather);
-
     int GetZoneId(lua_State* L, Weather* weather);
-
     int SetWeather(lua_State* L, Weather* weather);
-
     int SendWeatherUpdateToPlayer(lua_State* L, Weather* weather);
-
     int Regenerate(lua_State* L, Weather* weather);
-
     int UpdateWeather(lua_State* L, Weather* weather);
 };
 

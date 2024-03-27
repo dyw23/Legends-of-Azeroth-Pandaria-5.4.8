@@ -7,7 +7,7 @@
 #ifndef LUA_MAPMETHODS_H
 #define LUA_MAPMETHODS_H
 
-class lua_State;
+struct lua_State;
 class Map;
 
 namespace LuaMap

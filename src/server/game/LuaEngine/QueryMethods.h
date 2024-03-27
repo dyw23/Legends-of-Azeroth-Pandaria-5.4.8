@@ -7,7 +7,7 @@
 #ifndef LUA_QUERYMETHODS_H
 #define LUA_QUERYMETHODS_H
 
-class lua_State;
+struct lua_State;
 class ResultSet;
 
 namespace LuaQuery

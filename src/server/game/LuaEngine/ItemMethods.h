@@ -7,7 +7,7 @@
 #ifndef LUA_ITEMMETHODS_H
 #define LUA_ITEMMETHODS_H
 
-class lua_State;
+struct lua_State;
 class Item;
 
 namespace LuaItem
