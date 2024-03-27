@@ -7,7 +7,7 @@
 #ifndef LUA_FUNCTIONS_H
 #define LUA_FUNCTIONS_H
 
-class lua_State;
+struct lua_State;
 
 void RegisterGlobals(lua_State* L);
 void RegisterFunctions(lua_State* L);
