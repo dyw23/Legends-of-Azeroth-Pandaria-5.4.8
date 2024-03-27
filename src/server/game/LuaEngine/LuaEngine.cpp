@@ -5,6 +5,7 @@
 */
 
 #include "LuaEngine.h"
+#include "LuaFunctions.h"
 #include "Config.h"
 // #include "HookMgr.h"
 
