@@ -7,9 +7,6 @@
 #include "PlayerMethods.h"
 #include "Includes.h"
 
-#ifndef PLAYERMETHODS_H
-#define PLAYERMETHODS_H
-
 namespace LuaPlayer
 {
     int SaveToDB(lua_State* L, Player* player)
@@ -2263,4 +2260,3 @@ namespace LuaPlayer
         return 1;
     }
 };
-#endif
