@@ -410,4 +410,6 @@ public:
     }
 };
 
+void AddElunaScripts();
+
 #endif

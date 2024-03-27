@@ -7,7 +7,7 @@
 #include "LuaEngine.h"
 #include "LuaFunctions.h"
 #include "Config.h"
-// #include "HookMgr.h"
+#include "HookMgr.h"
 
 #if PLATFORM == PLATFORM_UNIX
 #include <dirent.h>
@@ -34,8 +34,6 @@ template<> const char* GetTName<Map>() { return "Map"; }
 template<> const char* GetTName<Corpse>() { return "Corpse"; }
 template<> const char* GetTName<Weather>() { return "Weather"; }
 template<> const char* GetTName<AuctionHouseObject>() { return "AuctionHouse"; }
-
-extern void AddElunaScripts();
 
 void StartEluna(bool restart)
 {
