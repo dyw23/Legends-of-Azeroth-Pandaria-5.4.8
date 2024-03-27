@@ -709,4 +709,7 @@ class LuaTaxiMgr
         static void StartTaxi(Player* player, uint32 pathid);
         static uint32 AddPath(std::list<TaxiPathNodeEntry> nodes, uint32 mountA, uint32 mountH, uint32 price = 0, uint32 pathId = 0);
 };
+
+void StartEluna(bool restart);
+
 #endif

@@ -10,6 +10,6 @@
 class lua_State;
 
 void RegisterGlobals(lua_State* L);
-inline void RegisterFunctions(lua_State* L);
+void RegisterFunctions(lua_State* L);
 
 #endif
