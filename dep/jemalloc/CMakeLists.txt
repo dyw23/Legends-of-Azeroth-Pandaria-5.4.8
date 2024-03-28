@@ -83,6 +83,8 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux" AND NOT NOJEM)
 
   add_library(jemalloc STATIC ${jemalloc_STAT_SRC})
 
+  target_link_libraries(jemalloc dl)
+
   target_include_directories(jemalloc
     PRIVATE
       ${BUILDDIR}
