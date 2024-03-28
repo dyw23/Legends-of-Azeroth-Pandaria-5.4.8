@@ -31,6 +31,7 @@ target_link_libraries(mapextractor
     bzip2
     zlib
     storm
+    ${CMAKE_DL_LIBS}
 )
 
 add_dependencies(mapextractor storm)

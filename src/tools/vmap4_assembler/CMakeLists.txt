@@ -30,6 +30,7 @@ target_link_libraries(vmap4assembler
   g3dlib
   zlib
   Threads::Threads
+  ${CMAKE_DL_LIBS}
 )
 
 if( UNIX )

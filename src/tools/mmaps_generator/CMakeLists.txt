@@ -43,6 +43,7 @@ target_link_libraries(mmaps_generator
     zlib
     boost
     Threads::Threads
+    ${CMAKE_DL_LIBS}
 )
 
 if( UNIX )

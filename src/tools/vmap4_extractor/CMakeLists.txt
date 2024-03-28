@@ -32,6 +32,7 @@ target_link_libraries(vmap4extractor
   bzip2
   zlib
   storm
+  ${CMAKE_DL_LIBS}
 )
 
 add_dependencies(vmap4extractor storm)
