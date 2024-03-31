@@ -17,12 +17,14 @@
 
 #include "Common.h"
 #include "Corpse.h"
+#include "DatabaseEnv.h"
 #include "Player.h"
 #include "UpdateMask.h"
 #include "ObjectAccessor.h"
 #include "DatabaseEnv.h"
 #include "Opcodes.h"
 #include "GossipDef.h"
+#include "GameTime.h"
 #include "World.h"
 
 Corpse::Corpse(CorpseType type) : WorldObject(type != CORPSE_BONES), m_type(type)
@@ -34,10 +36,10 @@ Corpse::Corpse(CorpseType type) : WorldObject(type != CORPSE_BONES), m_type(type
 
     m_valuesCount = CORPSE_END;
 
-    m_time = time(NULL);
+    m_time = GameTime::GetGameTime();;
 
     lootForBody = false;
-    lootRecipient = NULL;
+    lootRecipient = nullptr;
 }
 
 Corpse::~Corpse() { }
@@ -156,6 +158,11 @@ void Corpse::DeleteFromDB(CharacterDatabaseTransaction trans)
     trans->Append(stmt);
 }
 
+void Corpse::ResetGhostTime()
+{
+    m_time = GameTime::GetGameTime();
+}
+
 bool Corpse::LoadCorpseFromDB(uint32 guid, Field* fields)
 {
     //        0     1     2     3            4      5          6          7       8       9      10        11    12          13          14          15         16
@@ -170,9 +177,14 @@ bool Corpse::LoadCorpseFromDB(uint32 guid, Field* fields)
 
     Object::_Create(guid, 0, HIGHGUID_CORPSE);
 
-    SetObjectScale(1);
+    SetObjectScale(1.0f);
     SetUInt32Value(CORPSE_FIELD_DISPLAY_ID, fields[5].GetUInt32());
     _LoadIntoDataField(fields[6].GetCString(), CORPSE_FIELD_ITEMS, EQUIPMENT_SLOT_END);
+    // if (!_LoadIntoDataField(fields[6].GetCString(), CORPSE_FIELD_ITEMS, EQUIPMENT_SLOT_END))
+    // {
+    //     TC_LOG_ERROR("entities.player", "Corpse (%u, owner: %u) is not created, given equipment info is not valid ('%s')",
+    //         GetGUIDLow(), GUID_LOPART(GetOwnerGUID()), fields[6].GetCString());
+    // }    
     SetUInt32Value(CORPSE_FIELD_SKIN_ID, fields[7].GetUInt32());
     SetUInt32Value(CORPSE_FIELD_FACIAL_HAIR_STYLE_ID, fields[8].GetUInt32());
     SetUInt32Value(CORPSE_FIELD_FLAGS, fields[9].GetUInt8());
