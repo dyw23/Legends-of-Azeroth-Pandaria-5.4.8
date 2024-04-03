@@ -86,7 +86,7 @@ namespace VMAP
     }
 
     // load one tile (internal use only)
-    bool VMapManager2::_loadMap(unsigned int mapId, const std::string& basePath, uint32 tileX, uint32 tileY)
+    bool VMapManager2::_loadMap(uint32 mapId, const std::string& basePath, uint32 tileX, uint32 tileY)
     {
         InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
         if (instanceTree == iInstanceMapTrees.end())
@@ -132,7 +132,7 @@ namespace VMAP
         }
     }
 
-    bool VMapManager2::isInLineOfSight(unsigned int mapId, float x1, float y1, float z1, float x2, float y2, float z2)
+    bool VMapManager2::isInLineOfSight(unsigned int mapId, float x1, float y1, float z1, float x2, float y2, float z2, ModelIgnoreFlags ignoreFlags)
     {
         if (!isLineOfSightCalcEnabled() || DisableMgr::IsDisabledFor(DISABLE_TYPE_VMAP, mapId, NULL, VMAP_DISABLE_LOS))
             return true;
@@ -144,7 +144,7 @@ namespace VMAP
             Vector3 pos2 = convertPositionToInternalRep(x2, y2, z2);
             if (pos1 != pos2)
             {
-                return instanceTree->second->isInLineOfSight(pos1, pos2);
+                return instanceTree->second->isInLineOfSight(pos1, pos2, ignoreFlags);
             }
         }
 
@@ -185,7 +185,7 @@ namespace VMAP
     get height or INVALID_HEIGHT if no height available
     */
 
-    float VMapManager2::getHeight(unsigned int mapId, float x, float y, float z, float maxSearchDist, bool ceiling)
+    float VMapManager2::getHeight(unsigned int mapId, float x, float y, float z, float maxSearchDist)
     {
         if (isHeightCalcEnabled() && !DisableMgr::IsDisabledFor(DISABLE_TYPE_VMAP, mapId, NULL, VMAP_DISABLE_HEIGHT))
         {
@@ -193,7 +193,7 @@ namespace VMAP
             if (instanceTree != iInstanceMapTrees.end())
             {
                 Vector3 pos = convertPositionToInternalRep(x, y, z);
-                float height = instanceTree->second->getHeight(pos, maxSearchDist, ceiling);
+                float height = instanceTree->second->getHeight(pos, maxSearchDist);
                 if (!(height < G3D::inf()))
                     return height = VMAP_INVALID_HEIGHT_VALUE; // No height
 
@@ -247,7 +247,7 @@ namespace VMAP
         return false;
     }
 
-    WorldModel* VMapManager2::acquireModelInstance(const std::string& basepath, const std::string& filename)
+    WorldModel* VMapManager2::acquireModelInstance(const std::string& basepath, const std::string& filename, uint32 flags/* Only used when creating the model */)
     {
         //! Critical section, thread safe access to iLoadedModelFiles
         std::lock_guard<std::mutex> guard(LoadedModelFilesLock);
@@ -260,7 +260,7 @@ namespace VMAP
             {
                 VMAP_ERROR_LOG("misc", "VMapManager2: could not load '%s%s.vmo'", basepath.c_str(), filename.c_str());
                 delete worldmodel;
-                return NULL;
+                return nullptr;
             }
             VMAP_DEBUG_LOG("maps", "VMapManager2: loading file '%s%s'", basepath.c_str(), filename.c_str());
             model = iLoadedModelFiles.insert(std::pair<std::string, ManagedModel>(filename, ManagedModel())).first;
@@ -289,9 +289,14 @@ namespace VMAP
         }
     }
 
-    bool VMapManager2::existsMap(const char* basePath, unsigned int mapId, int x, int y)
+    LoadResult VMapManager2::existsMap(const char* basePath, unsigned int mapId, int x, int y)
     {
         return StaticMapTree::CanLoadMap(std::string(basePath), mapId, x, y);
+    }
+
+    void VMapManager2::getInstanceMapTree(InstanceTreeMap &instanceMapTree)
+    {
+        instanceMapTree = iInstanceMapTrees;
     }
 
 } // namespace VMAP

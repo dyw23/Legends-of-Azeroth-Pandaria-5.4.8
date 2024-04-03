@@ -20,7 +20,9 @@
 #ifndef VMAPEXPORT_H
 #define VMAPEXPORT_H
 
+#include "Define.h"
 #include <string>
+#include <unordered_map>
 
 enum ModelFlags
 {
@@ -29,7 +31,12 @@ enum ModelFlags
     MOD_HAS_BOUND = 1<<2
 };
 
+struct WMODoodadData;
+
 extern const char * szWorkDirWmo;
+extern std::unordered_map<std::string, WMODoodadData> WmoDoodads;
+
+uint32 GenerateUniqueObjectId(uint32 clientId, uint16 clientDoodadId);
 extern const char * szRawVMAPMagic;                         // vmap magic string for extracted raw vmap data
 
 bool FileExists(const char * file);

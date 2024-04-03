@@ -1531,67 +1531,6 @@ bool WorldObject::_IsWithinDist(WorldObject const* obj, float dist2compare, bool
     return distsq < maxdist * maxdist;
 }
 
-bool WorldObject::IsWithinLOSInMap(const WorldObject* obj) const
-{
-    if (!IsInMap(obj))
-        return false;
-
-    float ox, oy, oz;
-    obj->GetPosition(ox, oy, oz);
-
-    if (obj->GetTypeId() == TYPEID_UNIT)
-        switch (obj->GetEntry())
-        {
-            // Hack fix for Burning Tendons (Spine of Deathwing)
-            case 56341:
-            case 56575:
-            // Hack fix of Ozumat (Throne of the Tides)
-            case 44566:
-            // Hack fix for Ice Wall (Throne of Thunder)
-            case 69582:
-            // Hack fix for Ice Tomb (Siege of Orgrimmar)
-            case 69398:
-            // Hack fix for Encase in Amber (Siege of Orgrimmar)
-            case 71407:
-            // Hack fix for Siege Engineer (Siege of Orgrimmar)
-            case 71984:
-            // Hack fix for Incompleted Drakari Colossus ( Isle of Thunder)
-            case 69347:
-                return true;
-            default:
-                break;
-        }
-
-    // AoE spells
-    if (GetTypeId() == TYPEID_UNIT)
-        switch (GetEntry())
-        {
-            // Hack fix for Burning Tendons (Spine of Deathwing)
-            case 56341:
-            case 56575:
-            // Hack fix for Ice Wall (Throne of Thunder)
-            case 69582:
-            // Hack fix for Ice Tomb (Siege of Orgrimmar)
-            case 69398:
-            // Hack fix for Encase in Amber (Siege of Orgrimmar)
-            case 71407:
-            // Hack fix for Siege Engineer (Siege of Orgrimmar)
-            case 71984:
-            // Hack fix for Incompleted Drakari Colossus ( Isle of Thunder)
-            case 69347:
-                return true;
-            default:
-                break;
-        }
-
-    // Hack fix for Alysrazor
-    if (GetMapId() == 720 && GetAreaId() == 5766)
-        if ((GetTypeId() == TYPEID_PLAYER) || (obj->GetTypeId() == TYPEID_PLAYER))
-            return true;
-
-    return IsWithinLOS(ox, oy, oz);
-}
-
 float WorldObject::GetDistance(const WorldObject* obj) const
 {
     float d = GetExactDist(obj) - GetObjectSize() - obj->GetObjectSize();
@@ -1661,16 +1600,77 @@ bool WorldObject::IsWithinDist(WorldObject const* obj, float dist2compare, bool 
     return obj && _IsWithinDist(obj, dist2compare, is3D);
 }
 
-bool WorldObject::IsWithinLOS(float ox, float oy, float oz) const
+bool WorldObject::IsWithinLOS(float ox, float oy, float oz, VMAP::ModelIgnoreFlags ignoreFlags) const
 {
     /*float x, y, z;
     GetPosition(x, y, z);
     VMAP::IVMapManager* vMapManager = VMAP::VMapFactory::createOrGetVMapManager();
     return vMapManager->isInLineOfSight(GetMapId(), x, y, z+2.0f, ox, oy, oz+2.0f);*/
     if (IsInWorld())
-        return GetMap()->isInLineOfSight(GetPositionX(), GetPositionY(), GetPositionZ()+2.f, ox, oy, oz+2.f, GetPhaseMask());
+        return GetMap()->isInLineOfSight(GetPositionX(), GetPositionY(), GetPositionZ()+2.f, ox, oy, oz+2.f, GetPhaseMask(), ignoreFlags);
 
     return true;
+}
+
+bool WorldObject::IsWithinLOSInMap(const WorldObject* obj, VMAP::ModelIgnoreFlags ignoreFlags) const
+{
+    if (!IsInMap(obj))
+        return false;
+
+    float ox, oy, oz;
+    obj->GetPosition(ox, oy, oz);
+
+    if (obj->GetTypeId() == TYPEID_UNIT)
+        switch (obj->GetEntry())
+        {
+            // Hack fix for Burning Tendons (Spine of Deathwing)
+            case 56341:
+            case 56575:
+            // Hack fix of Ozumat (Throne of the Tides)
+            case 44566:
+            // Hack fix for Ice Wall (Throne of Thunder)
+            case 69582:
+            // Hack fix for Ice Tomb (Siege of Orgrimmar)
+            case 69398:
+            // Hack fix for Encase in Amber (Siege of Orgrimmar)
+            case 71407:
+            // Hack fix for Siege Engineer (Siege of Orgrimmar)
+            case 71984:
+            // Hack fix for Incompleted Drakari Colossus ( Isle of Thunder)
+            case 69347:
+                return true;
+            default:
+                break;
+        }
+
+    // AoE spells
+    if (GetTypeId() == TYPEID_UNIT)
+        switch (GetEntry())
+        {
+            // Hack fix for Burning Tendons (Spine of Deathwing)
+            case 56341:
+            case 56575:
+            // Hack fix for Ice Wall (Throne of Thunder)
+            case 69582:
+            // Hack fix for Ice Tomb (Siege of Orgrimmar)
+            case 69398:
+            // Hack fix for Encase in Amber (Siege of Orgrimmar)
+            case 71407:
+            // Hack fix for Siege Engineer (Siege of Orgrimmar)
+            case 71984:
+            // Hack fix for Incompleted Drakari Colossus ( Isle of Thunder)
+            case 69347:
+                return true;
+            default:
+                break;
+        }
+
+    // Hack fix for Alysrazor
+    if (GetMapId() == 720 && GetAreaId() == 5766)
+        if ((GetTypeId() == TYPEID_PLAYER) || (obj->GetTypeId() == TYPEID_PLAYER))
+            return true;
+
+    return IsWithinLOS(ox, oy, oz, ignoreFlags);
 }
 
 bool WorldObject::GetDistanceOrder(WorldObject const* obj1, WorldObject const* obj2, bool is3D /* = true */) const

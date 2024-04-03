@@ -30,6 +30,7 @@ namespace VMAP
     class WorldModel;
     struct AreaInfo;
     struct LocationInfo;
+    enum class ModelIgnoreFlags : uint32;
 
     enum ModelFlags
     {
@@ -38,7 +39,7 @@ namespace VMAP
         MOD_HAS_BOUND = 1<<2
     };
 
-    class ModelSpawn
+    class TC_COMMON_API ModelSpawn
     {
         public:
             //mapID, tileX, tileY, Flags, ID, Pos, Rot, Scale, Bound_lo, Bound_hi, name
@@ -56,28 +57,24 @@ namespace VMAP
             const G3D::AABox& getBounds() const { return iBound; }
 
             static bool readFromFile(FILE* rf, ModelSpawn &spawn);
-            static bool writeToFile(FILE* rw, const ModelSpawn &spawn);
+            static bool writeToFile(FILE* rw, ModelSpawn const& spawn);
     };
 
-    class ModelInstance: public ModelSpawn
+    class TC_COMMON_API ModelInstance: public ModelSpawn
     {
         public:
-            ModelInstance() : iInvScale(0.0f), iModel(0), iIgnoreInLOSTest(false) { }
-            ModelInstance(const ModelSpawn &spawn, WorldModel* model, bool ignoreInLOSTest);
-            void setUnloaded() { iModel = 0; }
-            bool intersectRay(const G3D::Ray& pRay, float& pMaxDist, bool pStopAtFirstHit) const;
-            void intersectPoint(const G3D::Vector3& p, AreaInfo &info) const;
-            bool GetLocationInfo(const G3D::Vector3& p, LocationInfo &info) const;
-            bool GetLiquidLevel(const G3D::Vector3& p, LocationInfo &info, float &liqHeight) const;
+            ModelInstance(): iInvScale(0.0f), iModel(nullptr) { }
+            ModelInstance(ModelSpawn const& spawn, WorldModel* model);
+            void setUnloaded() { iModel = nullptr; }
+            bool intersectRay(G3D::Ray const& pRay, float& pMaxDist, bool pStopAtFirstHit, ModelIgnoreFlags ignoreFlags) const;
+            void intersectPoint(G3D::Vector3 const& p, AreaInfo &info) const;
+            bool GetLocationInfo(G3D::Vector3 const& p, LocationInfo &info) const;
+            bool GetLiquidLevel(G3D::Vector3 const& p, LocationInfo &info, float &liqHeight) const;
+            WorldModel* getWorldModel() { return iModel; }
         protected:
-            G3D::Matrix3 iRotMatrix;
             G3D::Matrix3 iInvRot;
             float iInvScale;
             WorldModel* iModel;
-            bool iIgnoreInLOSTest;
-        public:
-            WorldModel* getWorldModel();
-            bool IgnoreInLOSTest() const { return iIgnoreInLOSTest; }
     };
 } // namespace VMAP
 

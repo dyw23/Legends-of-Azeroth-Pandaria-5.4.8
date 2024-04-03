@@ -25,17 +25,14 @@ using G3D::Ray;
 
 namespace VMAP
 {
-    ModelInstance::ModelInstance(const ModelSpawn &spawn, WorldModel* model, bool ignoreInLOSTest) : ModelSpawn(spawn), iModel(model), iIgnoreInLOSTest(ignoreInLOSTest)
+    ModelInstance::ModelInstance(ModelSpawn const& spawn, WorldModel* model): ModelSpawn(spawn), iModel(model)
     {
-        iRotMatrix = G3D::Matrix3::fromEulerAnglesZYX(G3D::pi()*iRot.y / -180.f, G3D::pi()*iRot.x / -180.f, G3D::pi()*iRot.z / -180.f);
-        iInvRot = G3D::Matrix3::fromEulerAnglesZYX(G3D::pi()*iRot.y/180.f, G3D::pi()*iRot.x/180.f, G3D::pi()*iRot.z/180.f).inverse();
+        iInvRot = G3D::Matrix3::fromEulerAnglesZYX(G3D::pif()*iRot.y/180.f, G3D::pif()*iRot.x/180.f, G3D::pif()*iRot.z/180.f).inverse();
         iInvScale = 1.f/iScale;
     }
 
-    bool ModelInstance::intersectRay(const G3D::Ray& pRay, float& pMaxDist, bool pStopAtFirstHit) const
+    bool ModelInstance::intersectRay(const G3D::Ray& pRay, float& pMaxDist, bool pStopAtFirstHit, ModelIgnoreFlags ignoreFlags) const
     {
-        if (iIgnoreInLOSTest)
-            return false;
         if (!iModel)
         {
             //std::cout << "<object not loaded>\n";
@@ -58,7 +55,7 @@ namespace VMAP
         Vector3 p = iInvRot * (pRay.origin() - iPos) * iInvScale;
         Ray modRay(p, iInvRot * pRay.direction());
         float distance = pMaxDist * iInvScale;
-        bool hit = iModel->IntersectRay(modRay, distance, pStopAtFirstHit);
+        bool hit = iModel->IntersectRay(modRay, distance, pStopAtFirstHit, ignoreFlags);
         if (hit)
         {
             distance *= iScale;
@@ -139,37 +136,14 @@ namespace VMAP
 
     bool ModelInstance::GetLiquidLevel(const G3D::Vector3& p, LocationInfo &info, float &liqHeight) const
     {
-        float zDist;
-        if (iRot.x || iRot.z)
-        {
-#define MAX_HEIGHT 100000.0f
-            // Tilted! Raycast! Performance be damned!
-            Vector3 origin = p - iPos;
-            origin.x = -origin.x; // Don't question this...
-            origin.y = -origin.y;
-            origin.z = MAX_HEIGHT - iPos.z; // Search from high up, otherwise we might end up underneath the triangles and find nothing
-            Vector3 pModel = iInvRot * origin * iInvScale;
-            Vector3 zDirModel = iInvRot * Vector3(0.f, 0.f, -1.f);
-            Ray modRay(pModel, zDirModel);
-            zDist = MAX_HEIGHT * 2 * iInvScale;
-            if (info.hitModel->GetLiquidLevel(modRay, zDist))
-            {
-                Vector3 modelGround = pModel + zDist * zDirModel;
-                liqHeight = (modelGround * iRotMatrix).z * iScale + iPos.z;
-                return true;
-            }
-            return false;
-#undef MAX_HEIGHT
-        }
         // child bounds are defined in object space:
         Vector3 pModel = iInvRot * (p - iPos) * iInvScale;
         //Vector3 zDirModel = iInvRot * Vector3(0.f, 0.f, -1.f);
-
+        float zDist;
         if (info.hitModel->GetLiquidLevel(pModel, zDist))
         {
             // calculate world height (zDist in model coords):
             // assume WMO not tilted (wouldn't make much sense anyway)
-            // WRONG ASSUMPTION!
             liqHeight = zDist * iScale + iPos.z;
             return true;
         }

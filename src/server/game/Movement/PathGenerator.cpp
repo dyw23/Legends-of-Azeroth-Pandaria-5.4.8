@@ -34,12 +34,20 @@
 PathGenerator::PathGenerator(const Unit* owner) :
     _polyLength(0), _type(PATHFIND_BLANK), _useStraightPath(false),
     _forceDestination(false), _pointPathLimit(MAX_POINT_PATH_LENGTH),
-    _endPosition(G3D::Vector3::zero()), _sourceUnit(owner), _navMesh(NULL),
-    _navMeshQuery(NULL), _straightLine(false)
+    _endPosition(G3D::Vector3::zero()), _sourceUnit(owner), _navMesh(nullptr),
+    _navMeshQuery(nullptr), _straightLine(false)
 {
     memset(_pathPolyRefs, 0, sizeof(_pathPolyRefs));
 
     TC_LOG_DEBUG("maps", "++ PathGenerator::PathGenerator for %u \n", _sourceUnit->GetGUIDLow());
+
+    uint32 mapId = _sourceUnit->GetMapId();
+    if (DisableMgr::IsPathfindingEnabled(mapId))
+    {
+        MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
+        _navMesh = mmap->GetNavMesh(mapId);
+        _navMeshQuery = mmap->GetNavMeshQuery(mapId, _sourceUnit->GetInstanceId());
+    }
 
     UpdateNavMesh();
     CreateFilter();
@@ -1076,7 +1084,7 @@ void PathGenerator::UpdateNavMesh()
              && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_MAP, mapId, nullptr)
              && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_ZONE, zoneId, nullptr)
              && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_AREA, areaId, nullptr)
-             && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_CREATURE,  _sourceUnit->GetEntry(), nullptr)) // MMAP::MMapFactory::IsPathfindingEnabled(mapId, zoneId, areaId, _sourceUnit->GetEntry())
+             && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_CREATURE, _sourceUnit->GetEntry(), nullptr)) // MMAP::MMapFactory::IsPathfindingEnabled(mapId, zoneId, areaId, _sourceUnit->GetEntry())
     {
         MMAP::MMapManager* mmap = MMAP::MMapFactory::createOrGetMMapManager();
         _navMesh = mmap->GetNavMesh(mapId);

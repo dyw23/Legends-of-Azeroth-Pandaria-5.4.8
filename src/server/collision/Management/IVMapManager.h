@@ -20,6 +20,8 @@
 
 #include <string>
 #include "Define.h"
+#include "ModelIgnoreFlags.h"
+#include "Optional.h"
 
 //===========================================================
 
@@ -37,11 +39,18 @@ namespace VMAP
         VMAP_LOAD_RESULT_IGNORED
     };
 
+    enum class LoadResult : uint8
+    {
+        Success,
+        FileNotFound,
+        VersionMismatch
+    };
+
     #define VMAP_INVALID_HEIGHT       -100000.0f            // for check
     #define VMAP_INVALID_HEIGHT_VALUE -200000.0f            // real assigned value in unknown height case
 
     //===========================================================
-    class IVMapManager
+    class TC_COMMON_API IVMapManager
     {
         private:
             bool iEnableLineOfSightCalc;
@@ -55,13 +64,13 @@ namespace VMAP
 
             virtual int loadMap(const char* pBasePath, unsigned int pMapId, int x, int y) = 0;
 
-            virtual bool existsMap(const char* pBasePath, unsigned int pMapId, int x, int y) = 0;
+            virtual LoadResult existsMap(char const* pBasePath, unsigned int pMapId, int x, int y) = 0;
 
             virtual void unloadMap(unsigned int pMapId, int x, int y) = 0;
             virtual void unloadMap(unsigned int pMapId) = 0;
 
-            virtual bool isInLineOfSight(unsigned int pMapId, float x1, float y1, float z1, float x2, float y2, float z2) = 0;
-            virtual float getHeight(unsigned int pMapId, float x, float y, float z, float maxSearchDist, bool ceiling = false) = 0;
+            virtual bool isInLineOfSight(unsigned int pMapId, float x1, float y1, float z1, float x2, float y2, float z2, ModelIgnoreFlags ignoreFlags) = 0;
+            virtual float getHeight(unsigned int pMapId, float x, float y, float z, float maxSearchDist) = 0;
             /**
             test if we hit an object. return true if we hit one. rx, ry, rz will hold the hit position or the dest position, if no intersection was found
             return a position, that is pReduceDist closer to the origin

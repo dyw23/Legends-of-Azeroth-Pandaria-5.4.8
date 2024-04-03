@@ -28,25 +28,32 @@
 namespace VMAP
 {
     class WorldModel;
+    struct AreaInfo;
+    struct LocationInfo;    
+    enum class ModelIgnoreFlags : uint32;
 }
 
 class GameObject;
 struct GameObjectDisplayInfoEntry;
 
-class GameObjectModel /*, public Intersectable*/
+class TC_COMMON_API GameObjectModelOwnerBase
 {
-    uint32 phasemask;
-    G3D::AABox iBound;
-    G3D::Matrix3 iInvRot;
-    G3D::Vector3 iPos;
-    //G3D::Vector3 iRot;
-    float iInvScale;
-    float iScale;
-    VMAP::WorldModel* iModel;
-    GameObject const* owner;
+public:
+    virtual ~GameObjectModelOwnerBase() = default;
 
-    GameObjectModel() : phasemask(0), iInvScale(0), iScale(0), iModel(nullptr), owner(nullptr) { }
-    bool initialize(const GameObject& go, const GameObjectDisplayInfoEntry& info, std::string const& dataPath);
+    virtual bool IsSpawned() const = 0;
+    virtual uint32 GetDisplayId() const = 0;
+    virtual uint32 GetPhaseMask() const = 0;
+    virtual G3D::Vector3 GetPosition() const = 0;
+    virtual float GetOrientation() const = 0;
+    virtual float GetScale() const = 0;
+    virtual void DebugVisualizeCorner(G3D::Vector3 const& /*corner*/) const = 0;
+};
+
+class TC_COMMON_API GameObjectModel /*, public Intersectable*/
+{
+
+    GameObjectModel() : phasemask(0), iInvScale(0), iScale(0), iModel(nullptr), owner(nullptr), isWmo(false) { }
 
 public:
     std::string name;
@@ -62,12 +69,27 @@ public:
     void enable(uint32 ph_mask) { phasemask = ph_mask;}
 
     bool isEnabled() const {return phasemask != 0;}
+    bool isMapObject() const { return isWmo; }
 
-    bool intersectRay(const G3D::Ray& Ray, float& MaxDist, bool StopAtFirstHit, uint32 ph_mask) const;
+    bool intersectRay(const G3D::Ray& Ray, float& MaxDist, bool StopAtFirstHit, uint32 ph_mask, VMAP::ModelIgnoreFlags ignoreFlags) const;
 
-    static GameObjectModel* Create(const GameObject& go, std::string const& dataPath);
+    static GameObjectModel* Create(std::unique_ptr<GameObjectModelOwnerBase> modelOwner, std::string const& dataPath);
 
     bool UpdatePosition();
+
+private:
+    bool initialize(std::unique_ptr<GameObjectModelOwnerBase> modelOwner, std::string const& dataPath);
+
+    uint32 phasemask;
+    G3D::AABox iBound;
+    G3D::Matrix3 iInvRot;
+    G3D::Vector3 iPos;
+    float iInvScale;
+    float iScale;
+    VMAP::WorldModel* iModel;
+    std::unique_ptr<GameObjectModelOwnerBase> owner;
+    bool isWmo;
+
 };
 
 TC_COMMON_API void LoadGameObjectModelList(std::string const& dataPath);

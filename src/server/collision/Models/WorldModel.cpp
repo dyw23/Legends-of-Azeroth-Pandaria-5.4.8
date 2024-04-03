@@ -19,6 +19,7 @@
 #include "ModelInstance.h"
 #include "VMapDefinitions.h"
 #include "MapTree.h"
+#include "ModelIgnoreFlags.h"
 
 using G3D::Vector3;
 using G3D::Ray;
@@ -41,7 +42,7 @@ namespace VMAP
         const Vector3 p(ray.direction().cross(e2));
         const float a = e1.dot(p);
 
-        if (fabs(a) < EPS) {
+        if (std::fabs(a) < EPS) {
             // Determinant is ill-conditioned; abort early
             return false;
         }
@@ -103,11 +104,19 @@ namespace VMAP
     WmoLiquid::WmoLiquid(uint32 width, uint32 height, const Vector3 &corner, uint32 type):
         iTilesX(width), iTilesY(height), iCorner(corner), iType(type)
     {
-        iHeight = new float[(width+1)*(height+1)];
-        iFlags = new uint8[width*height];
+        if (width && height)
+        {
+            iHeight = new float[(width + 1) * (height + 1)];
+            iFlags = new uint8[width * height];
+        }
+        else
+        {
+            iHeight = new float[1];
+            iFlags = nullptr;
+        }
     }
 
-    WmoLiquid::WmoLiquid(const WmoLiquid &other): iHeight(0), iFlags(0)
+    WmoLiquid::WmoLiquid(const WmoLiquid &other): iHeight(nullptr), iFlags(nullptr)
     {
         *this = other; // use assignment operator...
     }
@@ -126,29 +135,34 @@ namespace VMAP
         iTilesY = other.iTilesY;
         iCorner = other.iCorner;
         iType = other.iType;
-        delete iHeight;
-        delete iFlags;
+        delete[] iHeight;
+        delete[] iFlags;
         if (other.iHeight)
         {
             iHeight = new float[(iTilesX+1)*(iTilesY+1)];
             memcpy(iHeight, other.iHeight, (iTilesX+1)*(iTilesY+1)*sizeof(float));
         }
         else
-            iHeight = 0;
+            iHeight = nullptr;
         if (other.iFlags)
         {
             iFlags = new uint8[iTilesX * iTilesY];
             memcpy(iFlags, other.iFlags, iTilesX * iTilesY);
         }
         else
-            iFlags = 0;
-        iLiquidVertices = other.iLiquidVertices;
-        iLiquidTriangles = other.iLiquidTriangles;
+            iFlags = nullptr;
         return *this;
     }
 
     bool WmoLiquid::GetLiquidHeight(const Vector3 &pos, float &liqHeight) const
     {
+        // simple case
+        if (!iFlags)
+        {
+            liqHeight = iHeight[0];
+            return true;
+        }
+
         float tx_f = (pos.x - iCorner.x)/LIQUID_TILE_SIZE;
         uint32 tx = uint32(tx_f);
         if (tx_f < 0.0f || tx >= iTilesX)
@@ -200,8 +214,8 @@ namespace VMAP
     {
         return 2 * sizeof(uint32) +
                 sizeof(Vector3) +
-                (iTilesX + 1)*(iTilesY + 1) * sizeof(float) +
-                iTilesX * iTilesY;
+                sizeof(uint32) +
+                (iFlags ? ((iTilesX + 1) * (iTilesY + 1) * sizeof(float) + iTilesX * iTilesY) : sizeof(float));
     }
 
     bool WmoLiquid::writeToFile(FILE* wf)
@@ -212,12 +226,17 @@ namespace VMAP
             fwrite(&iCorner, sizeof(Vector3), 1, wf) == 1 &&
             fwrite(&iType, sizeof(uint32), 1, wf) == 1)
         {
-            uint32 size = (iTilesX + 1) * (iTilesY + 1);
-            if (fwrite(iHeight, sizeof(float), size, wf) == size)
+            if (iTilesX && iTilesY)
             {
-                size = iTilesX*iTilesY;
-                result = fwrite(iFlags, sizeof(uint8), size, wf) == size;
+                uint32 size = (iTilesX + 1) * (iTilesY + 1);
+                if (fwrite(iHeight, sizeof(float), size, wf) == size)
+                {
+                    size = iTilesX * iTilesY;
+                    result = fwrite(iFlags, sizeof(uint8), size, wf) == size;
+                }
             }
+            else
+                result = fwrite(iHeight, sizeof(float), 1, wf) == 1;
         }
 
         return result;
@@ -233,82 +252,94 @@ namespace VMAP
             fread(&liquid->iCorner, sizeof(Vector3), 1, rf) == 1 &&
             fread(&liquid->iType, sizeof(uint32), 1, rf) == 1)
         {
-            uint32 size = (liquid->iTilesX + 1) * (liquid->iTilesY + 1);
-            liquid->iHeight = new float[size];
-            if (fread(liquid->iHeight, sizeof(float), size, rf) == size)
+            if (liquid->iTilesX && liquid->iTilesY)
             {
-                size = liquid->iTilesX * liquid->iTilesY;
-                liquid->iFlags = new uint8[size];
-                result = fread(liquid->iFlags, sizeof(uint8), size, rf) == size;
+                uint32 size = (liquid->iTilesX + 1) * (liquid->iTilesY + 1);
+                liquid->iHeight = new float[size];
+                if (fread(liquid->iHeight, sizeof(float), size, rf) == size)
+                {
+                    size = liquid->iTilesX * liquid->iTilesY;
+                    liquid->iFlags = new uint8[size];
+                    result = fread(liquid->iFlags, sizeof(uint8), size, rf) == size;
+                }
+            }
+            else
+            {
+                liquid->iHeight = new float[1];
+                result = fread(liquid->iHeight, sizeof(float), 1, rf) == 1;
             }
         }
 
         if (!result)
-        {
             delete liquid;
-            return false;
-        }
-        out = liquid;
-        out->BuildGeometry();
+        else
+            out = liquid;
+
         return result;
     }
 
-
-    void WmoLiquid::BuildGeometry()
+    void WmoLiquid::getPosInfo(uint32 &tilesX, uint32 &tilesY, G3D::Vector3 &corner) const
     {
-        uint32 offset = iLiquidVertices.size();
-
-        // Copy from mmaps_generator/TerrainBuilder.cpp
-        uint32 vertsX = iTilesX + 1;
-        uint32 vertsY = iTilesY + 1;
-
-        G3D::Vector3 vert;
-        for (uint32 x = 0; x < vertsX; ++x)
-            for (uint32 y = 0; y < vertsY; ++y)
-            {
-                vert = G3D::Vector3(iCorner.x + x * LIQUID_TILE_SIZE, iCorner.y + y * LIQUID_TILE_SIZE, iHeight[y*vertsX + x]);
-                vert.x *= -1.f;
-                vert.y *= -1.f;
-                iLiquidVertices.push_back(vert);
-            }
-
-        uint32 idx1, idx2, idx3, idx4;
-        uint32 square;
-        for (uint32 x = 0; x < iTilesX; ++x)
-            for (uint32 y = 0; y < iTilesY; ++y)
-                if ((iFlags[x + y*iTilesX] & 0x0f) != 0x0f)
-                {
-                    square = offset + x * iTilesY + y;
-                    idx1 = square + x;
-                    idx2 = square + 1 + x;
-                    idx3 = square + iTilesY + 1 + 1 + x;
-                    idx4 = square + iTilesY + 1 + x;
-
-                    iLiquidTriangles.emplace_back(idx3, idx2, idx1); // top triangle
-                    iLiquidTriangles.emplace_back(idx4, idx3, idx1); // bottom triangle
-                }
+        tilesX = iTilesX;
+        tilesY = iTilesY;
+        corner = iCorner;
     }
 
-    bool WmoLiquid::IntersectRay(G3D::Ray const& ray, float& distance) const
-    {
-        // It would be cool to late-initialize geometry this way, but it might cause race conditions
-        //if (iLiquidVertices.empty())
-        //    BuildGeometry();
+    // void WmoLiquid::BuildGeometry()
+    // {
+    //     uint32 offset = iLiquidVertices.size();
 
-        auto verts = iLiquidVertices.begin();
+    //     // Copy from mmaps_generator/TerrainBuilder.cpp
+    //     uint32 vertsX = iTilesX + 1;
+    //     uint32 vertsY = iTilesY + 1;
 
-        bool hit = false;
-        for (auto&& triangle : iLiquidTriangles)
-            hit |= IntersectTriangle(triangle, verts, ray, distance);
+    //     G3D::Vector3 vert;
+    //     for (uint32 x = 0; x < vertsX; ++x)
+    //         for (uint32 y = 0; y < vertsY; ++y)
+    //         {
+    //             vert = G3D::Vector3(iCorner.x + x * LIQUID_TILE_SIZE, iCorner.y + y * LIQUID_TILE_SIZE, iHeight[y*vertsX + x]);
+    //             vert.x *= -1.f;
+    //             vert.y *= -1.f;
+    //             iLiquidVertices.push_back(vert);
+    //         }
 
-        return hit;
-    }
+    //     uint32 idx1, idx2, idx3, idx4;
+    //     uint32 square;
+    //     for (uint32 x = 0; x < iTilesX; ++x)
+    //         for (uint32 y = 0; y < iTilesY; ++y)
+    //             if ((iFlags[x + y*iTilesX] & 0x0f) != 0x0f)
+    //             {
+    //                 square = offset + x * iTilesY + y;
+    //                 idx1 = square + x;
+    //                 idx2 = square + 1 + x;
+    //                 idx3 = square + iTilesY + 1 + 1 + x;
+    //                 idx4 = square + iTilesY + 1 + x;
+
+    //                 iLiquidTriangles.emplace_back(idx3, idx2, idx1); // top triangle
+    //                 iLiquidTriangles.emplace_back(idx4, idx3, idx1); // bottom triangle
+    //             }
+    // }
+
+    // bool WmoLiquid::IntersectRay(G3D::Ray const& ray, float& distance) const
+    // {
+    //     // It would be cool to late-initialize geometry this way, but it might cause race conditions
+    //     //if (iLiquidVertices.empty())
+    //     //    BuildGeometry();
+
+    //     auto verts = iLiquidVertices.begin();
+
+    //     bool hit = false;
+    //     for (auto&& triangle : iLiquidTriangles)
+    //         hit |= IntersectTriangle(triangle, verts, ray, distance);
+
+    //     return hit;
+    // }
 
     // ===================== GroupModel ==================================
 
     GroupModel::GroupModel(const GroupModel &other):
         iBound(other.iBound), iMogpFlags(other.iMogpFlags), iGroupWMOID(other.iGroupWMOID),
-        vertices(other.vertices), triangles(other.triangles), meshTree(other.meshTree), iLiquid(0)
+        vertices(other.vertices), triangles(other.triangles), meshTree(other.meshTree), iLiquid(nullptr)
     {
         if (other.iLiquid)
             iLiquid = new WmoLiquid(*other.iLiquid);
@@ -377,7 +408,7 @@ namespace VMAP
         triangles.clear();
         vertices.clear();
         delete iLiquid;
-        iLiquid = NULL;
+        iLiquid = nullptr;
 
         if (result && fread(&iBound, sizeof(G3D::AABox), 1, rf) != 1) result = false;
         if (result && fread(&iMogpFlags, sizeof(uint32), 1, rf) != 1) result = false;
@@ -457,18 +488,18 @@ namespace VMAP
         return false;
     }
 
-    bool GroupModel::GetLiquidLevel(G3D::Ray const& ray, float& liqHeight) const
-    {
-        if (iLiquid)
-            return iLiquid->IntersectRay(ray, liqHeight);
-        return false;
-    }
-
     uint32 GroupModel::GetLiquidType() const
     {
         if (iLiquid)
             return iLiquid->GetType();
         return 0;
+    }
+
+    void GroupModel::getMeshData(std::vector<G3D::Vector3>& outVertices, std::vector<MeshTriangle>& outTriangles, WmoLiquid*& liquid)
+    {
+        outVertices = vertices;
+        outTriangles = triangles;
+        liquid = iLiquid;
     }
 
     // ===================== WorldModel ==================================
@@ -485,14 +516,15 @@ namespace VMAP
         bool operator()(const G3D::Ray& ray, uint32 entry, float& distance, bool pStopAtFirstHit)
         {
             bool result = models[entry].IntersectRay(ray, distance, pStopAtFirstHit);
-            if (result)  hit=true;
+            if (result)
+                hit = true;
             return hit;
         }
         std::vector<GroupModel>::const_iterator models;
         bool hit;
     };
 
-    bool WorldModel::IntersectRay(const G3D::Ray &ray, float &distance, bool stopAtFirstHit) const
+    bool WorldModel::IntersectRay(const G3D::Ray &ray, float &distance, bool stopAtFirstHit, ModelIgnoreFlags ignoreFlags) const
     {
         // small M2 workaround, maybe better make separate class with virtual intersection funcs
         // in any case, there's no need to use a bound tree if we only have one submodel
@@ -506,14 +538,14 @@ namespace VMAP
 
     class WModelAreaCallback {
         public:
-            WModelAreaCallback(const std::vector<GroupModel> &vals, const Vector3 &down):
-                prims(vals.begin()), hit(vals.end()), minVol(G3D::inf()), zDist(G3D::inf()), zVec(down) { }
+            WModelAreaCallback(std::vector<GroupModel> const& vals, Vector3 const& down) :
+                prims(vals.begin()), hit(vals.end()), minVol(G3D::finf()), zDist(G3D::finf()), zVec(down) { }
             std::vector<GroupModel>::const_iterator prims;
             std::vector<GroupModel>::const_iterator hit;
             float minVol;
             float zDist;
             Vector3 zVec;
-            void operator()(const Vector3& point, uint32 entry)
+            void operator()(Vector3 const& point, uint32 entry)
             {
                 float group_Z;
                 //float pVol = prims[entry].GetBound().volume();
@@ -530,7 +562,7 @@ namespace VMAP
                             hit = prims + entry;
                         }
 #ifdef VMAP_DEBUG
-                        const GroupModel &gm = prims[entry];
+                        GroupModel const& gm = prims[entry];
                         printf("%10u %8X %7.3f, %7.3f, %7.3f | %7.3f, %7.3f, %7.3f | z=%f, p_z=%f\n", gm.GetWmoID(), gm.GetMogpFlags(),
                         gm.GetBound().low().x, gm.GetBound().low().y, gm.GetBound().low().z,
                         gm.GetBound().high().x, gm.GetBound().high().y, gm.GetBound().high().z, group_Z, point.z);
@@ -569,6 +601,7 @@ namespace VMAP
         groupTree.intersectPoint(p, callback);
         if (callback.hit != groupModels.end())
         {
+            info.rootId = RootWMOID;
             info.hitModel = &(*callback.hit);
             dist = callback.zDist;
             return true;
@@ -590,7 +623,7 @@ namespace VMAP
         if (result && fwrite(&RootWMOID, sizeof(uint32), 1, wf) != 1) result = false;
 
         // write group models
-        count=groupModels.size();
+        count = groupModels.size();
         if (count)
         {
             if (result && fwrite("GMOD", 1, 4, wf) != 4) result = false;
@@ -644,4 +677,10 @@ namespace VMAP
         fclose(rf);
         return result;
     }
+
+    void WorldModel::getGroupModels(std::vector<GroupModel>& outGroupModels)
+    {
+        outGroupModels = groupModels;
+    }
+
 }

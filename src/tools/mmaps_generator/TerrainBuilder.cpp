@@ -755,7 +755,7 @@ namespace MMAP
                     spawn.iScale = 1.0f;
                     count = 1;
                     models = new ModelInstance[count];
-                    models[0] = ModelInstance{ spawn, worldmodel, false };
+                    models[0] = ModelInstance{ spawn, worldmodel };
                 }
             }
 
@@ -765,8 +765,6 @@ namespace MMAP
             for (uint32 i = 0; i < count; ++i)
             {
                 ModelInstance instance = models[i];
-                if (instance.IgnoreInLOSTest())
-                    continue;
 
                 // model instances exist in tree even though there are instances of that model in this tile
                 WorldModel* worldModel = instance.getWorldModel();

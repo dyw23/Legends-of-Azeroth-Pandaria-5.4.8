@@ -80,6 +80,7 @@ target_include_directories(common
   PRIVATE
     sfmt
     ${CMAKE_SOURCE_DIR}/dep/utf8cpp
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 target_link_libraries(common

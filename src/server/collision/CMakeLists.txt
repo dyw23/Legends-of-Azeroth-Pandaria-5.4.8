@@ -70,7 +70,8 @@ target_include_directories(collision
     ${CMAKE_SOURCE_DIR}/src/server/game/Server/Protocol
     ${CMAKE_SOURCE_DIR}/src/server/game/World
     ${CMAKE_SOURCE_DIR}/src/server/game/Spells
-    ${CMAKE_SOURCE_DIR}/src/server/game/Spells/Auras         
+    ${CMAKE_SOURCE_DIR}/src/server/game/Spells/Auras
+    ${CMAKE_CURRENT_BINARY_DIR}       
 )
 
 target_link_libraries(collision

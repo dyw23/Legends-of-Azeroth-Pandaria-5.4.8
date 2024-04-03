@@ -75,8 +75,9 @@ char input_path[128] = ".";
 // **************************************************
 enum Extract
 {
-    EXTRACT_MAP = 1,
-    EXTRACT_DBC = 2
+    EXTRACT_MAP    = 1,
+    EXTRACT_DBC    = 2,
+    EXTRACT_CAMERA = 4
 };
 
 // Select data for extract
