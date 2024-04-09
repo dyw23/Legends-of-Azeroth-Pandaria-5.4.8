@@ -149,11 +149,10 @@ struct DynamicTreeIntersectionCallback
 {
     bool did_hit;
     uint32 phase_mask;
-    bool stop_at_first;
-    DynamicTreeIntersectionCallback(uint32 phasemask, bool stopAtFirst) : did_hit(false), phase_mask(phasemask), stop_at_first(stopAtFirst) { }
+    DynamicTreeIntersectionCallback(uint32 phasemask) : did_hit(false), phase_mask(phasemask) { }
     bool operator()(const G3D::Ray& r, const GameObjectModel& obj, float& distance)
     {
-        bool hit = obj.intersectRay(r, distance, stop_at_first, phase_mask, VMAP::ModelIgnoreFlags::Nothing);
+        bool hit = obj.intersectRay(r, distance, true, phase_mask, VMAP::ModelIgnoreFlags::Nothing);
         if (hit)
             did_hit = true;
         return hit;
@@ -187,8 +186,8 @@ bool DynamicMapTree::getIntersectionTime(const uint32 phasemask, const G3D::Ray&
                                          const G3D::Vector3& endPos, float& maxDist) const
 {
     float distance = maxDist;
-    DynamicTreeIntersectionCallback callback(phasemask, false);
-    impl->intersectRay(ray, callback, distance, endPos, false);
+    DynamicTreeIntersectionCallback callback(phasemask);
+    impl->intersectRay(ray, callback, distance, endPos);
     if (callback.didHit())
         maxDist = distance;
     return callback.didHit();
@@ -244,8 +243,8 @@ bool DynamicMapTree::isInLineOfSight(float x1, float y1, float z1, float x2, flo
         return true;
 
     G3D::Ray r(v1, (v2-v1) / maxDist);
-    DynamicTreeIntersectionCallback callback(phasemask, true);
-    impl->intersectRay(r, callback, maxDist, v2, true);
+    DynamicTreeIntersectionCallback callback(phasemask);
+    impl->intersectRay(r, callback, maxDist, v2);
 
     return !callback.did_hit;
 }
@@ -254,7 +253,7 @@ float DynamicMapTree::getHeight(float x, float y, float z, float maxSearchDist, 
 {
     G3D::Vector3 v(x, y, z);
     G3D::Ray r(v, G3D::Vector3(0, 0, -1));
-    DynamicTreeIntersectionCallback callback(phasemask, false);
+    DynamicTreeIntersectionCallback callback(phasemask);
     impl->intersectZAllignedRay(r, callback, maxSearchDist);
 
     if (callback.didHit())

@@ -37,7 +37,7 @@ class NodeCreatorFunc = NodeCreator<Node>,
     /*class BoundsFunc = BoundsTrait<T>,*/
 class PositionFunc = PositionTrait<T>
 >
-class RegularGrid2D
+class TC_COMMON_API RegularGrid2D
 {
 public:
 
@@ -120,13 +120,13 @@ public:
     }
 
     template<typename RayCallback>
-    void intersectRay(const G3D::Ray& ray, RayCallback& intersectCallback, float max_dist, bool stopAtFirst)
+    void intersectRay(const G3D::Ray& ray, RayCallback& intersectCallback, float max_dist)
     {
-        intersectRay(ray, intersectCallback, max_dist, ray.origin() + ray.direction() * max_dist, stopAtFirst);
+        intersectRay(ray, intersectCallback, max_dist, ray.origin() + ray.direction() * max_dist);
     }
 
     template<typename RayCallback>
-    void intersectRay(const G3D::Ray& ray, RayCallback& intersectCallback, float& max_dist, const G3D::Vector3& end, bool stopAtFirst)
+    void intersectRay(const G3D::Ray& ray, RayCallback& intersectCallback, float& max_dist, const G3D::Vector3& end)
     {
         Cell cell = Cell::ComputeCell(ray.origin().x, ray.origin().y);
         if (!cell.isValid())
@@ -137,7 +137,7 @@ public:
         if (cell == last_cell)
         {
             if (Node* node = nodes[cell.x][cell.y])
-                node->intersectRay(ray, intersectCallback, max_dist, stopAtFirst);
+                node->intersectRay(ray, intersectCallback, max_dist);
             return;
         }
 
@@ -176,14 +176,14 @@ public:
         //int Cycles = std::max((int)ceilf(max_dist/tMaxX),(int)ceilf(max_dist/tMaxY));
         //int i = 0;
 
-        float tDeltaX = voxel * fabs(kx_inv);
-        float tDeltaY = voxel * fabs(ky_inv);
+        float tDeltaX = voxel * std::fabs(kx_inv);
+        float tDeltaY = voxel * std::fabs(ky_inv);
         do
         {
             if (Node* node = nodes[cell.x][cell.y])
             {
                 //float enterdist = max_dist;
-                node->intersectRay(ray, intersectCallback, max_dist, stopAtFirst);
+                node->intersectRay(ray, intersectCallback, max_dist);
             }
             if (cell == last_cell)
                 break;
@@ -218,15 +218,8 @@ public:
         Cell cell = Cell::ComputeCell(ray.origin().x, ray.origin().y);
         if (!cell.isValid())
             return;
-        // This is simple and functional if we assume there are no large GameObjects. But they do exist, namely: transports.
-        //if (Node* node = nodes[cell.x][cell.y])
-        //    node->intersectRay(ray, intersectCallback, max_dist, false);
-        auto maxX = std::min(CELL_NUMBER - 1, cell.x + 1);
-        auto maxY = std::min(CELL_NUMBER - 1, cell.y + 1);
-        for (int32 x = std::max(0, cell.x - 1); x <= maxX; ++x)
-            for (int32 y = std::max(0, cell.y - 1); y <= maxY; ++y)
-                if (Node* node = nodes[x][y])
-                    node->intersectRay(ray, intersectCallback, max_dist, false);
+        if (Node* node = nodes[cell.x][cell.y])
+            node->intersectRay(ray, intersectCallback, max_dist);
 
     }
 };
