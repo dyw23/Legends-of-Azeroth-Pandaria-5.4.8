@@ -2076,10 +2076,6 @@ public:
                handler->PSendSysMessage(LANG_PINFO_CHR_MAILS, rmailint, totalmail);
         }
 
-        // Output XXII. LANG_PINFO_CHAR_HWID
-        if (handler->GetSession()->GetSecurity() >= SEC_GAMEMASTER)
-            handler->PSendSysMessage(LANG_PINFO_CHAR_HWID, HWID.c_str());
-
         return true;
     }
 
