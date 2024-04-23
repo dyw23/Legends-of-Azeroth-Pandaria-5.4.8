@@ -1188,7 +1188,7 @@ public:
 
     virtual ~Unit();
 
-    UnitAI* GetAI() { return i_AI; }
+    UnitAI* GetAI() const { return i_AI; }
     void SetAI(UnitAI* newAI)
     {
         i_AI = newAI;

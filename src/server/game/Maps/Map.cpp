@@ -3317,7 +3317,7 @@ template void Map::RemoveFromActive(DynamicObject*);
 InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 InstanceId, uint16 SpawnMode, Map* _parent)
   : Map(id, expiry, InstanceId, SpawnMode, _parent),
     m_resetAfterUnload(false), m_unloadWhenEmpty(false),
-    i_data(NULL), i_script_id(0), m_isLfgMap(false)
+    i_data(nullptr), i_script_id(0), m_isLfgMap(false)
 {
     //lets initialize visibility distance for dungeons
     InstanceMap::InitVisibilityDistance();
@@ -3578,7 +3578,7 @@ void InstanceMap::RemovePlayerFromMap(Player* player, bool remove)
 
 void InstanceMap::CreateInstanceData(bool load)
 {
-    if (i_data != NULL)
+    if (i_data != nullptr)
         return;
 
     InstanceTemplate const* mInstance = sObjectMgr->GetInstanceTemplate(GetId());
@@ -3609,7 +3609,7 @@ void InstanceMap::CreateInstanceData(bool load)
             SetLFGMap(fields[2].GetUInt8());
             if (data != "")
             {
-                TC_LOG_DEBUG("maps", "Loading instance data for `%s` with id %u", sObjectMgr->GetScriptName(i_script_id), i_InstanceId);
+                TC_LOG_DEBUG("maps", "Loading instance data for `%s` with id %u", sObjectMgr->GetScriptName(i_script_id).c_str(), i_InstanceId);
                 i_data->Load(data.c_str());
             }
         }
@@ -3653,6 +3653,11 @@ bool InstanceMap::Reset(uint8 method)
     }
 
     return m_mapRefManager.isEmpty();
+}
+
+std::string const& InstanceMap::GetScriptName() const
+{
+    return sObjectMgr->GetScriptName(i_script_id);
 }
 
 void InstanceMap::PermBindAllPlayers(Player* source)
