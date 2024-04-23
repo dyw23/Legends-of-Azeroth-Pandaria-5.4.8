@@ -556,6 +556,8 @@ class instance_icecrown_citadel : public InstanceMapScript
                             (TeamInInstance == HORDE && data->posX < 10.0f))
                             return GetBossState(DATA_GUNSHIP_EVENT) != DONE ? entry : 0;
                         return 0;
+                    case NPC_SE_HIGH_OVERLORD_SAURFANG:
+                        return TeamInInstance == ALLIANCE ? NPC_SE_MURADIN_BRONZEBEARD : NPC_SE_HIGH_OVERLORD_SAURFANG;                        
                     default:
                         break;
                 }

@@ -184,14 +184,15 @@ void Creature::AddToWorld()
     ///- Register the creature for guid lookup
     if (!IsInWorld())
     {
-        if (m_zoneScript)
-            m_zoneScript->OnCreatureCreate(this);
         sObjectAccessor->AddObject(this);
         Unit::AddToWorld();
         SearchFormation();
         AIM_Initialize();
         if (IsVehicle())
             GetVehicleKit()->Install();
+
+        if (GetZoneScript())
+            GetZoneScript()->OnCreatureCreate(this);
 
         if (((GetCreatureTemplate()->rank == CREATURE_ELITE_RARE || GetCreatureTemplate()->rank == CREATURE_ELITE_RAREELITE) && GetZoneId() == 6757) || // Timeless Isle (or only rare elite?...)
             (!GetMap()->Instanceable() && sLootMgr->GetPersonalLoot(GetEntry())))   // World Bosses
@@ -203,8 +204,9 @@ void Creature::RemoveFromWorld()
 {
     if (IsInWorld())
     {
-        if (m_zoneScript)
-            m_zoneScript->OnCreatureRemove(this);
+        if (GetZoneScript())
+            GetZoneScript()->OnCreatureRemove(this);
+        
         if (m_formation)
             sFormationMgr->RemoveCreatureFromGroup(m_formation, this);
         Unit::RemoveFromWorld();
@@ -461,6 +463,10 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData* data)
         SetControlled(true, UNIT_STATE_ROOT);
 
     UpdateMovementFlags();
+
+    //We must update last scriptId or it looks like we reloaded a script, breaking some things such as gossip temporarily
+    LastUsedScriptID = GetScriptId();
+        
     return true;
 }
 
@@ -738,15 +744,16 @@ bool Creature::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, 
     //! returning correct zone id for selecting OutdoorPvP/Battlefield script
     Relocate(x, y, z, ang);
 
-    //oX = x;     oY = y;    dX = x;    dY = y;    m_moveTime = 0;    m_startMove = 0;
-    if (!CreateFromProto(guidlow, Entry, vehId, team, data))
-        return false;
-
+    // Check if the position is valid before calling CreateFromProto(), otherwise we might add Auras to Creatures at
+    // invalid position, triggering a crash about Auras not removed in the destructor
     if (!IsPositionValid())
     {
         TC_LOG_ERROR("entities.unit", "Creature::Create(): given coordinates for creature (guidlow %d, entry %d) are not valid (X: %f, Y: %f, Z: %f, O: %f)", guidlow, Entry, x, y, z, ang);
         return false;
     }
+
+    if (!CreateFromProto(guidlow, Entry, vehId, team, data))
+        return false;
 
     switch (GetCreatureTemplate()->rank)
     {
@@ -1253,9 +1260,9 @@ float Creature::GetSpellDamageMod(int32 Rank) const
 bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 vehId, uint32 team, const CreatureData* data)
 {
     SetZoneScript();
-    if (m_zoneScript && data)
+    if (GetZoneScript() && data)
     {
-        Entry = m_zoneScript->GetCreatureEntry(guidlow, data);
+        Entry = GetZoneScript()->GetCreatureEntry(guidlow, data);
         if (!Entry)
             return false;
     }
@@ -1269,17 +1276,25 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 vehId, uint3
 
     SetOriginalEntry(Entry);
 
-    if (!vehId)
-        vehId = cinfo->VehicleId;
-
     // hackfix for crawler mine controller
     if (Entry == 71795 && (GetMap()->Is25ManRaid() || GetMap()->GetDifficulty() == RAID_DIFFICULTY_1025MAN_FLEX))
         vehId = 2916;
 
-    Object::_Create(guidlow, Entry, vehId ? HIGHGUID_VEHICLE : HIGHGUID_UNIT);
+    Object::_Create(guidlow, Entry, (vehId || cinfo->VehicleId) ? HIGHGUID_VEHICLE : HIGHGUID_UNIT);
 
     if (!UpdateEntry(Entry, team, data))
         return false;
+
+    if (!vehId)
+    {
+        if (GetCreatureTemplate()->VehicleId)
+        {
+            vehId = GetCreatureTemplate()->VehicleId;
+            Entry = GetCreatureTemplate()->Entry;
+        }
+        else
+            vehId = cinfo->VehicleId;
+    }
 
     if (vehId)
         CreateVehicleKit(vehId, Entry, true);
@@ -2526,9 +2541,10 @@ std::string Creature::GetScriptName() const
 uint32 Creature::GetScriptId() const
 {
     if (CreatureData const* creatureData = GetCreatureData())
-        return creatureData->ScriptId;
+        if (uint32 scriptId = creatureData->ScriptId)
+            return scriptId;
 
-    return sObjectMgr->GetCreatureTemplate(GetEntry())->ScriptID;
+    return ASSERT_NOTNULL(sObjectMgr->GetCreatureTemplate(GetEntry()))->ScriptID;
 }
 
 VendorItemData const* Creature::GetVendorItems() const

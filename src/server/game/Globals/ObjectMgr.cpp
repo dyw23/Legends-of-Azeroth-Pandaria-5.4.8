@@ -538,7 +538,7 @@ void ObjectMgr::LoadCreatureTemplates()
         creatureTemplate.TrackingQuestID    = fields[89].GetUInt32();
         creatureTemplate.MechanicImmuneMask = fields[90].GetUInt32();
         creatureTemplate.flags_extra        = fields[91].GetUInt32();
-        creatureTemplate.ScriptID           = GetScriptId(fields[92].GetCString());
+        creatureTemplate.ScriptID           = GetScriptId(fields[92].GetString());
 
         ++count;
     }
@@ -1900,10 +1900,7 @@ void ObjectMgr::LoadCreatures()
         data.unit_flags           = fields[22].GetUInt32();
         data.unit_flags2          = fields[23].GetUInt32();
         data.dynamicflags         = fields[24].GetUInt32();
-        data.ScriptId             = GetScriptId(fields[25].GetCString());
-
-        if (!data.ScriptId)
-            data.ScriptId = cInfo->ScriptID;
+        data.ScriptId             = GetScriptId(fields[25].GetString());
 
         data.WalkMode             = fields[26].GetFloat();
 
@@ -2290,10 +2287,7 @@ void ObjectMgr::LoadGameobjects()
         data.phaseMask      = fields[15].GetUInt32();
         int16 gameEvent     = fields[16].GetInt8();
         uint32 PoolId       = fields[17].GetUInt32();
-        data.ScriptId       = GetScriptId(fields[18].GetCString());
-
-        if (!data.ScriptId)
-            data.ScriptId = gInfo->ScriptId;
+        data.ScriptId       = GetScriptId(fields[18].GetString());
 
         data.gameEventId = gameEvent;
 
@@ -3083,7 +3077,7 @@ void ObjectMgr::LoadSpellAreaTriggerTemplates()
             atTemplate.Radius = fields[3].GetFloat();
             atTemplate.ScaleX = fields[4].GetFloat();
             atTemplate.ScaleY = fields[5].GetFloat();
-            atTemplate.ScriptId = GetScriptId(fields[6].GetCString());
+            atTemplate.ScriptId = GetScriptId(fields[6].GetString());
             ++count;
         } while (result->NextRow());
     }
@@ -3145,7 +3139,7 @@ void ObjectMgr::LoadItemScriptNames()
                 continue;
             }
 
-            _itemTemplateStore[itemId].ScriptId = GetScriptId(fields[1].GetCString());
+            _itemTemplateStore[itemId].ScriptId = GetScriptId(fields[1].GetString());
             ++count;
         } while (result->NextRow());
     }
@@ -5082,8 +5076,8 @@ void ObjectMgr::LoadSpellScriptNames()
 
         Field* fields = result->Fetch();
 
-        int32 spellId          = fields[0].GetInt32();
-        char const* scriptName = fields[1].GetCString();
+        int32 spellId                = fields[0].GetInt32();
+        std::string const scriptName = fields[1].GetString();
 
         bool allRanks = false;
         if (spellId < 0)
@@ -5156,7 +5150,7 @@ void ObjectMgr::ValidateSpellScripts()
             bool valid = true;
             if (!spellScript && !auraScript)
             {
-                TC_LOG_ERROR("scripts", "Functions GetSpellScript() and GetAuraScript() of script `%s` do not return objects - script skipped",  GetScriptName(sitr->second->second));
+                TC_LOG_ERROR("scripts", "Functions GetSpellScript() and GetAuraScript() of script `%s` do not return objects - script skipped",  GetScriptName(sitr->second->second).c_str());
                 valid = false;
             }
             if (spellScript)
@@ -5296,7 +5290,7 @@ void ObjectMgr::LoadInstanceTemplate()
 
         instanceTemplate.AllowMount = fields[3].GetBool();
         instanceTemplate.Parent     = uint32(fields[1].GetUInt16());
-        instanceTemplate.ScriptId   = sObjectMgr->GetScriptId(fields[2].GetCString());
+        instanceTemplate.ScriptId   = sObjectMgr->GetScriptId(fields[2].GetString());
 
         _instanceTemplateStore[mapID] = instanceTemplate;
 
@@ -6802,7 +6796,7 @@ void ObjectMgr::LoadGameObjectTemplate()
 
         got.unkInt32 = fields[46].GetInt32();
         got.AIName = fields[47].GetString();
-        got.ScriptId = GetScriptId(fields[48].GetCString());
+        got.ScriptId = GetScriptId(fields[48].GetString());
 
         // Checks
 
@@ -9281,9 +9275,11 @@ void ObjectMgr::LoadScriptNames()
         return;
     }
 
+    _scriptNamesStore.reserve(result->GetRowCount() + 1);
+
     do
     {
-        _scriptNamesStore.emplace_back((*result)[0].GetCString());
+        _scriptNamesStore.emplace_back((*result)[0].GetString());
     }
     while (result->NextRow());
 
@@ -9297,15 +9293,26 @@ void ObjectMgr::LoadScriptNames()
     TC_LOG_INFO("server.loading", ">> Loaded " SZFMTD " ScriptNames in %u ms", _scriptNamesStore.size(), GetMSTimeDiffToNow(oldMSTime));
 }
 
-uint32 ObjectMgr::GetScriptId(const char *name)
+ObjectMgr::ScriptNameContainer const& ObjectMgr::GetAllScriptNames() const
+{
+    return _scriptNamesStore;
+}
+
+std::string const& ObjectMgr::GetScriptName(uint32 id) const
+{
+    static std::string const empty = "";
+    return (id < _scriptNamesStore.size()) ? _scriptNamesStore[id] : empty;
+}
+
+uint32 ObjectMgr::GetScriptId(std::string const& name)
 {
     // use binary search to find the script name in the sorted vector
     // assume "" is the first element
-    if (!name)
+    if (name.empty())
         return 0;
 
     ScriptNameContainer::const_iterator itr = std::lower_bound(_scriptNamesStore.begin(), _scriptNamesStore.end(), name);
-    if (itr == _scriptNamesStore.end() || *itr != name)
+    if (itr == _scriptNamesStore.end() || (*itr != name))
         return 0;
 
     return uint32(itr - _scriptNamesStore.begin());
@@ -10342,7 +10349,7 @@ void ObjectMgr::LoadSceneTemplates()
         sceneTemplate.SceneId = sceneId;
         sceneTemplate.PlaybackFlags = fields[1].GetUInt32();
         sceneTemplate.ScenePackageId = fields[2].GetUInt32();
-        sceneTemplate.ScriptId = sObjectMgr->GetScriptId(fields[3].GetCString());
+        sceneTemplate.ScriptId = sObjectMgr->GetScriptId(fields[3].GetString());
 
     } while (templates->NextRow());
 

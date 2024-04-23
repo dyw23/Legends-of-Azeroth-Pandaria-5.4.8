@@ -183,7 +183,7 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
-    if ((unit && unit->GetCreatureTemplate()->ScriptID != unit->LastUsedScriptID) || (go && go->GetGOInfo()->ScriptId != go->LastUsedScriptID))
+    if ((unit && unit->GetScriptId() != unit->LastUsedScriptID) || (go && go->GetGOInfo()->ScriptId != go->LastUsedScriptID))
     {
         TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOptionOpcode - Script reloaded while in use, ignoring and set new scipt id");
         if (unit)
@@ -226,12 +226,8 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
         {
             if (!sScriptMgr->OnGossipSelect(_player, unit, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId)) && !unit->AI()->OnGossipSelect(_player, menuId, gossipListId))
             {
-                _player->OnGossipSelect(unit, gossipListId, menuId);
+                 _player->OnGossipSelect(unit, gossipListId, menuId);   
             }
-            // if (!unit->AI()->OnGossipSelect(_player, menuId, gossipListId)) // hack, add to support ScriptAI
-            // {
-            //     _player->OnGossipSelect(unit, gossipListId, menuId);   
-            // }
         }
         else if (go)
         {
