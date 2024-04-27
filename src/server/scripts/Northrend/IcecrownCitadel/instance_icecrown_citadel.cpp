@@ -186,7 +186,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                 builder.AppendState(WORLDSTATE_ATTEMPTS_MAX,       MaxHeroicAttempts);
             }
 
-            void OnPlayerEnter(Player* player)
+            void OnPlayerEnter(Player* player) override
             {
                 if (!TeamInInstance)
                     TeamInInstance = player->GetTeam();
@@ -508,7 +508,7 @@ class instance_icecrown_citadel : public InstanceMapScript
             }
 
             // Weekly quest spawn prevention
-            uint32 GetCreatureEntry(uint32 guidLow, CreatureData const* data)
+            uint32 GetCreatureEntry(uint32 guidLow, CreatureData const* data) override
             {
                 PickTeamInInstanceIfNeeded();
                 PickWeeklyQuestIfNeeded();
