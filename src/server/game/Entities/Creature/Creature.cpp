@@ -2491,6 +2491,26 @@ void Creature::GetRespawnPosition(float &x, float &y, float &z, float* ori, floa
         *dist = 0;
 }
 
+bool Creature::CanSwim() const
+{
+    if (Unit::CanSwim())
+        return true;
+
+    if (IsPet())
+        return true;
+
+    return false;
+}
+
+bool Creature::CanEnterWater() const 
+{
+    if (CanSwim())
+        return true;
+
+    //return GetMovementTemplate().IsSwimAllowed(); todo
+    return false;
+}
+
 void Creature::AllLootRemovedFromCorpse()
 {
     if (!HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE))
@@ -2780,15 +2800,6 @@ void Creature::UpdateMovementFlags(bool force)
         SetFall(false);
 
     SetSwim(CanSwim() && IsInWater());
-}
-
-bool Creature::CanEnterWater() const
-{
-    if (CanSwim())
-        return true;
-
-    //return GetMovementTemplate().IsSwimAllowed();
-    return false; // todo
 }
 
 void Creature::SetFlying(bool enable)

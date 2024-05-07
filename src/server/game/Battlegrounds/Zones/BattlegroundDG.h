@@ -310,7 +310,7 @@ class BattlegroundDG : public Battleground
         void AddPlayer(Player* player) override;
         void RemovePlayer(Player* player, uint64 guid, uint32 team);
         WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
-        void HandleKillPlayer(Player* player, Player* killer);
+        void HandleKillPlayer(Player* player, Player* killer) override;
         void EventPlayerDroppedFlag(Player* player);
 
     private:

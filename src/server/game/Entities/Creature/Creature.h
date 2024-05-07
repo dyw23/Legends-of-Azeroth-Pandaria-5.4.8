@@ -294,7 +294,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool IsGuard() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_GUARD; }
         
         bool CanWalk() const { return GetInhabitType() & INHABIT_GROUND; }
-        bool CanSwim() const { return GetInhabitType() & INHABIT_WATER || IsPet(); }
+        bool CanSwim() const override;
+        bool CanEnterWater() const override;
         bool CanFly() const override { return GetInhabitType() & INHABIT_AIR; }
 
         // Used to dynamically change allowed path generator and movement flags behavior during scripts.
@@ -356,8 +357,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
 
         void UpdateMovementFlags(bool force = false);
-
-        bool CanEnterWater() const override;
 
         void SetFlying(bool enable);
 
