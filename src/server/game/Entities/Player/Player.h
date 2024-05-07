@@ -46,8 +46,8 @@ struct ItemExtendedCostEntry;
 struct TrainerSpell;
 struct VendorItem;
 
-class PlayerAchievementMgr;
-class ReputationMgr;
+class BattlePetMgr;
+class CinematicMgr;
 class Channel;
 class CharacterCreateInfo;
 class Creature;
@@ -57,12 +57,13 @@ class Guild;
 class LootLockoutMap;
 class OutdoorPvP;
 class Pet;
+class PhaseMgr;
 class PlayerMenu;
 class PlayerSocial;
+class PlayerAchievementMgr;
+class ReputationMgr;
 class SpellCastTargets;
 class UpdateMask;
-class PhaseMgr;
-class BattlePetMgr;
 class PlayerAI;
 class SpellHistory;
 class TradeData;
@@ -1227,6 +1228,7 @@ enum class LootLockoutType
 class TC_GAME_API Player : public Unit, public GridObject<Player>
 {
     friend class WorldSession;
+    friend class CinematicMgr;
     friend void Item::AddToUpdateQueueOf(Player* player);
     friend void Item::RemoveFromUpdateQueueOf(Player* player);
     public:
@@ -1635,10 +1637,10 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
     float GetReputationPriceDiscount(Creature const* creature) const;
 
     Player* GetTrader() const;
-
     TradeData* GetTradeData() const { return m_trade; }
-    
     void TradeCancel(bool sendback);
+
+    CinematicMgr* GetCinematicMgr() const { return _cinematicMgr; }
 
     void UpdateEnchantTime(uint32 time);
     void UpdateSoulboundTradeItems();
@@ -2172,14 +2174,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
     }
     void ResurrectUsingRequestData();
 
-    uint8 getCinematic()
-    {
-        return m_cinematic;
-    }
-    void setCinematic(uint8 cine)
-    {
-        m_cinematic = cine;
-    }
+    uint8 getCinematic() const { return m_cinematic; }
+    void setCinematic(uint8 cine) { m_cinematic = cine; }
 
     ActionButton* addActionButton(uint8 button, uint32 action, uint8 type);
     void removeActionButton(uint8 button);
@@ -3608,6 +3604,8 @@ protected:
     InventoryResult CanStoreItem_InInventorySlots(uint8 slot_begin, uint8 slot_end, ItemPosCountVec& dest, ItemTemplate const* pProto, uint32& count, bool merge, Item* pSrcItem, uint8 skip_bag, uint8 skip_slot) const;
     Item* _StoreItem(uint16 pos, Item* pItem, uint32 count, bool clone, bool update);
     Item* _LoadItem(CharacterDatabaseTransaction trans, uint32 zoneId, uint32 timeDiff, Field* fields);
+
+    CinematicMgr* _cinematicMgr;
 
     std::set<uint32> m_refundableItems;
     void SendRefundInfo(Item* item);
