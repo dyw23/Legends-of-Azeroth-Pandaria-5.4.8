@@ -51,9 +51,9 @@ class BattlegroundRL : public Battleground
         void StartingEventCloseDoors();
         void StartingEventOpenDoors();
 
-        void RemovePlayer(Player* player, uint64 guid, uint32 team);
+        void RemovePlayer(Player* player, uint64 guid, uint32 team) override;
         void HandleAreaTrigger(Player* Source, uint32 Trigger);
         bool SetupBattleground();
-        void HandleKillPlayer(Player* player, Player* killer);
+        void HandleKillPlayer(Player* player, Player* killer) override;
 };
 #endif

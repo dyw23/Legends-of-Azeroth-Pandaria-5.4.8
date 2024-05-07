@@ -238,7 +238,7 @@ class BattlegroundSM : public Battleground
         void StartingEventCloseDoors();
         void StartingEventOpenDoors();
 
-        void HandleKillPlayer(Player* player, Player* killer);
+        void HandleKillPlayer(Player* player, Player* killer) override;
         bool SetupBattleground() override;
         void Reset() override;
         WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
