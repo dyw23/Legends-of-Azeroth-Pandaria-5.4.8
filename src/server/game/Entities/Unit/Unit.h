@@ -2229,8 +2229,8 @@ public:
     void SetVisible(bool x);
 
     // common function for visibility checks for player/creatures with detection code
-    void SetPhaseMask(uint32 newPhaseMask, bool update);// overwrite WorldObject::SetPhaseMask
-    void UpdateObjectVisibility(bool forced = true);
+    void SetPhaseMask(uint32 newPhaseMask, bool update) override;// overwrite WorldObject::SetPhaseMask
+    void UpdateObjectVisibility(bool forced = true) override;
 
     SpellImmuneList m_spellImmune [MAX_SPELL_IMMUNITY];
     uint32 m_lastSanctuaryTime;

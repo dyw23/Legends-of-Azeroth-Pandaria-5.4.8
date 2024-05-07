@@ -183,9 +183,9 @@ class BattlegroundWS : public Battleground
         void EventPlayerClickedOnFlag(Player* player, GameObject* target_obj);
         void EventPlayerCapturedFlag(Player* player);
 
-        void RemovePlayer(Player* player, uint64 guid, uint32 team);
+        void RemovePlayer(Player* player, uint64 guid, uint32 team) override;
         void HandleAreaTrigger(Player* player, uint32 trigger);
-        void HandleKillPlayer(Player* player, Player* killer);
+        void HandleKillPlayer(Player* player, Player* killer) override;
         bool SetupBattleground();
         void Reset() override;
         void EndBattleground(uint32 winner);

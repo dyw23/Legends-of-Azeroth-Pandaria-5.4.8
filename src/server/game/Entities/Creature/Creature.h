@@ -354,7 +354,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         bool HasSpell(uint32 spellID) const;
 
-        bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
+        void SetPhaseMask(uint32 newPhaseMask, bool update) override;// overwrite Unit::SetPhaseMask
+        bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data = nullptr);
 
         void UpdateMovementFlags(bool force = false);
 
@@ -409,7 +410,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void SaveToDB();
                                                             // overriden in Pet
         virtual void SaveToDB(uint32 mapid, uint16 spawnMask, uint32 phaseMask);
-        virtual void DeleteFromDB();                        // overriden in Pet
+        void DeleteFromDB();                        // overriden in Pet
 
         Loot loot;
         bool lootForPickPocketed;

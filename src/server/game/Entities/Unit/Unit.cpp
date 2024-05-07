@@ -17231,17 +17231,22 @@ void Unit::SetPhaseMask(uint32 newPhaseMask, bool update)
 
     WorldObject::SetPhaseMask(newPhaseMask, update);
 
-    if (!IsInWorld())
-        return;
+    // Phase pets and summons
+    if (IsInWorld())
+    {
+         for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+            if ((*itr)->GetTypeId() == TYPEID_UNIT)
+                (*itr)->SetPhaseMask(newPhaseMask, true);
 
-    for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
-        if ((*itr)->GetTypeId() == TYPEID_UNIT)
-            (*itr)->SetPhaseMask(newPhaseMask, true);
+        for (uint8 i = 0; i < SUMMON_SLOT_MAX; ++i)
+            if (m_SummonSlot [i])
+                if (Creature* summon = GetMap()->GetCreature(m_SummonSlot [i]))
+                    summon->SetPhaseMask(newPhaseMask, true);       
+    }
 
-    for (uint8 i = 0; i < SUMMON_SLOT_MAX; ++i)
-        if (m_SummonSlot [i])
-            if (Creature* summon = GetMap()->GetCreature(m_SummonSlot [i]))
-                summon->SetPhaseMask(newPhaseMask, true);
+    // Update visibility after phasing pets and summons so they wont despawn
+    if (update)
+        UpdateObjectVisibility();            
 }
 
 class Unit::AINotifyTask : public BasicEvent
