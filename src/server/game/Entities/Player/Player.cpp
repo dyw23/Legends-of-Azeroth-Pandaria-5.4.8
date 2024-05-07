@@ -29,6 +29,7 @@
 #include "ChannelMgr.h"
 #include "CharacterDatabaseCleaner.h"
 #include "Chat.h"
+#include "CinematicMgr.h"
 #include "Common.h"
 #include "ConditionMgr.h"
 #include "CreatureAI.h"
