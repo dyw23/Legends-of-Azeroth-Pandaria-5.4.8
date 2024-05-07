@@ -42,7 +42,7 @@ struct Escort_Waypoint
     bool jump;
 };
 
-enum eEscortState
+enum eEscortState : uint32
 {
     STATE_ESCORT_NONE       = 0x000,                        //nothing in progress
     STATE_ESCORT_ESCORTING  = 0x001,                        //escort are in progress
@@ -60,9 +60,8 @@ struct npc_escortAI : public ScriptedAI
         // CreatureAI functions
         void AttackStart(Unit* who);
 
-        void MoveInLineOfSight(Unit* who);
-
-        void JustDied(Unit*);
+        void MoveInLineOfSight(Unit* who) override;
+        void JustDied(Unit*) override;
 
         void JustRespawned();
 

@@ -18,6 +18,10 @@
 #ifndef UnitDefines_h__
 #define UnitDefines_h__
 
+#include "Define.h"
+#include "EnumFlag.h"
+#include <string>
+
 #define BASE_MINDAMAGE 1.0f
 #define BASE_MAXDAMAGE 2.0f
 #define BASE_ATTACK_TIME 2000
@@ -122,8 +126,8 @@ enum UnitFlags : uint32
     UNIT_FLAG_PET_IN_COMBAT         = 0x00000800,           // in combat?, 2.0.8
     UNIT_FLAG_PVP                   = 0x00001000,           // changed in 3.0.3
     UNIT_FLAG_SILENCED              = 0x00002000,           // silenced, 2.1.1
-    UNIT_FLAG_UNK_14                = 0x00004000,           // 2.0.8
-    UNIT_FLAG_UNK_15                = 0x00008000,
+    UNIT_FLAG_CANNOT_SWIM           = 0x00004000,           // 2.0.8
+    UNIT_FLAG_CAN_SWIM              = 0x00008000,
     UNIT_FLAG_UNK_16                = 0x00010000,
     UNIT_FLAG_PACIFIED              = 0x00020000,           // 3.0.3 ok
     UNIT_FLAG_STUNNED               = 0x00040000,           // 3.0.3 ok
@@ -142,6 +146,8 @@ enum UnitFlags : uint32
     UNIT_FLAG_UNK_31                = 0x80000000,
     MAX_UNIT_FLAGS                  = 33
 };
+
+DEFINE_ENUM_FLAG(UnitFlags);
 
 // Value masks for UNIT_FIELD_FLAGS2
 enum UnitFlags2 : uint32
@@ -163,8 +169,16 @@ enum UnitFlags2 : uint32
     UNIT_FLAG2_DISABLE_TURN               = 0x00008000,
     UNIT_FLAG2_UNK2                       = 0x00010000,
     UNIT_FLAG2_PLAY_DEATH_ANIM            = 0x00020000,   // Plays special death animation upon death
-    UNIT_FLAG2_ALLOW_CHEAT_SPELLS         = 0x00040000    // Allows casting spells with AttributesEx7 & SPELL_ATTR7_IS_CHEAT_SPELL
+    UNIT_FLAG2_ALLOW_CHEAT_SPELLS         = 0x00040000,   // Allows casting spells with AttributesEx7 & SPELL_ATTR7_IS_CHEAT_SPELL
+    UNIT_FLAG2_UNUSED_1                   = 0x00080000,
+    UNIT_FLAG2_UNUSED_2                   = 0x00100000,
+    UNIT_FLAG2_UNUSED_3                   = 0x00200000,
+    UNIT_FLAG2_UNUSED_4                   = 0x00400000,
+    UNIT_FLAG2_UNUSED_5                   = 0x00800000,
+    UNIT_FLAG2_UNUSED_6                   = 0x01000000    
 };
+
+DEFINE_ENUM_FLAG(UnitFlags2);
 
 /// Non Player Character flags
 enum NPCFlags : uint32
@@ -204,6 +218,8 @@ enum NPCFlags : uint32
     UNIT_NPC_FLAG_BLACK_MARKET       = 0x80000000        // black market auction house
 
 };
+
+DEFINE_ENUM_FLAG(NPCFlags);
 
 enum MovementFlags : uint32
 {

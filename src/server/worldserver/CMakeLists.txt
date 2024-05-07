@@ -63,9 +63,6 @@ target_include_directories(worldserver
     gsoap
     ${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
-    ${CMAKE_SOURCE_DIR}/src/server/collision
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Management
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Models
     ${CMAKE_SOURCE_DIR}/src/server/database/Database
     ${CMAKE_SOURCE_DIR}/src/server/scripts/ScriptLoader
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -95,12 +92,11 @@ target_link_libraries(worldserver
     database
     scripts
     game
-    collision
     gsoap
     jemalloc
     readline
     boost
-    ${CMAKE_THREAD_LIBS_INIT}
+    threads
     ${CMAKE_DL_LIBS}
 )
 

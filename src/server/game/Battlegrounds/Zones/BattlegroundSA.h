@@ -484,7 +484,7 @@ class BattlegroundSA : public Battleground
         /// Called when a player deal damage to building (door)
         void EventPlayerDamagedGO(Player* player, GameObject* go, uint32 eventType);
         /// Called when a player kill a unit in bg
-        void HandleKillUnit(Creature* creature, Player* killer);
+        void HandleKillUnit(Creature* creature, Player* killer) override;
         /// Return the nearest graveyard where player can respawn
         WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
         /// Called when a player click on flag (graveyard flag)

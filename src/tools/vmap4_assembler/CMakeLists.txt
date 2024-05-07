@@ -15,9 +15,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/common
     ${CMAKE_SOURCE_DIR}/src/server/shared
     ${CMAKE_SOURCE_DIR}/src/server/shared/Debugging
-    ${CMAKE_SOURCE_DIR}/src/server/collision
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Maps
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Models
     ${ZLIB_INCLUDE_DIR}
 )
 
@@ -26,7 +23,6 @@ add_dependencies(vmap4assembler storm)
 
 target_link_libraries(vmap4assembler
   common
-  collision
   g3dlib
   zlib
   Threads::Threads

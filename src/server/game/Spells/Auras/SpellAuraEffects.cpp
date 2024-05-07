@@ -2272,8 +2272,8 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
                     target->SetDisplayId(modelId);
 
                     // Dragonmaw Illusion (set mount model also)
-                    if (GetId() == 42016 && target->GetMountID() && !target->GetAuraEffectsByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED).empty())
-                        target->SetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID, 16314);
+                    if (GetId() == 42016 && target->GetMountDisplayId() && !target->GetAuraEffectsByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED).empty())
+                        target->SetMountDisplayId(16314);
                 }
             }
         }
@@ -2305,7 +2305,7 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
         target->RestoreDisplayId();
 
         // Dragonmaw Illusion (restore mount model)
-        if (GetId() == 42016 && target->GetMountID() == 16314)
+        if (GetId() == 42016 && target->GetMountDisplayId() == 16314)
         {
             if (!target->GetAuraEffectsByType(SPELL_AURA_MOUNTED).empty())
             {
@@ -2315,7 +2315,7 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
                     uint32 displayID = ObjectMgr::ChooseDisplayId(ci);
                     sObjectMgr->GetCreatureModelRandomGender(&displayID);
 
-                    target->SetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID, displayID);
+                    target->SetMountDisplayId(displayID);
                 }
             }
         }
@@ -3280,8 +3280,8 @@ void AuraEffect::HandleAuraModIncreaseFlightSpeed(AuraApplication const* aurApp,
                 target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, apply);
 
             // Dragonmaw Illusion (overwrite mount model, mounted aura already applied)
-            if (apply && target->HasAuraEffect(42016, 0) && target->GetMountID())
-                target->SetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID, 16314);
+            if (apply && target->HasAuraEffect(42016, 0) && target->GetMountDisplayId())
+                target->SetMountDisplayId(16314);
         }
     }
 

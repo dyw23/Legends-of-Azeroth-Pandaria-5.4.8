@@ -76,6 +76,7 @@ DBCStorage <ChrClassesEntry> sChrClassesStore(ChrClassesEntryfmt);
 DBCStorage <ChrRacesEntry> sChrRacesStore(ChrRacesEntryfmt);
 DBCStorage <ChrPowerTypesEntry> sChrPowerTypesStore(ChrClassesXPowerTypesfmt);
 DBCStorage <ChrSpecializationEntry> sChrSpecializationStore(ChrSpecializationfmt);
+DBCStorage <CinematicCameraEntry> sCinematicCameraStore(CinematicCameraEntryfmt);
 DBCStorage <CinematicSequencesEntry> sCinematicSequencesStore(CinematicSequencesEntryfmt);
 DBCStorage <CreatureDisplayInfoEntry> sCreatureDisplayInfoStore(CreatureDisplayInfofmt);
 DBCStorage <CreatureFamilyEntry> sCreatureFamilyStore(CreatureFamilyfmt);
@@ -369,7 +370,7 @@ void LoadDBCStores(const std::string& dataPath, uint32& availableDbcLocales)
     availableDbcLocales = 0xFFFFFFFF;
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sAreaTableStore,              dbcPath, "AreaTable.dbc");
-    LoadDBC(availableDbcLocales, bad_dbc_files, sAchievementStore,            dbcPath, "Achievement.dbc", &CustomAchievementfmt, &CustomAchievementIndex);//18414
+    LoadDBC(availableDbcLocales, bad_dbc_files, sAchievementStore,            dbcPath, "Achievement.dbc");//18414
     LoadDBC(availableDbcLocales, bad_dbc_files, sAchievementCriteriaStore,    dbcPath, "Achievement_Criteria.dbc");//15595
     LoadDBC(availableDbcLocales, bad_dbc_files, sAnimKitStore,                dbcPath, "AnimKit.dbc");//18414
     LoadDBC(availableDbcLocales, bad_dbc_files, sAreaTriggerStore,            dbcPath, "AreaTrigger.dbc");//15595
@@ -551,7 +552,6 @@ void LoadDBCStores(const std::string& dataPath, uint32& availableDbcLocales)
     for (uint32 i = 0; i < sMapDifficultyStore.GetNumRows(); ++i)
         if (MapDifficultyEntry const* entry = sMapDifficultyStore.LookupEntry(i))
             sMapDifficultyMap[MAKE_PAIR32(entry->MapId, entry->Difficulty)] = MapDifficulty(entry->resetTime, entry->maxPlayers, entry->areaTriggerText[0] != nullptr);
-    sMapDifficultyStore.Clear();
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sMountCapabilityStore,        dbcPath, "MountCapability.dbc");//15595
     LoadDBC(availableDbcLocales, bad_dbc_files, sMountTypeStore,              dbcPath, "MountType.dbc");//15595
@@ -560,7 +560,6 @@ void LoadDBCStores(const std::string& dataPath, uint32& availableDbcLocales)
     for (uint32 i = 0; i < sNameGenStore.GetNumRows(); ++i)
         if (NameGenEntry const* entry = sNameGenStore.LookupEntry(i))
             sGenNameVectoArraysMap[entry->race].stringVectorArray[entry->gender].push_back(std::string(entry->name[DEFAULT_LOCALE]));
-    sNameGenStore.Clear();
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sModifierTreeStore,           dbcPath, "ModifierTree.dbc");//18414
     LoadDBC(availableDbcLocales, bad_dbc_files, sMovieStore,                  dbcPath, "Movie.dbc");//15595
@@ -1201,7 +1200,7 @@ dbc::TalentTabs dbc::GetClassSpecializations(uint8 classId)
 uint32 GetLiquidFlags(uint32 liquidType)
 {
     if (LiquidTypeEntry const* liq = sLiquidTypeStore.LookupEntry(liquidType))
-        return 1 << liq->Type;
+        return 1 << liq->SoundBank;
 
     return 0;
 }

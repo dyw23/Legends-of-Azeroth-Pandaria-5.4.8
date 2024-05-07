@@ -26,6 +26,7 @@
 #include "Group.h"
 #include "Player.h"
 #include "TransportMgr.h"
+#include "VMapManager2.h"
 
 MapInstanced::MapInstanced(uint32 id, time_t expiry) : Map(id, expiry, 0, DUNGEON_DIFFICULTY_NORMAL)
 {

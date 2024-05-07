@@ -114,7 +114,7 @@ bool Transport::CreateLocal(uint32 guidlow, uint32 entry, Map* map, float x, flo
     if (goinfo->transport.pause)
         m_goValue.Transport.PathProgress = goinfo->transport.startOpen ? goinfo->transport.pause : m_goValue.Transport.AnimationInfo->TotalTime - 1;
 
-    m_model = GameObjectModel::Create(*this, sWorld->GetDataPath());
+    CreateModel();
     LastUsedScriptID = GetGOInfo()->ScriptId;
     AIM_Initialize();
 
@@ -252,7 +252,7 @@ bool Transport::Create(uint32 guidlow, uint32 entry, uint32 mapid, float x, floa
     SetWorldRotationAngles(ang, 0, 0);
     SetParentRotation({ });
 
-    m_model = GameObjectModel::Create(*this, sWorld->GetDataPath());
+    CreateModel();
     LastUsedScriptID = GetGOInfo()->ScriptId;
     AIM_Initialize();
 
@@ -260,7 +260,7 @@ bool Transport::Create(uint32 guidlow, uint32 entry, uint32 mapid, float x, floa
     std::string basePath = (sWorld->GetDataPath() + "mmaps").c_str();
     for (uint32 x = 31; x <= 32; ++x)
         for (uint32 y = 31; y <= 32; ++y)
-            MMAP::MMapFactory::createOrGetMMapManager()->loadMap(basePath, GetGOInfo()->moTransport.mapID, x, y);
+            MMAP::MMapFactory::createOrGetMMapManager()->loadMap(GetGOInfo()->moTransport.mapID, x, y);
 
     return true;
 }

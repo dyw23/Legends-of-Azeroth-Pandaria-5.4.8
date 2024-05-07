@@ -1055,7 +1055,7 @@ bool ConditionMgr::IsObjectMeetingSpellClickConditions(uint32 creatureId, uint32
         ConditionsByEntryMap::const_iterator i = itr->second.find(spellId);
         if (i != itr->second.end())
         {
-            TC_LOG_DEBUG("condition", "GetConditionsForSpellClickEvent: found conditions for Vehicle entry %u spell %u", creatureId, spellId);
+            TC_LOG_DEBUG("condition", "GetConditionsForSpellClickEvent: found conditions for SpellClickEvent entry %u spell %u", creatureId, spellId);
             ConditionSourceInfo sourceInfo(clicker, target);
             return IsObjectMeetToConditions(sourceInfo, i->second);
         }
@@ -2006,7 +2006,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond) const
                 return false;
             }
 
-            if (areaEntry->zone != 0)
+            if (areaEntry->ParentAreaID != 0)
             {
                 TC_LOG_ERROR("sql.sql", "ZoneID condition requires to be in area (%u) which is a subzone but zone expected, skipped", cond->ConditionValue1);
                 return false;

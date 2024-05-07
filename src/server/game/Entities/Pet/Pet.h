@@ -35,7 +35,7 @@ typedef std::vector<uint32> AutoSpellList;
 
 class Player;
 
-class Pet : public Guardian
+class TC_GAME_API Pet : public Guardian
 {
     public:
         static const float BaseRunSpeedRate;
@@ -168,9 +168,6 @@ class Pet : public Guardian
         {
             ASSERT(false);
         }
-        void DeleteFromDB()                                 // override of Creature::DeleteFromDB - must not be called
-        {
-            ASSERT(false);
-        }
+
 };
 #endif

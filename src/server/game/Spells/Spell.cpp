@@ -33,6 +33,7 @@
 #include "Totem.h"
 #include "Spell.h"
 #include "DynamicObject.h"
+#include "G3DPosition.hpp"
 #include "Guild.h"
 #include "Group.h"
 #include "UpdateData.h"
@@ -62,6 +63,7 @@
 #include "BattlePetMgr.h"
 #include "TradeData.h"
 #include "Random.h"
+#include "VMapManager2.h"
 
 extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
 
@@ -1478,6 +1480,22 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
              dest = SpellDestination(x, y, liquidLevel, m_caster->GetOrientation());
              break;
         }
+        case TARGET_DEST_CASTER_FRONT_LEAP:
+        {
+            Unit* unitCaster = m_caster->ToUnit();
+            if (!unitCaster)
+                break;
+
+            //float dist = spellEffectInfo.CalcRadius(unitCaster);
+            float dist = m_spellInfo->Effects[effIndex].CalcRadius(m_caster);
+            float angle = targetType.CalcDirectionAngle();
+
+            Position pos = dest._position;
+
+            unitCaster->MovePositionToFirstCollision(pos, dist, angle);
+            dest.Relocate(pos);
+            break;
+        }        
         default:
         {
             float dist;
@@ -6536,8 +6554,10 @@ SpellCastResult Spell::CheckCast(bool strict)
 
                             float objSize = target->GetObjectSize();
                             float range = m_spellInfo->GetMaxRange(true, m_caster, this) * 1.5f + objSize; // can't be overly strict
+
                             m_preGeneratedPath.reset(new PathGenerator(m_caster));
                             m_preGeneratedPath->SetPathLengthLimit(range);
+                            
                             // first try with raycast, if it fails fall back to normal path
                             bool result = m_preGeneratedPath->CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), false, true, true);
                             if (m_preGeneratedPath->GetPathType() & PATHFIND_SHORT)
@@ -6554,7 +6574,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                                 m_preGeneratedPath->SetPathType(PATHFIND_BLANK); // Clear path if straight line succeeded - let caster boost through the air (but only if we don't have any point higher than caster, otherwise we risk falling below ground)
 
                             if (m_preGeneratedPath->GetPathType() != PATHFIND_BLANK)
-                               m_preGeneratedPath->ReducePathLenghtByDist(objSize); // move back
+                                m_preGeneratedPath->ShortenPathUntilDist(PositionToVector3(target), objSize); // move back
                         }
                     }
                 }
@@ -6893,7 +6913,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 {
                     Battlefield* Bf = sBattlefieldMgr->GetBattlefieldToZoneId(m_originalCaster->GetZoneId());
                     if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(m_originalCaster->GetAreaId()))
-                        if (area->flags & AREA_FLAG_NO_FLY_ZONE  || (Bf && !Bf->CanFlyIn()))
+                        if (area->Flags & AREA_FLAG_NO_FLY_ZONE  || (Bf && !Bf->CanFlyIn()))
                             return (_triggeredCastFlags & TRIGGERED_DONT_REPORT_CAST_ERROR) ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_NOT_HERE;
                 }
                 break;

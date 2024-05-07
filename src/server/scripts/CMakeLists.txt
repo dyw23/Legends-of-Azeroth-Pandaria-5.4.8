@@ -113,9 +113,6 @@ target_include_directories(scripts
     ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
     ${CMAKE_SOURCE_DIR}/src/server/database/Database
     ${CMAKE_SOURCE_DIR}/src/server/database/Logging    
-    ${CMAKE_SOURCE_DIR}/src/server/collision
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Management
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Models
     ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
 )
 

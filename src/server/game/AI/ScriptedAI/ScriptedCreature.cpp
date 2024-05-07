@@ -561,7 +561,7 @@ bool ScriptedAI::EnterEvadeIfOutOfCombatArea(uint32 const diff, const float dist
             break;
         default: // For most of creatures that certain area is their home area.
             TC_LOG_INFO("misc", "TSCR: EnterEvadeIfOutOfCombatArea used for creature entry %u, but does not have any definition. Using the default one.", me->GetEntry());
-            uint32 homeAreaId = me->GetMap()->GetAreaId(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ());
+            uint32 homeAreaId = me->GetMap()->GetAreaId(me->GetPhaseMask(), me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ());
             if (me->GetAreaId() == homeAreaId && me->GetDistance(me->GetHomePosition()) <= distance)
                 return false;
     }

@@ -3371,10 +3371,10 @@ private:
                     default:
                     {
                         CreatureDisplayInfoEntry const* info = sCreatureDisplayInfoStore.LookupEntry(unit->GetDisplayId());
-                        if (!info || !info->ModelId)
+                        if (!info || !info->ModelID)
                             return true;
 
-                        CreatureModelDataEntry const* model = sCreatureModelDataStore.LookupEntry(info->ModelId);
+                        CreatureModelDataEntry const* model = sCreatureModelDataStore.LookupEntry(info->ModelID);
                         if (!model)
                             return true;
 

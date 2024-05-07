@@ -3674,56 +3674,47 @@ bool Unit::isInAccessiblePlaceFor(Creature const* c) const
 
 bool Unit::IsInWater() const
 {
-    return GetBaseMap()->IsInWater(GetPositionX(), GetPositionY(), GetPositionZ(), NULL);
+    return GetLiquidStatus() & (LIQUID_MAP_IN_WATER | LIQUID_MAP_UNDER_WATER);
 }
 
 bool Unit::IsUnderWater() const
 {
-    return GetBaseMap()->IsUnderWater(GetPositionX(), GetPositionY(), GetPositionZ(), NULL);
+    return GetLiquidStatus() & LIQUID_MAP_UNDER_WATER;
 }
 
-void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
+void Unit::ProcessPositionDataChanged(PositionFullTerrainStatus const& data)
 {
-    if (!IsPet() && !IsVehicle())
+    ZLiquidStatus oldLiquidStatus = GetLiquidStatus();
+    WorldObject::ProcessPositionDataChanged(data);
+    ProcessTerrainStatusUpdate(oldLiquidStatus, data.liquidInfo);
+}
+
+void Unit::ProcessTerrainStatusUpdate(ZLiquidStatus /*oldLiquidStatus*/, Optional<LiquidData> const& newLiquidData)
+{
+    if (!IsControlledByPlayer())
         return;
 
-    LiquidData liquid_status;
-    ZLiquidStatus res = m->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
-    if (!res)
-    {
-        if (_lastLiquid && _lastLiquid->SpellId)
-            RemoveAurasDueToSpell(_lastLiquid->SpellId);
-
-        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_NOT_UNDERWATER);
-        _lastLiquid = NULL;
-        return;
-    }
-
-    if (uint32 liqEntry = liquid_status.entry)
-    {
-        LiquidTypeEntry const* liquid = sLiquidTypeStore.LookupEntry(liqEntry);
-        if (_lastLiquid && _lastLiquid->SpellId && _lastLiquid->Id != liqEntry)
-            RemoveAurasDueToSpell(_lastLiquid->SpellId);
-
-        if (liquid && liquid->SpellId)
-        {
-            if (res & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
-            {
-                if (!HasAura(liquid->SpellId))
-                    CastSpell(this, liquid->SpellId, true);
-            }
-            else
-                RemoveAurasDueToSpell(liquid->SpellId);
-        }
-
+    // remove appropriate auras if we are swimming/not swimming respectively
+    if (IsInWater())
         RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_NOT_ABOVEWATER);
-        _lastLiquid = liquid;
-    }
-    else if (_lastLiquid && _lastLiquid->SpellId)
-    {
-        RemoveAurasDueToSpell(_lastLiquid->SpellId);
+    else
         RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_NOT_UNDERWATER);
-        _lastLiquid = NULL;
+
+    // liquid aura handling
+    LiquidTypeEntry const* curLiquid = nullptr;
+    if (IsInWater() && newLiquidData)
+        curLiquid = sLiquidTypeStore.LookupEntry(newLiquidData->entry);
+    if (curLiquid != _lastLiquid)
+    {
+        if (_lastLiquid && _lastLiquid->SpellID)
+            RemoveAurasDueToSpell(_lastLiquid->SpellID);
+        Player* player = GetCharmerOrOwnerPlayerOrPlayerItself();
+
+        // Set _lastLiquid before casting liquid spell to avoid infinite loops
+        _lastLiquid = curLiquid;
+
+        if (curLiquid && curLiquid->SpellID && (!player || !player->IsGameMaster()))
+            CastSpell(this, curLiquid->SpellID, true);
     }
 }
 
@@ -11468,7 +11459,8 @@ void Unit::Mount(uint32 mount, uint32 VehicleId, uint32 creatureEntry)
             }
         }
 
-        player->SendMovementSetCollisionHeight(player->GetCollisionHeight(true));
+        player->SendMovementSetCollisionHeight(player->GetCollisionHeight());
+
     }
 
     RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MOUNT);
@@ -11483,7 +11475,7 @@ void Unit::Dismount()
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT);
 
     if (Player* thisPlayer = ToPlayer())
-        thisPlayer->SendMovementSetCollisionHeight(thisPlayer->GetCollisionHeight(false));
+        thisPlayer->SendMovementSetCollisionHeight(thisPlayer->GetCollisionHeight());
 
     ObjectGuid guid = GetGUID();
     WorldPacket data(SMSG_DISMOUNT, 8);
@@ -11549,9 +11541,9 @@ MountCapabilityEntry const* Unit::GetMountCapability(uint32 mountType) const
         AreaTableEntry const* zone = sAreaTableStore.LookupEntry(topZoneId);
         if (!zone)
             break;
-        if (zone->zone == 0)
+        if (zone->ParentAreaID == 0)
             break;
-        topZoneId = zone->zone;
+        topZoneId = zone->ParentAreaID;
     }
 
     uint32 ridingSkill = 5000;
@@ -11575,7 +11567,7 @@ MountCapabilityEntry const* Unit::GetMountCapability(uint32 mountType) const
             {
                 float x, y, z;
                 GetPosition(x, y, z);
-                ok = GetMap()->getLiquidStatus(x, y, z, MAP_ALL_LIQUIDS) & (LIQUID_MAP_WATER_WALK | LIQUID_MAP_IN_WATER | LIQUID_MAP_UNDER_WATER);
+                ok = GetMap()->GetLiquidStatus(GetPhaseMask(), x, y, z, MAP_ALL_LIQUIDS) & (LIQUID_MAP_WATER_WALK | LIQUID_MAP_IN_WATER | LIQUID_MAP_UNDER_WATER);
             }
             if (!ok)
                 continue;
@@ -17239,17 +17231,22 @@ void Unit::SetPhaseMask(uint32 newPhaseMask, bool update)
 
     WorldObject::SetPhaseMask(newPhaseMask, update);
 
-    if (!IsInWorld())
-        return;
+    // Phase pets and summons
+    if (IsInWorld())
+    {
+         for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+            if ((*itr)->GetTypeId() == TYPEID_UNIT)
+                (*itr)->SetPhaseMask(newPhaseMask, true);
 
-    for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
-        if ((*itr)->GetTypeId() == TYPEID_UNIT)
-            (*itr)->SetPhaseMask(newPhaseMask, true);
+        for (uint8 i = 0; i < SUMMON_SLOT_MAX; ++i)
+            if (m_SummonSlot [i])
+                if (Creature* summon = GetMap()->GetCreature(m_SummonSlot [i]))
+                    summon->SetPhaseMask(newPhaseMask, true);       
+    }
 
-    for (uint8 i = 0; i < SUMMON_SLOT_MAX; ++i)
-        if (m_SummonSlot [i])
-            if (Creature* summon = GetMap()->GetCreature(m_SummonSlot [i]))
-                summon->SetPhaseMask(newPhaseMask, true);
+    // Update visibility after phasing pets and summons so they wont despawn
+    if (update)
+        UpdateObjectVisibility();            
 }
 
 class Unit::AINotifyTask : public BasicEvent
@@ -18240,6 +18237,20 @@ bool Unit::IsFalling() const
     return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR) || movespline->isFalling();
 }
 
+bool Unit::CanSwim() const
+{
+    // Mirror client behavior, if this method returns false then client will not use swimming animation and for players will apply gravity as if there was no water
+    if (HasUnitFlag(UNIT_FLAG_CANNOT_SWIM))
+        return false;
+    if (HasUnitFlag(UNIT_FLAG_PLAYER_CONTROLLED)) // is player
+        return true;
+    if (HasUnitFlag2(UNIT_FLAG2_UNUSED_6))
+        return false;
+    if (HasUnitFlag(UNIT_FLAG_PET_IN_COMBAT))
+        return true;
+    return HasUnitFlag(UNIT_FLAG_RENAME | UNIT_FLAG_CAN_SWIM);
+}
+
 void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool casting /*= false*/)
 {
     DisableSpline();
@@ -18560,16 +18571,17 @@ bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool tel
         return false;
     }
 
-    bool turn = (GetOrientation() != orientation);
-    bool relocated = (teleport || GetPositionX() != x || GetPositionY() != y || GetPositionZ() != z);
+    // Check if angular distance changed
+    bool const turn = G3D::fuzzyGt(M_PI - fabs(fabs(GetOrientation() - orientation) - M_PI), 0.0f);
 
-    if (turn)
-        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TURNING);
+    // G3D::fuzzyEq won't help here, in some cases magnitudes differ by a little more than G3D::eps, but should be considered equal
+    bool const relocated = (teleport ||
+        std::fabs(GetPositionX() - x) > 0.001f ||
+        std::fabs(GetPositionY() - y) > 0.001f ||
+        std::fabs(GetPositionZ() - z) > 0.001f);
 
     if (relocated)
     {
-        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MOVE);
-
         // move and update visible state if need
         if (GetTypeId() == TYPEID_PLAYER)
             GetMap()->PlayerRelocation(ToPlayer(), x, y, z, orientation);
@@ -18579,8 +18591,8 @@ bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool tel
     else if (turn)
         UpdateOrientation(orientation);
 
-    // code block for underwater state update
-    UpdateUnderwaterState(GetMap(), x, y, z);
+
+    UpdatePositionData();
 
     return (relocated || turn);
 }
@@ -19224,9 +19236,6 @@ bool Unit::SetSwim(bool enable)
     else
         RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
 
-    if (GetTypeId() == TYPEID_UNIT)
-        ApplyModFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_15, enable); // Acts like MOVEMENTFLAG_FLYING when underwater - prevents creature from falling down, allows pitching
-
     if (enable)
         Movement::PacketSender(this, SMSG_SPLINE_MOVE_START_SWIM, NULL_OPCODE).Send();
     else
@@ -19576,6 +19585,33 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
     builder.Finish();
 
     BuildDynamicValuesUpdate(updateType, data);
+}
+
+// Returns collisionheight of the unit. If it is 0, it returns DEFAULT_COLLISION_HEIGHT.
+float Unit::GetCollisionHeight() const
+{
+    float scaleMod = GetObjectScale(); // 99% sure about this
+
+    if (IsMounted())
+    {
+        if (CreatureDisplayInfoEntry const* mountDisplayInfo = sCreatureDisplayInfoStore.LookupEntry(GetMountDisplayId()))
+        {
+            if (CreatureModelDataEntry const* mountModelData = sCreatureModelDataStore.LookupEntry(mountDisplayInfo->ModelID))
+            {
+                CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStore.AssertEntry(GetNativeDisplayId());
+                CreatureModelDataEntry const* modelData = sCreatureModelDataStore.AssertEntry(displayInfo->ModelID);
+                float const collisionHeight = scaleMod * (mountModelData->MountHeight + modelData->CollisionHeight * modelData->ModelScale * displayInfo->CreatureModelScale * 0.5f);
+                return collisionHeight == 0.0f ? DEFAULT_COLLISION_HEIGHT : collisionHeight;
+            }
+        }
+    }
+
+    //! Dismounting case - use basic default model data
+    CreatureDisplayInfoEntry const* displayInfo = sCreatureDisplayInfoStore.AssertEntry(GetNativeDisplayId());
+    CreatureModelDataEntry const* modelData = sCreatureModelDataStore.AssertEntry(displayInfo->ModelID);
+
+    float const collisionHeight = scaleMod * modelData->CollisionHeight * modelData->ModelScale * displayInfo->CreatureModelScale;
+    return collisionHeight == 0.0f ? DEFAULT_COLLISION_HEIGHT : collisionHeight;
 }
 
 void Unit::SendSetVehicleRecId(uint32 vehicleId)

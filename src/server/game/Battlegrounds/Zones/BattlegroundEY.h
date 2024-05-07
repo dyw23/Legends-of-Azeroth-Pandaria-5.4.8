@@ -346,10 +346,10 @@ class BattlegroundEY : public Battleground
         void RespawnFlag(bool send_message);
         void RespawnFlagAfterDrop();
 
-        void RemovePlayer(Player* player, uint64 guid, uint32 team);
+        void RemovePlayer(Player* player, uint64 guid, uint32 team) override;
         void HandleBuffUse(uint64 buff_guid);
-        void HandleAreaTrigger(Player* Source, uint32 Trigger);
-        void HandleKillPlayer(Player* player, Player* killer);
+        void HandleAreaTrigger(Player* Source, uint32 Trigger) override;
+        void HandleKillPlayer(Player* player, Player* killer) override;
         WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
         bool SetupBattleground();
         void Reset() override;

@@ -2358,7 +2358,8 @@ class npc_death_ray : public CreatureScript
                 nextPos = me->GetHomePosition();
                 nextPos.m_positionX += dist * cosf(angle);
                 nextPos.m_positionY += dist * sinf(angle);
-                me->UpdateAllowedPositionZ(nextPos.GetPositionX(), nextPos.GetPositionY(), nextPos.m_positionZ, 5.0f);
+                //me->UpdateAllowedPositionZ(nextPos.GetPositionX(), nextPos.GetPositionY(), nextPos.m_positionZ, 5.0f);
+                me->UpdateAllowedPositionZ(nextPos.GetPositionX(), nextPos.GetPositionY(), nextPos.m_positionZ);
                 moveToNextPos = true;
             }
 

@@ -76,7 +76,7 @@ struct CreatureData
 {
     CreatureData() : dbData(true) { }
     uint32 id;                                              // entry in creature_template
-    uint16 mapid;
+    uint16 mapId;
     uint32 phaseMask;
     uint32 displayid;
     int8 equipmentId;
@@ -294,7 +294,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool IsGuard() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_GUARD; }
         
         bool CanWalk() const { return GetInhabitType() & INHABIT_GROUND; }
-        bool CanSwim() const { return GetInhabitType() & INHABIT_WATER || IsPet(); }
+        bool CanSwim() const override;
+        bool CanEnterWater() const override;
         bool CanFly() const override { return GetInhabitType() & INHABIT_AIR; }
 
         // Used to dynamically change allowed path generator and movement flags behavior during scripts.
@@ -333,7 +334,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool AIM_Initialize(CreatureAI* ai = NULL);
         void Motion_Initialize();
 
-        CreatureAI* AI() const { return reinterpret_cast<CreatureAI*>(i_AI); }
+        CreatureAI* AI() const { return reinterpret_cast<CreatureAI*>(GetAI()); }
 
         SpellSchoolMask GetMeleeDamageSchoolMask() const { return m_meleeDamageSchoolMask; }
         void SetMeleeDamageSchool(SpellSchools school) { m_meleeDamageSchoolMask = SpellSchoolMask(1 << school); }
@@ -353,18 +354,20 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         bool HasSpell(uint32 spellID) const;
 
-        bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
+        void SetPhaseMask(uint32 newPhaseMask, bool update) override;// overwrite Unit::SetPhaseMask
+        bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data = nullptr);
 
         void UpdateMovementFlags(bool force = false);
+
         void SetFlying(bool enable);
 
-        bool UpdateStats(Stats stat);
-        bool UpdateAllStats();
-        void UpdateResistances(uint32 school);
-        void UpdateArmor();
-        void UpdateMaxHealth();
-        void UpdateMaxPower(Powers power);
-        void UpdateAttackPowerAndDamage(bool ranged = false);
+        bool UpdateStats(Stats stat) override;
+        bool UpdateAllStats() override;
+        void UpdateResistances(uint32 school) override;
+        void UpdateArmor() override;
+        void UpdateMaxHealth() override;
+        void UpdateMaxPower(Powers power) override;
+        void UpdateAttackPowerAndDamage(bool ranged = false) override;
         void UpdateDamagePhysical(WeaponAttackType attType);
 
         int8 GetOriginalEquipmentId() const { return m_originalEquipmentId; }
@@ -393,12 +396,12 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         float GetSparringHealthLimit() const;
 
-        std::string GetAIName() const;
+        std::string const& GetAIName() const;
         std::string GetScriptName() const;
         uint32 GetScriptId() const;
 
         // override WorldObject function for proper name localization
-        std::string const& GetNameForLocaleIdx(LocaleConstant locale_idx) const;
+        std::string const& GetNameForLocaleIdx(LocaleConstant locale_idx) const override;
 
         void setDeathState(DeathState s) override;                   // override virtual Unit::setDeathState
 
@@ -407,7 +410,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void SaveToDB();
                                                             // overriden in Pet
         virtual void SaveToDB(uint32 mapid, uint16 spawnMask, uint32 phaseMask);
-        virtual void DeleteFromDB();                        // overriden in Pet
+        void DeleteFromDB();                        // overriden in Pet
 
         Loot loot;
         bool lootForPickPocketed;

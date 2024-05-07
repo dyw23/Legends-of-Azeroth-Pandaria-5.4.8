@@ -206,7 +206,7 @@ bool SpellClickInfo::IsFitToRequirements(Unit const* clicker, Unit const* clicke
     if (!playerClicker)
         return true;
 
-    Unit const* summoner = NULL;
+    Unit const* summoner = nullptr;
     // Check summoners for party
     if (clickee->IsSummon())
         summoner = clickee->ToTempSummon()->GetSummoner();
@@ -538,7 +538,7 @@ void ObjectMgr::LoadCreatureTemplates()
         creatureTemplate.TrackingQuestID    = fields[89].GetUInt32();
         creatureTemplate.MechanicImmuneMask = fields[90].GetUInt32();
         creatureTemplate.flags_extra        = fields[91].GetUInt32();
-        creatureTemplate.ScriptID           = GetScriptId(fields[92].GetCString());
+        creatureTemplate.ScriptID           = GetScriptId(fields[92].GetString());
 
         ++count;
     }
@@ -1059,7 +1059,7 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
     if (cInfo->scale <= 0.0f)
     {
         if (displayScaleEntry)
-            const_cast<CreatureTemplate*>(cInfo)->scale = displayScaleEntry->scale;
+            const_cast<CreatureTemplate*>(cInfo)->scale = displayScaleEntry->CreatureModelScale;
         else
             const_cast<CreatureTemplate*>(cInfo)->scale = 1.0f;
     }
@@ -1563,8 +1563,8 @@ void ObjectMgr::LoadLinkedRespawn()
                     break;
                 }
 
-                const MapEntry* const map = sMapStore.LookupEntry(master->mapid);
-                if (!map || !map->Instanceable() || (master->mapid != slave->mapid))
+                const MapEntry* const map = sMapStore.LookupEntry(master->mapId);
+                if (!map || !map->Instanceable() || (master->mapId != slave->mapId))
                 {
                     TC_LOG_ERROR("sql.sql", "Creature '%u' linking to '%u' on an unpermitted map.", guidLow, linkedGuidLow);
                     error = true;
@@ -1601,7 +1601,7 @@ void ObjectMgr::LoadLinkedRespawn()
                 }
 
                 const MapEntry* const map = sMapStore.LookupEntry(master->mapid);
-                if (!map || !map->Instanceable() || (master->mapid != slave->mapid))
+                if (!map || !map->Instanceable() || (master->mapid != slave->mapId))
                 {
                     TC_LOG_ERROR("sql.sql", "Creature '%u' linking to '%u' on an unpermitted map.", guidLow, linkedGuidLow);
                     error = true;
@@ -1674,8 +1674,8 @@ void ObjectMgr::LoadLinkedRespawn()
                     break;
                 }
 
-                const MapEntry* const map = sMapStore.LookupEntry(master->mapid);
-                if (!map || !map->Instanceable() || (master->mapid != slave->mapid))
+                const MapEntry* const map = sMapStore.LookupEntry(master->mapId);
+                if (!map || !map->Instanceable() || (master->mapId != slave->mapid))
                 {
                     TC_LOG_ERROR("sql.sql", "Creature '%u' linking to '%u' on an unpermitted map.", guidLow, linkedGuidLow);
                     error = true;
@@ -1722,8 +1722,8 @@ bool ObjectMgr::SetCreatureLinkedRespawn(uint32 guidLow, uint32 linkedGuidLow)
 
     const CreatureData* slave = GetCreatureData(linkedGuidLow);
 
-    const MapEntry* const map = sMapStore.LookupEntry(master->mapid);
-    if (!map || !map->Instanceable() || (master->mapid != slave->mapid))
+    const MapEntry* const map = sMapStore.LookupEntry(master->mapId);
+    if (!map || !map->Instanceable() || (master->mapId != slave->mapId))
     {
         TC_LOG_ERROR("sql.sql", "Creature '%u' linking to '%u' on an unpermitted map.", guidLow, linkedGuidLow);
         return false;
@@ -1877,7 +1877,7 @@ void ObjectMgr::LoadCreatures()
 
         CreatureData& data        = _creatureDataStore[guid];
         data.id                   = entry;
-        data.mapid                = fields[2].GetUInt16();
+        data.mapId                = fields[2].GetUInt16();
         data.displayid            = fields[3].GetUInt32();
         data.equipmentId          = fields[4].GetInt8();
         data.posX                 = fields[5].GetFloat();
@@ -1900,25 +1900,22 @@ void ObjectMgr::LoadCreatures()
         data.unit_flags           = fields[22].GetUInt32();
         data.unit_flags2          = fields[23].GetUInt32();
         data.dynamicflags         = fields[24].GetUInt32();
-        data.ScriptId             = GetScriptId(fields[25].GetCString());
-
-        if (!data.ScriptId)
-            data.ScriptId = cInfo->ScriptID;
+        data.ScriptId             = GetScriptId(fields[25].GetString());
 
         data.WalkMode             = fields[26].GetFloat();
 
         data.gameEventId = gameEvent;
 
-        MapEntry const* mapEntry = sMapStore.LookupEntry(data.mapid);
+        MapEntry const* mapEntry = sMapStore.LookupEntry(data.mapId);
         if (!mapEntry)
         {
-            TC_LOG_ERROR("sql.sql", "Table `creature` have creature (GUID: %u) that spawned at not existed map (Id: %u), skipped.", guid, data.mapid);
+            TC_LOG_ERROR("sql.sql", "Table `creature` have creature (GUID: %u) that spawned at not existed map (Id: %u), skipped.", guid, data.mapId);
             continue;
         }
 
         // Skip spawnMask check for transport maps
-        if (!_transportMaps.count(data.mapid) && data.spawnMask & ~spawnMasks[data.mapid])
-            TC_LOG_ERROR("sql.sql", "Table `creature` have creature (GUID: %u) that have wrong spawn mask %u including not supported difficulty modes for map (Id: %u) spawnMasks[data.mapid]: %u.", guid, data.spawnMask, data.mapid, spawnMasks[data.mapid]);
+        if (!_transportMaps.count(data.mapId) && data.spawnMask & ~spawnMasks[data.mapId])
+            TC_LOG_ERROR("sql.sql", "Table `creature` have creature (GUID: %u) that have wrong spawn mask %u including not supported difficulty modes for map (Id: %u) spawnMasks[data.mapId]: %u.", guid, data.spawnMask, data.mapId, spawnMasks[data.mapId]);
 
         bool ok = true;
         for (uint32 diff = 0; diff < MAX_TEMPLATE_DIFFICULTY - 1 && ok; ++diff)
@@ -1993,8 +1990,8 @@ void ObjectMgr::LoadCreatures()
 
         if (sWorld->getBoolConfig(CONFIG_CALCULATE_CREATURE_ZONE_AREA_DATA))
         {
-            uint32 zoneId = sMapMgr->GetZoneId(data.mapid, data.posX, data.posY, data.posZ);
-            uint32 areaId = sMapMgr->GetAreaId(data.mapid, data.posX, data.posY, data.posZ);
+            uint32 zoneId = sMapMgr->GetZoneId(data.phaseMask, data.mapId, data.posX, data.posY, data.posZ);
+            uint32 areaId = sMapMgr->GetAreaId(data.phaseMask, data.mapId, data.posX, data.posY, data.posZ);
 
             WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_ZONE_AREA_DATA);
 
@@ -2002,7 +1999,7 @@ void ObjectMgr::LoadCreatures()
             stmt->setUInt32(1, areaId);
             stmt->setUInt64(2, guid);
 
-             WorldDatabase.Execute(stmt);
+            WorldDatabase.Execute(stmt);
         }
 
         // Add to grid if not managed by the game event or pool system
@@ -2024,7 +2021,7 @@ void ObjectMgr::AddCreatureToGrid(uint32 guid, CreatureData const* data)
         if (mask & 1)
         {
             CellCoord cellCoord = Trinity::ComputeCellCoord(data->posX, data->posY);
-            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->mapid, i)][cellCoord.GetId()];
+            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->mapId, i)][cellCoord.GetId()];
             cell_guids.creatures.insert(guid);
         }
     }
@@ -2038,7 +2035,7 @@ void ObjectMgr::RemoveCreatureFromGrid(uint32 guid, CreatureData const* data)
         if (mask & 1)
         {
             CellCoord cellCoord = Trinity::ComputeCellCoord(data->posX, data->posY);
-            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->mapid, i)][cellCoord.GetId()];
+            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->mapId, i)][cellCoord.GetId()];
             cell_guids.creatures.erase(guid);
         }
     }
@@ -2139,7 +2136,7 @@ uint32 ObjectMgr::AddCreData(uint32 entry, uint32 /*team*/, uint32 mapId, float 
     uint32 guid = GenerateLowGuid(HIGHGUID_UNIT);
     CreatureData& data = NewOrExistCreatureData(guid);
     data.id = entry;
-    data.mapid = mapId;
+    data.mapId = mapId;
     data.displayid = 0;
     data.equipmentId = 0;
     data.posX = x;
@@ -2290,10 +2287,7 @@ void ObjectMgr::LoadGameobjects()
         data.phaseMask      = fields[15].GetUInt32();
         int16 gameEvent     = fields[16].GetInt8();
         uint32 PoolId       = fields[17].GetUInt32();
-        data.ScriptId       = GetScriptId(fields[18].GetCString());
-
-        if (!data.ScriptId)
-            data.ScriptId = gInfo->ScriptId;
+        data.ScriptId       = GetScriptId(fields[18].GetString());
 
         data.gameEventId = gameEvent;
 
@@ -2335,8 +2329,8 @@ void ObjectMgr::LoadGameobjects()
 
         if (sWorld->getBoolConfig(CONFIG_CALCULATE_GAMEOBJECT_ZONE_AREA_DATA))
         {
-            uint32 zoneId = sMapMgr->GetZoneId(data.mapid, data.posX, data.posY, data.posZ);
-            uint32 areaId = sMapMgr->GetAreaId(data.mapid, data.posX, data.posY, data.posZ);
+            uint32 zoneId = sMapMgr->GetZoneId(data.phaseMask, data.mapid, data.posX, data.posY, data.posZ);
+            uint32 areaId = sMapMgr->GetAreaId(data.phaseMask, data.mapid, data.posX, data.posY, data.posZ);
 
             WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_GAMEOBJECT_ZONE_AREA_DATA);
 
@@ -3083,7 +3077,7 @@ void ObjectMgr::LoadSpellAreaTriggerTemplates()
             atTemplate.Radius = fields[3].GetFloat();
             atTemplate.ScaleX = fields[4].GetFloat();
             atTemplate.ScaleY = fields[5].GetFloat();
-            atTemplate.ScriptId = GetScriptId(fields[6].GetCString());
+            atTemplate.ScriptId = GetScriptId(fields[6].GetString());
             ++count;
         } while (result->NextRow());
     }
@@ -3145,7 +3139,7 @@ void ObjectMgr::LoadItemScriptNames()
                 continue;
             }
 
-            _itemTemplateStore[itemId].ScriptId = GetScriptId(fields[1].GetCString());
+            _itemTemplateStore[itemId].ScriptId = GetScriptId(fields[1].GetString());
             ++count;
         } while (result->NextRow());
     }
@@ -3580,7 +3574,7 @@ void ObjectMgr::LoadPlayerInfo()
 
                 if (rank >= MAX_SKILL_STEP)
                 {
-                    TC_LOG_ERROR("sql.sql", "Skill rank value %hu set for skill %hu raceMask %u classMask %u is too high, max allowed value is %d", rank, skill, raceMask, classMask, MAX_SKILL_STEP);
+                    TC_LOG_ERROR("sql.sql", "Skill rank value %hu set for skill %u raceMask %u classMask %u is too high, max allowed value is %d", rank, skill, raceMask, classMask, MAX_SKILL_STEP);
                     continue;
                 }
 
@@ -5082,8 +5076,8 @@ void ObjectMgr::LoadSpellScriptNames()
 
         Field* fields = result->Fetch();
 
-        int32 spellId          = fields[0].GetInt32();
-        char const* scriptName = fields[1].GetCString();
+        int32 spellId                = fields[0].GetInt32();
+        std::string const scriptName = fields[1].GetString();
 
         bool allRanks = false;
         if (spellId < 0)
@@ -5095,18 +5089,18 @@ void ObjectMgr::LoadSpellScriptNames()
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
         if (!spellInfo)
         {
-            TC_LOG_ERROR("sql.sql", "Scriptname: `%s` spell (Id: %d) does not exist.", scriptName, fields[0].GetInt32());
+            TC_LOG_ERROR("sql.sql", "Scriptname: `%s` spell (Id: %d) does not exist.", scriptName.c_str(), fields[0].GetInt32());
             continue;
         }
 
         if (allRanks)
         {
             if (!spellInfo->IsRanked())
-                TC_LOG_ERROR("sql.sql", "Scriptname: `%s` spell (Id: %d) has no ranks of spell.", scriptName, fields[0].GetInt32());
+                TC_LOG_ERROR("sql.sql", "Scriptname: `%s` spell (Id: %d) has no ranks of spell.", scriptName.c_str(), fields[0].GetInt32());
 
             if (spellInfo->GetFirstRankSpell()->Id != uint32(spellId))
             {
-                TC_LOG_ERROR("sql.sql", "Scriptname: `%s` spell (Id: %d) is not first rank of spell.", scriptName, fields[0].GetInt32());
+                TC_LOG_ERROR("sql.sql", "Scriptname: `%s` spell (Id: %d) is not first rank of spell.", scriptName.c_str(), fields[0].GetInt32());
                 continue;
             }
             while (spellInfo)
@@ -5118,7 +5112,7 @@ void ObjectMgr::LoadSpellScriptNames()
         else
         {
             if (spellInfo->IsRanked())
-                TC_LOG_ERROR("sql.sql", "Scriptname: `%s` spell (Id: %d) is ranked spell. Perhaps not all ranks are assigned to this script.", scriptName, spellId);
+                TC_LOG_ERROR("sql.sql", "Scriptname: `%s` spell (Id: %d) is ranked spell. Perhaps not all ranks are assigned to this script.", scriptName.c_str(), spellId);
 
             _spellScriptsStore.insert(SpellScriptsContainer::value_type(spellInfo->Id, GetScriptId(scriptName)));
         }
@@ -5156,7 +5150,7 @@ void ObjectMgr::ValidateSpellScripts()
             bool valid = true;
             if (!spellScript && !auraScript)
             {
-                TC_LOG_ERROR("scripts", "Functions GetSpellScript() and GetAuraScript() of script `%s` do not return objects - script skipped",  GetScriptName(sitr->second->second));
+                TC_LOG_ERROR("scripts", "Functions GetSpellScript() and GetAuraScript() of script `%s` do not return objects - script skipped",  GetScriptName(sitr->second->second).c_str());
                 valid = false;
             }
             if (spellScript)
@@ -5296,7 +5290,7 @@ void ObjectMgr::LoadInstanceTemplate()
 
         instanceTemplate.AllowMount = fields[3].GetBool();
         instanceTemplate.Parent     = uint32(fields[1].GetUInt16());
-        instanceTemplate.ScriptId   = sObjectMgr->GetScriptId(fields[2].GetCString());
+        instanceTemplate.ScriptId   = sObjectMgr->GetScriptId(fields[2].GetString());
 
         _instanceTemplateStore[mapID] = instanceTemplate;
 
@@ -6053,7 +6047,7 @@ WorldSafeLocsEntry const* ObjectMgr::GetClosestGraveYard(WorldLocation const& lo
 
     // search for zone associated closest graveyard
     uint32 areaId, zoneId;
-    sMapMgr->GetZoneAndAreaId(zoneId, areaId, MapId, x, y, z);
+    sMapMgr->GetZoneAndAreaId(PHASEMASK_NORMAL, zoneId, areaId, MapId, x, y, z);
 
     if (!zoneId)
     {
@@ -6802,7 +6796,7 @@ void ObjectMgr::LoadGameObjectTemplate()
 
         got.unkInt32 = fields[46].GetInt32();
         got.AIName = fields[47].GetString();
-        got.ScriptId = GetScriptId(fields[48].GetCString());
+        got.ScriptId = GetScriptId(fields[48].GetString());
 
         // Checks
 
@@ -7678,13 +7672,12 @@ void ObjectMgr::LoadNPCSpellClickSpells()
 
     // all spellclick data loaded, now we check if there are creatures with NPC_FLAG_SPELLCLICK but with no data
     // NOTE: It *CAN* be the other way around: no spellclick flag but with spellclick data, in case of creature-only vehicle accessories
-    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplates();
-    for (CreatureTemplateContainer::const_iterator itr = ctc->begin(); itr != ctc->end(); ++itr)
+    for (auto& creatureTemplatePair : _creatureTemplateStore)
     {
-        if ((itr->second.npcflag & UNIT_NPC_FLAG_SPELLCLICK) && _spellClickInfoStore.find(itr->second.Entry) == _spellClickInfoStore.end())
+        if ((creatureTemplatePair.second.npcflag & UNIT_NPC_FLAG_SPELLCLICK) && !_spellClickInfoStore.count(creatureTemplatePair.first))
         {
-            TC_LOG_ERROR("sql.sql", "npc_spellclick_spells: Creature template %u has UNIT_NPC_FLAG_SPELLCLICK but no data in spellclick table! Removing flag", itr->second.Entry);
-            const_cast<CreatureTemplate*>(&itr->second)->npcflag &= ~UNIT_NPC_FLAG_SPELLCLICK;
+            TC_LOG_ERROR("sql.sql", "npc_spellclick_spells: Creature template %u has UNIT_NPC_FLAG_SPELLCLICK but no data in spellclick table! Removing flag", creatureTemplatePair.first);
+            creatureTemplatePair.second.npcflag &= ~UNIT_NPC_FLAG_SPELLCLICK;
         }
     }
 
@@ -9282,9 +9275,11 @@ void ObjectMgr::LoadScriptNames()
         return;
     }
 
+    _scriptNamesStore.reserve(result->GetRowCount() + 1);
+
     do
     {
-        _scriptNamesStore.emplace_back((*result)[0].GetCString());
+        _scriptNamesStore.emplace_back((*result)[0].GetString());
     }
     while (result->NextRow());
 
@@ -9298,15 +9293,26 @@ void ObjectMgr::LoadScriptNames()
     TC_LOG_INFO("server.loading", ">> Loaded " SZFMTD " ScriptNames in %u ms", _scriptNamesStore.size(), GetMSTimeDiffToNow(oldMSTime));
 }
 
-uint32 ObjectMgr::GetScriptId(const char *name)
+ObjectMgr::ScriptNameContainer const& ObjectMgr::GetAllScriptNames() const
+{
+    return _scriptNamesStore;
+}
+
+std::string const& ObjectMgr::GetScriptName(uint32 id) const
+{
+    static std::string const empty = "";
+    return (id < _scriptNamesStore.size()) ? _scriptNamesStore[id] : empty;
+}
+
+uint32 ObjectMgr::GetScriptId(std::string const& name)
 {
     // use binary search to find the script name in the sorted vector
     // assume "" is the first element
-    if (!name)
+    if (name.empty())
         return 0;
 
     ScriptNameContainer::const_iterator itr = std::lower_bound(_scriptNamesStore.begin(), _scriptNamesStore.end(), name);
-    if (itr == _scriptNamesStore.end() || *itr != name)
+    if (itr == _scriptNamesStore.end() || (*itr != name))
         return 0;
 
     return uint32(itr - _scriptNamesStore.begin());
@@ -10343,7 +10349,7 @@ void ObjectMgr::LoadSceneTemplates()
         sceneTemplate.SceneId = sceneId;
         sceneTemplate.PlaybackFlags = fields[1].GetUInt32();
         sceneTemplate.ScenePackageId = fields[2].GetUInt32();
-        sceneTemplate.ScriptId = sObjectMgr->GetScriptId(fields[3].GetCString());
+        sceneTemplate.ScriptId = sObjectMgr->GetScriptId(fields[3].GetString());
 
     } while (templates->NextRow());
 

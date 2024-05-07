@@ -40,9 +40,10 @@ class Transport : public GameObject, public TransportBase
         bool Create(uint32 guidlow, uint32 entry, uint32 mapid, float x, float y, float z, float ang, uint32 animprogress);
         void CleanupsBeforeDelete(bool finalCleanup = true) override;
 
-        void Update(uint32 diff);
+        void Update(uint32 diff) override;
         void DelayedUpdate(uint32 diff);
-        void BuildUpdate(UpdateDataMapType& data_map);
+        
+        void BuildUpdate(UpdateDataMapType& data_map) override;
 
         void AddPassenger(WorldObject* passenger);
         void RemovePassenger(WorldObject* passenger);

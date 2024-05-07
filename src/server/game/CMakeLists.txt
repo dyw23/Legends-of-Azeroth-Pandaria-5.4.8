@@ -280,7 +280,6 @@ target_include_directories(game
     zlib
     database
     shared
-    collision
     g3dlite
     Detour
     Recast
@@ -302,7 +301,6 @@ target_link_libraries(game
     common
     database
     shared
-    collision
   PRIVATE
     zlib
 )

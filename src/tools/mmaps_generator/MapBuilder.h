@@ -93,51 +93,93 @@ namespace MMAP
         int TILES_PER_MAP;
     };
 
-    class MapBuilder
+    struct TileInfo
+    {
+        TileInfo() : m_mapId(uint32(-1)), m_tileX(), m_tileY(), m_navMeshParams() {}
+
+        uint32 m_mapId;
+        uint32 m_tileX;
+        uint32 m_tileY;
+        dtNavMeshParams m_navMeshParams;
+    };
+
+    // ToDo: move this to its own file. For now it will stay here to keep the changes to a minimum, especially in the cpp file
+    class MapBuilder;
+    class TileBuilder
     {
         public:
-            MapBuilder(float maxWalkableAngle   = 70.f,
-                bool skipLiquid          = false,
-                bool skipContinents      = false,
-                bool skipJunkMaps        = true,
-                bool skipBattlegrounds   = false,
-                bool skipArenas          = false,
-                bool skipDungeons        = false,
-                bool skipTransports      = false,
-                bool debugOutput         = false,
-                bool bigBaseUnit         = false,
-                const char* offMeshFilePath = nullptr);
+            TileBuilder(MapBuilder* mapBuilder,
+                bool skipLiquid,
+                bool bigBaseUnit,
+                bool debugOutput);
+
+            TileBuilder(TileBuilder&&) = default;
+            ~TileBuilder();
+
+            void WorkerThread();
+            void WaitCompletion();
+
+            void buildTile(uint32 mapID, uint32 tileX, uint32 tileY, dtNavMesh* navMesh);
+            // move map building
+            void buildMoveMapTile(uint32 mapID,
+                uint32 tileX,
+                uint32 tileY,
+                MeshData& meshData,
+                float bmin[3],
+                float bmax[3],
+                dtNavMesh* navMesh);
+
+            bool shouldSkipTile(uint32 mapID, uint32 tileX, uint32 tileY) const;
+
+        private:
+            bool m_bigBaseUnit;
+            bool m_debugOutput;
+
+            MapBuilder* m_mapBuilder;
+            TerrainBuilder* m_terrainBuilder;
+            std::thread m_workerThread;
+            // build performance - not really used for now
+            rcContext* m_rcContext;
+    };    
+
+    class MapBuilder
+    {
+        friend class TileBuilder;
+
+        public:
+            MapBuilder(Optional<float> maxWalkableAngle,
+                Optional<float> maxWalkableAngleNotSteep,
+                bool skipLiquid,
+                bool skipContinents,
+                bool skipJunkMaps,
+                bool skipBattlegrounds,
+                bool skipArenas,
+                bool skipDungeons,
+                bool skipTransports,
+                bool debugOutput,
+                bool bigBaseUnit,
+                int mapid,
+                const char* offMeshFilePath,
+                unsigned int threads);
 
             ~MapBuilder();
 
-            // builds all mmap tiles for the specified map id (ignores skip settings)
-            void buildMap(uint32 mapID);
             void buildMeshFromFile(char* name);
 
             // builds an mmap tile for the specified map and its mesh
             void buildSingleTile(uint32 mapID, uint32 tileX, uint32 tileY);
 
             // builds list of maps, then builds all of mmap tiles (based on the skip settings)
-            void buildAllMaps(int threads);
-            void WorkerThread();
+            void buildMaps(Optional<uint32> mapID);
 
         private:
+            // builds all mmap tiles for the specified map id (ignores skip settings)
+            void buildMap(uint32 mapID);           
             // detect maps and tiles
             void discoverTiles();
             std::set<uint32>* getTileList(uint32 mapID);
 
             void buildNavMesh(uint32 mapID, dtNavMesh* &navMesh);
-
-            void buildTile(uint32 mapID, uint32 tileX, uint32 tileY, dtNavMesh* navMesh);
-
-            // move map building
-            void buildMoveMapTile(uint32 mapID,
-                uint32 tileX,
-                uint32 tileY,
-                MeshData &meshData,
-                float bmin[3],
-                float bmax[3],
-                dtNavMesh* navMesh);
 
             void getTileBounds(uint32 tileX, uint32 tileY,
                 float* verts, int vertCount,
@@ -147,7 +189,11 @@ namespace MMAP
             bool shouldSkipMap(uint32 mapID) const;
             bool isTransportMap(uint32 mapID) const;
             bool isContinentMap(uint32 mapID) const;
-            bool shouldSkipTile(uint32 mapID, uint32 tileX, uint32 tileY);
+
+            rcConfig GetMapSpecificConfig(uint32 mapID, float bmin[3], float bmax[3], const TileConfig &tileConfig) const;
+
+            uint32 percentageDone(uint32 totalTiles, uint32 totalTilesDone) const;
+            uint32 currentPercentageDone() const;
 
             TerrainBuilder* m_terrainBuilder;
             TileList m_tiles;
@@ -155,28 +201,31 @@ namespace MMAP
             bool m_debugOutput;
 
             const char* m_offMeshFilePath;
+            unsigned int m_threads;
             bool m_skipContinents;
             bool m_skipJunkMaps;
             bool m_skipBattlegrounds;
             bool m_skipArenas;
             bool m_skipDungeons;
             bool m_skipTransports;
+            bool m_skipLiquid;
 
-            float m_maxWalkableAngle;
+            Optional<float> m_maxWalkableAngle;
+            Optional<float> m_maxWalkableAngleNotSteep;
             bool m_bigBaseUnit;
 
             int32 m_mapid;
 
             // percentageDone - variables to calculate percentage
             std::atomic<uint32> m_totalTiles;
-            std::atomic<uint32> m_totalTilesBuilt;
+            std::atomic<uint32> m_totalTilesProcessed;
 
             // build performance - not really used for now
             rcContext* m_rcContext;
 
-            std::vector<std::thread> _workerThreads;
-            ProducerConsumerQueue<uint32> _queue;
-            std::atomic<bool> _cancelationToken;           
+            std::vector<TileBuilder*> m_tileBuilders;
+            ProducerConsumerQueue<TileInfo> _queue;
+            std::atomic<bool> _cancelationToken;          
     };
 }
 #endif

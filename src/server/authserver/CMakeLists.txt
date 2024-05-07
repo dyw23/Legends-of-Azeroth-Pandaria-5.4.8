@@ -85,10 +85,10 @@ target_link_libraries(authserver
   common
   shared
   database
-  ${JEMALLOC_LIBRARY}
+  jemalloc
   mysql
   openssl
-  ${CMAKE_THREAD_LIBS_INIT}
+  threads
   ${CMAKE_DL_LIBS}
   boost
 )

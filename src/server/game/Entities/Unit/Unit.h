@@ -1188,7 +1188,7 @@ public:
 
     virtual ~Unit();
 
-    UnitAI* GetAI() { return i_AI; }
+    UnitAI* GetAI() const { return i_AI; }
     void SetAI(UnitAI* newAI)
     {
         i_AI = newAI;
@@ -1421,6 +1421,18 @@ public:
         SetFloatValue(UNIT_FIELD_ATTACK_ROUND_BASE_TIME + att, val*m_modAttackSpeedPct [att]);
     }
 
+    UnitFlags GetUnitFlags() const { return UnitFlags(GetUInt32Value(UNIT_FIELD_FLAGS)); }
+    bool HasUnitFlag(UnitFlags flags) const { return HasFlag(UNIT_FIELD_FLAGS, flags); }
+    void SetUnitFlag(UnitFlags flags) { SetFlag(UNIT_FIELD_FLAGS, flags); }
+    void RemoveUnitFlag(UnitFlags flags) { RemoveFlag(UNIT_FIELD_FLAGS, flags); }
+    void ReplaceAllUnitFlags(UnitFlags flags) { SetUInt32Value(UNIT_FIELD_FLAGS, flags); }
+
+    UnitFlags2 GetUnitFlags2() const { return UnitFlags2(GetUInt32Value(UNIT_FIELD_FLAGS2)); }
+    bool HasUnitFlag2(UnitFlags2 flags) const { return HasFlag(UNIT_FIELD_FLAGS2, flags); }
+    void SetUnitFlag2(UnitFlags2 flags) { SetFlag(UNIT_FIELD_FLAGS2, flags); }
+    void RemoveUnitFlag2(UnitFlags2 flags) { RemoveFlag(UNIT_FIELD_FLAGS2, flags); }
+    void ReplaceAllUnitFlags2(UnitFlags2 flags) { SetUInt32Value(UNIT_FIELD_FLAGS2, flags); }
+
     Emote GetEmoteState() const { return Emote(GetUInt32Value(UNIT_FIELD_NPC_EMOTESTATE)); }
     void SetEmoteState(Emote emote) { SetUInt32Value(UNIT_FIELD_NPC_EMOTESTATE, emote); }
 
@@ -1471,14 +1483,9 @@ public:
     UnitAnimationTier GetAnimationTier() const { return (UnitAnimationTier)GetByteValue(UNIT_FIELD_ANIM_TIER, 3); }
     void SetAnimationTier(UnitAnimationTier tier) { SetByteValue(UNIT_FIELD_ANIM_TIER, 3, (uint8)tier); }
 
-    bool IsMounted() const
-    {
-        return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT);
-    }
-    uint32 GetMountID() const
-    {
-        return GetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID);
-    }
+    bool IsMounted() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT); }
+    uint32 GetMountDisplayId() const { return GetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID); }
+    void SetMountDisplayId(uint32 mountDisplayId) { SetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID, mountDisplayId); }
     void Mount(uint32 mount, uint32 vehicleId = 0, uint32 creatureEntry = 0);
     void Dismount();
     MountCapabilityEntry const* GetMountCapability(uint32 mountType) const;
@@ -1673,9 +1680,8 @@ public:
     bool IsValidAssistTarget(Unit const* target) const;
     bool _IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) const;
 
-    virtual bool IsInWater() const;
-    virtual bool IsUnderWater() const;
-    virtual void UpdateUnderwaterState(Map* m, float x, float y, float z);
+    bool IsInWater() const;
+    bool IsUnderWater() const;
     bool isInAccessiblePlaceFor(Creature const* c) const;
 
     void SendHealSpellLog(Unit* victim, uint32 SpellID, uint32 Damage, uint32 OverHeal, uint32 Absorb, bool critical = false);
@@ -2223,8 +2229,8 @@ public:
     void SetVisible(bool x);
 
     // common function for visibility checks for player/creatures with detection code
-    void SetPhaseMask(uint32 newPhaseMask, bool update);// overwrite WorldObject::SetPhaseMask
-    void UpdateObjectVisibility(bool forced = true);
+    void SetPhaseMask(uint32 newPhaseMask, bool update) override;// overwrite WorldObject::SetPhaseMask
+    void UpdateObjectVisibility(bool forced = true) override;
 
     SpellImmuneList m_spellImmune [MAX_SPELL_IMMUNITY];
     uint32 m_lastSanctuaryTime;
@@ -2558,20 +2564,19 @@ public:
 
     void WriteMovementInfo(WorldPacket& data, Movement::ExtraMovementStatusElement* extras = NULL);
 
-    bool isMoving() const
-    {
-        return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_MOVING);
-    }
-    bool isTurning() const
-    {
-        return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_TURNING);
-    }
+    bool isMoving() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_MOVING); }
+    bool isTurning() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_TURNING); }
     virtual bool CanFly() const = 0;
-    bool IsFlying() const
-    {
-        return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY);
-    }
+    bool IsFlying() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY); }
     bool IsFalling() const;
+    virtual bool CanEnterWater() const = 0;
+    virtual bool CanSwim() const;    
+
+    float GetHoverOffset() const
+    {
+        return HasUnitMovementFlag(MOVEMENTFLAG_HOVER) ? GetFloatValue(UNIT_FIELD_HOVER_HEIGHT) : 0.0f;
+    }
+
     bool IsHovering() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_HOVER); }
 
     void RewardRage(float baseRage, bool attacker);
@@ -2620,16 +2625,15 @@ public:
         if (IsSummon()) return reinterpret_cast<TempSummon const*>(this); else return NULL;
     }
 
-    uint64 GetTarget() const
-    {
-        return GetUInt64Value(UNIT_FIELD_TARGET);
-    }
+    uint64 GetTarget() const { return GetUInt64Value(UNIT_FIELD_TARGET); }
     virtual void SetTarget(uint64 /*guid*/) = 0;
 
     void OnRelocated();
 
     // Movement info
     Movement::MoveSpline* movespline;
+
+    float GetCollisionHeight() const override;
 
     uint32 GetMovementCounter() const
     {
@@ -2772,6 +2776,9 @@ protected:
     bool IsAlwaysDetectableFor(WorldObject const* seer) const;
 
     void DisableSpline();
+
+    void ProcessPositionDataChanged(PositionFullTerrainStatus const& data) override;
+    virtual void ProcessTerrainStatusUpdate(ZLiquidStatus oldLiquidStatus, Optional<LiquidData> const& newLiquidData);
 
 private:
     bool IsTriggeredAtSpellProcEvent(Unit* victim, ProcTriggeredData& triggerData, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active);

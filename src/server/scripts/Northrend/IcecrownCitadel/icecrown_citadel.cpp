@@ -3257,7 +3257,8 @@ class spell_icc_leap_to_a_random_location : public SpellScriptLoader
                     return;
 
                 dest._position.m_positionZ = caster->GetPositionZ();
-                caster->UpdateGroundPositionZ(dest._position.GetPositionX(), dest._position.GetPositionY(), dest._position.m_positionZ, 0, 100.0f);
+                //caster->UpdateGroundPositionZ(dest._position.GetPositionX(), dest._position.GetPositionY(), dest._position.m_positionZ, 0, 100.0f);
+                caster->UpdateGroundPositionZ(dest._position.GetPositionX(), dest._position.GetPositionY(), dest._position.m_positionZ);
             }
 
             void Register() override

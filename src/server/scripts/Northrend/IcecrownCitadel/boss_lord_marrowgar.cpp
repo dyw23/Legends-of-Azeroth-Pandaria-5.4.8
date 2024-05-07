@@ -525,7 +525,8 @@ class npc_coldflame : public CreatureScript
                     owner->GetNearPosition(pos, owner->GetObjectSize() / 2.0f, ang - owner->GetOrientation());
                 }
 
-                me->UpdateGroundPositionZ(pos.GetPositionX(), pos.GetPositionY(), pos.m_positionZ, 10.0f, 50.0f);
+                //me->UpdateGroundPositionZ(pos.GetPositionX(), pos.GetPositionY(), pos.m_positionZ, 10.0f, 50.0f);
+                me->UpdateGroundPositionZ(pos.GetPositionX(), pos.GetPositionY(), pos.m_positionZ);
 
                 me->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), me->GetOrientation());
                 if (omnidirection)
@@ -541,7 +542,8 @@ class npc_coldflame : public CreatureScript
                 {
                     Position newPos;
                     me->GetNearPosition(newPos, 5.0f, 0.0f);
-                    me->UpdateGroundPositionZ(newPos.GetPositionX(), newPos.GetPositionY(), newPos.m_positionZ, 10.0f, 50.0f);
+                    //me->UpdateGroundPositionZ(newPos.GetPositionX(), newPos.GetPositionY(), newPos.m_positionZ, 10.0f, 50.0f);
+                    me->UpdateGroundPositionZ(newPos.GetPositionX(), newPos.GetPositionY(), newPos.m_positionZ);
                     me->NearTeleportTo(newPos.GetPositionX(), newPos.GetPositionY(), newPos.GetPositionZ(), me->GetOrientation());
                     DoCast(SPELL_COLDFLAME_SUMMON);
                     _events.ScheduleEvent(EVENT_COLDFLAME_TRIGGER, 500);

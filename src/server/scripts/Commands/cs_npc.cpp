@@ -128,8 +128,8 @@ EnumName<UnitFlags> const unitFlags[MAX_UNIT_FLAGS] =
     CREATE_NAMED_ENUM(UNIT_FLAG_PET_IN_COMBAT),
     CREATE_NAMED_ENUM(UNIT_FLAG_PVP),
     CREATE_NAMED_ENUM(UNIT_FLAG_SILENCED),
-    CREATE_NAMED_ENUM(UNIT_FLAG_UNK_14),
-    CREATE_NAMED_ENUM(UNIT_FLAG_UNK_15),
+    CREATE_NAMED_ENUM(UNIT_FLAG_CANNOT_SWIM),
+    CREATE_NAMED_ENUM(UNIT_FLAG_CAN_SWIM),
     CREATE_NAMED_ENUM(UNIT_FLAG_UNK_16),
     CREATE_NAMED_ENUM(UNIT_FLAG_PACIFIED),
     CREATE_NAMED_ENUM(UNIT_FLAG_STUNNED),
@@ -262,7 +262,7 @@ public:
             data.displayid = cinfo->GetFirstValidModelId();
             data.dynamicflags = 0;
             data.equipmentId = 0;
-            data.mapid = trans->GetGOInfo()->moTransport.mapID;
+            data.mapId = trans->GetGOInfo()->moTransport.mapID;
             data.movementType = 0;
             data.npcflag = 0;
             data.npcflag2 = 0;
@@ -865,7 +865,7 @@ public:
                     return false;
                 }
 
-                uint32 map_id = data->mapid;
+                uint32 map_id = data->mapId;
 
                 if (handler->GetSession()->GetPlayer()->GetMapId() != map_id)
                 {

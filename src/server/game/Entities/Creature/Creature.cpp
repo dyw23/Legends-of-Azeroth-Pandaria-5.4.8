@@ -184,14 +184,15 @@ void Creature::AddToWorld()
     ///- Register the creature for guid lookup
     if (!IsInWorld())
     {
-        if (m_zoneScript)
-            m_zoneScript->OnCreatureCreate(this);
         sObjectAccessor->AddObject(this);
         Unit::AddToWorld();
         SearchFormation();
         AIM_Initialize();
         if (IsVehicle())
             GetVehicleKit()->Install();
+
+        if (GetZoneScript())
+            GetZoneScript()->OnCreatureCreate(this);
 
         if (((GetCreatureTemplate()->rank == CREATURE_ELITE_RARE || GetCreatureTemplate()->rank == CREATURE_ELITE_RAREELITE) && GetZoneId() == 6757) || // Timeless Isle (or only rare elite?...)
             (!GetMap()->Instanceable() && sLootMgr->GetPersonalLoot(GetEntry())))   // World Bosses
@@ -203,8 +204,9 @@ void Creature::RemoveFromWorld()
 {
     if (IsInWorld())
     {
-        if (m_zoneScript)
-            m_zoneScript->OnCreatureRemove(this);
+        if (GetZoneScript())
+            GetZoneScript()->OnCreatureRemove(this);
+        
         if (m_formation)
             sFormationMgr->RemoveCreatureFromGroup(m_formation, this);
         Unit::RemoveFromWorld();
@@ -461,7 +463,29 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData* data)
         SetControlled(true, UNIT_STATE_ROOT);
 
     UpdateMovementFlags();
+
+    //We must update last scriptId or it looks like we reloaded a script, breaking some things such as gossip temporarily
+    LastUsedScriptID = GetScriptId();
+        
     return true;
+}
+
+void Creature::SetPhaseMask(uint32 newPhaseMask, bool update)
+{
+    if (newPhaseMask == GetPhaseMask())
+        return;
+
+    Unit::SetPhaseMask(newPhaseMask, false);
+
+    if (Vehicle* vehicle = GetVehicleKit())
+    {
+        for (auto seat = vehicle->Seats.begin(); seat != vehicle->Seats.end(); seat++)
+            if (Unit* passenger = ObjectAccessor::GetUnit(*this, seat->second.Passenger.Guid))
+                passenger->SetPhaseMask(newPhaseMask, update);
+    }
+
+    if (update)
+        UpdateObjectVisibility();
 }
 
 void Creature::Update(uint32 diff)
@@ -738,15 +762,16 @@ bool Creature::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, 
     //! returning correct zone id for selecting OutdoorPvP/Battlefield script
     Relocate(x, y, z, ang);
 
-    //oX = x;     oY = y;    dX = x;    dY = y;    m_moveTime = 0;    m_startMove = 0;
-    if (!CreateFromProto(guidlow, Entry, vehId, team, data))
-        return false;
-
+    // Check if the position is valid before calling CreateFromProto(), otherwise we might add Auras to Creatures at
+    // invalid position, triggering a crash about Auras not removed in the destructor
     if (!IsPositionValid())
     {
         TC_LOG_ERROR("entities.unit", "Creature::Create(): given coordinates for creature (guidlow %d, entry %d) are not valid (X: %f, Y: %f, Z: %f, O: %f)", guidlow, Entry, x, y, z, ang);
         return false;
     }
+
+    if (!CreateFromProto(guidlow, Entry, vehId, team, data))
+        return false;
 
     switch (GetCreatureTemplate()->rank)
     {
@@ -1005,7 +1030,7 @@ void Creature::SaveToDB(uint32 mapid, uint16 spawnMask, uint32 phaseMask)
 
     // data->guid = guid must not be updated at save
     data.id = GetEntry();
-    data.mapid = mapid;
+    data.mapId = mapid;
     data.phaseMask = phaseMask;
     data.displayid = displayId;
     data.equipmentId = GetCurrentEquipmentId();
@@ -1253,9 +1278,9 @@ float Creature::GetSpellDamageMod(int32 Rank) const
 bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 vehId, uint32 team, const CreatureData* data)
 {
     SetZoneScript();
-    if (m_zoneScript && data)
+    if (GetZoneScript() && data)
     {
-        Entry = m_zoneScript->GetCreatureEntry(guidlow, data);
+        Entry = GetZoneScript()->GetCreatureEntry(guidlow, data);
         if (!Entry)
             return false;
     }
@@ -1269,17 +1294,25 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 vehId, uint3
 
     SetOriginalEntry(Entry);
 
-    if (!vehId)
-        vehId = cinfo->VehicleId;
-
     // hackfix for crawler mine controller
     if (Entry == 71795 && (GetMap()->Is25ManRaid() || GetMap()->GetDifficulty() == RAID_DIFFICULTY_1025MAN_FLEX))
         vehId = 2916;
 
-    Object::_Create(guidlow, Entry, vehId ? HIGHGUID_VEHICLE : HIGHGUID_UNIT);
+    Object::_Create(guidlow, Entry, (vehId || cinfo->VehicleId) ? HIGHGUID_VEHICLE : HIGHGUID_UNIT);
 
     if (!UpdateEntry(Entry, team, data))
         return false;
+
+    if (!vehId)
+    {
+        if (GetCreatureTemplate()->VehicleId)
+        {
+            vehId = GetCreatureTemplate()->VehicleId;
+            Entry = GetCreatureTemplate()->Entry;
+        }
+        else
+            vehId = cinfo->VehicleId;
+    }
 
     if (vehId)
         CreateVehicleKit(vehId, Entry, true);
@@ -2476,6 +2509,26 @@ void Creature::GetRespawnPosition(float &x, float &y, float &z, float* ori, floa
         *dist = 0;
 }
 
+bool Creature::CanSwim() const
+{
+    if (Unit::CanSwim())
+        return true;
+
+    if (IsPet())
+        return true;
+
+    return false;
+}
+
+bool Creature::CanEnterWater() const 
+{
+    if (CanSwim())
+        return true;
+
+    //return GetMovementTemplate().IsSwimAllowed(); todo
+    return false;
+}
+
 void Creature::AllLootRemovedFromCorpse()
 {
     if (!HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE))
@@ -2513,7 +2566,7 @@ uint8 Creature::GetLevelForTarget(WorldObject const* target) const
     return uint8(level);
 }
 
-std::string Creature::GetAIName() const
+std::string const& Creature::GetAIName() const
 {
     return sObjectMgr->GetCreatureTemplate(GetEntry())->AIName;
 }
@@ -2526,9 +2579,10 @@ std::string Creature::GetScriptName() const
 uint32 Creature::GetScriptId() const
 {
     if (CreatureData const* creatureData = GetCreatureData())
-        return creatureData->ScriptId;
+        if (uint32 scriptId = creatureData->ScriptId)
+            return scriptId;
 
-    return sObjectMgr->GetCreatureTemplate(GetEntry())->ScriptID;
+    return ASSERT_NOTNULL(sObjectMgr->GetCreatureTemplate(GetEntry()))->ScriptID;
 }
 
 VendorItemData const* Creature::GetVendorItems() const
@@ -2745,7 +2799,7 @@ void Creature::UpdateMovementFlags(bool force)
     m_lastMovementFlagsUpdatePosition.Relocate(this);
 
     // Set the movement flags if the creature is in that mode. (Only fly if actually in air, only swim if in water, etc)
-    float ground = GetMap()->GetHeight(GetPositionX(), GetPositionY(), GetPositionZMinusOffset());
+    float ground = GetFloorZ();
 
     bool isInAir = (G3D::fuzzyGt(GetPositionZMinusOffset(), ground + 0.05f) || G3D::fuzzyLt(GetPositionZMinusOffset(), ground - 0.05f)); // Can be underground too, prevent the falling
 

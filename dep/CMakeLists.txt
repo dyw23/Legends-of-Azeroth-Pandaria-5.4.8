@@ -26,6 +26,7 @@ add_subdirectory(fmt)
 add_subdirectory(SFMT)
 add_subdirectory(openssl)
 add_subdirectory(boost)
+add_subdirectory(threads)
 
 if(SERVERS)
   add_subdirectory(gsoap)

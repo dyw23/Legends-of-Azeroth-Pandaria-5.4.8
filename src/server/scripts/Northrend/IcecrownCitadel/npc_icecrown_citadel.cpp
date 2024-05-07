@@ -266,7 +266,8 @@ class npc_ancient_skeletal_soldier_icc : public CreatureScript
                 Position pos;
                 pos.Relocate(me);
                 pos.RelocateOffset(0.0f, dist);
-                me->UpdateAllowedPositionZ(pos.GetPositionX(), pos.GetPositionY(), pos.m_positionZ, 5.0f, 100.0f);
+                //me->UpdateAllowedPositionZ(pos.GetPositionX(), pos.GetPositionY(), pos.m_positionZ, 5.0f, 100.0f);
+                me->UpdateAllowedPositionZ(pos.GetPositionX(), pos.GetPositionY(), pos.m_positionZ);
                 me->SetWalk(true);
                 me->GetMotionMaster()->MovePoint(0, pos);
                 me->SetHomePosition(pos);
@@ -447,7 +448,8 @@ class npc_nerubar_broodkeeper_icc : public CreatureScript
 
                 Position pos;
                 me->GetPosition(&pos);
-                me->UpdateGroundPositionZ(pos.GetPositionX(), pos.GetPositionY(), pos.m_positionZ, -10.0f, 200.0f);
+                //me->UpdateGroundPositionZ(pos.GetPositionX(), pos.GetPositionY(), pos.m_positionZ, -10.0f, 200.0f);
+                me->UpdateGroundPositionZ(pos.GetPositionX(), pos.GetPositionY(), pos.m_positionZ);
                 me->GetMotionMaster()->MoveLand(POINT_DESCEND, pos);
 
                 DoCast(me, SPELL_WEB_BEAM);
@@ -608,7 +610,8 @@ class npc_servant_of_the_throne_icc : public CreatureScript
                 Position pos;
                 pos.Relocate(me);
                 pos.RelocateOffset(0.0f, dist);
-                me->UpdateAllowedPositionZ(pos.GetPositionX(), pos.GetPositionY(), pos.m_positionZ, 5.0f, 100.0f);
+                //me->UpdateAllowedPositionZ(pos.GetPositionX(), pos.GetPositionY(), pos.m_positionZ, 5.0f, 100.0f);
+                me->UpdateAllowedPositionZ(pos.GetPositionX(), pos.GetPositionY(), pos.m_positionZ);
                 me->SetWalk(true);
                 me->GetMotionMaster()->MovePoint(POINT_DESCEND, pos);
                 me->SetHomePosition(pos);
@@ -1368,7 +1371,8 @@ class npc_vengeful_fleshreapert_icc : public CreatureScript
                         Position wp;
                         wp.Relocate(pos);
                         wp.RelocateOffset(M_PI / 2, frand(-5.0f, 5.0f));
-                        me->UpdateGroundPositionZ(wp.GetPositionX(), wp.GetPositionY(), wp.m_positionZ, 10.0f, 100.0f);
+                        //me->UpdateGroundPositionZ(wp.GetPositionX(), wp.GetPositionY(), wp.m_positionZ, 10.0f, 100.0f);
+                        me->UpdateGroundPositionZ(wp.GetPositionX(), wp.GetPositionY(), wp.m_positionZ);
                         runWaypoints.push_back(wp);
                     }
                     for (uint32 i = 0; i < MAX_FLESHREAPER_WAYPOINTS; ++i)

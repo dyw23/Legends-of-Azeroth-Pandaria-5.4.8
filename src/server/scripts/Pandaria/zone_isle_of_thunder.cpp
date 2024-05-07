@@ -2662,7 +2662,7 @@ struct npc_sunreaver_bloodhawk : public CreatureAI
         summonerGUID = summoner->GetGUID();
         me->SetSpeed(MOVE_RUN, 2.85f);
 
-        if (me->GetMap()->GetZoneId(me->GetPositionX(),me->GetPositionY(),me->GetPositionZ()) == 6507)
+        if (me->GetMap()->GetZoneId(me->GetPhaseMask(), me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()) == 6507)
             return;
 
         if (me->GetEntry() == NPC_ELSIA_BLOODHAWK)
@@ -2821,7 +2821,7 @@ struct npc_silver_covenant_hippogryph : public CreatureAI
         summonerGUID = summoner->GetGUID();
         me->SetSpeed(MOVE_RUN, 2.85f);
 
-        if (me->GetMap()->GetZoneId(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()) == 6507)
+        if (me->GetMap()->GetZoneId(me->GetPhaseMask(), me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()) == 6507)
             return;
 
         if (me->GetEntry() == NPC_VEREESA_HIPPOGRYPH)
@@ -4084,7 +4084,7 @@ class spell_teleport_to_thunder_isle_horde : public AuraScript
 
     void OnUpdate(uint32 diff)
     {
-        if (GetUnitOwner() && GetUnitOwner()->GetMap()->GetZoneId(GetUnitOwner()->GetPositionX(), GetUnitOwner()->GetPositionY(), GetUnitOwner()->GetPositionZ()) == 6507)
+        if (GetUnitOwner() && GetUnitOwner()->GetMap()->GetZoneId(GetUnitOwner()->GetPhaseMask(), GetUnitOwner()->GetPositionX(), GetUnitOwner()->GetPositionY(), GetUnitOwner()->GetPositionZ()) == 6507)
             GetUnitOwner()->RemoveAurasDueToSpell(SPELL_TELEPORT_THUNDER_ISLE_H);
     }
 
@@ -4114,7 +4114,7 @@ class spell_teleport_to_thunder_isle_alliance : public AuraScript
 
     void OnUpdate(uint32 diff)
     {
-        if (GetUnitOwner() && GetUnitOwner()->GetMap()->GetZoneId(GetUnitOwner()->GetPositionX(), GetUnitOwner()->GetPositionY(), GetUnitOwner()->GetPositionZ()) == 6507)
+        if (GetUnitOwner() && GetUnitOwner()->GetMap()->GetZoneId(GetUnitOwner()->GetPhaseMask(), GetUnitOwner()->GetPositionX(), GetUnitOwner()->GetPositionY(), GetUnitOwner()->GetPositionZ()) == 6507)
             GetUnitOwner()->RemoveAurasDueToSpell(SPELL_TELEPORT_THUNDER_ISLE_A);
     }
 

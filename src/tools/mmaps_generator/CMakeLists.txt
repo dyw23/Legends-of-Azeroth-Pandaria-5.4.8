@@ -22,7 +22,6 @@ target_include_directories(mmaps_generator
     g3dlite	 
     common
     shared
-    collision
     ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast
     ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Include
     ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour
@@ -35,14 +34,13 @@ target_link_libraries(mmaps_generator
   PRIVATE
     common
     shared
-    collision
     g3dlib
     Recast
     Detour
     bzip2
     zlib
     boost
-    Threads::Threads
+    threads
     ${CMAKE_DL_LIBS}
 )
 

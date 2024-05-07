@@ -4560,11 +4560,10 @@ class spell_dru_shapeshift_move_speed : public AuraScript
 
     bool CheckAreaTarget(Unit* target)
     {
-        bool isOutdoor = true;
         if (Map* map = target->FindMap())
-            map->GetAreaId(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), &isOutdoor);
+            map->GetAreaId(target->GetPhaseMask(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
 
-        return isOutdoor;
+        return true;
     }
 
     void Register() override
