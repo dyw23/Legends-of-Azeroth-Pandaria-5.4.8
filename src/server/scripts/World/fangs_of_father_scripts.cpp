@@ -165,7 +165,7 @@ class npc_lord_hiram_creed : public CreatureScript
                 events.ScheduleEvent(EVENT_CHECK_DISTANCE, 5000);
             }
 
-            void JustSummoned(Creature* summon)
+            void JustSummoned(Creature* summon) override
             {
                 if (summon->GetEntry() == NPC_HIRAM_CREEDS_SHADOW_BREATH)
                 {   
