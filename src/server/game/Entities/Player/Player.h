@@ -2332,7 +2332,7 @@ public:
     void UpdatePvpPower();
     bool CanUseMastery() const;
 
-    void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& min_damage, float& max_damage);
+    void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& min_damage, float& max_damage, uint8 damageIndex) const override;
 
     inline void RecalculateRating(CombatRating cr)
     {
