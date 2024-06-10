@@ -104,6 +104,8 @@ struct TC_GAME_API CreatureTemplate
     float   dmg_multiplier;
     uint32  baseattacktime;
     uint32  rangeattacktime;
+    float   BaseVariance;
+    float   RangeVariance;    
     uint32  unit_class;                                     // enum Classes. Note only 4 classes are known for creatures.
     uint32  unit_flags;                                     // enum UnitFlags mask values
     uint32  unit_flags2;                                    // enum UnitFlags2 mask values
@@ -135,6 +137,7 @@ struct TC_GAME_API CreatureTemplate
     float   ModMana;
     float   ModManaExtra;                                   // Added in 4.x, this value is usually 2 for a small group of creatures with double mana
     float   ModArmor;
+    float   ModDamage;    
     bool    RacialLeader;
     uint32  questItems[MAX_CREATURE_QUEST_ITEMS];
     uint32  movementId;
