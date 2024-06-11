@@ -375,7 +375,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData* data)
     if (!GetCreatureAddon())
         SetSheath(SHEATH_STATE_MELEE);
 
-    SelectLevel(GetCreatureTemplate());
+    SelectLevel();
     SetFaction(cInfo->faction);
 
     uint32 npcflag, unit_flags, dynamicflags;
@@ -404,16 +404,8 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData* data)
     // Do not update guardian stats here - they are handled in Guardian::InitStatsForLevel()
     if (!IsGuardian())
     {
-        // float armor = (float)stats->GenerateArmor(cInfo); /// @todo Why is this treated as uint32 when it's a float?
-        // SetModifierValue(UNIT_MOD_ARMOR, BASE_VALUE, armor);
-        // SetModifierValue(UNIT_MOD_RESISTANCE_HOLY, BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_HOLY]));
-        // SetModifierValue(UNIT_MOD_RESISTANCE_FIRE, BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_FIRE]));
-        // SetModifierValue(UNIT_MOD_RESISTANCE_NATURE, BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_NATURE]));
-        // SetModifierValue(UNIT_MOD_RESISTANCE_FROST, BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_FROST]));
-        // SetModifierValue(UNIT_MOD_RESISTANCE_SHADOW, BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_SHADOW]));
-        // SetModifierValue(UNIT_MOD_RESISTANCE_ARCANE, BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_ARCANE]));
         uint32 previousHealth = GetHealth();
-        //UpdateLevelDependantStats();
+        UpdateLevelDependantStats();
         if (previousHealth > 0)
             SetHealth(previousHealth);
 
@@ -1115,111 +1107,15 @@ void Creature::SaveToDB(uint32 mapid, uint16 spawnMask, uint32 phaseMask)
     WorldDatabase.CommitTransaction(trans);
 }
 
-void Creature::SelectLevel(const CreatureTemplate* cinfo)
+void Creature::SelectLevel()
 {
-    uint8 dbminlevel = cinfo->minlevel;
-    uint8 dbmaxlevel = cinfo->maxlevel;
-    float hpmod = cinfo->ModHealth;
-    float mindmg = cinfo->mindmg;
-    float maxdmg = cinfo->maxdmg;
-    float minrangedmg = cinfo->minrangedmg;
-    float maxrangedmg = cinfo->maxrangedmg;
-    uint32 attackpower = cinfo->attackpower;
-    uint32 rangedattackpower = cinfo->rangedattackpower;
-
-    CreatureDifficultyInfo const* difficultyInfo = nullptr;
-    if (GetMap()->GetDifficulty() > REGULAR_DIFFICULTY || GetMap()->IsBattleground())
-    {
-        difficultyInfo = sObjectMgr->SelectDifficultyInfo(GetMap(), GetEntry());
-        if (difficultyInfo)
-        {
-            dbminlevel = difficultyInfo->LevelMin;
-            dbmaxlevel = difficultyInfo->LevelMax;
-            hpmod = difficultyInfo->HealthMod;
-            mindmg = difficultyInfo->MinDamage;
-            maxdmg = difficultyInfo->MaxDamage;
-            minrangedmg = difficultyInfo->MinRangeDamage;
-            maxrangedmg = difficultyInfo->MaxRangeDamage;
-            rangedattackpower = difficultyInfo->RangedAttackPower;
-        }
-    }
-
-    uint32 rank = IsPet()? 0 : cinfo->rank;
+    CreatureTemplate const* cInfo = GetCreatureTemplate();
 
     // level
-    uint8 minlevel = std::min(dbmaxlevel, dbminlevel);
-    uint8 maxlevel = std::max(dbmaxlevel, dbminlevel);
+    uint8 minlevel = std::min(cInfo->maxlevel, cInfo->minlevel);
+    uint8 maxlevel = std::max(cInfo->maxlevel, cInfo->minlevel);
     uint8 level = minlevel == maxlevel ? minlevel : urand(minlevel, maxlevel);
     SetLevel(level);
-
-    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cinfo->unit_class);
-
-    uint32 expansion = cinfo->expansion;
-    if (GetMap()->IsBattleground())
-    {
-        Battleground* bg = ((BattlegroundMap*)GetMap())->GetBG();
-        if (bg->GetMaxLevel() > 86)
-            expansion = EXPANSION_MISTS_OF_PANDARIA;
-        else if (level > 81)
-            expansion = EXPANSION_CATACLYSM;
-        else if (level > 71)
-            expansion = EXPANSION_WRATH_OF_THE_LICH_KING;
-    }
-
-    // health
-    uint32 health = uint32(std::ceil(stats->BaseHealth[expansion] * hpmod * _GetHealthMod(rank)));
-
-    SetCreateHealth(health);
-    SetMaxHealth(health);
-    SetHealth(health);
-    ResetPlayerDamageReq();
-
-    // mana
-    uint32 mana = stats->GenerateMana(cinfo);
-    SetCreateMana(mana);
-
-    switch (GetClass())
-    {
-        case CLASS_WARRIOR:
-            SetPowerType(POWER_RAGE);
-            break;
-        case CLASS_ROGUE:
-            SetPowerType(POWER_ENERGY);
-            break;
-        case CLASS_MONK:
-            SetPowerType(POWER_CHI);
-            break;
-        default:
-            SetMaxPower(POWER_MANA, mana);
-            SetPower(POWER_MANA, mana);
-            break;
-    }
-
-    // SetModifierValue(UNIT_MOD_HEALTH, BASE_VALUE, (float)health);
-    // SetModifierValue(UNIT_MOD_MANA, BASE_VALUE, (float)mana);
-
-    float basedamage = stats->BaseDamage[cinfo->expansion];
-    if (basedamage && !difficultyInfo)
-    {
-        mindmg = basedamage;
-        maxdmg = basedamage * 1.5f;
-        minrangedmg = mindmg;
-        maxrangedmg = maxdmg;
-        attackpower = stats->AttackPower;
-        rangedattackpower = stats->RangedAttackPower;
-    }
-
-    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, mindmg);
-    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, maxdmg);
-
-    SetBaseWeaponDamage(OFF_ATTACK, MINDAMAGE, mindmg);
-    SetBaseWeaponDamage(OFF_ATTACK, MAXDAMAGE, maxdmg);
-
-    SetBaseWeaponDamage(RANGED_ATTACK, MINDAMAGE, minrangedmg);
-    SetBaseWeaponDamage(RANGED_ATTACK, MAXDAMAGE, maxrangedmg);
-
-    // SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, attackpower);
-    // SetModifierValue(UNIT_MOD_ATTACK_POWER_RANGED, BASE_VALUE, attackpower);
 }
 
 void Creature::UpdateLevelDependantStats()
@@ -1741,7 +1637,7 @@ void Creature::Respawn(bool force)
             UpdateEntry(m_originalEntry);
 
         CreatureTemplate const* cinfo = GetCreatureTemplate();
-        SelectLevel(cinfo);
+        SelectLevel();
 
         setDeathState(JUST_RESPAWNED);
 

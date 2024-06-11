@@ -2211,14 +2211,8 @@ public:
     SpellSchools GetSpellSchoolByAuraGroup(UnitMods unitMod) const;
     Stats GetStatByAuraGroup(UnitMods unitMod) const;
     Powers GetPowerTypeByAuraGroup(UnitMods unitMod) const;
-    bool CanModifyStats() const
-    {
-        return m_canModifyStats;
-    }
-    void SetCanModifyStats(bool modifyStats)
-    {
-        m_canModifyStats = modifyStats;
-    }
+    bool CanModifyStats() const { return m_canModifyStats; }
+    void SetCanModifyStats(bool modifyStats) { m_canModifyStats = modifyStats; }
     virtual bool UpdateStats(Stats stat) = 0;
     virtual bool UpdateAllStats() = 0;
     virtual void UpdateResistances(uint32 school) = 0;
@@ -2427,14 +2421,8 @@ public:
     static Player* GetPlayer(WorldObject& object, uint64 guid);
     static Creature* GetCreature(WorldObject& object, uint64 guid);
 
-    MotionMaster* GetMotionMaster()
-    {
-        return i_motionMaster;
-    }
-    const MotionMaster* GetMotionMaster() const
-    {
-        return i_motionMaster;
-    }
+    MotionMaster* GetMotionMaster() { return i_motionMaster; }
+    MotionMaster const* GetMotionMaster() const { return i_motionMaster; }
 
     bool IsStopped() const { return !(HasUnitState(UNIT_STATE_MOVING)); }
     void StopMoving();
