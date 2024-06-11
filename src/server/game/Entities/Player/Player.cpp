@@ -3134,7 +3134,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
     {
         SetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG+i, 0);
         SetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i, 0);
-        SetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PERCENT+i, 1.0f);
+        SetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+i, 1.0f);
     }
 
     SetFloatValue(PLAYER_FIELD_MOD_SPELL_POWER_PERCENT, 1.0f);

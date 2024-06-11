@@ -2321,7 +2321,6 @@ public:
     void UpdateMaxHealth();
     void UpdateMaxPower(Powers power);
     void UpdateAttackPowerAndDamage(bool ranged = false);
-    void UpdateDamagePhysical(WeaponAttackType attType);
     void ApplySpellPowerBonus(int32 amount, bool apply);
     void UpdateSpellDamageAndHealingBonus();
     void ApplyRatingMod(CombatRating cr, int32 value, bool apply);

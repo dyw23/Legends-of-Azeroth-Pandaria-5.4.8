@@ -2226,7 +2226,7 @@ public:
     virtual void UpdateMaxHealth() = 0;
     virtual void UpdateMaxPower(Powers power) = 0;
     virtual void UpdateAttackPowerAndDamage(bool ranged = false) = 0;
-    virtual void UpdateDamagePhysical(WeaponAttackType attType) = 0;
+    virtual void UpdateDamagePhysical(WeaponAttackType attType);
     void UpdateCastingSpeed();
     void UpdateAttackSpeed(WeaponAttackType att);
     void UpdateHasteRegen();
