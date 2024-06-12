@@ -885,6 +885,8 @@ void Map::PlayerRelocation(Player* player, float x, float y, float z, float orie
     }
 
     player->OnRelocated();
+    player->UpdatePositionData();
+    
 }
 
 void Map::CreatureRelocation(Creature* creature, float x, float y, float z, float ang, bool respawnRelocationOnFail)
