@@ -527,7 +527,6 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
     SetFieldPowerType(powerType);
 
     InitDisplayIds();
-
     if (sWorld->getIntConfig(CONFIG_GAME_TYPE) == REALM_TYPE_PVP || sWorld->getIntConfig(CONFIG_GAME_TYPE) == REALM_TYPE_RPPVP)
     {
         SetByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 1, UNIT_BYTE2_FLAG_PVP);
@@ -18761,6 +18760,7 @@ bool Player::LoadFromDB(uint32 guid, CharacterDatabaseQueryHolder const& holder)
 
     SetMap(map);
     StoreRaidMapDifficulty();
+    UpdatePositionData();
 
     if (currentBg && currentBg->IsPlayerInBattleground(GetGUID()) && currentBg->GetStatus() != STATUS_WAIT_LEAVE)
         currentBg->EventPlayerLoggedIn(this);
