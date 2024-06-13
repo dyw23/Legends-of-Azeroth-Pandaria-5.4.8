@@ -1745,7 +1745,7 @@ public:
     void BuildTeleportUpdateData(WorldPacket* data);
     virtual bool UpdatePosition(float x, float y, float z, float ang, bool teleport = false);
     // returns true if unit's position really changed
-    bool UpdatePosition(const Position &pos, bool teleport = false);
+    virtual bool UpdatePosition(const Position &pos, bool teleport = false);
     void UpdateOrientation(float orientation);
     void UpdateHeight(float newZ);
 

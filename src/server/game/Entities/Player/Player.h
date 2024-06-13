@@ -2199,6 +2199,7 @@ public:
     void UpdatePvP(bool state);
     void UpdateZone(uint32 newZone, uint32 newArea);
     void UpdateArea(uint32 newArea);
+    void SetNeedsZoneUpdate(bool needsUpdate) { m_needsZoneUpdate = needsUpdate; }
 
     void UpdateZoneDependentAuras(uint32 zone_id);    // zones
     void UpdateAreaDependentAuras(uint32 area_id);    // subzones
@@ -2411,11 +2412,8 @@ public:
     void SendResetInstanceFailed(uint32 reason, uint32 MapId);
     void SendResetFailedNotify(uint32 mapid);
 
-    virtual bool UpdatePosition(float x, float y, float z, float orientation, bool teleport = false);
-    bool UpdatePosition(const Position &pos, bool teleport = false)
-    {
-        return UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport);
-    }
+    bool UpdatePosition(float x, float y, float z, float orientation, bool teleport = false) override;
+    bool UpdatePosition(const Position &pos, bool teleport = false) override { return UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport); }
     void ProcessTerrainStatusUpdate(ZLiquidStatus oldLiquidStatus, Optional<LiquidData> const& newLiquidData) override;
     void SendMessageToSet(WorldPacket* data, bool self)
     {
@@ -3422,7 +3420,7 @@ protected:
     void SendMirrorTimer(MirrorTimerType Type, uint32 MaxValue, uint32 CurrentValue, int32 Regen);
     void StopMirrorTimer(MirrorTimerType Type);
     void HandleDrowning(uint32 time_diff);
-    int32 getMaxTimer(MirrorTimerType timer);
+    int32 getMaxTimer(MirrorTimerType timer) const;
 
     /*********************************************************/
     /***                  HONOR SYSTEM                     ***/
@@ -3580,6 +3578,8 @@ protected:
     bool IsAlwaysDetectableFor(WorldObject const* seer) const;
 
     uint8 m_grantableLevels;
+
+    bool m_needsZoneUpdate;
 
     CUFProfile* _CUFProfiles [MAX_CUF_PROFILES];
 
