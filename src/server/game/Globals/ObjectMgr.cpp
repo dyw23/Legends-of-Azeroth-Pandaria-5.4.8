@@ -7551,8 +7551,8 @@ void ObjectMgr::LoadQuestPOI()
 
     uint32 count = 0;
 
-    //                                               0        1   2         3      4               5        6     7
-    QueryResult result = WorldDatabase.Query("SELECT questId, id, objIndex, mapid, WorldMapAreaId, FloorId, unk3, unk4 FROM quest_poi order by questId");
+    //                                                   0        1   2         3                 4      5               6        7     8
+    QueryResult result = WorldDatabase.Query("SELECT questId, id, objIndex, QuestObjectiveId, mapid, WorldMapAreaId, FloorId, unk3, unk4 FROM quest_poi order by questId");
 
     if (!result)
     {
@@ -7596,13 +7596,14 @@ void ObjectMgr::LoadQuestPOI()
         uint32 questId            = fields[0].GetUInt32();
         uint32 id                 = fields[1].GetUInt32();
         int32 objIndex            = fields[2].GetInt32();
-        uint32 mapId              = fields[3].GetUInt32();
-        uint32 WorldMapAreaId     = fields[4].GetUInt32();
-        uint32 FloorId            = fields[5].GetUInt32();
-        uint32 unk3               = fields[6].GetUInt32();
-        uint32 unk4               = fields[7].GetUInt32();
+        uint32 questObjectiveId   = fields[3].GetUInt32();
+        uint32 mapId              = fields[4].GetUInt32();
+        uint32 WorldMapAreaId     = fields[5].GetUInt32();
+        uint32 FloorId            = fields[6].GetUInt32();
+        uint32 unk3               = fields[7].GetUInt32();
+        uint32 unk4               = fields[8].GetUInt32();
 
-        QuestPOI POI(id, objIndex, mapId, WorldMapAreaId, FloorId, unk3, unk4);
+        QuestPOI POI(id, objIndex, questObjectiveId, mapId, WorldMapAreaId, FloorId, unk3, unk4);
         POI.points = POIs[questId][id];
 
         _questPOIStore[questId].push_back(POI);

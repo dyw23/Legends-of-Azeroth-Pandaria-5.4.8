@@ -624,6 +624,7 @@ struct QuestPOI
 {
     uint32 Id;
     int32 ObjectiveIndex;
+    uint32 QuestObjectiveId;
     uint32 MapId;
     uint32 AreaId;
     uint32 FloorId;
@@ -631,8 +632,8 @@ struct QuestPOI
     uint32 Unk4;
     std::vector<QuestPOIPoint> points;
 
-    QuestPOI() : Id(0), ObjectiveIndex(0), MapId(0), AreaId(0), FloorId(0), Unk3(0), Unk4(0) { }
-    QuestPOI(uint32 id, int32 objIndex, uint32 mapId, uint32 areaId, uint32 floorId, uint32 unk3, uint32 unk4) : Id(id), ObjectiveIndex(objIndex), MapId(mapId), AreaId(areaId), FloorId(floorId), Unk3(unk3), Unk4(unk4) { }
+    QuestPOI() : Id(0), ObjectiveIndex(0), QuestObjectiveId(0), MapId(0), AreaId(0), FloorId(0), Unk3(0), Unk4(0) { }
+    QuestPOI(uint32 id, int32 objIndex, uint32 questObjectiveId, uint32 mapId, uint32 areaId, uint32 floorId, uint32 unk3, uint32 unk4) : Id(id), ObjectiveIndex(objIndex), QuestObjectiveId(questObjectiveId), MapId(mapId), AreaId(areaId), FloorId(floorId), Unk3(unk3), Unk4(unk4) { }
 };
 
 typedef std::vector<QuestPOI> QuestPOIVector;

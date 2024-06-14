@@ -787,7 +787,7 @@ void WorldSession::HandleQuestPOIQuery(WorldPacket& recvData)
 
                     poiData << int32(itr->ObjectiveIndex);      // objective index
                     poiData << uint32(itr->Id);                 // POI index
-                    poiData << uint32(0);                       // unknown (new 5.x.x)
+                    poiData << uint32(itr->QuestObjectiveId);   // quest objective id
                     poiData << uint32(0);                       // unknown (new 5.x.x)
                     poiData << uint32(itr->MapId);              // mapid
                     poiData << uint32(itr->points.size());      // POI points count
