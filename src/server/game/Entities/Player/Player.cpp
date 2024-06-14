@@ -57,6 +57,7 @@
 #include "Log.h"
 #include "MapInstanced.h"
 #include "MapManager.h"
+#include "MiscPackets.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "Opcodes.h"
@@ -790,49 +791,15 @@ void Player::SendMirrorTimer(MirrorTimerType Type, uint32 MaxValue, uint32 Curre
             StopMirrorTimer(Type);
         return;
     }
-    // WorldPacket data(SMSG_START_MIRROR_TIMER, 21);
-    // data << MaxValue;
-    // data << (uint32)0; // spell id
-    // data << (uint32)Type;
-    // data << Regen;
-    // data << CurrentValue;
-    // data.WriteBit(0); // Paused
-    // data.FlushBits();
 
-    // guess use 6.x struct
-    WorldPacket data(SMSG_START_MIRROR_TIMER, 21);
-    data << (uint32)Type;
-    data << CurrentValue;
-    data << MaxValue;
-    data << Regen;
-    data << uint32(0); // spell id
-    data << uint8(0);
+    GetSession()->SendPacket(WorldPackets::Misc::StartMirrorTimer(Type, CurrentValue, MaxValue, Regen, false, 0).Write());
 
-    // 4.x
-    // _worldPacket << int32(Timer);
-    // _worldPacket << int32(Value);
-    // _worldPacket << int32(MaxValue);
-    // _worldPacket << int32(Scale);
-    // _worldPacket << uint8(Paused);
-    // _worldPacket << int32(SpellID);
-
-    // 6.x
-    // packet.ReadUInt32("TimerType"); // Timer in magic
-    // packet.ReadUInt32("InitialValue");
-    // packet.ReadUInt32("MaxValue");
-    // packet.ReadInt32("Scale");
-    // packet.ReadUInt32<SpellId>("SpellID");
-    // packet.ReadBit("Paused");
-
-    GetSession()->SendPacket(&data);
 }
 
 void Player::StopMirrorTimer(MirrorTimerType Type)
 {
     m_MirrorTimer[Type] = DISABLED_MIRROR_TIMER;
-    WorldPacket data(SMSG_STOP_MIRROR_TIMER, 4);
-    data << (uint32)Type;
-    GetSession()->SendPacket(&data);
+    GetSession()->SendPacket(WorldPackets::Misc::StopMirrorTimer(Type).Write());
 }
 
 bool Player::IsImmuneToEnvironmentalDamage()
@@ -965,7 +932,7 @@ void Player::HandleDrowning(uint32 time_diff)
 
         // Breath timer not activated - activate it
         if (m_MirrorTimer[BREATH_TIMER] == DISABLED_MIRROR_TIMER)
-        {
+        {   
             m_MirrorTimer[BREATH_TIMER] = getMaxTimer(BREATH_TIMER);
             SendMirrorTimer(BREATH_TIMER, m_MirrorTimer[BREATH_TIMER], m_MirrorTimer[BREATH_TIMER], -1);
         }
@@ -1042,7 +1009,7 @@ void Player::HandleDrowning(uint32 time_diff)
     }
 
     if (m_MirrorTimerFlags & (UNDERWATER_INLAVA /*| UNDERWATER_INSLIME*/) && !(_lastLiquid && _lastLiquid->SpellID))
-    {
+    {   
         // Breath timer not activated - activate it
         if (m_MirrorTimer[FIRE_TIMER] == DISABLED_MIRROR_TIMER)
             m_MirrorTimer[FIRE_TIMER] = getMaxTimer(FIRE_TIMER);

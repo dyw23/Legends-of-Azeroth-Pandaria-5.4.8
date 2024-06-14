@@ -259,8 +259,9 @@ target_include_directories(game
     ${CMAKE_CURRENT_SOURCE_DIR}/Reputation
     ${CMAKE_CURRENT_SOURCE_DIR}/Scenarios
     ${CMAKE_CURRENT_SOURCE_DIR}/Scripting
-    ${CMAKE_CURRENT_SOURCE_DIR}/Server/Protocol
     ${CMAKE_CURRENT_SOURCE_DIR}/Server
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/Packets
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/Protocol
     ${CMAKE_CURRENT_SOURCE_DIR}/Services
     ${CMAKE_CURRENT_SOURCE_DIR}/Skills
     ${CMAKE_CURRENT_SOURCE_DIR}/Spells
