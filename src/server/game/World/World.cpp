@@ -60,6 +60,7 @@
 #include "M2Stores.h"
 #include "MMapFactory.h"
 #include "GameEventMgr.h"
+#include "GameTime.h"
 #include "GitRevision.h"
 #include "GridNotifiersImpl.h"
 #include "PoolMgr.h"
@@ -3150,6 +3151,7 @@ void World::OnStartup()
 void World::_UpdateGameTime()
 {
     ///- update the time
+    GameTime::UpdateGameTimers();
     time_t thisTime = time(NULL);
     uint32 elapsed = uint32(thisTime - m_gameTime);
     m_gameTime = thisTime;
