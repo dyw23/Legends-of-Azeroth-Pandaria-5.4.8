@@ -765,7 +765,7 @@ void AuthSession::ReconnectChallengeCallback(PreparedQueryResult result)
     Field* fields = result->Fetch();
 
     _accountInfo.LoadResult(fields);
-    _sessionKey = fields[9].GetBinary<SESSION_KEY_LENGTH>();
+    _sessionKey = HexStrToByteArray<SESSION_KEY_LENGTH>(std::string_view(fields[12].GetString()));
     Trinity::Crypto::GetRandomBytes(_reconnectProof);
     _status = STATUS_RECONNECT_PROOF;
 
