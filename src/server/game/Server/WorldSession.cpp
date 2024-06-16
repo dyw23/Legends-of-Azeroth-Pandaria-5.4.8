@@ -311,7 +311,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     std::vector<WorldPacket*> requeuePackets;
     uint32 _startMSTime = getMSTime();
     uint32 processedPackets = 0;
-    time_t currentTime = time(nullptr);
+    time_t currentTime = GameTime::GetGameTime();
 
     constexpr uint32 MAX_PROCESSED_PACKETS_IN_SAME_WORLDSESSION_UPDATE = 100;
 
@@ -456,11 +456,10 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
     //check if we are safe to proceed with logout
     //logout procedure should happen only in World::UpdateSessions() method!!!
-    if (updater.ProcessLogout())
+    if (updater.ProcessUnsafe())
     {
-        time_t currTime = GameTime::GetGameTime();
         ///- If necessary, log the player out
-        if (ShouldLogOut(currTime) && !m_playerLoading)
+        if (ShouldLogOut(currentTime) && !m_playerLoading)
             LogoutPlayer(true);
 
         if (m_Socket && GetPlayer() && _warden)
@@ -686,7 +685,7 @@ void WorldSession::LogoutPlayer(bool save)
     m_playerSave = false;
     m_playerRecentlyLogout = true;
     AntiDOS.AllowOpcode(CMSG_CHAR_ENUM, true);
-    LogoutRequest(0);
+    SetLogoutStartTime(0);
 }
 
 /// Kick a player out of the World

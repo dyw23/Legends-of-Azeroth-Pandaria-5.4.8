@@ -182,7 +182,7 @@ public:
     virtual ~PacketFilter() { }
 
     virtual bool Process(WorldPacket* /*packet*/) { return true; }
-    virtual bool ProcessLogout() const { return true; }
+    virtual bool ProcessUnsafe() const { return true; }
     static uint16 DropHighBytes(uint16 opcode) { return opcode & NUM_OPCODE_HANDLERS; }
 
 protected:
@@ -197,7 +197,7 @@ public:
 
     virtual bool Process(WorldPacket* packet);
     //in Map::Update() we do not process player logout!
-    virtual bool ProcessLogout() const { return false; }
+    virtual bool ProcessUnsafe() const { return false; }
 };
 
 //class used to filer only thread-unsafe packets from queue
@@ -326,7 +326,7 @@ class TC_GAME_API WorldSession
         bool isLogingOut() const { return _logoutTime || m_playerLogout; }
 
         /// Engage the logout process for the user
-        void LogoutRequest(time_t requestTime)
+        void SetLogoutStartTime(time_t requestTime)
         {
             _logoutTime = requestTime;
         }
@@ -1272,6 +1272,7 @@ class TC_GAME_API WorldSession
         bool isRecruiter;
         bool m_hasBoost;
         LockedQueue<WorldPacket*> _recvQueue;
+        uint32 expireTime;
         time_t timeLastWhoCommand;
 
         std::unique_ptr<AccountAchievementMgr> _achievementMgr;
