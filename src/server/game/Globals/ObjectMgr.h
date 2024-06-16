@@ -611,32 +611,39 @@ typedef std::multimap<uint32, GossipMenuItems> GossipMenuItemsContainer;
 typedef std::pair<GossipMenuItemsContainer::const_iterator, GossipMenuItemsContainer::const_iterator> GossipMenuItemsMapBounds;
 typedef std::pair<GossipMenuItemsContainer::iterator, GossipMenuItemsContainer::iterator> GossipMenuItemsMapBoundsNonConst;
 
-struct QuestPOIPoint
+struct QuestPOIBlobPoint
 {
-    int32 x;
-    int32 y;
+    int32 X;
+    int32 Y;
 
-    QuestPOIPoint() : x(0), y(0) { }
-    QuestPOIPoint(int32 _x, int32 _y) : x(_x), y(_y) { }
+    QuestPOIBlobPoint() : X(0), Y(0) { }
+    QuestPOIBlobPoint(int32 x, int32 y) : X(x), Y(y) { }
 };
 
-struct QuestPOI
+struct QuestPOIBlobData
 {
-    uint32 Id;
+    uint32 Idx1;
     int32 ObjectiveIndex;
+    uint32 QuestObjectiveId;
     uint32 MapId;
-    uint32 AreaId;
-    uint32 FloorId;
-    uint32 Unk3;
-    uint32 Unk4;
-    std::vector<QuestPOIPoint> points;
+    uint32 WorldMapAreaId;
+    uint32 Floor;
+    uint32 Priority;
+    uint32 Flags;
+    std::vector<QuestPOIBlobPoint> Points;
 
-    QuestPOI() : Id(0), ObjectiveIndex(0), MapId(0), AreaId(0), FloorId(0), Unk3(0), Unk4(0) { }
-    QuestPOI(uint32 id, int32 objIndex, uint32 mapId, uint32 areaId, uint32 floorId, uint32 unk3, uint32 unk4) : Id(id), ObjectiveIndex(objIndex), MapId(mapId), AreaId(areaId), FloorId(floorId), Unk3(unk3), Unk4(unk4) { }
+    QuestPOIBlobData() : Idx1(0), ObjectiveIndex(0), QuestObjectiveId(0), MapId(0), WorldMapAreaId(0), Floor(0), Priority(0), Flags(0) { }
+    QuestPOIBlobData(uint32 idx1, int32 objectiveIndex, uint32 questObjectiveId, uint32 mapId, uint32 worldMapAreaId, uint32 floor, uint32 priority, uint32 flags, std::vector<QuestPOIBlobPoint> points)
+        : Idx1(idx1), ObjectiveIndex(objectiveIndex), QuestObjectiveId(questObjectiveId), MapId(mapId), WorldMapAreaId(worldMapAreaId), Floor(floor), Priority(priority), Flags(flags), Points(std::move(points)) { }
 };
 
-typedef std::vector<QuestPOI> QuestPOIVector;
-typedef std::unordered_map<uint32, QuestPOIVector> QuestPOIContainer;
+struct QuestPOIData
+{
+    uint32 QuestID;
+    std::vector<QuestPOIBlobData> Blobs;
+};
+
+typedef std::unordered_map<uint32, QuestPOIData> QuestPOIContainer;
 
 struct PlayerCreateInfoItem
 {
@@ -1119,13 +1126,7 @@ class ObjectMgr
             return NULL;
         }
 
-        QuestPOIVector const* GetQuestPOIVector(uint32 questId)
-        {
-            QuestPOIContainer::const_iterator itr = _questPOIStore.find(questId);
-            if (itr != _questPOIStore.end())
-                return &itr->second;
-            return NULL;
-        }
+        QuestPOIData const* GetQuestPOIData(uint32 questId);
 
         VehicleAccessoryList const* GetVehicleAccessoryList(Vehicle* veh) const;
 
