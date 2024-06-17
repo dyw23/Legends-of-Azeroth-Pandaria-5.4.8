@@ -368,7 +368,7 @@ ElunaRegister<Player> PlayerMethods[] =
     {"GetQuestLevel", &LuaPlayer::GetQuestLevel},           // :GetQuestLevel(quest) - Returns quest's level
     {"GetChatTag", &LuaPlayer::GetChatTag},                 // :GetChatTag() - Returns player chat tag ID
     {"GetRestBonus", &LuaPlayer::GetRestBonus},             // :GetRestBonus() - Gets player's rest bonus
-    {"GetRestType", &LuaPlayer::GetRestType},               // :GetRestType() - Returns the player's rest type
+    {"HasRestFlag", &LuaPlayer::HasRestFlag},               // :HasRestFlag() - Returns whether the player has the given rest flag set
     {"GetPhaseMaskForSpawn", &LuaPlayer::GetPhaseMaskForSpawn},                                               // :GetPhaseMaskForSpawn() - Gets the real phasemask for spawning things. Used if the player is in GM mode
     {"GetReqKillOrCastCurrentCount", &LuaPlayer::GetReqKillOrCastCurrentCount},                                        // :GetReqKillOrCastCurrentCount(questId, entry) - Gets the objective (kill or cast) current count done
     {"GetQuestStatus", &LuaPlayer::GetQuestStatus},         // :GetQuestStatus(entry) - Gets the quest's status
@@ -432,7 +432,7 @@ ElunaRegister<Player> PlayerMethods[] =
     {"SetPvPDeath", &LuaPlayer::SetPvPDeath},               // :SetPvPDeath([on]) - Sets PvP death on or off
     {"SetAcceptWhispers", &LuaPlayer::SetAcceptWhispers},   // :SetAcceptWhispers([on]) - Sets whisper accepting death on or off
     {"SetRestBonus", &LuaPlayer::SetRestBonus},             // :SetRestBonus(bonusrate) - Sets new restbonus rate
-    {"SetRestType", &LuaPlayer::SetRestType},               // :SetRestType() - Sets rest type
+    {"SetRestFlag", &LuaPlayer::SetRestFlag},               // :SetRestFlag() - Sets rest flag
     {"SetQuestStatus", &LuaPlayer::SetQuestStatus},         // :SetQuestStatus(entry, status) - Sets the quest's status
     {"SetReputation", &LuaPlayer::SetReputation},           // :SetReputation(faction, value) - Sets the faction reputation for the player
     {"SetFreeTalentPoints", &LuaPlayer::SetFreeTalentPoints}, // :SetFreeTalentPoints(points) - Sets the amount of unused talent points
@@ -579,7 +579,7 @@ ElunaRegister<Player> PlayerMethods[] =
     // {"BindToInstance", &LuaPlayer::BindToInstance},      // :BindToInstance() - Binds the player to the current instance
     {"UnbindInstance", &LuaPlayer::UnbindInstance},         // :UnbindInstance(map, difficulty) - Unbinds the player from an instance
     {"RemoveFromBattlegroundOrBattlefieldRaid", &LuaPlayer::RemoveFromBattlegroundOrBattlefieldRaid},         // :RemoveFromBattlegroundOrBattlefieldRaid() - Removes the player from a battleground or battlefield raid
-    {"ResetAchievements", &LuaPlayer::ResetAchievements},   // :ResetAchievements() - Resets playeräs achievements
+    {"ResetAchievements", &LuaPlayer::ResetAchievements},   // :ResetAchievements() - Resets playerï¿½s achievements
     {"KickPlayer", &LuaPlayer::KickPlayer},                 // :KickPlayer() - Kicks player from server
     {"LogoutPlayer", &LuaPlayer::LogoutPlayer},             // :LogoutPlayer([save]) - Logs the player out and saves if true
     {"SendTrainerList", &LuaPlayer::SendTrainerList},       // :SendTrainerList(WorldObject) - Sends trainer list from object to player

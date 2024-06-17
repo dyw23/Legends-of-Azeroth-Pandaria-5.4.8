@@ -99,23 +99,26 @@ struct TC_GAME_API Position
 
     bool IsPositionValid() const;
 
-    float GetExactDist2dSq(float x, float y) const { float dx = m_positionX - x; float dy = m_positionY - y; return dx*dx + dy*dy; }
-    float GetExactDist2d(const float x, const float y) const { return std::sqrt(GetExactDist2dSq(x, y)); }
-    float GetExactDist2dSq(Position const* pos) const 
-    { 
-        float dx = m_positionX - pos->m_positionX; 
-        float dy = m_positionY - pos->m_positionY; 
-        return dx*dx + dy*dy; 
+    constexpr float GetExactDist2dSq(const float x, const float y) const
+    {
+        float dx = x - m_positionX;
+        float dy = y - m_positionY;
+        return dx*dx + dy*dy;
     }
-    float GetExactDist2d(Position const* pos) const { return std::sqrt(GetExactDist2dSq(pos)); }
+    constexpr float GetExactDist2dSq(Position const& pos) const { return GetExactDist2dSq(pos.m_positionX, pos.m_positionY); }
+    constexpr float GetExactDist2dSq(Position const* pos) const { return GetExactDist2dSq(*pos); }
 
-    float GetExactDistSq(float x, float y, float z) const 
-    { 
-        float dz = m_positionZ - z; 
-        return GetExactDist2dSq(x, y) + dz*dz; 
+    float GetExactDist2d(const float x, const float y) const { return std::sqrt(GetExactDist2dSq(x, y)); }
+    float GetExactDist2d(Position const& pos) const { return GetExactDist2d(pos.m_positionX, pos.m_positionY); }
+    float GetExactDist2d(Position const* pos) const { return GetExactDist2d(*pos); }
+
+    constexpr float GetExactDistSq(float x, float y, float z) const
+    {
+        float dz = z - m_positionZ;
+        return GetExactDist2dSq(x, y) + dz*dz;
     }
-    float GetExactDistSq(Position const& pos) const { return GetExactDistSq(pos.m_positionX, pos.m_positionY, pos.m_positionZ); }
-    float GetExactDistSq(Position const* pos) const { return GetExactDistSq(*pos); }
+    constexpr float GetExactDistSq(Position const& pos) const { return GetExactDistSq(pos.m_positionX, pos.m_positionY, pos.m_positionZ); }
+    constexpr float GetExactDistSq(Position const* pos) const { return GetExactDistSq(*pos); }
 
     float GetExactDist(float x, float y, float z) const { return std::sqrt(GetExactDistSq(x, y, z)); }
     float GetExactDist(Position const& pos) const { return GetExactDist(pos.m_positionX, pos.m_positionY, pos.m_positionZ); }
@@ -140,14 +143,24 @@ struct TC_GAME_API Position
     float GetRelativeAngle(float x, float y) const { return GetAngle(x, y) - m_orientation; }
     void GetSinCos(float x, float y, float &vsin, float &vcos) const;
 
-    bool IsInDist2d(float x, float y, float dist) const
+    constexpr bool IsInDist2d(float x, float y, float dist) const
         { return GetExactDist2dSq(x, y) < dist * dist; }
-    bool IsInDist2d(Position const* pos, float dist) const
+    constexpr bool IsInDist2d(Position const& pos, float dist) const
         { return GetExactDist2dSq(pos) < dist * dist; }
-    bool IsInDist(float x, float y, float z, float dist) const
+    constexpr bool IsInDist2d(Position const* pos, float dist) const
+        { return GetExactDist2dSq(pos) < dist * dist; }
+
+    constexpr bool IsInDist(float x, float y, float z, float dist) const
         { return GetExactDistSq(x, y, z) < dist * dist; }
-    bool IsInDist(Position const* pos, float dist) const
+    constexpr bool IsInDist(Position const& pos, float dist) const
         { return GetExactDistSq(pos) < dist * dist; }
+    constexpr bool IsInDist(Position const* pos, float dist) const
+        { return GetExactDistSq(pos) < dist * dist; }
+
+    bool IsWithinBox(Position const& boxOrigin, float length, float width, float height) const;
+
+    bool IsWithinVerticalCylinder(Position const& cylinderOrigin, float radius, float height, bool isDoubleVertical = false) const;
+
     bool HasInArc(float arcangle, Position const* pos, float border = 2.0f) const;
     bool HasInLine(WorldObject const* target, float width) const;
     std::string ToString() const;

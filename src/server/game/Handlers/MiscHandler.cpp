@@ -1119,152 +1119,102 @@ void WorldSession::HandleResurrectResponseOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
 {
-    uint32 triggerId;
-    uint8 unk1, unk2;
-    recvData >> triggerId;
-    unk1 = recvData.ReadBit();
-    unk2 = recvData.ReadBit();
+    uint32 areaTriggerId;
+    uint8 entered, fromClient;
+    recvData >> areaTriggerId;
+    fromClient = recvData.ReadBit();
+    entered = recvData.ReadBit();
 
-    TC_LOG_DEBUG("network", "CMSG_AREATRIGGER. Trigger ID: %u", triggerId);
+    TC_LOG_DEBUG("network", "CMSG_AREATRIGGER. Trigger ID: %u, Entered: %u, From Client: %u", areaTriggerId, entered, fromClient);
 
     Player* player = GetPlayer();
     if (player->IsInFlight())
     {
         TC_LOG_DEBUG("network", "HandleAreaTriggerOpcode: Player '%s' (GUID: %u) in flight, ignore Area Trigger ID:%u",
-            player->GetName().c_str(), player->GetGUIDLow(), triggerId);
+            player->GetName().c_str(), player->GetGUIDLow(), areaTriggerId);
         return;
     }
 
-    AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(triggerId);
+    AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(areaTriggerId);
     if (!atEntry)
     {
         TC_LOG_DEBUG("network", "HandleAreaTriggerOpcode: Player '%s' (GUID: %u) send unknown (by DBC) Area Trigger ID:%u",
-            player->GetName().c_str(), player->GetGUIDLow(), triggerId);
+            player->GetName().c_str(), player->GetGUIDLow(), areaTriggerId);
         return;
     }
 
-    if (player->GetMapId() != atEntry->mapid)
+    if (entered != player->IsInAreaTrigger(atEntry))
     {
         TC_LOG_DEBUG("network", "HandleAreaTriggerOpcode: Player '%s' (GUID: %u) too far (trigger map: %u player map: %u), ignore Area Trigger ID: %u",
-            player->GetName().c_str(), atEntry->mapid, player->GetMapId(), player->GetGUIDLow(), triggerId);
+                     player->GetName().c_str(), atEntry->ContinentID, player->GetMapId(), player->GetGUIDLow(), areaTriggerId);
         return;
-    }
-
-    // delta is safe radius
-    const float delta = 5.0f;
-
-    if (atEntry->radius > 0)
-    {
-        // if we have radius check it
-        float dist = player->GetDistance(atEntry->x, atEntry->y, atEntry->z);
-        if (dist > atEntry->radius + delta)
-        {
-            TC_LOG_DEBUG("network", "HandleAreaTriggerOpcode: Player '%s' (GUID: %u) too far (radius: %f distance: %f), ignore Area Trigger ID: %u",
-                player->GetName().c_str(), player->GetGUIDLow(), atEntry->radius, dist, triggerId);
-            return;
-        }
-    }
-    else
-    {
-        // we have only extent
-
-        // rotate the players position instead of rotating the whole cube, that way we can make a simplified
-        // is-in-cube check and we have to calculate only one point instead of 4
-
-        // 2PI = 360°, keep in mind that ingame orientation is counter-clockwise
-        double rotation = 2 * M_PI - atEntry->box_orientation;
-        double sinVal = std::sin(rotation);
-        double cosVal = std::cos(rotation);
-
-        float playerBoxDistX = player->GetPositionX() - atEntry->x;
-        float playerBoxDistY = player->GetPositionY() - atEntry->y;
-
-        float rotPlayerX = float(atEntry->x + playerBoxDistX * cosVal - playerBoxDistY*sinVal);
-        float rotPlayerY = float(atEntry->y + playerBoxDistY * cosVal + playerBoxDistX*sinVal);
-
-        // box edges are parallel to coordiante axis, so we can treat every dimension independently :D
-        float dz = player->GetPositionZ() - atEntry->z;
-        float dx = rotPlayerX - atEntry->x;
-        float dy = rotPlayerY - atEntry->y;
-        if ((fabs(dx) > atEntry->box_x / 2 + delta) ||
-            (fabs(dy) > atEntry->box_y / 2 + delta) ||
-            (fabs(dz) > atEntry->box_z / 2 + delta))
-        {
-            TC_LOG_DEBUG("network", "HandleAreaTriggerOpcode: Player '%s' (GUID: %u) too far (1/2 box X: %f 1/2 box Y: %f 1/2 box Z: %f rotatedPlayerX: %f rotatedPlayerY: %f dZ:%f), ignore Area Trigger ID: %u",
-                player->GetName().c_str(), player->GetGUIDLow(), atEntry->box_x/2, atEntry->box_y/2, atEntry->box_z/2, rotPlayerX, rotPlayerY, dz, triggerId);
-            return;
-        }
     }
 
     if (player->isDebugAreaTriggers)
-        ChatHandler(player->GetSession()).PSendSysMessage(LANG_DEBUG_AREATRIGGER_REACHED, triggerId);
+      ChatHandler(player->GetSession()).PSendSysMessage(entered ? LANG_DEBUG_AREATRIGGER_ENTERED : LANG_DEBUG_AREATRIGGER_LEFT, areaTriggerId);
 
-    if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_AREATRIGGER_CLIENT_TRIGGERED, atEntry->id, player))
+    if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_AREATRIGGER_CLIENT_TRIGGERED, atEntry->ID, player))
         return;
 
-    if (sScriptMgr->OnAreaTrigger(player, atEntry))
+    if (sScriptMgr->OnAreaTrigger(player, atEntry, entered))
         return;
 
-    if (player->IsAlive())
+    if (player->IsAlive() && entered)
     {
-        if (uint32 questId = sObjectMgr->GetQuestGiverForAreaTrigger(triggerId))
+        if (std::unordered_set<uint32> const* quests = sObjectMgr->GetQuestsForAreaTrigger(areaTriggerId))
         {
-            Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
-            if (quest && player->GetQuestStatus(questId) == QUEST_STATUS_NONE && player->CanTakeQuest(quest, false) && player->CanAddQuest(quest, false))
+            for (uint32 questId : *quests)
             {
-                player->AddQuest(quest, player);
-                player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, player->GetGUID(), true, true);
-                if (_player->CanCompleteQuest(quest->GetQuestId()))
-                    _player->CompleteQuest(quest->GetQuestId());
-            }
-        }
-        if (uint32 questId = sObjectMgr->GetQuestForAreaTrigger(triggerId))
-        {
-            Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
-            if (quest && player->GetQuestStatus(questId) == QUEST_STATUS_INCOMPLETE)
-            {
-                for (auto&& objective : quest->m_questObjectives)
+                Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+                uint16 slot = player->FindQuestSlot(questId);
+                if (quest && slot < MAX_QUEST_LOG_SIZE && player->GetQuestStatus(questId) == QUEST_STATUS_INCOMPLETE)
                 {
-                    if (objective->Type == QUEST_OBJECTIVE_TYPE_AREATRIGGER && player->GetQuestObjectiveCounter(objective->Id) == 0)
+                    for (auto objective: quest->m_questObjectives)
                     {
-                        player->m_questObjectiveStatus[objective->Id] += 1;
-                        player->MarkQuestObjectiveToSave(questId, objective->Id);
-                        player->SendQuestUpdateAddCreditSimple(quest, objective);
-                        break;
+                        if (objective->Type == QUEST_OBJECTIVE_TYPE_AREATRIGGER)
+                        {
+                            player->m_questObjectiveStatus[objective->Id] += 1;
+                            player->MarkQuestObjectiveToSave(questId, objective->Id);
+                            player->SendQuestUpdateAddCreditSimple(quest, objective);
+                            break;
+                        }
                     }
-                }
 
-                if (player->CanCompleteQuest(questId))
-                    player->CompleteQuest(questId);
+                    if (player->CanCompleteQuest(questId))
+                        player->CompleteQuest(questId);
+                }
             }
         }
     }
 
-    if (sObjectMgr->IsTavernAreaTrigger(triggerId))
+    if (sObjectMgr->IsTavernAreaTrigger(areaTriggerId))
     {
         // set resting flag we are in the inn
-        player->SetFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
-        player->InnEnter(time(NULL), atEntry->mapid, atEntry->x, atEntry->y, atEntry->z);
-        player->SetRestType(REST_TYPE_IN_TAVERN);
+        if (entered)
+            player->SetRestFlag(REST_FLAG_IN_TAVERN, atEntry->ID);
+        else
+            player->RemoveRestFlag(REST_FLAG_IN_TAVERN);
 
         if (sWorld->IsFFAPvPRealm())
-            player->RemoveByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+        {
+            if (entered)
+                player->RemoveByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+            else
+                player->SetByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+        }
 
         return;
     }
 
     if (Battleground* bg = player->GetBattleground())
         if (bg->GetStatus() == STATUS_IN_PROGRESS)
-        {
-            bg->HandleAreaTrigger(player, triggerId);
-            return;
-        }
+            bg->HandleAreaTrigger(player, areaTriggerId, entered);
 
     if (OutdoorPvP* pvp = player->GetOutdoorPvP())
-        if (pvp->HandleAreaTrigger(_player, triggerId))
+        if (pvp->HandleAreaTrigger(_player, areaTriggerId, entered))
             return;
 
-    AreaTriggerStruct const* at = sObjectMgr->GetAreaTrigger(triggerId);
+    AreaTriggerStruct const* at = sObjectMgr->GetAreaTrigger(areaTriggerId);
     if (!at)
         return;
 
@@ -1273,7 +1223,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
     {
         if (!sMapMgr->CanPlayerEnter(at->target_mapId, player, false))
         {
-            player->SendAreaTriggerDenied(triggerId, false);
+            player->SendAreaTriggerDenied(areaTriggerId, false);
             return;
         }
 

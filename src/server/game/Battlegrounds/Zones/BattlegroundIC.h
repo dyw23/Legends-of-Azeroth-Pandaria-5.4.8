@@ -926,7 +926,7 @@ class BattlegroundIC : public Battleground
         void PostUpdateImpl(uint32 diff) override;
 
         void RemovePlayer(Player* plr, uint64 guid, uint32 team) override;
-        void HandleAreaTrigger(Player* player, uint32 trigger) override;
+        void HandleAreaTrigger(Player* player, uint32 trigger, bool entered) override;
         bool SetupBattleground() override;
         void HandleKillUnit(Creature* unit, Player* killer) override;
         void HandleKillPlayer(Player* player, Player* killer) override;

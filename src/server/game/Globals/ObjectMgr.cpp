@@ -5705,7 +5705,7 @@ void ObjectMgr::LoadQuestGiverAreaTriggers()
             // continue; - quest modified to required objective and trigger can be allowed.
         }
 
-        _questGiverAreaTriggerStore[trigger_ID] = quest_ID;
+        _questGiverAreaTriggerStore[trigger_ID].insert(quest_ID);
 
     } while (result->NextRow());
 
@@ -5762,9 +5762,16 @@ void ObjectMgr::LoadQuestAreaTriggers()
             // continue; - quest modified to required objective and trigger can be allowed.
         }
 
-        _questAreaTriggerStore[trigger_ID] = quest_ID;
+        _questAreaTriggerStore[trigger_ID].insert(quest_ID);
 
     } while (result->NextRow());
+
+    for (auto const& pair : _questObjectives)
+    {
+        QuestObjective const* objective = pair.second;
+        if (objective->Type == QUEST_OBJECTIVE_TYPE_AREATRIGGER)
+            _questAreaTriggerStore[objective->Id].insert(objective->QuestID);
+    }
 
     TC_LOG_INFO("server.loading", ">> Loaded %u quest trigger points in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
@@ -6459,7 +6466,7 @@ AreaTriggerStruct const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
         if ((!useParentDbValue && itr->second.target_mapId == entrance_map) || (useParentDbValue && itr->second.target_mapId == parentId))
         {
             AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(itr->first);
-            if (atEntry && atEntry->mapid == Map)
+            if (atEntry && atEntry->ContinentID == Map)
                 return &itr->second;
         }
     return NULL;
@@ -10367,6 +10374,8 @@ void ObjectMgr::LoadQuestObjectives()
         return;
     }
 
+    _questObjectives.clear();
+
     uint32 count = 0;
     do
     {
@@ -10552,10 +10561,12 @@ void ObjectMgr::LoadQuestObjectives()
                 break;
         }
 
-        if (m_questObjectiveLookup.find(id) == m_questObjectiveLookup.end())
-            m_questObjectiveLookup.insert(std::make_pair(id, questId));
+        auto obj = new QuestObjective(id, questId, index, type, objectId, amount, flags, description);
 
-        quest->m_questObjectives.insert(new QuestObjective(id, questId, index, type, objectId, amount, flags, description));
+        // Store objective for lookup by id
+        _questObjectives[obj->Id] = obj;
+
+        quest->m_questObjectives.insert(obj);
         quest->m_questObjecitveTypeCount[type]++;
 
         count++;
@@ -10584,13 +10595,14 @@ void ObjectMgr::LoadQuestObjectiveVisualEffects()
         uint32 objectiveId  = fields[0].GetUInt32();
         uint32 visualEffect = fields[1].GetUInt32();
 
-        if (!QuestObjectiveExists(objectiveId))
+        auto objective = GetQuestObjective(objectiveId);
+        if (!objective)
         {
             TC_LOG_ERROR("sql.sql", "Visual effect %u has non existant Quest Objective Id %u! Skipping.", visualEffect, objectiveId);
             continue;
         }
 
-        Quest const* quest = GetQuestTemplate(GetQuestObjectiveQuestId(objectiveId));
+        Quest const* quest = GetQuestTemplate(objective->Id);
         if (!quest)
             continue;
 
@@ -10744,36 +10756,6 @@ void ObjectMgr::LoadQuestRequestItemsLocale()
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %lu Quest Request Items locale strings in %u ms", _questRequestItemsLocaleStore.size(), GetMSTimeDiffToNow(oldMSTime));
-}
-
-bool ObjectMgr::QuestObjectiveExists(uint32 objectiveId) const
-{
-    if (m_questObjectiveLookup.find(objectiveId) == m_questObjectiveLookup.end())
-        return false;
-
-    return true;
-}
-
-uint32 ObjectMgr::GetQuestObjectiveQuestId(uint32 objectiveId) const
-{
-    QuestObjectiveLookupMap::const_iterator citr = m_questObjectiveLookup.find(objectiveId);
-    if (citr == m_questObjectiveLookup.end())
-        return 0;
-
-    return citr->second;
-}
-
-QuestObjective const* ObjectMgr::GetQuestObjective(uint32 objectiveId) const
-{
-    Quest const* quest = GetQuestTemplate(GetQuestObjectiveQuestId(objectiveId));
-    if (!quest)
-        return nullptr;
-
-    QuestObjective const* questObjective = const_cast<QuestObjective*>(quest->GetQuestObjective(objectiveId));
-    if (!questObjective)
-        return nullptr;
-
-    return questObjective;
 }
 
 CreatureDifficultyInfo const* ObjectMgr::GetCreatureDifficultyInfo(Difficulty difficulty, uint32 id) const

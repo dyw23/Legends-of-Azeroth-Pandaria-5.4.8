@@ -553,7 +553,7 @@ class BattlegroundSA : public Battleground
 
         /// CAlled when a player leave battleground
         void RemovePlayer(Player* player, uint64 guid, uint32 team) override;
-        void HandleAreaTrigger(Player* Source, uint32 Trigger) override;
+        void HandleAreaTrigger(Player* Source, uint32 Trigger, bool Entered) override;
 
         /* Scorekeeping */
         /// Update score board

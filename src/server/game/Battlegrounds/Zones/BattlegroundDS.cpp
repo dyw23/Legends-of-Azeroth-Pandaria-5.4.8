@@ -183,7 +183,7 @@ void BattlegroundDS::HandleKillPlayer(Player* player, Player* killer)
     CheckArenaWinConditions();
 }
 
-void BattlegroundDS::HandleAreaTrigger(Player* player, uint32 trigger)
+void BattlegroundDS::HandleAreaTrigger(Player* player, uint32 trigger, bool entered)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -202,7 +202,7 @@ void BattlegroundDS::HandleAreaTrigger(Player* player, uint32 trigger)
                 setPipeKnockBackCount(0);
             break;
         default:
-            Battleground::HandleAreaTrigger(player, trigger);
+            Battleground::HandleAreaTrigger(player, trigger, entered);
             break;
     }
 }

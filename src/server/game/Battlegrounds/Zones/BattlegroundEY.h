@@ -348,7 +348,7 @@ class BattlegroundEY : public Battleground
 
         void RemovePlayer(Player* player, uint64 guid, uint32 team) override;
         void HandleBuffUse(uint64 buff_guid);
-        void HandleAreaTrigger(Player* Source, uint32 Trigger) override;
+        void HandleAreaTrigger(Player* Source, uint32 Trigger, bool Entered) override;
         void HandleKillPlayer(Player* player, Player* killer) override;
         WorldSafeLocsEntry const* GetClosestGraveYard(Player* player) override;
         bool SetupBattleground() override;

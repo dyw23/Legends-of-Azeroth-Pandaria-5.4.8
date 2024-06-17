@@ -512,6 +512,9 @@ class AreaTriggerScript : public ScriptObject
 
         // Called when the area trigger is activated by a player.
         virtual bool OnTrigger(Player* /*player*/, AreaTriggerEntry const* /*trigger*/) { return false; }
+
+        // Called when the area trigger is left by a player.
+        virtual bool OnExit(Player* player, AreaTriggerEntry const* trigger) { return false; }
 };
 
 class SpellAreaTriggerScript : public ScriptObject
@@ -1066,7 +1069,7 @@ class TC_GAME_API ScriptMgr
 
     public: /* AreaTriggerScript */
 
-        bool OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger);
+        bool OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger, bool entered);
 
     public: /* SpellAreaTriggerScript */
 

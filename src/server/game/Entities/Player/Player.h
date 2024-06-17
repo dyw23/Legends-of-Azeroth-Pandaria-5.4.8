@@ -799,11 +799,11 @@ enum InstanceResetWarningType
 
 class InstanceSave;
 
-enum RestType
+enum RestFlag
 {
-    REST_TYPE_NO = 0,
-    REST_TYPE_IN_TAVERN = 1,
-    REST_TYPE_IN_CITY = 2
+    REST_FLAG_NONE = 0,
+    REST_FLAG_IN_TAVERN = 1,
+    REST_FLAG_IN_CITY = 2
 };
 
 enum TeleportToOptions
@@ -1265,6 +1265,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
     void SetInWater(bool apply);
 
+    bool IsInAreaTrigger(const AreaTriggerEntry* areaTrigger) const;
+
     void SendInitialPacketsBeforeAddToMap();
     void SendInitialPacketsAfterAddToMap();
     void SendTransferAborted(uint32 mapid, TransferAbortReason reason, uint8 arg = 0);
@@ -1384,48 +1386,15 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
     void setDeathState(DeathState s);                   // overwrite Unit::setDeathState
 
-    void InnEnter(time_t time, uint32 mapid, float x, float y, float z);
-
-    float GetRestBonus() const
-    {
-        return m_rest_bonus;
-    }
+    float GetRestBonus() const { return m_rest_bonus; }
     void SetRestBonus(float rest_bonus_new);
 
-    RestType GetRestType() const
-    {
-        return rest_type;
-    }
-    void SetRestType(RestType n_r_type)
-    {
-        rest_type = n_r_type;
-    }
+    bool HasRestFlag(RestFlag restFlag) const { return (_restFlagMask & restFlag) != 0; }
+    void SetRestFlag(RestFlag restFlag, uint32 triggerId = 0);
+    void RemoveRestFlag(RestFlag restFlag);
 
-    uint32 GetInnPosMapId() const
-    {
-        return inn_pos_mapid;
-    }
-    float GetInnPosX() const
-    {
-        return inn_pos_x;
-    }
-    float GetInnPosY() const
-    {
-        return inn_pos_y;
-    }
-    float GetInnPosZ() const
-    {
-        return inn_pos_z;
-    }
-
-    time_t GetTimeInnEnter() const
-    {
-        return time_inn_enter;
-    }
-    void UpdateInnerTime(time_t time)
-    {
-        time_inn_enter = time;
-    }
+    uint32 GetXPRestBonus(uint32 xp);
+    uint32 GetInnTriggerId() const { return inn_triggerId; }
 
     Pet* GetPet() const;
     Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 despwtime);
@@ -2768,14 +2737,13 @@ public:
     {
         return GetRestTime() >= 10 * IN_MILLISECONDS;
     }
-    uint32 GetXPRestBonus(uint32 xp);
     uint32 GetRestTime() const
     {
-        return m_restTime;
+        return _restTime;
     }
     void SetRestTime(uint32 v)
     {
-        m_restTime = v;
+        _restTime;
     }
 
     /*********************************************************/
@@ -3530,8 +3498,6 @@ protected:
     uint32 m_deathTimer;
     time_t m_deathExpireTime;
 
-    uint32 m_restTime;
-
     uint32 m_WeaponProficiency;
     uint32 m_ArmorProficiency;
     bool m_canParry;
@@ -3540,13 +3506,10 @@ protected:
     uint8 m_swingErrorMsg;
 
     ////////////////////Rest System/////////////////////
-    time_t time_inn_enter;
-    uint32 inn_pos_mapid;
-    float  inn_pos_x;
-    float  inn_pos_y;
-    float  inn_pos_z;
+    time_t _restTime;
+    uint32 inn_triggerId;
     float m_rest_bonus;
-    RestType rest_type;
+    uint32 _restFlagMask;
     ////////////////////Rest System/////////////////////
 
     // Social

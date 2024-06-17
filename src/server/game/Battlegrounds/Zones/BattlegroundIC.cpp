@@ -345,7 +345,7 @@ void BattlegroundIC::RemovePlayer(Player* player, uint64 /*guid*/, uint32 /*team
     }
 }
 
-void BattlegroundIC::HandleAreaTrigger(Player* player, uint32 trigger)
+void BattlegroundIC::HandleAreaTrigger(Player* player, uint32 trigger, bool /*entered*/)
 {
     // this is wrong way to implement these things. On official it done by gameobject spell cast.
     if (GetStatus() != STATUS_IN_PROGRESS)

@@ -186,7 +186,7 @@ class BattlegroundTP : public Battleground
         void EventPlayerCapturedFlag(Player* Source);
 
         void RemovePlayer(Player* player, uint64 guid, uint32 team) override;
-        void HandleAreaTrigger(Player* Source, uint32 Trigger) override;
+        void HandleAreaTrigger(Player* Source, uint32 Trigger, bool Entered) override;
         void HandleKillPlayer(Player* player, Player* killer) override;
         bool SetupBattleground() override;
         void Reset() override;

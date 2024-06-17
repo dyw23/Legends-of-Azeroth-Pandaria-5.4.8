@@ -351,7 +351,7 @@ struct HookMgr
     void OnAddPassenger(Vehicle* vehicle, Unit* passenger, int8 seatId);
     void OnRemovePassenger(Vehicle* vehicle, Unit* passenger);
     /* AreaTrigger */
-    bool OnAreaTrigger(Player* pPlayer, AreaTriggerEntry const* pTrigger);
+    bool OnAreaTrigger(Player* pPlayer, AreaTriggerEntry const* pTrigger, bool entered);
     /* Weather */
     void OnChange(Weather* weather, WeatherState state, float grade);
     /* Auction House */

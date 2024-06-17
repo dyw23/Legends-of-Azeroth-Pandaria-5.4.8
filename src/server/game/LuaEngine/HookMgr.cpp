@@ -1075,7 +1075,7 @@ void HookMgr::OnRemovePassenger(Vehicle* vehicle, Unit* passenger)
 }
 
 // areatrigger
-bool HookMgr::OnAreaTrigger(Player* pPlayer, AreaTriggerEntry const* pTrigger)
+bool HookMgr::OnAreaTrigger(Player* pPlayer, AreaTriggerEntry const* pTrigger, bool entered)
 {
     for (std::vector<int>::const_iterator itr = sEluna->ServerEventBindings[TRIGGER_EVENT_ON_TRIGGER].begin();
         itr != sEluna->ServerEventBindings[TRIGGER_EVENT_ON_TRIGGER].end(); ++itr)
@@ -1083,8 +1083,9 @@ bool HookMgr::OnAreaTrigger(Player* pPlayer, AreaTriggerEntry const* pTrigger)
         sEluna->BeginCall((*itr));
         sEluna->Push(sEluna->L, TRIGGER_EVENT_ON_TRIGGER);
         sEluna->Push(sEluna->L, pPlayer);
-        sEluna->Push(sEluna->L, pTrigger->id);
-        sEluna->ExecuteCall(3, 0);
+        sEluna->Push(sEluna->L, pTrigger->ID);
+        sEluna->Push(sEluna->L, entered);
+        sEluna->ExecuteCall(4, 0);
     }
     return false;
 }

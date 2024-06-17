@@ -138,7 +138,7 @@ void BattlegroundRV::HandleKillPlayer(Player* player, Player* killer)
     CheckArenaWinConditions();
 }
 
-void BattlegroundRV::HandleAreaTrigger(Player* player, uint32 trigger)
+void BattlegroundRV::HandleAreaTrigger(Player* player, uint32 trigger, bool entered)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -152,7 +152,7 @@ void BattlegroundRV::HandleAreaTrigger(Player* player, uint32 trigger)
         case 5474:
             break;
         default:
-            Battleground::HandleAreaTrigger(player, trigger);
+            Battleground::HandleAreaTrigger(player, trigger, entered);
             break;
     }
 }

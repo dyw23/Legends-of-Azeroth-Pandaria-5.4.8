@@ -1165,17 +1165,17 @@ bool ScriptMgr::OnDummyEffect(Unit* caster, uint32 spellId, SpellEffIndex effInd
     return tmpscript->OnDummyEffect(caster, spellId, effIndex, target);
 }
 
-bool ScriptMgr::OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger)
+bool ScriptMgr::OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger, bool entered)
 {
     ASSERT(player);
     ASSERT(trigger);
 #ifdef ELUNA
-    if (sHookMgr->OnAreaTrigger(player, trigger))
+    if (sHookMgr->OnAreaTrigger(player, trigger, entered))
         return true;
 #endif
 
-    GET_SCRIPT_RET(AreaTriggerScript, sObjectMgr->GetAreaTriggerScriptId(trigger->id), tmpscript, false);
-    return tmpscript->OnTrigger(player, trigger);
+    GET_SCRIPT_RET(AreaTriggerScript, sObjectMgr->GetAreaTriggerScriptId(trigger->ID), tmpscript, false);
+    return entered ? tmpscript->OnTrigger(player, trigger) : tmpscript->OnExit(player, trigger);
 }
 
 IAreaTrigger* ScriptMgr::CreateAreaTriggerInterface(uint32 entry)

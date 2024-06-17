@@ -558,7 +558,7 @@ int32 OPvPCapturePoint::HandleOpenGo(Player* /*player*/, uint64 guid)
     return -1;
 }
 
-bool OutdoorPvP::HandleAreaTrigger(Player* /*player*/, uint32 /*trigger*/)
+bool OutdoorPvP::HandleAreaTrigger(Player* /*player*/, uint32 /*trigger*/, bool /*entered*/)
 {
     return false;
 }

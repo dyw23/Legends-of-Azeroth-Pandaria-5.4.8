@@ -308,9 +308,9 @@ namespace LuaPlayer
 
     int RemovePet(lua_State* L, Player* player);
 
-    int GetRestType(lua_State* L, Player* player);
+    int HasRestFlag(lua_State* L, Player* player);
 
-    int SetRestType(lua_State* L, Player* player);
+    int SetRestFlag(lua_State* L, Player* player);
 
     int SetRestBonus(lua_State* L, Player* player);
 

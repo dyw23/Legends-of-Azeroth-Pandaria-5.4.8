@@ -997,8 +997,8 @@ enum TrinityStrings
     LANG_MOVIE_NOT_EXIST                = 1201,
     LANG_DEBUG_AREATRIGGER_ON           = 1202,
     LANG_DEBUG_AREATRIGGER_OFF          = 1203,
-    LANG_DEBUG_AREATRIGGER_REACHED      = 1204,
-    // Room for more debug                1205-1299 not used
+    LANG_DEBUG_AREATRIGGER_ENTERED      = 1204,
+    // Room for more debug                1206-1299 not used
 
     // Isle of Conquest
     LANG_BG_IC_START_TWO_MINUTES        = 1205,
@@ -1146,6 +1146,7 @@ enum TrinityStrings
     LANG_BG_TOK_PICKEDUP_ORANGE          = 1356,
 
     // FREE IDS                           1334-1999
+    LANG_DEBUG_AREATRIGGER_LEFT          = 1999,
 
     // Ticket Strings 2000-2029
     LANG_COMMAND_TICKETNEW              = 2000,

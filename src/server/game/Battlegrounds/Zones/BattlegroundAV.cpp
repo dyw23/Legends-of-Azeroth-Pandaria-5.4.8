@@ -509,7 +509,7 @@ void BattlegroundAV::RemovePlayer(Player* player, uint64 guid, uint32 team)
     player->RemoveAurasDueToSpell(AV_BUFF_H_CAPTAIN);
 }
 
-void BattlegroundAV::HandleAreaTrigger(Player* player, uint32 trigger)
+void BattlegroundAV::HandleAreaTrigger(Player* player, uint32 trigger, bool entered)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -538,7 +538,7 @@ void BattlegroundAV::HandleAreaTrigger(Player* player, uint32 trigger)
             //Source->Unmount();
             break;
         default:
-            Battleground::HandleAreaTrigger(player, trigger);
+            Battleground::HandleAreaTrigger(player, trigger, entered);
             break;
     }
 }

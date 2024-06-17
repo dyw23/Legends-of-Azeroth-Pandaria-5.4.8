@@ -1228,17 +1228,19 @@ namespace LuaPlayer
         return 0;
     }
 
-    int GetRestType(lua_State* L, Player* player)
+    int HasRestFlag(lua_State* L, Player* player)
     {
-        sEluna->Push(L, player->GetRestType());
+        int flag = luaL_checkinteger(L, 1);
+        sEluna->Push(L, player->HasRestFlag((RestFlag)flag));
         return 1;
     }
 
-    int SetRestType(lua_State* L, Player* player)
+    int SetRestFlag(lua_State* L, Player* player)
     {
-        int type = luaL_checkinteger(L, 1);
+        int flag = luaL_checkinteger(L, 1);
+        uint32 triggerId = luaL_optunsigned(L, 2, 0);
 
-        player->SetRestType((RestType)type);
+        player->SetRestFlag((RestFlag)flag, triggerId);
         return 0;
     }
 

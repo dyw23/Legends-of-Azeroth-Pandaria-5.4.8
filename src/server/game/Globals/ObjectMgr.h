@@ -782,7 +782,6 @@ struct HotfixInfo
 };
 
 typedef std::vector<HotfixInfo> HotfixData;
-typedef std::map<uint32, uint32> QuestObjectiveLookupMap;
 
 struct ResearchDigsiteInfo
 {
@@ -965,6 +964,7 @@ class ObjectMgr
         typedef std::unordered_map<uint32, Item*> ItemMap;
 
         typedef std::unordered_map<uint32, Quest*> QuestMap;
+        typedef std::unordered_map<uint32 /*questObjectiveId*/, QuestObjective const*> QuestObjectivesByIdContainer;
 
         typedef std::unordered_map<uint32, AreaTriggerStruct> AreaTriggerContainer;
 
@@ -1045,20 +1045,18 @@ class ObjectMgr
 
         QuestMap const& GetQuestTemplates() const { return _questTemplates; }
 
-        uint32 GetQuestGiverForAreaTrigger(uint32 Trigger_ID) const
+        QuestObjective const* GetQuestObjective(uint32 questObjectiveId) const
         {
-            QuestAreaTriggerContainer::const_iterator itr = _questGiverAreaTriggerStore.find(Trigger_ID);
-            if (itr != _questGiverAreaTriggerStore.end())
-                return itr->second;
-            return 0;
+            auto itr = _questObjectives.find(questObjectiveId);
+            return itr != _questObjectives.end() ? itr->second : nullptr;
         }
 
-        uint32 GetQuestForAreaTrigger(uint32 Trigger_ID) const
+        std::unordered_set<uint32> const* GetQuestsForAreaTrigger(uint32 Trigger_ID) const
         {
-            QuestAreaTriggerContainer::const_iterator itr = _questAreaTriggerStore.find(Trigger_ID);
+            auto itr = _questAreaTriggerStore.find(Trigger_ID);
             if (itr != _questAreaTriggerStore.end())
-                return itr->second;
-            return 0;
+                return &itr->second;
+            return nullptr;
         }
 
         bool IsTavernAreaTrigger(uint32 Trigger_ID) const
@@ -1659,10 +1657,6 @@ class ObjectMgr
 
         void LoadMissingKeyChains();
 
-        bool QuestObjectiveExists(uint32 objectiveId) const;
-        uint32 GetQuestObjectiveQuestId(uint32 objectiveId) const;
-        QuestObjective const* GetQuestObjective(uint32 objectiveId) const;
-
         void LoadResearchDigsiteInfo();
         void LoadArchaeologyFindInfo();
         void LoadResearchProjectRequirements();
@@ -1767,10 +1761,10 @@ class ObjectMgr
         std::atomic<uint32> _HiVignetteGuid{ 1 };
 
         QuestMap _questTemplates;
-        QuestObjectiveLookupMap m_questObjectiveLookup;
+        QuestObjectivesByIdContainer _questObjectives;
 
         typedef std::unordered_map<uint32, GossipText> GossipTextContainer;
-        typedef std::unordered_map<uint32, uint32> QuestAreaTriggerContainer;
+        typedef std::unordered_map<uint32, std::unordered_set<uint32>> QuestAreaTriggerContainer;
         typedef std::set<uint32> TavernAreaTriggerContainer;
         typedef std::set<uint32> GameObjectForQuestContainer;
 

@@ -302,7 +302,7 @@ class BattlegroundDG : public Battleground
         void StartingEventCloseDoors() override;
         void FillInitialWorldStates(WorldStateBuilder& builder) override;
         void PostUpdateImpl(uint32 diff) override;
-        void HandleAreaTrigger(Player* player, uint32 trigger) override;
+        void HandleAreaTrigger(Player* player, uint32 trigger, bool entered) override;
         bool CanSeeSpellClick(Player const* player, Unit const* clicked) override;
         void EventPlayerClickedOnFlag(Player* source, GameObject* target_obj) override;
         void EventPlayerClickedOnFlag(Player* source, Unit* target) override;
