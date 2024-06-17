@@ -760,7 +760,7 @@ void WorldSession::HandleQuestPOIQuery(WorldPacket& recvData)
     ByteBuffer poiData;
 
     WorldPacket data(SMSG_QUEST_POI_QUERY_RESPONSE, 4+(4+4)*count);
-    data.WriteBits(count, 20);
+    data.WriteBits(questIds.size(), 20);
 
     for (uint32 questId : questIds)
     {
