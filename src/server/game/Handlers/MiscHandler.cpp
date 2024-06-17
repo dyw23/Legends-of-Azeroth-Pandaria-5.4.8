@@ -1161,6 +1161,21 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
 
     if (player->IsAlive() && entered)
     {
+        if (std::unordered_set<uint32> const* quests = sObjectMgr->GetQuestGiverForAreaTrigger(areaTriggerId))
+        {
+            for (uint32 questId : *quests)
+            {
+                Quest const *quest = sObjectMgr->GetQuestTemplate(questId);
+                if (quest && player->GetQuestStatus(questId) == QUEST_STATUS_NONE && player->CanTakeQuest(quest, false) && player->CanAddQuest(quest, false))
+                {
+                    player->AddQuest(quest, player);
+                    player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, player->GetGUID(), true, true);
+                    if (_player->CanCompleteQuest(quest->GetQuestId()))
+                        _player->CompleteQuest(quest->GetQuestId());
+                }
+            }
+        }
+
         if (std::unordered_set<uint32> const* quests = sObjectMgr->GetQuestsForAreaTrigger(areaTriggerId))
         {
             for (uint32 questId : *quests)

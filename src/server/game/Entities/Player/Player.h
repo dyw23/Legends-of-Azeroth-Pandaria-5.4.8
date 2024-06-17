@@ -2743,7 +2743,7 @@ public:
     }
     void SetRestTime(uint32 v)
     {
-        _restTime;
+        _restTime = v;
     }
 
     /*********************************************************/

@@ -1051,6 +1051,14 @@ class ObjectMgr
             return itr != _questObjectives.end() ? itr->second : nullptr;
         }
 
+        std::unordered_set<uint32> const* GetQuestGiverForAreaTrigger(uint32 Trigger_ID) const
+        {
+            auto itr = _questGiverAreaTriggerStore.find(Trigger_ID);
+            if (itr != _questGiverAreaTriggerStore.end())
+                return &itr->second;
+            return nullptr;
+        }
+
         std::unordered_set<uint32> const* GetQuestsForAreaTrigger(uint32 Trigger_ID) const
         {
             auto itr = _questAreaTriggerStore.find(Trigger_ID);
