@@ -7593,7 +7593,7 @@ void ObjectMgr::LoadQuestPOI()
         uint32 Flags              = fields[8].GetUInt32();
 
         if (!GetQuestTemplate(QuestID))
-          TC_LOG_ERROR("sql.sql", "`quest_poi` quest id ({}) Idx1 ({}) does not exist in `quest_template`", QuestID, Idx1);
+          TC_LOG_ERROR("sql.sql", "`quest_poi` quest id (%u) Idx1 (%u) does not exist in `quest_template`", QuestID, Idx1);
 
         if (std::map<uint32, std::vector<QuestPOIBlobPoint>>* blobs = Trinity::Containers::MapGetValuePtr(allPoints, QuestID))
         {
@@ -7608,7 +7608,7 @@ void ObjectMgr::LoadQuestPOI()
             }
         }
 
-        TC_LOG_ERROR("sql.sql", "Table quest_poi references unknown quest points for quest {} POI id {}", QuestID, Idx1);
+        TC_LOG_ERROR("sql.sql", "Table quest_poi references unknown quest points for quest %u POI id %u", QuestID, Idx1);
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %u quest POI definitions in %u ms", _questPOIStore.size(), GetMSTimeDiffToNow(oldMSTime));
