@@ -4464,7 +4464,7 @@ void Unit::RemoveAurasWithAttribute(uint32 flags)
     }
 }
 
-void Unit::RemoveBoundAuras(uint32 newPhase)
+void Unit::RemoveBoundAuras(uint32 newPhase, bool phaseid)
 {
     // Auras from other casters.
     for (auto it = m_appliedAuras.begin(); it != m_appliedAuras.end();)
@@ -4474,7 +4474,7 @@ void Unit::RemoveBoundAuras(uint32 newPhase)
         {
             Unit* caster = aura->GetCaster();
             ASSERT(caster);
-            if (!newPhase || !caster->InSamePhase(newPhase))
+            if (!newPhase && !phaseid || newPhase && !caster->InSamePhase(newPhase) || (!newPhase && !caster->IsPhased(this)))
             {
                 caster->UnbindAura(aura);
                 if (aura->GetSpellInfo()->IsSingleTarget())
@@ -15557,6 +15557,9 @@ bool Unit::InitTamedPet(Pet* pet, uint8 level, uint32 spell_id)
         return false;
     }
 
+    for (auto phase : GetPhases())
+        pet->SetPhased(phase, false, true);
+
     pet->GetCharmInfo()->SetPetNumber(sObjectMgr->GeneratePetNumber(), true);
     // this enables pet details window (Shift+P)
     pet->InitPetCreateSpells();
@@ -17373,7 +17376,7 @@ void Unit::SetPhaseMask(uint32 newPhaseMask, bool update)
 
     if (IsInWorld())
     {
-        RemoveBoundAuras(newPhaseMask);             // we can lost access to caster or target
+        RemoveBoundAuras(newPhaseMask, false);             // we can lost access to caster or target
 
         // modify hostile references for new phasemask, some special cases deal with hostile references themselves
         if (GetTypeId() == TYPEID_UNIT || (!ToPlayer()->IsGameMaster() && !ToPlayer()->GetSession()->PlayerLogout()))
@@ -17426,6 +17429,62 @@ void Unit::SetPhaseMask(uint32 newPhaseMask, bool update)
     // Update visibility after phasing pets and summons so they wont despawn
     if (update)
         UpdateObjectVisibility();            
+}
+
+void Unit::ClearPhases(bool update)
+{
+    WorldObject::ClearPhases(update);
+}
+
+bool Unit::SetPhased(uint32 id, bool update, bool apply)
+{
+    bool res = WorldObject::SetPhased(id, update, apply);
+
+    if (!IsInWorld())
+        return res;
+
+    if (GetTypeId() == TYPEID_UNIT || (!ToPlayer()->IsGameMaster() && !ToPlayer()->GetSession()->PlayerLogout()))
+    {
+        HostileRefManager& refManager = getHostileRefManager();
+        HostileReference* ref = refManager.getFirst();
+
+        while (ref)
+        {
+            if (Unit* unit = ref->GetSource()->GetOwner())
+                if (Creature* creature = unit->ToCreature())
+                    refManager.setOnlineOfflineState(creature, creature->IsPhased(this));
+
+            ref = ref->next();
+        }
+
+        // modify threat lists for new phasemask
+        if (GetTypeId() != TYPEID_PLAYER)
+        {
+            std::list<HostileReference*> threatList = getThreatManager().getThreatList();
+            std::list<HostileReference*> offlineThreatList = getThreatManager().getOfflineThreatList();
+
+            // merge expects sorted lists
+            threatList.sort();
+            offlineThreatList.sort();
+            threatList.merge(offlineThreatList);
+
+            for (std::list<HostileReference*>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
+                if (Unit* unit = (*itr)->getTarget())
+                    unit->getHostileRefManager().setOnlineOfflineState(ToCreature(), unit->IsPhased(this));
+        }
+    }
+
+    for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+        if ((*itr)->GetTypeId() == TYPEID_UNIT)
+            (*itr)->SetPhased(id, true, apply);
+
+    for (uint8 i = 0; i < SUMMON_SLOT_MAX; ++i)
+        if (m_SummonSlot[i])
+            if (Creature* summon = GetMap()->GetCreature(m_SummonSlot[i]))
+                summon->SetPhased(id, true, apply);
+
+    RemoveBoundAuras(0, true);
+    return res;
 }
 
 class Unit::AINotifyTask : public BasicEvent

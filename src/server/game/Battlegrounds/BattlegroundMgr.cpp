@@ -402,6 +402,8 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         ++scoreCount;
 
         Player* player = ObjectAccessor::FindPlayer(itr->first);
+        if (!player)
+            continue;
         ObjectGuid playerGUID = itr->first;
         BattlegroundScore* score = itr->second;
 

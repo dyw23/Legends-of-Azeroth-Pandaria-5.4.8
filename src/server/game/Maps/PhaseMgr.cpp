@@ -266,6 +266,7 @@ void PhaseData::SendPhaseshiftToPlayer()
     std::set<uint32> phaseIds;
     std::set<uint32> terrainswaps;
     std::set<uint32> worldMapAreas;
+    uint32 flags = 0;
 
     for (PhaseInfoContainer::const_iterator itr = spellPhaseInfo.begin(); itr != spellPhaseInfo.end(); ++itr)
     {
@@ -290,9 +291,12 @@ void PhaseData::SendPhaseshiftToPlayer()
 
         if ((*itr)->worldMapArea)
             worldMapAreas.insert((*itr)->worldMapArea);
+
+        if ((*itr)->flags)
+            flags = (*itr)->flags;
     }
 
-    player->GetSession()->SendSetPhaseShift(phaseIds, terrainswaps, worldMapAreas);
+    player->GetSession()->SendSetPhaseShift(phaseIds, terrainswaps, worldMapAreas, flags);
 }
 
 void PhaseData::GetActivePhases(std::set<uint32>& phases) const

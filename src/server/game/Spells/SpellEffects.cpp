@@ -240,10 +240,10 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectRemoveAura,                               //164 SPELL_EFFECT_REMOVE_AURA
     &Spell::EffectDamageFromMaxHealthPCT,                   //165 SPELL_EFFECT_DAMAGE_FROM_MAX_HEALTH_PCT
     &Spell::EffectGiveCurrency,                             //166 SPELL_EFFECT_GIVE_CURRENCY
-    &Spell::EffectNULL,                                     //167 SPELL_EFFECT_167
+    &Spell::EffectUpdatePlayerPhase,                        //167 SPELL_EFFECT_UPDATE_PLAYER_PHASE
     &Spell::EffectNULL,                                     //168 SPELL_EFFECT_168
     &Spell::EffectDestroyItem,                              //169 SPELL_EFFECT_DESTROY_ITEM
-    &Spell::EffectNULL,                                     //170 SPELL_EFFECT_170
+    &Spell::EffectUpdateZoneAurasAndPhases,                 //170 SPELL_EFFECT_UPDATE_ZONE_AURAS_AND_PHASES
     &Spell::EffectNULL,                                     //171 SPELL_EFFECT_171
     &Spell::EffectResurrectWithAura,                        //172 SPELL_EFFECT_RESURRECT_WITH_AURA
     &Spell::EffectUnlockGuildVaultTab,                      //173 SPELL_EFFECT_UNLOCK_GUILD_VAULT_TAB
@@ -3872,6 +3872,9 @@ void Spell::EffectSummonObjectWild(SpellEffIndex effIndex)
 
     pGameObj->AddToTransportIfNeeded(m_caster->GetTransport());
 
+    for (auto phase : m_caster->GetPhases())
+        pGameObj->SetPhased(phase, false, true);
+
     int32 duration = m_spellInfo->GetDuration();
 
     pGameObj->SetRespawnTime(duration > 0 ? duration/IN_MILLISECONDS : 0);
@@ -3894,6 +3897,9 @@ void Spell::EffectSummonObjectWild(SpellEffIndex effIndex)
             m_caster->GetPhaseMask(), x, y, z, target->GetOrientation(), { }, 100, GO_STATE_READY))
         {
             linkedGO->AddToTransportIfNeeded(m_caster->GetTransport());
+
+            for (auto phase : m_caster->GetPhases())
+                linkedGO->SetPhased(phase, false, true);
 
             linkedGO->SetRespawnTime(duration > 0 ? duration/IN_MILLISECONDS : 0);
             linkedGO->SetSpellId(m_spellInfo->Id);
@@ -4612,6 +4618,9 @@ void Spell::EffectDuel(SpellEffIndex effIndex)
 
     pGameObj->AddToTransportIfNeeded(m_caster->GetTransport());
 
+    for (auto phase : m_caster->GetPhases())
+        pGameObj->SetPhased(phase, false, true);
+
     pGameObj->SetFaction(m_caster->GetFaction());
     pGameObj->SetUInt32Value(GAMEOBJECT_FIELD_LEVEL, m_caster->GetLevel()+1);
     int32 duration = m_spellInfo->GetDuration();
@@ -5063,6 +5072,9 @@ void Spell::EffectSummonObject(SpellEffIndex effIndex)
     }
 
     go->AddToTransportIfNeeded(m_caster->GetTransport());
+
+    for (auto phase : m_caster->GetPhases())
+        go->SetPhased(phase, false, true);
 
     //pGameObj->SetUInt32Value(GAMEOBJECT_FIELD_LEVEL, m_caster->GetLevel());
     int32 duration = m_spellInfo->GetDuration();
@@ -5825,6 +5837,9 @@ void Spell::EffectTransmitted(SpellEffIndex effIndex)
 
     pGameObj->AddToTransportIfNeeded(m_caster->GetTransport());
 
+    for (auto phase : m_caster->GetPhases())
+        pGameObj->SetPhased(phase, false, true);
+
     int32 duration = m_spellInfo->GetDuration();
 
     switch (goinfo->type)
@@ -5888,6 +5903,9 @@ void Spell::EffectTransmitted(SpellEffIndex effIndex)
             m_caster->GetPhaseMask(), fx, fy, fz, m_caster->GetOrientation(), { }, 100, GO_STATE_READY))
         {
             linkedGO->AddToTransportIfNeeded(m_caster->GetTransport());
+
+            for (auto phase : m_caster->GetPhases())
+                linkedGO->SetPhased(phase, false, true);
 
             linkedGO->SetRespawnTime(duration > 0 ? duration/IN_MILLISECONDS : 0);
             //linkedGO->SetUInt32Value(GAMEOBJECT_FIELD_LEVEL, m_caster->GetLevel());
@@ -7189,4 +7207,26 @@ void Spell::EffectPlayerChoice(SpellEffIndex effIndex)
         return;
 
     player->GetSession()->SendPlayerChoice(choiceId);
+}
+
+void Spell::EffectUpdatePlayerPhase(SpellEffIndex /*effIndex*/)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    unitTarget->UpdateAreaAndZonePhase();
+}
+
+void Spell::EffectUpdateZoneAurasAndPhases(SpellEffIndex /*effIndex*/)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    unitTarget->ToPlayer()->UpdateAreaDependentAuras(unitTarget->GetAreaId());
 }

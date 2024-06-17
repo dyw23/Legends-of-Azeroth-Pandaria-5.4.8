@@ -97,6 +97,8 @@ struct GameObjectData
     uint32 id;                                              // entry in gamobject_template
     uint16 mapid;
     uint32 phaseMask;
+    uint32 phaseid;
+    uint32 phaseGroup;
     float posX;
     float posY;
     float posZ;
@@ -237,6 +239,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         static void SetGoArtKit(uint8 artkit, GameObject* go, uint32 lowguid = 0);
 
         void SetPhaseMask(uint32 newPhaseMask, bool update) override;
+        bool SetPhased(uint32 id, bool update, bool apply);
         void EnableCollision(bool enable);
         void UpdateCollision();
 

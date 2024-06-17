@@ -217,6 +217,9 @@ bool Pet::LoadPetFromDB(PetLoadMode mode, uint32 param, Position const* pos)
 
     AddToTransportIfNeeded(owner->GetTransport());
 
+    for (auto itr : owner->GetPhases())
+        SetPhased(itr, false, true);
+
     setPetType(petType);
     SetFaction(owner->GetFaction());
     SetUInt32Value(UNIT_FIELD_CREATED_BY_SPELL, summonSpellId);

@@ -1752,6 +1752,13 @@ struct PhaseEntry
     uint32    flag;                                         // 2
 };
 
+struct PhaseGroupEntry
+{
+    uint32 ID;
+    uint32 PhaseId;
+    uint32 GroupId;
+};
+
 struct MailTemplateEntry
 {
     uint32    ID;                                           // 0
@@ -2869,6 +2876,8 @@ struct WorldStateUI
 #else
 #pragma pack(pop)
 #endif
+
+typedef std::unordered_map<uint32, std::set<uint32>> PhaseGroupContainer;
 
 struct VectorArray
 {

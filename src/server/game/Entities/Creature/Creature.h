@@ -78,6 +78,8 @@ struct CreatureData
     uint32 id;                                              // entry in creature_template
     uint16 mapId;
     uint32 phaseMask;
+    uint32 phaseid;
+    uint32 phaseGroup;
     uint32 displayid;
     int8 equipmentId;
     float posX;

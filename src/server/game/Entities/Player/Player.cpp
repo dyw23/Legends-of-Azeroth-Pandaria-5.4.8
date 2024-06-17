@@ -1498,6 +1498,9 @@ void Player::Update(uint32 p_time)
 
     m_VignetteMgr.Update();
     sScriptMgr->OnUpdate(this, p_time);
+
+    if (!IsPhased(169))
+        SetPhased(169, true, true);
 }
 
 void Player::setDeathState(DeathState s)
@@ -2984,6 +2987,7 @@ void Player::GiveLevel(uint8 level)
     phaseUpdateData.AddConditionType(CONDITION_LEVEL);
 
     phaseMgr.NotifyConditionChanged(phaseUpdateData);
+    UpdateAreaAndZonePhase();
 
     // Refer-A-Friend
     if (GetSession()->GetRecruiterId())
@@ -7811,6 +7815,7 @@ void Player::UpdateArea(uint32 newArea)
     UpdatePvPState(true);
 
     UpdateAreaDependentAuras(newArea);
+    UpdateAreaAndZonePhase();
 
     // previously this was in UpdateZone (but after UpdateArea) so nothing will break
     pvpInfo.IsInNoPvPArea = false;
@@ -7951,6 +7956,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     UpdateLocalChannels(newZone);
 
     UpdateZoneDependentAuras(newZone);
+    UpdateAreaAndZonePhase();
 
     phaseMgr.RemoveUpdateFlag(PHASE_UPDATE_FLAG_ZONE_UPDATE);
 
@@ -16645,6 +16651,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     PhaseUpdateData phaseUpdateData;
     phaseUpdateData.AddQuestUpdate(quest_id);
     phaseMgr.NotifyConditionChanged(phaseUpdateData);
+    UpdateAreaAndZonePhase();
 
     // StoreNewItem, mail reward, etc. save data directly to the database
     // to prevent exploitable data desynchronisation we save the quest status to the database too
@@ -17260,6 +17267,7 @@ void Player::SetQuestStatus(uint32 quest_id, QuestStatus status, bool update /*=
     phaseUpdateData.AddQuestUpdate(quest_id);
 
     phaseMgr.NotifyConditionChanged(phaseUpdateData);
+    UpdateAreaAndZonePhase();
 
     /*uint32 zone = 0, area = 0;
 
@@ -17310,6 +17318,7 @@ void Player::RemoveActiveQuest(uint32 quest_id, bool update /*= true*/, bool /*r
         phaseUpdateData.AddQuestUpdate(quest_id);
 
         phaseMgr.NotifyConditionChanged(phaseUpdateData);
+        UpdateAreaAndZonePhase();
 
         sScriptMgr->OnPlayerQuestAbandoned(this, sObjectMgr->GetQuestTemplate(quest_id));
     }
@@ -17330,6 +17339,7 @@ void Player::RemoveRewardedQuest(uint32 quest_id, bool update /*= true*/)
         phaseUpdateData.AddQuestUpdate(quest_id);
 
         phaseMgr.NotifyConditionChanged(phaseUpdateData);
+        UpdateAreaAndZonePhase();
     }
 
     if (uint32 questBit = GetQuestUniqueBitFlag(quest_id))
@@ -18131,6 +18141,8 @@ void Player::SendQuestUpdateAddCredit(Quest const* quest, QuestObjective const* 
     uint16 logSlot = FindQuestSlot(quest->GetQuestId());
     if (logSlot < MAX_QUEST_LOG_SIZE)
         SetQuestSlotCounter(logSlot, objective->Index, GetQuestSlotCounter(logSlot, objective->Index) + addCount);
+
+    UpdateAreaAndZonePhase();
 }
 
 void Player::SendQuestUpdateAddCreditSimple(Quest const* quest, QuestObjective const* objective)
@@ -18146,6 +18158,8 @@ void Player::SendQuestUpdateAddCreditSimple(Quest const* quest, QuestObjective c
     uint16 logSlot = FindQuestSlot(quest->GetQuestId());
     if (logSlot < MAX_QUEST_LOG_SIZE)
         SetQuestSlotState(logSlot, 256 << objective->Index);
+
+    UpdateAreaAndZonePhase();
 }
 
 void Player::SendQuestUpdateAddPlayer(Quest const* quest, QuestObjective const* objective, uint16 oldCount, uint16 addCount)
@@ -18161,6 +18175,8 @@ void Player::SendQuestUpdateAddPlayer(Quest const* quest, QuestObjective const* 
     uint16 logSlot = FindQuestSlot(quest->GetQuestId());
     if (logSlot < MAX_QUEST_LOG_SIZE)
         SetQuestSlotCounter(logSlot, objective->Index, GetQuestSlotCounter(logSlot, objective->Index) + addCount);
+
+    UpdateAreaAndZonePhase();
 }
 
 bool Player::HasPvPForcingQuest() const
@@ -29351,6 +29367,9 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, uint3
     }
 
     pet->AddToTransportIfNeeded(GetTransport());
+
+    for (auto itr : GetPhases())
+        pet->SetPhased(itr, false, true);
 
     pet->SetCreatorGUID(GetGUID());
     pet->SetUInt32Value(UNIT_FIELD_FACTION_TEMPLATE, GetFaction());

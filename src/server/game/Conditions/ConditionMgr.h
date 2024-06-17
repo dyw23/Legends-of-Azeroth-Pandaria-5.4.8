@@ -75,7 +75,7 @@ enum ConditionTypes
     CONDITION_HP_PCT                   = 38,                   // hpPct            ComparisonType 0                  true if unit's hp matches given pct
     CONDITION_REALM_ACHIEVEMENT        = 39,                   // achievement_id   0              0                  true if realm achievement is complete
     CONDITION_IN_WATER                 = 40,                   // 0                0              0                  true if unit in water
-    CONDITION_TERRAIN_SWAP             = 41,                   // terrainSwap      0              0                  true if object is in terrainswap (NYI, reserved)
+    CONDITION_TERRAIN_SWAP             = 41,                   // terrainSwap      0              0                  true if object is in terrainswap
     CONDITION_STAND_STATE              = 42,                   // stateType        state          0                  true if unit matches specified sitstate (0,x: has exactly state x; 1,0: any standing state; 1,1: any sitting state;)
     CONDITION_DAILY_QUEST_DONE         = 43,                   // quest id         0              0                  true if daily quest has been completed for the day
     CONDITION_CHARMED                  = 44,                   // 0                0              0                  true if unit is currently charmed
@@ -99,7 +99,9 @@ enum ConditionTypes
     CONDITION_WEEKLY_QUEST_DONE        = 105,                  // quest            0              0                  true if weekly quest has been completed for the week
     CONDITION_MONTHLY_QUEST_DONE       = 106,                  // quest            0              0                  true if monthly quest has been completed for the month
     CONDITION_REPUTATION_VALUE         = 107,                  // faction_id       rep_value      0                  true if reputation value more or equal than rep_value
-    CONDITION_project_MAX              = 108,                  // MAX
+    CONDITION_PHASEID                  = 108,                  // phaseid          0              0                  true if object is in phaseid
+    CONDITION_WORLD_MAP_SWAP           = 109,                  // worldMapSwamp    0              0                  ture if object is in worldMapSwamp
+    CONDITION_project_MAX              = 110,                  // MAX
     CONDITION_MAX
 };
 
@@ -158,7 +160,7 @@ enum ConditionSourceType
     CONDITION_SOURCE_TYPE_NPC_VENDOR                     = 23,
     CONDITION_SOURCE_TYPE_SPELL_PROC                     = 24,
     CONDITION_SOURCE_TYPE_PHASE_DEFINITION               = 25, // only 4.3.4
-    // Condition source type 26 unused
+    CONDITION_SOURCE_TYPE_PHASE                          = 26,
     CONDITION_SOURCE_TYPE_GRAVEYARD                      = 27,
     CONDITION_SOURCE_TYPE_AREATRIGGER                    = 28, // only master (this refers to dynamically spawned areatriggers, not the ones from AreaTrigger.dbc/db2)    
     CONDITION_SOURCE_TYPE_CONVERSATION_LINE              = 29, // only master
@@ -308,6 +310,7 @@ class TC_GAME_API ConditionMgr
         bool addToGossipMenuItems(Condition* cond) const;
         bool AddToSpellImplicitTargetConditions(Condition* cond) const;
         bool AddToSpellImplicitTargetConditions(Condition* cond, SpellInfo* spellInfo) const;
+        bool addToPhases(Condition* cond);
         bool IsObjectMeetToConditionList(ConditionSourceInfo& sourceInfo, ConditionContainer const& conditions) const;
 
         void Clean(); // free up resources

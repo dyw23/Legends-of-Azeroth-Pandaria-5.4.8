@@ -2135,7 +2135,7 @@ void WorldSession::HandleReadyForAccountDataTimes(WorldPacket& /*recvData*/)
     SendAccountDataTimes(GLOBAL_CACHE_MASK);
 }
 
-void WorldSession::SendSetPhaseShift(std::set<uint32> const& phaseIds, std::set<uint32> const& terrainswaps, std::set<uint32> const& worldMapAreas)
+void WorldSession::SendSetPhaseShift(std::set<uint32> const& phaseIds, std::set<uint32> const& terrainswaps, std::set<uint32> const& worldMapAreas, uint32 flags)
 {
     ObjectGuid guid = _player->GetGUID();
 
@@ -2177,7 +2177,7 @@ void WorldSession::SendSetPhaseShift(std::set<uint32> const& phaseIds, std::set<
 
     data.WriteByteSeq(guid[5]);
 
-    data << uint32(phaseIds.size() ? 0 : 8);  // flags (not phasemask)
+    data << uint32(!flags ? 0x1F : flags);
 
     SendPacket(&data);
 }

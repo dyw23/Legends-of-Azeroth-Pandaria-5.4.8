@@ -507,7 +507,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         virtual void Update (uint32 /*time_diff*/) { }
 
-        void _Create(uint32 guidlow, HighGuid guidhigh, uint32 phaseMask);
+        void _Create(uint32 guidlow, HighGuid guidhigh, uint32 phaseMask, std::set<uint32> const& phaseIds);
         void AddToWorld() override;
         void RemoveFromWorld() override;
 
@@ -549,6 +549,22 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         uint32 GetPhaseMask() const { return m_phaseMask; }
         bool InSamePhase(WorldObject const* obj) const;
         bool InSamePhase(uint32 phasemask) const { return (GetPhaseMask() & phasemask); }
+
+        virtual bool SetPhased(uint32 id, bool update, bool apply);
+        bool HasPhaseList(uint32 phase);
+        void ClearPhases(bool update = false);
+        bool IsPhased(WorldObject const* obj) const;
+        bool IsPhased(uint32 phase) const { return _phases.find(phase) != _phases.end(); }
+        std::set<uint32> const& GetPhases() const { return _phases; }
+        bool SetTerrainSwap(uint32 id, bool update, bool apply);
+        bool IsTerrainSwaped(uint32 terrainSwap) const { return _terrainSwaps.find(terrainSwap) != _terrainSwaps.end(); }
+        std::set<uint32> const& GetTerrainSwaps() const { return _terrainSwaps; }
+        void ClearTerrainSwaps(bool update = false);
+        bool SetWorldMapSwap(uint32 id, bool update, bool apply);
+        bool IsWorldMapSwaped(uint32 worldMapSwap) const { return _worldMapSwaps.find(worldMapSwap) != _worldMapSwaps.end(); }
+        std::set<uint32> const& GetWorldMapSwaps() const { return _worldMapSwaps; }
+        void ClearWorldMapSwap(bool update = false);
+        void UpdateAreaAndZonePhase();
 
         uint32 GetZoneId() const;
         uint32 GetAreaId() const;
@@ -790,6 +806,9 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         //uint32 m_mapId;                                     // object at map with map_id
         uint32 m_InstanceId;                                // in map copy with instance id
         uint32 m_phaseMask;                                 // in area phase state
+        std::set<uint32> _phases;
+        std::set<uint32> _terrainSwaps;
+        std::set<uint32> _worldMapSwaps;
 
         bool m_hasCustomVisibility = false;
         float m_customVisibilityDistance = 0;

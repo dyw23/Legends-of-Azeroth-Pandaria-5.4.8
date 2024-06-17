@@ -861,7 +861,10 @@ void InstanceScript::UpdatePhasing()
     Map::PlayerList const& players = instance->GetPlayers();
     for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
         if (Player* player = itr->GetSource())
+        {
             player->GetPhaseMgr().NotifyConditionChanged(phaseUdateData);
+            player->UpdateAreaAndZonePhase();
+        }
 }
 
 void InstanceScript::SendScenarioState(ScenarioData scenarioData, Player* player /*= nullptr*/)

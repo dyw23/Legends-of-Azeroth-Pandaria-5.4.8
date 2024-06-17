@@ -800,6 +800,14 @@ struct ArchaeologyFindInfo
 typedef std::list<ArchaeologyFindInfo> ArchaeologyFindList;
 typedef std::unordered_map<uint32 /*digsiteId*/, ArchaeologyFindList> ArchaeologyFindContainer;
 
+struct PhaseInfoStruct
+{
+    uint32 id;
+    ConditionContainer Conditions;
+};
+
+typedef std::unordered_map<uint32, std::vector<PhaseInfoStruct>> PhaseAreaInfo;
+
 struct ResearchProjectRequirements
 {
     uint32 requiredSkillValue;
@@ -1275,10 +1283,25 @@ class ObjectMgr
         void AddSpellToTrainer(uint32 entry, uint32 spell, uint32 spellCost, uint32 reqSkill, uint32 reqSkillValue, uint32 reqLevel);
 
         void LoadPhaseDefinitions();
+        void LoadAreaPhases();
         void LoadSpellPhaseInfo();
 
         PhaseDefinitionStore const* GetPhaseDefinitionStore() { return &_PhaseDefinitionStore; }
         SpellPhaseStore const* GetSpellPhaseStore() { return &_SpellPhaseStore; }
+
+        std::vector<PhaseInfoStruct> const* GetPhasesForArea(uint32 area) const
+        {
+            auto itr = _areaPhases.find(area);
+            return itr != _areaPhases.end() ? &itr->second : nullptr;
+        }
+        PhaseAreaInfo const& GetAreaAndZonePhases() const { return _areaPhases; }
+        // condition loading helpers
+        std::vector<PhaseInfoStruct>* GetPhasesForAreaOrZoneForLoading(uint32 areaOrZone)
+        {
+            auto itr = _areaPhases.find(areaOrZone);
+            return itr != _areaPhases.end() ? &itr->second : nullptr;
+        }
+        PhaseAreaInfo& GetAreaAndZonePhasesForLoading() { return _areaPhases; }
 
         void LoadBattlePetBreedData();
         void LoadBattlePetQualityData();
@@ -1821,6 +1844,7 @@ class ObjectMgr
         InstanceTemplateContainer _instanceTemplateStore;
 
         PhaseDefinitionStore _PhaseDefinitionStore;
+        PhaseAreaInfo _areaPhases;
         SpellPhaseStore _SpellPhaseStore;
 
         typedef std::set<uint8> BattleBetBreedSet;

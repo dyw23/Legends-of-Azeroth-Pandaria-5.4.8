@@ -501,6 +501,8 @@ class TC_GAME_API Spell
         void EffectRandomizeDigsite(SpellEffIndex effIndex);
         void EffectBonusRoll(SpellEffIndex effIndex);
         void EffectPlayerChoice(SpellEffIndex effIndex);
+        void EffectUpdatePlayerPhase(SpellEffIndex effIndex);
+        void EffectUpdateZoneAurasAndPhases(SpellEffIndex effIndex);
 
         typedef std::set<Aura*> UsedSpellMods;
 

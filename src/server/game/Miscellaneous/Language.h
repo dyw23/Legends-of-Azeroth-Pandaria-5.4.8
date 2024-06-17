@@ -1555,6 +1555,9 @@ enum TrinityStrings
     LANG_BG_REWARD_TITLE_RICH               = 12529,
     LANG_BG_REWARD_BODY                     = 12530,
 
+    LANG_NPCINFO_PHASE_IDS                  = 12531,
+    LANG_NPCINFO_PHASES                     = 12532,
+
     // Word filter
     LANG_WORD_FILTER_FOUND_BAD_WORD_IN_CHAT = 21000,
     LANG_WORD_FILTER_FOUND_BAD_WORD_IN_MAIL = 21001,
