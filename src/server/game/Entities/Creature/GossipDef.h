@@ -19,7 +19,6 @@
 #define TRINITYCORE_GOSSIP_H
 
 #include "Common.h"
-#include "QuestDef.h"
 #include "NPCHandler.h"
 
 class WorldSession;

@@ -295,7 +295,7 @@ class Quest
 {
     friend class ObjectMgr;
     public:
-        explicit Quest(Field*);// questRecord);
+        Quest(Field* questRecord);
         uint32 XPValue(Player* player) const;
 
         bool HasFlag(uint32 flag) const { return (Flags & flag) != 0; }
