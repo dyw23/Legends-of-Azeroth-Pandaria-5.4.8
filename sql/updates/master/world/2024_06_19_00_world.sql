@@ -1,15 +1,15 @@
-ALTER TABLE creature
-	ADD COLUMN phaseId INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER phaseMask,
-	ADD COLUMN phaseGroup INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER phaseId;
-ALTER TABLE gameobject
-	ADD COLUMN phaseGroup INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER phaseId;
+ALTER TABLE `creature`
+	ADD COLUMN `phaseId` INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER `phaseMask`,
+	ADD COLUMN `phaseGroup` INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER `phaseId`;
+ALTER TABLE `gameobject`
+	ADD COLUMN `phaseGroup` INT(10) UNSIGNED NOT NULL DEFAULT '0' AFTER `phaseId`;
 
-DROP TABLE IF EXISTS phase_area;
-CREATE TABLE phase_area (
-  AreaId int(10) unsigned NOT NULL,
-  PhaseId int(10) unsigned NOT NULL,
-  Comment varchar(255) DEFAULT NULL,
-  PRIMARY KEY (AreaId,PhaseId)
+DROP TABLE IF EXISTS `phase_area`;
+CREATE TABLE `phase_area` (
+  `AreaId` int(10) unsigned NOT NULL,
+  `PhaseId` int(10) unsigned NOT NULL,
+  `Comment` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`AreaId`,`PhaseId`)
 );
 
 DELETE FROM `phase_area` WHERE `AreaId`=5834 AND `PhaseId` IN (592,593,594,595,596,597,598);
@@ -56,9 +56,9 @@ INSERT INTO `gameobject_loot_template` (`Entry`,`Item`,`ChanceOrQuestChance`) VA
 (40863, 73213, -100),
 (40864, 73210, -100);
 
-SET @OGUID := XXXXXX;
-DELETE FROM gameobject WHERE id IN (210005,210015,210016,210017,210018,210019,210020);
-DELETE FROM `gameobject` WHERE guid BETWEEN @OGUID+0 AND @OGUID+69;
+SET @OGUID := 4000000;
+DELETE FROM `gameobject` WHERE `id` IN (210005,210015,210016,210017,210018,210019,210020);
+DELETE FROM `gameobject` WHERE `guid` BETWEEN @OGUID+0 AND @OGUID+69;
 INSERT INTO `gameobject` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseId`, `phaseGroup`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`, `ScriptName`) VALUES 
 (@OGUID+0,  210005, 860, 5736, 5834, 1, 598, 0, 1430.43, 3429.18, 171.14, 0.401425, 0, 0, 0.199367, 0.979925, 0, 255, 1, ''),
 (@OGUID+1,  210005, 860, 5736, 5834, 1, 598, 0, 1472.45, 3441.16, 171.183, 4.7822, 0, 0, -0.681998, 0.731354, 0, 255, 1, ''),
