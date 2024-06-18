@@ -2004,19 +2004,13 @@ uint16 GridMap::getArea(float x, float y) const
     return _areaMap[lx*16 + ly];
 }
 
-float GridMap::getHeightFromFlat(float x, float y) const
+float GridMap::getHeightFromFlat(float /*x*/, float /*y*/) const
 {
-    if (isHole(x, y))
-        return INVALID_HEIGHT;
-
     return _gridHeight;
 }
 
 float GridMap::getHeightFromFloat(float x, float y) const
 {
-    if (isHole(x, y))
-        return INVALID_HEIGHT;
-
     if (!m_V8 || !m_V9)
         return _gridHeight;
 
@@ -2029,6 +2023,9 @@ float GridMap::getHeightFromFloat(float x, float y) const
     y -= y_int;
     x_int&=(MAP_RESOLUTION - 1);
     y_int&=(MAP_RESOLUTION - 1);
+
+    if (isHole(x_int, y_int))
+        return INVALID_HEIGHT;
 
     // Height stored as: h5 - its v8 grid, h1-h4 - its v9 grid
     // +--------------> X
@@ -2099,9 +2096,6 @@ float GridMap::getHeightFromFloat(float x, float y) const
 
 float GridMap::getHeightFromUint8(float x, float y) const
 {
-    if (isHole(x, y))
-        return INVALID_HEIGHT;
-
     if (!m_uint8_V8 || !m_uint8_V9)
         return _gridHeight;
 
@@ -2114,6 +2108,9 @@ float GridMap::getHeightFromUint8(float x, float y) const
     y -= y_int;
     x_int&=(MAP_RESOLUTION - 1);
     y_int&=(MAP_RESOLUTION - 1);
+
+    if (isHole(x_int, y_int))
+        return INVALID_HEIGHT;
 
     int32 a, b, c;
     uint8 *V9_h1_ptr = &m_uint8_V9[x_int*128 + x_int + y_int];
@@ -2169,9 +2166,6 @@ float GridMap::getHeightFromUint8(float x, float y) const
 
 float GridMap::getHeightFromUint16(float x, float y) const
 {
-    if (isHole(x, y))
-        return INVALID_HEIGHT;
-
     if (!m_uint16_V8 || !m_uint16_V9)
         return _gridHeight;
 
@@ -2184,6 +2178,9 @@ float GridMap::getHeightFromUint16(float x, float y) const
     y -= y_int;
     x_int&=(MAP_RESOLUTION - 1);
     y_int&=(MAP_RESOLUTION - 1);
+
+    if (isHole(x_int, y_int))
+        return INVALID_HEIGHT;
 
     int32 a, b, c;
     uint16 *V9_h1_ptr = &m_uint16_V9[x_int*128 + x_int + y_int];
