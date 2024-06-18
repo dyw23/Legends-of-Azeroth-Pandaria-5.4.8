@@ -296,7 +296,7 @@ struct HookMgr
     bool OnQuestSelect(Player* pPlayer, Creature* pCreature, Quest const* pQuest);
     bool OnQuestComplete(Player* pPlayer, Creature* pCreature, Quest const* pQuest);
     bool OnQuestReward(Player* pPlayer, Creature* pCreature, Quest const* pQuest);
-    uint32 GetDialogStatus(Player* pPlayer, Creature* pCreature);
+    Optional<QuestGiverStatus> GetDialogStatus(Player* pPlayer, Creature* pCreature);
     /* GameObject */
     bool OnDummyEffect(Unit* pCaster, uint32 spellId, SpellEffIndex effIndex, GameObject* pTarget);
     bool OnGossipHello(Player* pPlayer, GameObject* pGameObject);
@@ -306,7 +306,7 @@ struct HookMgr
     bool OnQuestComplete(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest);
     bool OnQuestReward(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest);
     bool OnGameObjectUse(Player* pPlayer, GameObject* pGameObject) { return false; }; // TODO? Not on TC
-    uint32 GetDialogStatus(Player* pPlayer, GameObject* pGameObject);
+    Optional<QuestGiverStatus> GetDialogStatus(Player* pPlayer, GameObject* pGameObject);
     void OnDestroyed(GameObject* pGameObject, Player* pPlayer);
     void OnDamaged(GameObject* pGameObject, Player* pPlayer);
     void OnLootStateChanged(GameObject* pGameObject, uint32 state, Unit* pUnit);

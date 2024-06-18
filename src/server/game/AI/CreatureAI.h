@@ -29,6 +29,7 @@ class Creature;
 class Player;
 class PlayerAI;
 class SpellInfo;
+enum class QuestGiverStatus : uint32;
 
 #define TIME_INTERVAL_LOOK   5000
 #define VISIBILITY_RANGE    10000
@@ -182,8 +183,7 @@ class TC_GAME_API CreatureAI : public UnitAI
         /// == Gossip system ================================
 
         // Called when the dialog status between a player and the creature is requested.
-        //virtual Optional<QuestGiverStatus> GetDialogStatus(Player* /*player*/) { return {}; }
-        virtual uint32 GetDialogStatus(Player* /*player*/) { return 100; } // todo
+        virtual Optional<QuestGiverStatus> GetDialogStatus(Player* /*player*/) { return {}; }
 
         // Called when a player opens a gossip dialog with the creature.
         virtual bool OnGossipHello(Player* /*player*/) { return false; }

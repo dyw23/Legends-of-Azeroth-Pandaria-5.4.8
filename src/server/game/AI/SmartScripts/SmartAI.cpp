@@ -1046,8 +1046,7 @@ bool SmartGameObjectAI::OnQuestReward(Player* player, Quest const* quest, uint32
     return false;
 }
 
-// Called when the dialog status between a player and the gameobject is requested.
-uint32 SmartGameObjectAI::GetDialogStatus(Player* /*player*/) { return 100; }
+Optional<QuestGiverStatus> SmartGameObjectAI::GetDialogStatus(Player* /*player*/) { return {}; }
 
 // Called when the gameobject is destroyed (destructible buildings only).
 void SmartGameObjectAI::Destroyed(Player* player, uint32 eventId)

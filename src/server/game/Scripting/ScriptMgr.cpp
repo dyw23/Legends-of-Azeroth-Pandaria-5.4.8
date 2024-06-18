@@ -952,20 +952,19 @@ bool ScriptMgr::OnQuestReward(Player* player, Creature* creature, Quest const* q
     return tmpscript->OnQuestReward(player, creature, quest, opt);
 }
 
-uint32 ScriptMgr::GetDialogStatus(Player* player, Creature* creature)
+Optional<QuestGiverStatus> ScriptMgr::GetDialogStatus(Player* player, Creature* creature)
 {
     ASSERT(player);
     ASSERT(creature);
 #ifdef ELUNA
-    if (uint32 dialogid = sHookMgr->GetDialogStatus(player, creature))
+    if (Optional<QuestGiverStatus> status = sHookMgr->GetDialogStatus(player, creature))
     {
         player->PlayerTalkClass->ClearMenus();
-        return dialogid;
+        return *status;
     }
 #endif
 
-    /// @todo 100 is a funny magic number to have hanging around here...
-    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, 100);
+    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, std::nullopt);
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->GetDialogStatus(player, creature);
 }
@@ -1085,20 +1084,19 @@ bool ScriptMgr::OnQuestReward(Player* player, GameObject* go, Quest const* quest
     return tmpscript->OnQuestReward(player, go, quest, opt);
 }
 
-uint32 ScriptMgr::GetDialogStatus(Player* player, GameObject* go)
+Optional<QuestGiverStatus> ScriptMgr::GetDialogStatus(Player* player, GameObject* go)
 {
     ASSERT(player);
     ASSERT(go);
 #ifdef ELUNA
-    if (uint32 dialogid = sHookMgr->GetDialogStatus(player, go))
+    if (Optional<QuestGiverStatus> status = sHookMgr->GetDialogStatus(player, go))
     {
         player->PlayerTalkClass->ClearMenus();
-        return dialogid;
+        return *status;
     }
 #endif
 
-    /// @todo 100 is a funny magic number to have hanging around here...
-    GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, 100);
+    GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, std::nullopt);
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->GetDialogStatus(player, go);
 }

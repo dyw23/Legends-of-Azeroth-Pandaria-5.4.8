@@ -1687,6 +1687,8 @@ public:
     bool IsUnderWater() const;
     bool isInAccessiblePlaceFor(Creature const* c) const;
 
+    bool IsInteractionAllowedWhileHostile() const { return HasUnitFlag2(UNIT_FLAG2_ALLOW_ENEMY_INTERACT); }
+
     void SendHealSpellLog(Unit* victim, uint32 SpellID, uint32 Damage, uint32 OverHeal, uint32 Absorb, bool critical = false);
     int32 HealBySpell(Unit* victim, SpellInfo const* spellInfo, uint32 addHealth, bool critical = false);
     void SendEnergizeSpellLog(Unit* victim, uint32 spellID, int32 damage, Powers powertype);

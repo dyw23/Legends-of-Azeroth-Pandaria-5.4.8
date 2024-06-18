@@ -19,6 +19,7 @@
 #include "GossipDef.h"
 #include "ObjectMgr.h"
 #include "Opcodes.h"
+#include "QuestDef.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "Formulas.h"
@@ -433,7 +434,7 @@ void PlayerMenu::SendQuestGiverQuestList(QEmote eEmote, const std::string& Title
     TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUESTGIVER_QUEST_LIST NPC Guid=%u", GUID_LOPART(npcGUID));
 }
 
-void PlayerMenu::SendQuestGiverStatus(uint32 questStatus, uint64 npcGUID) const
+void PlayerMenu::SendQuestGiverStatus(QuestGiverStatus questStatus, uint64 npcGUID) const
 {
     ObjectGuid guid = npcGUID;
 

@@ -1695,6 +1695,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
     bool GetQuestRewardStatus(uint32 quest_id) const;
     QuestStatus GetQuestStatus(uint32 quest_id) const;
     void SetQuestStatus(uint32 quest_id, QuestStatus status, bool update = true);
+    QuestGiverStatus GetQuestDialogStatus(Object const* questgiver);
     void RemoveActiveQuest(uint32 quest_id, bool update = true, bool removeFromQuestLog = false);
     void RemoveRewardedQuest(uint32 quest_id, bool update = true);
     void SendQuestUpdate(uint32 questId);

@@ -380,17 +380,17 @@ bool HookMgr::OnQuestReward(Player* pPlayer, Creature* pCreature, Quest const* p
     return true;
 }
 
-uint32 HookMgr::GetDialogStatus(Player* pPlayer, Creature* pCreature)
+Optional<QuestGiverStatus> HookMgr::GetDialogStatus(Player* pPlayer, Creature* pCreature)
 {
     int bind = sEluna->CreatureEventBindings->GetBind(pCreature->GetEntry(), CREATURE_EVENT_ON_DIALOG_STATUS);
     if (!bind)
-        return 0;
+        return std::nullopt;
     sEluna->BeginCall(bind);
     sEluna->Push(sEluna->L, CREATURE_EVENT_ON_DIALOG_STATUS);
     sEluna->Push(sEluna->L, pPlayer);
     sEluna->Push(sEluna->L, pCreature);
     sEluna->ExecuteCall(3, 0);
-    return DIALOG_STATUS_INCOMPLETE;
+    return QuestGiverStatus::Incomplete;
 }
 // gameobject
 bool HookMgr::OnDummyEffect(Unit* pCaster, uint32 spellId, SpellEffIndex effIndex, GameObject* pTarget)
@@ -497,17 +497,17 @@ bool HookMgr::OnQuestReward(Player* pPlayer, GameObject* pGameObject, Quest cons
     return true;
 }
 
-uint32 HookMgr::GetDialogStatus(Player* pPlayer, GameObject* pGameObject)
+Optional<QuestGiverStatus> HookMgr::GetDialogStatus(Player* pPlayer, GameObject* pGameObject)
 {
     int bind = sEluna->GameObjectEventBindings->GetBind(pGameObject->GetEntry(), GAMEOBJECT_EVENT_ON_DIALOG_STATUS);
     if (!bind)
-        return 0;
+        return std::nullopt;
     sEluna->BeginCall(bind);
     sEluna->Push(sEluna->L, GAMEOBJECT_EVENT_ON_DIALOG_STATUS);
     sEluna->Push(sEluna->L, pPlayer);
     sEluna->Push(sEluna->L, pGameObject);
     sEluna->ExecuteCall(3, 0);
-    return DIALOG_STATUS_INCOMPLETE; // DIALOG_STATUS_UNDEFINED
+    return QuestGiverStatus::Incomplete;
 }
 
 void HookMgr::OnDestroyed(GameObject* pGameObject, Player* pPlayer)
