@@ -142,3 +142,26 @@ INSERT INTO `command` (`name`, `security`, `help`) VALUES
 ('modify phaseid', 2, 'Syntax: .modify phase #phaseid\r\n\r\nSelected character phaseid changed to #phaseid with related world vision update. Change active until in game phase changed, or GM-mode enable/disable, or re-login. Character pts pasemask update to same value.'),
 ('npc set phaseid', 5, 'Syntax: .npc set phase #phaseid\r\n\r\nSelected unit or pet phaseid changed to #phaseid with related world vision update for players. In creature case state saved to DB and persistent. In pet case change active until in game phase changed for owner, owner re-login, or GM-mode enable/disable..'),
 ('npc set phasegroup', 5, 'Syntax: .npc set phasegroup #phasegroup\r\n\r\nSelected unit or pet phasegroup changed to #phasegroup with related world vision update for players. In creature case state saved to DB and persistent. In pet case change active until in game phase changed for owner, owner re-login, or GM-mode enable/disable..');
+
+DELETE FROM `phase_area` WHERE `AreaId`=1519 AND `PhaseId` IN (1687,1706);
+INSERT INTO `phase_area` (`AreaId`, `PhaseId`, `Comment`) VALUES 
+(1519, 1687, 'See Rell Nightwind'),
+(1519, 1706, 'Cosmetic - Stormwind - Can See Portal to Paw\'Don');
+
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=26 AND `SourceGroup`=1687 AND `SourceEntry`=1519;
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorType`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES 
+(26, 1687, 1519, 0, 0, 28, 0, 29547, 0, 0, 0, 0, 0, '', ''),
+(26, 1687, 1519, 0, 1, 8, 0, 29547, 0, 0, 0, 0, 0, '', ''),
+(26, 1687, 1519, 0, 1, 8, 0, 29548, 0, 0, 1, 0, 0, '', '');
+
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=26 AND `SourceGroup`=1706 AND `SourceEntry`=1519;
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorType`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES 
+(26, 1706, 1519, 0, 0, 28, 0, 29547, 0, 0, 0, 0, 0, '', ''),
+(26, 1706, 1519, 0, 1, 8, 0, 29547, 0, 0, 0, 0, 0, '', '');
+
+UPDATE `creature_template_addon` SET `auras` = '' WHERE `entry` = 55789;
+
+UPDATE `creature` SET `phaseId` = 1687 WHERE `id` = 55789;
+UPDATE `gameobject` SET `phaseId` = 1706  WHERE `id` = 215457;
+
+UPDATE `gameobject_template` SET `Scriptname` = '' WHERE `Scriptname` = 'go_wandering_weapon_rack';
