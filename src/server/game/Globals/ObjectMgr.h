@@ -812,6 +812,8 @@ struct PhaseInfoStruct
     ConditionContainer Conditions;
 };
 
+typedef std::unordered_map<uint32, std::vector<uint32 /*id*/>> TerrainPhaseInfo;
+typedef std::unordered_map<uint32, std::vector<uint32>> TerrainUIPhaseInfo;
 typedef std::unordered_map<uint32, std::vector<PhaseInfoStruct>> PhaseAreaInfo;
 
 struct ResearchProjectRequirements
@@ -1290,17 +1292,36 @@ class ObjectMgr
         void AddSpellToTrainer(uint32 entry, uint32 spell, uint32 spellCost, uint32 reqSkill, uint32 reqSkillValue, uint32 reqLevel);
 
         void LoadPhaseDefinitions();
+        void LoadTerrainPhaseInfo();
+        void LoadTerrainSwapDefaults();
+        void LoadTerrainWorldMaps();
         void LoadAreaPhases();
         void LoadSpellPhaseInfo();
 
         PhaseDefinitionStore const* GetPhaseDefinitionStore() { return &_PhaseDefinitionStore; }
         SpellPhaseStore const* GetSpellPhaseStore() { return &_SpellPhaseStore; }
 
+        std::vector<uint32> const* GetPhaseTerrainSwaps(uint32 phaseid) const
+        {
+            auto itr = _terrainPhaseInfoStore.find(phaseid);
+            return itr != _terrainPhaseInfoStore.end() ? &itr->second : nullptr;
+        }
+        std::vector<uint32> const* GetDefaultTerrainSwaps(uint32 mapid) const
+        {
+            auto itr = _terrainMapDefaultStore.find(mapid);
+            return itr != _terrainMapDefaultStore.end() ? &itr->second : nullptr;
+        }
+        std::vector<uint32> const* GetTerrainWorldMaps(uint32 terrainId) const
+        {
+            auto itr = _terrainWorldMapStore.find(terrainId);
+            return itr != _terrainWorldMapStore.end() ? &itr->second : nullptr;
+        }
         std::vector<PhaseInfoStruct> const* GetPhasesForArea(uint32 area) const
         {
             auto itr = _areaPhases.find(area);
             return itr != _areaPhases.end() ? &itr->second : nullptr;
         }
+        TerrainPhaseInfo const& GetDefaultTerrainSwapStore() const { return _terrainMapDefaultStore; }
         PhaseAreaInfo const& GetAreaAndZonePhases() const { return _areaPhases; }
         // condition loading helpers
         std::vector<PhaseInfoStruct>* GetPhasesForAreaOrZoneForLoading(uint32 areaOrZone)
@@ -1847,6 +1868,9 @@ class ObjectMgr
         InstanceTemplateContainer _instanceTemplateStore;
 
         PhaseDefinitionStore _PhaseDefinitionStore;
+        TerrainPhaseInfo _terrainPhaseInfoStore;
+        TerrainPhaseInfo _terrainMapDefaultStore;
+        TerrainUIPhaseInfo _terrainWorldMapStore;
         PhaseAreaInfo _areaPhases;
         SpellPhaseStore _SpellPhaseStore;
 

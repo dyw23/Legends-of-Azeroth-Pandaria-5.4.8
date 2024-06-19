@@ -9903,6 +9903,127 @@ void ObjectMgr::LoadPhaseDefinitions()
     TC_LOG_INFO("server.loading", ">> Loaded %u phasing definitions in %u ms.", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
+void ObjectMgr::LoadTerrainSwapDefaults()
+{
+    _terrainMapDefaultStore.clear();
+
+    uint32 oldMSTime = getMSTime();
+
+    //                                               0       1
+    QueryResult result = WorldDatabase.Query("SELECT MapId, TerrainSwapMap FROM `terrain_swap_defaults`");
+
+    if (!result)
+    {
+        TC_LOG_INFO("server.loading", ">> Loaded 0 terrain swap defaults. DB table `terrain_swap_defaults` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 mapId = fields[0].GetUInt32();
+
+        MapEntry const* map = sMapStore.LookupEntry(mapId);
+        if (!map)
+        {
+            TC_LOG_INFO("sql.sql", "Map %u defined in `terrain_swap_defaults` does not exist, skipped.", mapId);
+            continue;
+        }
+
+        uint32 terrainSwap = fields[1].GetUInt32();
+
+        map = sMapStore.LookupEntry(terrainSwap);
+        if (!map)
+        {
+            TC_LOG_INFO("sql.sql", "TerrainSwapMap %u defined in `terrain_swap_defaults` does not exist, skipped.", terrainSwap);
+            continue;
+        }
+        _terrainMapDefaultStore[mapId].push_back(terrainSwap);
+
+        ++count;
+    } while (result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> Loaded %u terrain swap defaults in %u ms.", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+void ObjectMgr::LoadTerrainPhaseInfo()
+{
+    _terrainPhaseInfoStore.clear();
+
+    uint32 oldMSTime = getMSTime();
+
+    //                                               0       1
+    QueryResult result = WorldDatabase.Query("SELECT Id, TerrainSwapMap FROM `terrain_phase_info`");
+
+    if (!result)
+    {
+        TC_LOG_INFO("server.loading", ">> Loaded 0 terrain phase infos. DB table `terrain_phase_info` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 phaseId = fields[0].GetUInt32();
+
+        PhaseEntry const* phase = sPhaseStore.LookupEntry(phaseId);
+        if (!phase)
+        {
+            TC_LOG_INFO("sql.sql", "Phase %u defined in `terrain_phase_info` does not exist, skipped.", phaseId);
+            continue;
+        }
+
+        uint32 terrainSwap = fields[1].GetUInt32();
+        _terrainPhaseInfoStore[phaseId].push_back(terrainSwap);
+
+        ++count;
+    } while (result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> Loaded %u terrain phase infos in %u ms.", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+void ObjectMgr::LoadTerrainWorldMaps()
+{
+    _terrainWorldMapStore.clear();
+
+    uint32 oldMSTime = getMSTime();
+
+    //                                               0               1
+    QueryResult result = WorldDatabase.Query("SELECT TerrainSwapMap, WorldMapArea FROM `terrain_worldmap`");
+
+    if (!result)
+    {
+        TC_LOG_INFO("server.loading", ">> Loaded 0 terrain world maps. DB table `terrain_worldmap` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 mapId = fields[0].GetUInt32();
+
+        if (!sMapStore.LookupEntry(mapId))
+        {
+            TC_LOG_INFO("sql.sql", "TerrainSwapMap %u defined in `terrain_worldmap` does not exist, skipped.", mapId);
+            continue;
+        }
+
+        uint32 worldMapArea = fields[1].GetUInt32();
+
+        _terrainWorldMapStore[mapId].push_back(worldMapArea);
+
+        ++count;
+    } while (result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> Loaded %u terrain world maps in %u ms.", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
 void ObjectMgr::LoadAreaPhases()
 {
     _areaPhases.clear();

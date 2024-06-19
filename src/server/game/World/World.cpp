@@ -2137,6 +2137,15 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Phase definitions...");
     sObjectMgr->LoadPhaseDefinitions();
 
+    TC_LOG_INFO("server.loading", "Loading Terrain Phase definitions...");
+    sObjectMgr->LoadTerrainPhaseInfo();
+
+    TC_LOG_INFO("server.loading", "Loading Terrain Swap Default definitions...");
+    sObjectMgr->LoadTerrainSwapDefaults();
+
+    TC_LOG_INFO("server.loading", "Loading Terrain World Map definitions...");
+    sObjectMgr->LoadTerrainWorldMaps();
+
     TC_LOG_INFO("server.loading", "Loading Phase Area definitions...");
     sObjectMgr->LoadAreaPhases();
 

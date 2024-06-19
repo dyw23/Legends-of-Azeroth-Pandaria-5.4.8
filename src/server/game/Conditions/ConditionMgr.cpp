@@ -1193,6 +1193,15 @@ void ConditionMgr::LoadConditions(bool isReload)
         sObjectMgr->LoadGossipMenuItems();
         sSpellMgr->UnloadSpellInfoImplicitTargetConditionLists();
 
+        TC_LOG_INFO("misc", "Re-Loading `terrain_phase_info` Table for Conditions!");
+        sObjectMgr->LoadTerrainPhaseInfo();
+
+        TC_LOG_INFO("misc", "Re-Loading `terrain_swap_defaults` Table for Conditions!");
+        sObjectMgr->LoadTerrainSwapDefaults();
+
+        TC_LOG_INFO("misc", "Re-Loading `terrain_worldmap` Table for Conditions!");
+        sObjectMgr->LoadTerrainWorldMaps();
+
         TC_LOG_INFO("misc", "Re-Loading `phase_area` Table for Conditions!");
         sObjectMgr->LoadAreaPhases();
     }
@@ -1418,7 +1427,6 @@ void ConditionMgr::LoadConditions(bool isReload)
             }
             continue;
         }
-
         //handle not grouped conditions
 
         //add new Condition to storage based on Type/Entry
@@ -1955,6 +1963,15 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond) const
             if (cond->SourceEntry && !sAreaTableStore.LookupEntry(cond->SourceEntry))
             {
                 TC_LOG_ERROR("sql.sql", "%u SourceEntry in `condition` table, does not exist in AreaTable.dbc, ignoring.", cond->SourceEntry);
+                return false;
+            }
+            break;
+        }
+        case CONDITION_SOURCE_TYPE_TERRAIN_SWAP:
+        {
+            if (!sMapStore.LookupEntry(cond->SourceEntry))
+            {
+                TC_LOG_ERROR("sql.sql", "%u SourceEntry in `condition` table, does not exist in Map.dbc, ignoring.", cond->SourceEntry);
                 return false;
             }
             break;

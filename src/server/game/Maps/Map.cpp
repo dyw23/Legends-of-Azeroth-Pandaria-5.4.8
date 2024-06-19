@@ -504,6 +504,7 @@ bool Map::AddPlayerToMap(Player* player)
     SendZoneDynamicInfo(player);
 
     player->m_clientGUIDs.clear();
+    player->UpdatePhasing();
     player->UpdateObjectVisibility(false);
 
     player->RestoreCombatWithInstance();
@@ -576,6 +577,8 @@ bool Map::AddToMap(T* obj)
             if (pet->IsPetGuardianStuff())
                 if (ToBattlegroundMap()->GetBG()->GetStatus() == STATUS_WAIT_JOIN)
                     pet->AddAura(SPELL_ARENA_PREPARATION, pet); // Because cast FAILS, fuck you.
+
+    obj->RebuildTerrainSwaps();
 
     //something, such as vehicle, needs to be update immediately
     //also, trigger needs to cast spell, if not update, cannot see visual

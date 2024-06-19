@@ -163,7 +163,7 @@ enum ConditionSourceType
     CONDITION_SOURCE_TYPE_PHASE                          = 26,
     CONDITION_SOURCE_TYPE_GRAVEYARD                      = 27,
     CONDITION_SOURCE_TYPE_AREATRIGGER                    = 28, // only master (this refers to dynamically spawned areatriggers, not the ones from AreaTrigger.dbc/db2)    
-    CONDITION_SOURCE_TYPE_CONVERSATION_LINE              = 29, // only master
+    CONDITION_SOURCE_TYPE_TERRAIN_SWAP                   = 29,
     CONDITION_SOURCE_TYPE_AREATRIGGER_CLIENT_TRIGGERED   = 30,
 
     CONDITION_SOURCE_TYPE_MAX                            = 31  // MAX

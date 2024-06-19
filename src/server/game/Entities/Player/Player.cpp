@@ -3023,7 +3023,6 @@ void Player::GiveLevel(uint8 level)
     phaseUpdateData.AddConditionType(CONDITION_LEVEL);
 
     phaseMgr.NotifyConditionChanged(phaseUpdateData);
-    UpdateAreaAndZonePhase();
 
     // Refer-A-Friend
     if (GetSession()->GetRecruiterId())
@@ -16329,6 +16328,8 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
 
     StartCriteria(CRITERIA_START_TYPE_QUEST, questId);
 
+    UpdatePhasing();
+
     if (questGiver) // script managment for every quest
     {
         switch (questGiver->GetTypeId())
@@ -16665,7 +16666,6 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     PhaseUpdateData phaseUpdateData;
     phaseUpdateData.AddQuestUpdate(quest_id);
     phaseMgr.NotifyConditionChanged(phaseUpdateData);
-    UpdateAreaAndZonePhase();
 
     // StoreNewItem, mail reward, etc. save data directly to the database
     // to prevent exploitable data desynchronisation we save the quest status to the database too
@@ -17281,7 +17281,6 @@ void Player::SetQuestStatus(uint32 quest_id, QuestStatus status, bool update /*=
     phaseUpdateData.AddQuestUpdate(quest_id);
 
     phaseMgr.NotifyConditionChanged(phaseUpdateData);
-    UpdateAreaAndZonePhase();
 
     /*uint32 zone = 0, area = 0;
 
@@ -17332,7 +17331,6 @@ void Player::RemoveActiveQuest(uint32 quest_id, bool update /*= true*/, bool /*r
         phaseUpdateData.AddQuestUpdate(quest_id);
 
         phaseMgr.NotifyConditionChanged(phaseUpdateData);
-        UpdateAreaAndZonePhase();
 
         sScriptMgr->OnPlayerQuestAbandoned(this, sObjectMgr->GetQuestTemplate(quest_id));
     }
@@ -17353,7 +17351,6 @@ void Player::RemoveRewardedQuest(uint32 quest_id, bool update /*= true*/)
         phaseUpdateData.AddQuestUpdate(quest_id);
 
         phaseMgr.NotifyConditionChanged(phaseUpdateData);
-        UpdateAreaAndZonePhase();
     }
 
     if (uint32 questBit = GetQuestUniqueBitFlag(quest_id))
@@ -17377,6 +17374,8 @@ void Player::SendQuestUpdate(uint32 questId)
     UpdateZoneDependentAuras(zone);
     UpdateAreaDependentAuras(area);
     UpdateForQuestWorldObjects();
+    UpdatePhasing();
+    UpdateAreaAndZonePhase();
 }
 
 void Player::DestroyQuestItems(uint32 questId)
@@ -18155,8 +18154,6 @@ void Player::SendQuestUpdateAddCredit(Quest const* quest, QuestObjective const* 
     uint16 logSlot = FindQuestSlot(quest->GetQuestId());
     if (logSlot < MAX_QUEST_LOG_SIZE)
         SetQuestSlotCounter(logSlot, objective->Index, GetQuestSlotCounter(logSlot, objective->Index) + addCount);
-
-    UpdateAreaAndZonePhase();
 }
 
 void Player::SendQuestUpdateAddCreditSimple(Quest const* quest, QuestObjective const* objective)
@@ -18172,8 +18169,6 @@ void Player::SendQuestUpdateAddCreditSimple(Quest const* quest, QuestObjective c
     uint16 logSlot = FindQuestSlot(quest->GetQuestId());
     if (logSlot < MAX_QUEST_LOG_SIZE)
         SetQuestSlotState(logSlot, 256 << objective->Index);
-
-    UpdateAreaAndZonePhase();
 }
 
 void Player::SendQuestUpdateAddPlayer(Quest const* quest, QuestObjective const* objective, uint16 oldCount, uint16 addCount)
@@ -31678,4 +31673,11 @@ void Player::RemoveRestFlag(RestFlag restFlag)
         _restTime = 0;
         RemoveFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
     }
+}
+
+void Player::UpdatePhasing()
+{
+    RebuildTerrainSwaps(); // to set default map swaps
+
+    GetSession()->SendSetPhaseShift(GetPhases(), GetTerrainSwaps(), GetWorldMapSwaps());
 }

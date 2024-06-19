@@ -1874,6 +1874,8 @@ void AuraEffect::HandlePhase(AuraApplication const* aurApp, uint8 mode, bool app
 
     if (Player* player = target->ToPlayer())
     {
+        target->SetPhased(GetMiscValueB(), false, apply);
+
         if (apply)
             player->GetPhaseMgr().RegisterPhasingAuraEffect(this);
         else
@@ -1905,6 +1907,9 @@ void AuraEffect::HandlePhase(AuraApplication const* aurApp, uint8 mode, bool app
         // drop flag at invisibiliy in bg
         target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
     }
+
+    if (Player* player = target->ToPlayer())
+        player->UpdatePhasing();
 
     // need triggering visibility update base at phase update of not GM invisible (other GMs anyway see in any phases)
     if (target->IsVisible())

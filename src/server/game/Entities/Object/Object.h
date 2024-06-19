@@ -563,6 +563,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         bool SetWorldMapSwap(uint32 id, bool update, bool apply);
         bool IsWorldMapSwaped(uint32 worldMapSwap) const { return _worldMapSwaps.find(worldMapSwap) != _worldMapSwaps.end(); }
         std::set<uint32> const& GetWorldMapSwaps() const { return _worldMapSwaps; }
+        void RebuildTerrainSwaps();
+        void RebuildWorldMapAreaSwaps();
         void ClearWorldMapSwap(bool update = false);
         void UpdateAreaAndZonePhase();
 

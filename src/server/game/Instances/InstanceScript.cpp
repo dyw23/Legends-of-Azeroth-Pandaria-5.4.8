@@ -863,7 +863,7 @@ void InstanceScript::UpdatePhasing()
         if (Player* player = itr->GetSource())
         {
             player->GetPhaseMgr().NotifyConditionChanged(phaseUdateData);
-            player->UpdateAreaAndZonePhase();
+            player->UpdatePhasing();
         }
 }
 

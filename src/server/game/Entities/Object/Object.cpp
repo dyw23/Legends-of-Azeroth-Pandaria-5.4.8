@@ -3499,6 +3499,66 @@ void WorldObject::SetPhaseMask(uint32 newPhaseMask, bool update)
         UpdateObjectVisibility();
 }
 
+void WorldObject::RebuildTerrainSwaps()
+{
+    // Clear all terrain swaps, will be rebuilt below
+    // Reason for this is, multiple phases can have the same terrain swap, we should not remove the swap if another phase still use it
+    _terrainSwaps.clear();
+
+    // Check all applied phases for terrain swap and add it only once
+    for (uint32 phaseId : _phases)
+    {
+        if (std::vector<uint32> const* swaps = sObjectMgr->GetPhaseTerrainSwaps(phaseId))
+        {
+            for (uint32 const& swap : *swaps)
+            {
+                // only add terrain swaps for current map
+                MapEntry const* mapEntry = sMapStore.LookupEntry(swap);
+                if (!mapEntry || mapEntry->rootPhaseMap != int32(GetMapId()))
+                    continue;
+
+                if (sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_TERRAIN_SWAP, swap, this))
+                    _terrainSwaps.insert(swap);
+            }
+        }
+    }
+
+    // get default terrain swaps, only for current map always
+    if (std::vector<uint32> const* mapSwaps = sObjectMgr->GetDefaultTerrainSwaps(GetMapId()))
+        for (uint32 const& swap : *mapSwaps)
+            if (sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_TERRAIN_SWAP, swap, this))
+                _terrainSwaps.insert(swap);
+
+    // online players have a game client with world map display
+    if (GetTypeId() == TYPEID_PLAYER)
+        RebuildWorldMapAreaSwaps();
+}
+
+void WorldObject::RebuildWorldMapAreaSwaps()
+{
+    // Clear all world map area swaps, will be rebuilt below
+    _worldMapSwaps.clear();
+
+    // get ALL default terrain swaps, if we are using it (condition is true) 
+    // send the worldmaparea for it, to see swapped worldmaparea in client from other maps too, not just from our current
+    TerrainPhaseInfo const& defaults = sObjectMgr->GetDefaultTerrainSwapStore();
+    for (TerrainPhaseInfo::const_iterator itr = defaults.begin(); itr != defaults.end(); ++itr)
+        for (uint32 const& swap : itr->second)
+            if (std::vector<uint32> const* uiMapSwaps = sObjectMgr->GetTerrainWorldMaps(swap))
+                if (sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_TERRAIN_SWAP, swap, this))
+                    for (uint32 worldMapAreaId : *uiMapSwaps)
+                        _worldMapSwaps.insert(worldMapAreaId);
+
+    // Check all applied phases for world map area swaps
+    for (uint32 phaseId : _phases)
+        if (std::vector<uint32> const* swaps = sObjectMgr->GetPhaseTerrainSwaps(phaseId))
+            for (uint32 const& swap : *swaps)
+                if (std::vector<uint32> const* uiMapSwaps = sObjectMgr->GetTerrainWorldMaps(swap))
+                    if (sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_TERRAIN_SWAP, swap, this))
+                        for (uint32 worldMapAreaId : *uiMapSwaps)
+                            _worldMapSwaps.insert(worldMapAreaId);
+}
+
 // Updates Area based phases, does not remove phases from auras
 // Phases from gm commands are not taken into calculations, they can be lost!!
 void WorldObject::UpdateAreaAndZonePhase()
@@ -3585,6 +3645,8 @@ bool WorldObject::SetPhased(uint32 id, bool update, bool apply)
         }
     }
 
+    RebuildTerrainSwaps();
+
     if (update && IsInWorld())
         UpdateObjectVisibility();
 
@@ -3594,6 +3656,8 @@ bool WorldObject::SetPhased(uint32 id, bool update, bool apply)
 void WorldObject::ClearPhases(bool update)
 {
     _phases.clear();
+
+    RebuildTerrainSwaps();
 
     if (update && IsInWorld())
         UpdateObjectVisibility();
