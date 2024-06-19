@@ -28,19 +28,70 @@ INSERT INTO `terrain_swap_defaults` (`MapId`, `TerrainSwapMap`, `Comment`) VALUE
 (0, 1066, 'Stormwind Gunship Pandaria Start'),
 (1, 719, 'Mount Hyjal default terrain'),
 (1, 1074, 'Orgrimmar Gunship Pandaria Start'),
-(654, 638, 'Gilneas default terrain'),
-(654, 655, 'Gilneas - Duskmist Shore broken'),
 (870, 971, 'Jade Forest Alliance Starting Terrain'),
 (870, 1076, 'Jade Forest Horde Starting Terrain'),
+(870, 972, 'Jade Forest Battlefield Phase'),
 (870, 1061, 'Krasarang Wilds - Domination Point'),
 (870, 1062, 'Krasarang Wilds - Lion\'s Landing'),
-(655, 656, 'Gilneas - UnkName2'),
-(648, 659, 'Lost Isles - UnkName'),
-(648, 661, 'Lost Isles - UnkName2'),
 (860, 975, 'Wandering Island - Turtle Hurted'),
 (860, 976, 'Wandering Island - Turtle Healed'),
 (1064, 1120, 'Thunder King Horde Hub'),
-(1064, 1121, 'Thunder Island Alliance Hub');
+(1064, 1121, 'Thunder Island Alliance Hub'),
+-- 
+(654, 638, 'Gilneas default terrain'),
+(654, 655, 'Gilneas - Duskmist Shore broken'),
+(655, 656, 'Gilneas - UnkName2'),
+(648, 659, 'Lost Isles - UnkName'),
+(648, 661, 'Lost Isles - UnkName2');
+
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=719;
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=975;
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=976;
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=1120;
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=1121;
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=1061;
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=1062;
+INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorType`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES 
+(29, 0, 719, 0, 0, 8, 0, 25372, 0, 0, 1, 0, 0, '', ''),
+(29, 0, 975, 0, 0, 8, 0, 29799, 0, 0, 1, 0, 0, '', ''),
+(29, 0, 975, 0, 0, 8, 0, 30767, 0, 0, 0, 0, 0, '', ''),
+(29, 0, 975, 0, 1, 28, 0, 30767, 0, 0, 0, 0, 0, '', ''),
+(29, 0, 976, 0, 0, 8, 0, 29799, 0, 0, 0, 0, 0, '', ''),
+(29, 0, 1120, 0, 0, 8, 0, 32212, 0, 0, 1, 0, 0, '', ''),
+(29, 0, 1120, 0, 0, 8, 0, 32644, 0, 0, 1, 0, 0, '', ''),
+(29, 0, 1120, 0, 0, 28, 0, 32212, 0, 0, 1, 0, 0, '', ''),
+(29, 0, 1120, 0, 0, 28, 0, 32644, 0, 0, 1, 0, 0, '', ''),
+(29, 0, 1121, 0, 0, 8, 0, 32212, 0, 0, 1, 0, 0, '', ''),
+(29, 0, 1121, 0, 0, 8, 0, 32644, 0, 0, 1, 0, 0, '', ''),
+(29, 0, 1121, 0, 0, 28, 0, 32212, 0, 0, 1, 0, 0, '', ''),
+(29, 0, 1121, 0, 0, 28, 0, 32644, 0, 0, 1, 0, 0, '', ''),
+(29, 0, 1061, 0, 0, 8, 0, 32108, 0, 0, 0, 0, 0, '', ''),
+(29, 0, 1061, 0, 1, 8, 0, 32109, 0, 0, 0, 0, 0, '', ''),
+(29, 0, 1062, 0, 0, 8, 0, 32108, 0, 0, 0, 0, 0, '', ''),
+(29, 0, 1062, 0, 1, 8, 0, 32109, 0, 0, 0, 0, 0, '', '');
+
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=25 AND `SourceGroup`=616 AND `SourceEntry`=1;
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=25 AND `SourceGroup`=1519 AND `SourceEntry`=6;
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=25 AND `SourceGroup`=1637 AND `SourceEntry`=6;
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=25 AND `SourceGroup`=5736 AND `SourceEntry` IN (1,2);
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=25 AND `SourceGroup`=6507 AND `SourceEntry` IN (1,2);
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=25 AND `SourceGroup`=5785 AND `SourceEntry` IN (5,6);
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=25 AND `SourceGroup`=5805 AND `SourceEntry` IN (1,2);
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=25 AND `SourceGroup`=6134 AND `SourceEntry` IN (1,2);
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=25 AND `SourceGroup`=6138 AND `SourceEntry` IN (1,2);
+DELETE FROM `phase_definitions` WHERE `zoneId`=12 AND `entry`=1;
+DELETE FROM `phase_definitions` WHERE `zoneId`=14 AND `entry`=1;
+DELETE FROM `phase_definitions` WHERE `zoneId`=16 AND `entry`=1;
+DELETE FROM `phase_definitions` WHERE `zoneId`=616 AND `entry`=1;
+DELETE FROM `phase_definitions` WHERE `zoneId`=1519 AND `entry`=7;
+DELETE FROM `phase_definitions` WHERE `zoneId`=1637 AND `entry`=7;
+DELETE FROM `phase_definitions` WHERE `zoneId`=5736 AND `entry` IN (1,2);
+DELETE FROM `phase_definitions` WHERE `zoneId`=5785 AND `entry` IN (2,3);
+DELETE FROM `phase_definitions` WHERE `zoneId`=6507 AND `entry` IN (1,2);
+DELETE FROM `phase_definitions` WHERE `zoneId`=5785 AND `entry` IN (5,6);
+DELETE FROM `phase_definitions` WHERE `zoneId`=5805 AND `entry` IN (1,2);
+DELETE FROM `phase_definitions` WHERE `zoneId`=6134 AND `entry` IN (1,2);
+DELETE FROM `phase_definitions` WHERE `zoneId`=6138 AND `entry` IN (1,2);
 
 DELETE FROM `terrain_worldmap`;
 INSERT INTO `terrain_worldmap` (`TerrainSwapMap`, `WorldMapArea`, `Comment`) VALUES 
