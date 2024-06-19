@@ -5222,7 +5222,7 @@ void Spell::EffectLeap(SpellEffIndex effIndex)
     if (!m_targets.HasDst())
         return;
 
-    Position pos;
+    Position pos = destTarget->GetPosition();
     unitTarget->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), unitTarget == m_caster);
 }
 
