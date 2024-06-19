@@ -296,7 +296,9 @@ void PhaseData::SendPhaseshiftToPlayer()
             flags = (*itr)->flags;
     }
 
-    player->GetSession()->SendSetPhaseShift(phaseIds, terrainswaps, worldMapAreas, flags);
+    //player->GetSession()->SendSetPhaseShift(phaseIds, terrainswaps, worldMapAreas, flags);
+    // Remove this when phase_definition has been deleted.
+    player->PlayerSendSetPhaseShift(phaseIds);
 }
 
 void PhaseData::GetActivePhases(std::set<uint32>& phases) const

@@ -2834,6 +2834,7 @@ public:
     template<class T>
     void UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& visibleNow);
     void UpdatePhasing();
+    void PlayerSendSetPhaseShift(std::set<uint32> const& phaseIds);
 
     uint8 m_forced_speed_changes [MAX_MOVE_TYPE];
 

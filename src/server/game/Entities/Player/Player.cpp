@@ -31681,3 +31681,10 @@ void Player::UpdatePhasing()
 
     GetSession()->SendSetPhaseShift(GetPhases(), GetTerrainSwaps(), GetWorldMapSwaps());
 }
+
+void Player::PlayerSendSetPhaseShift(std::set<uint32> const& phaseIds)
+{
+    RebuildTerrainSwaps(); // to set default map swaps
+
+    GetSession()->SendSetPhaseShift(phaseIds, GetTerrainSwaps(), GetWorldMapSwaps());
+}
