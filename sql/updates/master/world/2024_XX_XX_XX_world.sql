@@ -39,9 +39,18 @@ INSERT INTO `terrain_swap_defaults` (`MapId`, `TerrainSwapMap`, `Comment`) VALUE
 (1064, 1121, 'Thunder Island Alliance Hub'),
 (654, 638, 'Gilneas default terrain'),
 (654, 655, 'Gilneas - Duskmist Shore broken'),
-(654, 656, 'Gilneas - UnkName2'),
-(648, 661, 'Lost Isles - UnkName'),
-(648, 659, 'Lost Isles - UnkName2');
+(654, 656, 'Gilneas - terrain3'),
+(648, 661, 'Lost Isles - terrain1'),
+(648, 659, 'Lost Isles - terrain2');
+
+DELETE FROM `terrain_worldmap`;
+INSERT INTO `terrain_worldmap` (`TerrainSwapMap`, `WorldMapArea`, `Comment`) VALUES 
+(638, 545, 'Gilneas'),
+(655, 678, 'Gilneas_terrain1'),
+(656, 679, 'Gilneas_terrain2'),
+(719, 683, 'Hyjal_terrain1'),
+(1061, 910, 'KrasarangHorde'),
+(1062, 910, 'KrasarangAlliance');
 
 DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=719;
 DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=975;
@@ -105,11 +114,4 @@ DELETE FROM `phase_definitions` WHERE `zoneId`=5805 AND `entry` IN (1,2);
 DELETE FROM `phase_definitions` WHERE `zoneId`=6134 AND `entry` IN (1,2);
 DELETE FROM `phase_definitions` WHERE `zoneId`=6138 AND `entry` IN (1,2);
 
-DELETE FROM `terrain_worldmap`;
-INSERT INTO `terrain_worldmap` (`TerrainSwapMap`, `WorldMapArea`, `Comment`) VALUES 
-(638, 545, 'Gilneas'),
-(655, 678, 'Gilneas_terrain1'),
-(656, 679, 'Gilneas_terrain2'),
-(719, 683, 'Hyjal_terrain1'),
-(1061, 910, 'KrasarangHorde'),
-(1062, 910, 'KrasarangAlliance');
+UPDATE `phase_definitions` SET `terrainswapmap` = 0;
