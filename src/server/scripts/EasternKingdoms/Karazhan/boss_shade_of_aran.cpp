@@ -163,7 +163,7 @@ class boss_shade_of_aran : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 Talk(SAY_AGGRO);
 
@@ -396,7 +396,7 @@ class boss_shade_of_aran : public CreatureScript
 
                             if (Creature* spawn = me->SummonCreature(CREATURE_ARAN_BLIZZARD, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 25000))
                             {
-                                spawn->setFaction(me->getFaction());
+                                spawn->SetFaction(me->GetFaction());
                                 spawn->CastSpell(spawn, SPELL_CIRCULAR_BLIZZARD, false);
                             }
                             break;
@@ -414,7 +414,7 @@ class boss_shade_of_aran : public CreatureScript
                         if (Creature* unit = me->SummonCreature(CREATURE_WATER_ELEMENTAL, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 90000))
                         {
                             unit->Attack(me->GetVictim(), true);
-                            unit->setFaction(me->getFaction());
+                            unit->SetFaction(me->GetFaction());
                         }
                     }
 
@@ -428,7 +428,7 @@ class boss_shade_of_aran : public CreatureScript
                         if (Creature* unit = me->SummonCreature(CREATURE_SHADOW_OF_ARAN, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000))
                         {
                             unit->Attack(me->GetVictim(), true);
-                            unit->setFaction(me->getFaction());
+                            unit->SetFaction(me->GetFaction());
                         }
                     }
 
@@ -517,7 +517,7 @@ class npc_aran_elemental : public CreatureScript
                 CastTimer = 2000 + (rand() % 3000);
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {

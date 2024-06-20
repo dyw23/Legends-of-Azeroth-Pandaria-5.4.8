@@ -96,7 +96,7 @@ class npc_blastmaster_emi_shortfuse : public CreatureScript
                 if (npc_escortAI* pEscortAI = CAST_AI(npc_blastmaster_emi_shortfuse::npc_blastmaster_emi_shortfuseAI, creature->AI()))
                     pEscortAI->Start(true, false, player->GetGUID());
 
-                creature->setFaction(player->getFaction());
+                creature->SetFaction(player->GetFaction());
                 creature->AI()->SetData(1, 0);
 
                 player->CLOSE_GOSSIP_MENU();
@@ -263,8 +263,8 @@ class npc_blastmaster_emi_shortfuse : public CreatureScript
             {
                 //just in case
                 if (GetPlayerForEscort())
-                    if (me->getFaction() != GetPlayerForEscort()->getFaction())
-                        me->setFaction(GetPlayerForEscort()->getFaction());
+                    if (me->GetFaction() != GetPlayerForEscort()->GetFaction())
+                        me->SetFaction(GetPlayerForEscort()->GetFaction());
 
                 switch (waypointId)
                 {
@@ -586,7 +586,7 @@ class boss_grubbis : public CreatureScript
                         creature->AI()->SetData(2, 1);
             }
 
-            void EnterCombat(Unit* /*who*/) override 
+            void JustEngagedWith(Unit* /*who*/) override 
             {
                 events.ScheduleEvent(EVENT_STRIKE, urand(7 * IN_MILLISECONDS, 11 * IN_MILLISECONDS));
             }

@@ -32,6 +32,7 @@
 #include "Vehicle.h"
 #include "Language.h"
 #include "Guild.h"
+#include "Random.h"
 
 enum TimeLostShrine
 {
@@ -274,7 +275,7 @@ struct npc_timeless_turtles : public ScriptedAI
             ScriptedAI::EnterEvadeMode();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_GEYSER,        8  * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_SHELL_SPINE,   10 * IN_MILLISECONDS);
@@ -361,7 +362,7 @@ class npc_timeless_faction_sentries : public CreatureScript
                     me->SetAIAnimKitId(3786);
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -577,7 +578,7 @@ class npc_timeless_adders : public CreatureScript
                 uiHugeFangTimer = 1*IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -655,7 +656,7 @@ class npc_timeless_yaks : public CreatureScript
                 uiOxChargeTriggerTimer = 11*IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -805,7 +806,7 @@ class npc_timeless_cranes : public CreatureScript
                 events.Reset();
             }
 
-            void EnterCombat(Unit* /*who*/) override 
+            void JustEngagedWith(Unit* /*who*/) override 
             {
                 events.ScheduleEvent(EVENT_GUST_OF_WIND, 8 * IN_MILLISECONDS);
                 events.ScheduleEvent(EVENT_HEALING_SONG, 15 * IN_MILLISECONDS);
@@ -906,7 +907,7 @@ class npc_timeless_silkworms : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (me->GetEntry() == 72909)
                 {
@@ -916,7 +917,7 @@ class npc_timeless_silkworms : public CreatureScript
                 }
             }
 
-            void JustDied(Unit* killer)
+            void JustDied(Unit* killer) override
             {
                 if (me->GetEntry() == 72909)
                 {
@@ -993,7 +994,7 @@ class npc_timeless_crabs : public CreatureScript
                 uiClawFlurry = 5*IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -1077,7 +1078,7 @@ class npc_timeless_spectrals : public CreatureScript
                         me->HandleEmoteStateCommand(addon->emote);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 me->HandleEmoteStateCommand(0);
 
@@ -1168,7 +1169,7 @@ class npc_timeless_cats : public CreatureScript
                     me->GetMotionMaster()->MoveRandom(5.0f);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 me->SetStandState(UNIT_STAND_STATE_STAND);
                 me->HandleEmoteStateCommand(0);
@@ -1245,7 +1246,7 @@ class npc_timeless_elementals : public CreatureScript
                 uiSkunkyAleCrashTimer = 6*IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -1306,7 +1307,7 @@ class npc_timeless_spirits : public CreatureScript
                 uiFlameStrikeTimer = 10*IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -1395,7 +1396,7 @@ class npc_timeless_giants : public CreatureScript
                     Talk(0);
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -1507,7 +1508,7 @@ class npc_timeless_frogs : public CreatureScript
                 me->CastSpell(me, SPELL_TOXIC_SKIN);
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -1546,7 +1547,7 @@ class npc_timeless_dragons : public CreatureScript
                 events.Reset();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_SCHOOL_BREATH, 4 * IN_MILLISECONDS);
                 events.ScheduleEvent(EVENT_SCHOOL_BLOSSOM, 10 * IN_MILLISECONDS);
@@ -1627,7 +1628,7 @@ class npc_ordos_minions : public CreatureScript
                         Talk(0, player);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(Unit* /*killer*/) override
             {
                 if (me->GetEntry() == RARE_ARCHIEREUS_OF_FLAME_CLOAK)
                     for (auto&& guid : me->GetLootRecipients())
@@ -1637,7 +1638,7 @@ class npc_ordos_minions : public CreatureScript
                                     player->RewardQuest(quest, 0, player, false);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 switch (me->GetEntry())
                 {
@@ -1762,7 +1763,7 @@ class npc_eternal_kiln : public CreatureScript
                 me->DespawnOrUnsummon();
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -1807,7 +1808,7 @@ class npc_damp_shamblers : public CreatureScript
                 uiPoisonBreathTimer = 8*IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 if (me->GetEntry() == 72896)
                     me->CastSpell(me->GetVictim(), SPELL_FIERY_CHARGE);
@@ -1926,7 +1927,7 @@ class npc_ordon_guards : public CreatureScript
                 oathOfGuardianship = false;
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_CRACKING_BLOW, 4 * IN_MILLISECONDS);
                 events.ScheduleEvent(EVENT_DEFENSIVE_SHIELD, 10 * IN_MILLISECONDS);
@@ -1992,7 +1993,7 @@ class npc_ordos_warriors : public CreatureScript
                 uiBurningFuryTimer = 10*IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 me->CastSpell(me->GetVictim(), SPELL_FIERY_CHARGE);
             }
@@ -2090,7 +2091,7 @@ class npc_ordon_watchers : public CreatureScript
                 uiPyroblastTimer = 1*IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -2189,7 +2190,7 @@ class npc_molten_guards : public CreatureScript
                 events.Reset();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_MOLTEN_INFERNO_GUARDIAN, 6 * IN_MILLISECONDS);
             }
@@ -2267,7 +2268,7 @@ class npc_leaf_sprites : public CreatureScript
                     me->CastSpell(trigger, 28892);
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -2365,7 +2366,7 @@ class npc_karkanos : public CreatureScript
                 events.Reset();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_GUSHING_MAW, 3 * IN_MILLISECONDS);
             }
@@ -2421,7 +2422,7 @@ class npc_zesqua : public CreatureScript
                 uiWaterBoltVolleyTimer = 3*IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -2479,7 +2480,7 @@ class npc_jademist_dancer : public CreatureScript
                 uiSteamBlastTimer = 6*IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -2539,13 +2540,13 @@ struct npc_cranegnasher : public ScriptedAI
             });
     }
 
-    void EnterEvadeMode()
+    void EnterEvadeMode() override
     {
         scheduler.CancelAll();
         ScriptedAI::EnterEvadeMode();
     }
 
-    void EnterCombat(Unit* /*who*/) override { }
+    void JustEngagedWith(Unit* /*who*/) override { }
 
     void UpdateAI(uint32 diff) override
     {
@@ -2556,7 +2557,7 @@ struct npc_cranegnasher : public ScriptedAI
         DoMeleeAttackIfReady();
     }
 
-    void JustDied(Unit*)
+    void JustDied(Unit*) override
     {
         for (auto&& guid : me->GetLootRecipients())
             if (Player* player = ObjectAccessor::GetPlayer(*me, guid))
@@ -2596,7 +2597,7 @@ struct npc_nice_sprite : public ScriptedAI
         }
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_NATURES_WRATH, 1 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_STICKY_SAP, 3 * IN_MILLISECONDS);
@@ -2656,7 +2657,7 @@ class npc_ordon_candlekeeper : public CreatureScript
                 uiBreathOfFireTimer = 1*IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -2703,7 +2704,7 @@ class npc_garnia : public CreatureScript
                 uiRubyBoltTimer = 2*IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -2753,7 +2754,7 @@ class npc_rattleskew : public CreatureScript
                 uiSpikedBoneTimer = 1*IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -2816,7 +2817,7 @@ class npc_southsea_lookout : public CreatureScript
                 me->CastSpell(me, SPELL_SPY_GLASS);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 me->RemoveAurasDueToSpell(SPELL_SPY_GLASS);
             }
@@ -2857,7 +2858,7 @@ class npc_playful_water_spirit : public CreatureScript
                 uiWaterSpoutTimer = 6*IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -2917,7 +2918,7 @@ class npc_cove_shark : public CreatureScript
                 uiScentOfBloodTimer = 5*IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {
@@ -2966,7 +2967,7 @@ class npc_stinkbraid : public CreatureScript
                 me->RemoveAurasDueToSpell(SPELL_ROTTEN_STENCH);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 me->CastSpell(me, SPELL_ROTTEN_STENCH);
                 me->CastSpell(me->GetVictim(), SPELL_LEAPING_CLEAVE);
@@ -3006,7 +3007,7 @@ class npc_spectral_pirate : public CreatureScript
                 uiSinisterStrikeTimer = 2*IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 Talk(0);
             }
@@ -3614,7 +3615,7 @@ struct npc_highwind_albatross : public ScriptedAI
 
     void UpdateAI(uint32 /*diff*/) override { }
     void Reset() override { }
-    void EnterCombat(Unit* /*who*/) override { }
+    void JustEngagedWith(Unit* /*who*/) override { }
 };
 
 Position karkanosPos = { -1130.133f, - 4900.529f, - 1.579f, 0.0f };
@@ -3665,7 +3666,7 @@ class npc_fin_longpaw : public CreatureScript
                 me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
         };
 
         CreatureAI* GetAI(Creature* creature) const override
@@ -3714,7 +3715,7 @@ class npc_zarhym_1 : public CreatureScript
             bool intro;
 
             void UpdateAI(uint32 /*diff*/) override { }
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void Reset() override
             {
@@ -3794,7 +3795,7 @@ class npc_zarhym_2 : public CreatureScript
                 events.ScheduleEvent(EVENT_OOO_SAY, 10 * IN_MILLISECONDS);
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
         };
 
         CreatureAI* GetAI(Creature* creature) const override
@@ -3869,7 +3870,7 @@ struct npc_dread_ship_vazuvius : public ScriptedAI
             me->CastSpell(who, 149204);
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_CANNON_BARRAGE, 2 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_DARK_BARRAGE, 7 * IN_MILLISECONDS);
@@ -3994,7 +3995,7 @@ struct npc_evermaw : public ScriptedAI
         me->GetMotionMaster()->MovePath(me->GetDBTableGUIDLow(), true);
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         // Evade Check
         scheduler
@@ -4154,7 +4155,7 @@ class go_cursed_grave : public GameObjectScript
 
             if (Creature* captain = go->SummonCreature(NPC_CAPTAIN, -213.352f, -4715.245f, 13.070f, 4.343475f))
             {
-                captain->setFaction(35);
+                captain->SetFaction(35);
                 captain->AI()->Talk(0);
                 captain->m_Events.Schedule(5000,  [captain]() { captain->AI()->Talk(1); });
                 captain->m_Events.Schedule(10000, [captain]() { captain->AI()->Talk(2); });

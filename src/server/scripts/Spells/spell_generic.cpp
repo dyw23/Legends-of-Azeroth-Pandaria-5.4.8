@@ -41,6 +41,7 @@
 #include "SpellHistory.h"
 #include "Vehicle.h"
 #include "CreatureTextMgr.h"
+#include "Random.h"
 
 class spell_gen_absorb0_hitlimit1 : public AuraScript
 {
@@ -261,7 +262,7 @@ class spell_spawn_blood_pool : public SpellScript
     {
         Unit* caster = GetCaster();
         LiquidData liquidStatus;
-        ZLiquidStatus status = caster->GetMap()->getLiquidStatus(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), MAP_ALL_LIQUIDS, &liquidStatus);
+        ZLiquidStatus status = caster->GetMap()->GetLiquidStatus(caster->GetPhaseMask(), caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), MAP_ALL_LIQUIDS, &liquidStatus);
 
         Position summonPos = caster->GetPosition();
         summonPos.m_positionZ = liquidStatus.level;
@@ -320,7 +321,7 @@ class spell_gen_aura_service_uniform : public AuraScript
 
         if (target->GetTypeId() == TYPEID_PLAYER)
         {
-            if (target->getGender() == GENDER_MALE)
+            if (target->GetGender() == GENDER_MALE)
                 target->SetDisplayId(MODEL_GOBLIN_MALE);
             else
                 target->SetDisplayId(MODEL_GOBLIN_FEMALE);
@@ -442,7 +443,7 @@ class spell_gen_bonked : public SpellScript
         }
     }
 
-    void Register()
+    void Register() override
     {
         OnEffectHitTarget += SpellEffectFn(spell_gen_bonked::HandleScript, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
     }
@@ -984,7 +985,7 @@ class spell_gen_dalaran_disguise : public SpellScriptLoader
             {
                 if (Player* player = GetHitPlayer())
                 {
-                    uint8 gender = player->getGender();
+                    uint8 gender = player->GetGender();
 
                     uint32 spellId = GetSpellInfo()->Id;
 
@@ -2165,11 +2166,11 @@ class spell_gen_on_tournament_mount : public SpellScriptLoader
                     case NPC_ARGENT_WARHORSE:
                     {
                         if (player->HasAchieved(ACHIEVEMENT_CHAMPION_ALLIANCE) || player->HasAchieved(ACHIEVEMENT_CHAMPION_HORDE))
-                            return player->getClass() == CLASS_DEATH_KNIGHT ? SPELL_PENNANT_EBON_BLADE_CHAMPION : SPELL_PENNANT_ARGENT_CRUSADE_CHAMPION;
+                            return player->GetClass() == CLASS_DEATH_KNIGHT ? SPELL_PENNANT_EBON_BLADE_CHAMPION : SPELL_PENNANT_ARGENT_CRUSADE_CHAMPION;
                         else if (player->HasAchieved(ACHIEVEMENT_ARGENT_VALOR))
-                            return player->getClass() == CLASS_DEATH_KNIGHT ? SPELL_PENNANT_EBON_BLADE_VALIANT : SPELL_PENNANT_ARGENT_CRUSADE_VALIANT;
+                            return player->GetClass() == CLASS_DEATH_KNIGHT ? SPELL_PENNANT_EBON_BLADE_VALIANT : SPELL_PENNANT_ARGENT_CRUSADE_VALIANT;
                         else
-                            return player->getClass() == CLASS_DEATH_KNIGHT ? SPELL_PENNANT_EBON_BLADE_ASPIRANT : SPELL_PENNANT_ARGENT_CRUSADE_ASPIRANT;
+                            return player->GetClass() == CLASS_DEATH_KNIGHT ? SPELL_PENNANT_EBON_BLADE_ASPIRANT : SPELL_PENNANT_ARGENT_CRUSADE_ASPIRANT;
                     }
                     default:
                         return 0;
@@ -2264,7 +2265,7 @@ class spell_gen_orc_disguise : public SpellScriptLoader
                 Unit* caster = GetCaster();
                 if (Player* target = GetHitPlayer())
                 {
-                    uint8 gender = target->getGender();
+                    uint8 gender = target->GetGender();
                     if (!gender)
                         caster->CastSpell(target, SPELL_ORC_DISGUISE_MALE, true);
                     else
@@ -2446,7 +2447,7 @@ class spell_gen_running_wild : public SpellScriptLoader
                 Unit* target = GetTarget();
                 PreventDefaultAction();
 
-                target->Mount(target->getGender() == GENDER_FEMALE ? RUNNING_WILD_MODEL_FEMALE : RUNNING_WILD_MODEL_MALE, 0, 0);
+                target->Mount(target->GetGender() == GENDER_FEMALE ? RUNNING_WILD_MODEL_FEMALE : RUNNING_WILD_MODEL_MALE, 0, 0);
 
                 // cast speed aura
                 if (MountCapabilityEntry const* mountCapability = sMountCapabilityStore.LookupEntry(aurEff->GetAmount()))
@@ -3006,7 +3007,7 @@ class spell_gen_upper_deck_create_foam_sword : public SpellScript
         }
     }
 
-    void Register()
+    void Register() override
     {
         OnEffectHitTarget += SpellEffectFn(spell_gen_upper_deck_create_foam_sword::HandleScript, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
     }
@@ -3104,7 +3105,7 @@ class spell_gen_vehicle_scaling : public SpellScriptLoader
                 }
             }
 
-            void Register()
+            void Register() override
             {
                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_gen_vehicle_scaling_AuraScript::CalculateAmount, EFFECT_ALL, SPELL_AURA_ANY);
                 AfterEffectRemove += AuraEffectRemoveFn(spell_gen_vehicle_scaling_AuraScript::HandleAfterRemove, EFFECT_ALL, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
@@ -3278,7 +3279,6 @@ class spell_gen_survey : public SpellScriptLoader
 
                     go = player->SummonGameObject(find->goEntry, find->x, find->y, find->z, 0, { }, 30); // TODO: verify despawn time
 
-                    player->CreditprojectDailyQuest(180024); // project Daily Quest Credit - Surveys
                 }
                 else
                 {
@@ -3385,7 +3385,7 @@ class spell_gen_debug_move : public SpellScript
         return SPELL_CAST_OK;
     }
 
-    void Register()
+    void Register() override
     {
         OnCheckCast += SpellCheckCastFn(spell_gen_debug_move::CheckCast);
     }
@@ -3871,9 +3871,9 @@ class spell_gen_noodle_cart : public SpellScript
             { RACE_PANDAREN_HORDE,      { 40002,    40003 } },
         };
 
-        auto itr = map.find(GetCaster()->getRace());
+        auto itr = map.find(GetCaster()->GetRace());
         if (itr != map.end())
-            return itr->second[GetCaster()->getGender()];
+            return itr->second[GetCaster()->GetGender()];
         return 39980;
     }
 
@@ -4115,7 +4115,7 @@ class spell_gen_shadowmeld : public SpellScript
             caster->CombatStop();
     }
 
-    void Register()
+    void Register() override
     {
         OnEffectHitTarget += SpellEffectFn(spell_gen_shadowmeld::HandleHit, EFFECT_1, SPELL_EFFECT_DUMMY);
     }
@@ -4148,7 +4148,7 @@ class spell_gen_free_action_potion : public SpellScript
         }
     }
 
-    void Register()
+    void Register() override
     {
         AfterHit += SpellHitFn(spell_gen_free_action_potion::HandleAfterHit);
     }
@@ -4178,7 +4178,7 @@ class spell_gen_elixir_of_wandering_spirits : public SpellScript
         caster->CastSpell(caster, Trinity::Containers::SelectRandomContainerElement(wanderingSpiritsAuras), true);
     }
 
-    void Register()
+    void Register() override
     {
         OnEffectHitTarget += SpellEffectFn(spell_gen_elixir_of_wandering_spirits::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
     }
@@ -4220,7 +4220,7 @@ class spell_gen_capacitance : public AuraScript
         {
             if (Unit* target = ObjectAccessor::GetUnit(*GetUnitOwner(), GetUnitOwner()->GetTarget()))
             {
-                uint32 spell = GetUnitOwner()->getClass() == CLASS_HUNTER ? SPELL_LIGHTNING_STRIKE_RANGED : SPELL_LIGHTNING_STRIKE_MELEE;
+                uint32 spell = GetUnitOwner()->GetClass() == CLASS_HUNTER ? SPELL_LIGHTNING_STRIKE_RANGED : SPELL_LIGHTNING_STRIKE_MELEE;
                 GetUnitOwner()->CastSpell(target, spell, true);
             }
             Remove();
@@ -4241,7 +4241,7 @@ class spell_gen_clearcasting_trigger : public AuraScript
     void HandleProc(ProcEventInfo& eventInfo)
     {
         uint32 spellId = 0;
-        switch (GetUnitOwner()->getClass())
+        switch (GetUnitOwner()->GetClass())
         {
             case CLASS_DRUID:  spellId = 137247; break;
             case CLASS_PALADIN:spellId = 137288; break;
@@ -4271,7 +4271,7 @@ class spell_gen_leyaras_locket : public SpellScript
         if (!caster)
             return;
 
-        caster->CastSpell(caster, caster->getGender() == GENDER_MALE ? 101185 : 101186);
+        caster->CastSpell(caster, caster->GetGender() == GENDER_MALE ? 101185 : 101186);
     }
 
     void Register() override

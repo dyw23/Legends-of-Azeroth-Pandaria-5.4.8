@@ -20,9 +20,45 @@
 #include "ByteBuffer.h"
 #include "WorldPacket.h"
 
-PacketLog::PacketLog() : _file(NULL)
+#pragma pack(push, 1)
+
+// Packet logging structures in PKT 3.1 format
+struct LogHeader
 {
-    Initialize();
+    char Signature[3];
+    uint16 FormatVersion;
+    uint8 SnifferId;
+    uint32 Build;
+    char Locale[4];
+    uint8 SessionKey[40];
+    uint32 SniffStartUnixtime;
+    uint32 SniffStartTicks;
+    uint32 OptionalDataSize;
+};
+
+struct PacketHeader
+{
+    // used to uniquely identify a connection
+    struct OptionalData
+    {
+        uint8 SocketIPBytes[16];
+        uint32 SocketPort;
+    };
+
+    uint32 Direction;
+    uint32 ConnectionId;
+    uint32 ArrivalTicks;
+    uint32 OptionalDataSize;
+    uint32 Length;
+    OptionalData OptionalData;
+    uint32 Opcode;
+};
+
+#pragma pack(pop)
+
+PacketLog::PacketLog() : _file(nullptr)
+{
+    std::call_once(_initializeFlag, &PacketLog::Initialize, this);
 }
 
 PacketLog::~PacketLog()
@@ -30,7 +66,13 @@ PacketLog::~PacketLog()
     if (_file)
         fclose(_file);
 
-    _file = NULL;
+    _file = nullptr;
+}
+
+PacketLog* PacketLog::instance()
+{
+    static PacketLog instance;
+    return &instance;
 }
 
 void PacketLog::Initialize()
@@ -46,19 +88,49 @@ void PacketLog::Initialize()
         _file = fopen((logsDir + logname).c_str(), "wb");
 }
 
-void PacketLog::LogPacket(WorldPacket const& packet, Direction direction)
+void PacketLog::LogPacket(WorldPacket const& packet, Direction direction, boost::asio::ip::address const& addr, uint16 port)
 {
-    ByteBuffer data(4+4+4+1+packet.size());
-    uint32 opcode = direction == CLIENT_TO_SERVER ? const_cast<WorldPacket&>(packet).GetReceivedOpcode() : serverOpcodeTable[packet.GetOpcode()]->OpcodeNumber;
+    std::lock_guard<std::mutex> lock(_logPacketLock);
 
-    data << int32(opcode);
-    data << int32(packet.size());
-    data << uint32(time(NULL));
-    data << uint8(direction);
+    // ByteBuffer data(4+4+4+1+packet.size());
+    // uint32 opcode = direction == CLIENT_TO_SERVER ? const_cast<WorldPacket&>(packet).GetReceivedOpcode() : serverOpcodeTable[packet.GetOpcode()]->OpcodeNumber;
 
-    for (uint32 i = 0; i < packet.size(); i++)
-        data << packet[i];
+    // data << int32(opcode);
+    // data << int32(packet.size());
+    // data << uint32(time(nullptr));
+    // data << uint8(direction);
 
-    fwrite(data.contents(), 1, data.size(), _file);
+    // for (uint32 i = 0; i < packet.size(); i++)
+    //     data << packet[i];
+
+    // fwrite(data.contents(), 1, data.size(), _file);
+
+    PacketHeader header;
+    header.Direction = direction == CLIENT_TO_SERVER ? 0x47534d43 : 0x47534d53;
+    header.ConnectionId = 0;
+    header.ArrivalTicks = getMSTime();
+
+    header.OptionalDataSize = sizeof(header.OptionalData);
+    memset(header.OptionalData.SocketIPBytes, 0, sizeof(header.OptionalData.SocketIPBytes));
+    if (addr.is_v4())
+    {
+        auto bytes = addr.to_v4().to_bytes();
+        memcpy(header.OptionalData.SocketIPBytes, bytes.data(), bytes.size());
+    }
+    else if (addr.is_v6())
+    {
+        auto bytes = addr.to_v6().to_bytes();
+        memcpy(header.OptionalData.SocketIPBytes, bytes.data(), bytes.size());
+    }
+
+    header.OptionalData.SocketPort = port;
+    header.Length = packet.size() + sizeof(header.Opcode);
+    header.Opcode = packet.GetOpcode();
+
+    fwrite(&header, sizeof(header), 1, _file);
+    if (!packet.empty())
+        fwrite(packet.contents(), 1, packet.size(), _file);
+
     fflush(_file);
+
 }

@@ -60,6 +60,12 @@ class ScriptRegistry
         // after server startup.
         static ScriptMap ScriptPointerList;
 
+        static ScriptRegistry* Instance()
+        {
+            static ScriptRegistry instance;
+            return &instance;
+        }
+
         static void AddScript(TScript* const script)
         {
             ASSERT(script);
@@ -77,67 +83,55 @@ class ScriptRegistry
                 }
             }
 
-            if (script->IsDatabaseBound())
+            // Get an ID for the script. An ID only exists if it's a script that is assigned in the database
+            // through a script name (or similar).
+            uint32 id = sObjectMgr->GetScriptId(script->GetName().c_str());
+            if (id)
             {
-                // Get an ID for the script. An ID only exists if it's a script that is assigned in the database
-                // through a script name (or similar).
-                uint32 id = sObjectMgr->GetScriptId(script->GetName().c_str());
-                if (id)
+                // Try to find an existing script.
+                bool existing = false;
+                for (ScriptMapIterator it = ScriptPointerList.begin(); it != ScriptPointerList.end(); ++it)
                 {
-                    // Try to find an existing script.
-                    bool existing = false;
-                    for (ScriptMapIterator it = ScriptPointerList.begin(); it != ScriptPointerList.end(); ++it)
+                    // If the script names match...
+                    if (it->second->GetName() == script->GetName())
                     {
-                        // If the script names match...
-                        if (it->second->GetName() == script->GetName())
-                        {
-                            // ... It exists.
-                            existing = true;
-                            break;
-                        }
+                        // ... It exists.
+                        existing = true;
+                        break;
                     }
+                }
 
-                    // If the script isn't assigned -> assign it!
-                    if (!existing)
-                    {
-                        ScriptPointerList[id] = script;
-                        sScriptMgr->IncrementScriptCount();
+                // If the script isn't assigned -> assign it!
+                if (!existing)
+                {
+                    ScriptPointerList[id] = script;
+                    sScriptMgr->IncreaseScriptCount();
 
-                    #ifdef SCRIPTS
-                        UnusedScriptNamesContainer::iterator itr = std::lower_bound(UnusedScriptNames.begin(), UnusedScriptNames.end(), script->GetName());
+                #ifdef SCRIPTS
+                    UnusedScriptNamesContainer::iterator itr = std::lower_bound(UnusedScriptNames.begin(), UnusedScriptNames.end(), script->GetName());
 
-                        if (itr != UnusedScriptNames.end() && *itr == script->GetName())
-                            UnusedScriptNames.erase(itr);
-                    #endif
-                    }
-                    else
-                    {
-                        // If the script is already assigned -> delete it!
-                        TC_LOG_ERROR("scripts", "Script '%s' already assigned with the same script name, so the script can't work.",
-                            script->GetName().c_str());
-
-                        ASSERT(false); // Error that should be fixed ASAP.
-                    }
+                    if (itr != UnusedScriptNames.end() && *itr == script->GetName())
+                        UnusedScriptNames.erase(itr);
+                #endif
                 }
                 else
                 {
-                    // The script uses a script name from database, but isn't assigned to anything.
-                    if (script->GetName().find("example") == std::string::npos && script->GetName().find("Smart") == std::string::npos)
-                        TC_LOG_ERROR("sql.sql", "Script named '%s' does not have a script name assigned in database.",
-                            script->GetName().c_str());
+                    // If the script is already assigned -> delete it!
+                    TC_LOG_ERROR("scripts", "Script '%s' already assigned with the same script name, so the script can't work.",
+                        script->GetName().c_str());
 
-                    // These scripts don't get stored anywhere so throw them into this to avoid leaking memory
-                    ExampleScripts.insert(script);
-
-                    UnusedScripts.push_back(script);
+                    ASSERT(false); // Error that should be fixed ASAP.
                 }
             }
             else
             {
+
                 // We're dealing with a code-only script; just add it.
                 ScriptPointerList[_scriptIdCounter++] = script;
-                sScriptMgr->IncrementScriptCount();
+                sScriptMgr->IncreaseScriptCount(); 
+
             }
+
         }
 
         // Gets a script by its ID (assigned by ObjectMgr).
@@ -194,10 +188,26 @@ struct TSpellSummary
     uint8 Effects;                                          // set of enum SelectEffect
 } *SpellSummary;
 
+ScriptObject::ScriptObject(char const* name) : _name(name)
+{
+    sScriptMgr->IncreaseScriptCount();
+}
+
+ScriptObject::~ScriptObject()
+{
+    sScriptMgr->DecreaseScriptCount();
+}
+
 ScriptMgr::ScriptMgr()
     : _scriptCount(0), _scheduledScripts(0) { }
 
 ScriptMgr::~ScriptMgr() { }
+
+ScriptMgr* ScriptMgr::instance()
+{
+    static ScriptMgr instance;
+    return &instance;
+}
 
 //#ifdef ELUNA
 //extern void StartEluna(bool restart);
@@ -443,32 +453,32 @@ void ScriptMgr::OnNetworkStop()
     FOREACH_SCRIPT(ServerScript)->OnNetworkStop();
 }
 
-void ScriptMgr::OnSocketOpen(WorldSocket* socket)
+void ScriptMgr::OnSocketOpen(std::shared_ptr<WorldSocket> socket)
 {
     ASSERT(socket);
 
     FOREACH_SCRIPT(ServerScript)->OnSocketOpen(socket);
 }
 
-void ScriptMgr::OnSocketClose(WorldSocket* socket, bool wasNew)
+void ScriptMgr::OnSocketClose(std::shared_ptr<WorldSocket> socket)
 {
     ASSERT(socket);
 
-    FOREACH_SCRIPT(ServerScript)->OnSocketClose(socket, wasNew);
+    FOREACH_SCRIPT(ServerScript)->OnSocketClose(socket);
 }
 
-void ScriptMgr::OnPacketReceive(WorldSocket* socket, WorldPacket packet)
+void ScriptMgr::OnPacketReceive(WorldSession* session, WorldPacket packet)
 {
     ASSERT(socket);
 
-    FOREACH_SCRIPT(ServerScript)->OnPacketReceive(socket, packet);
+    FOREACH_SCRIPT(ServerScript)->OnPacketReceive(session, packet);
 }
 
-void ScriptMgr::OnPacketSend(WorldSocket* socket, WorldPacket packet)
+void ScriptMgr::OnPacketSend(WorldSession* session, WorldPacket packet)
 {
     ASSERT(socket);
 
-    FOREACH_SCRIPT(ServerScript)->OnPacketSend(socket, packet);
+    FOREACH_SCRIPT(ServerScript)->OnPacketSend(session, packet);
 }
 
 void ScriptMgr::OnUnknownPacketReceive(WorldSocket* socket, WorldPacket packet)
@@ -942,20 +952,19 @@ bool ScriptMgr::OnQuestReward(Player* player, Creature* creature, Quest const* q
     return tmpscript->OnQuestReward(player, creature, quest, opt);
 }
 
-uint32 ScriptMgr::GetDialogStatus(Player* player, Creature* creature)
+Optional<QuestGiverStatus> ScriptMgr::GetDialogStatus(Player* player, Creature* creature)
 {
     ASSERT(player);
     ASSERT(creature);
 #ifdef ELUNA
-    if (uint32 dialogid = sHookMgr->GetDialogStatus(player, creature))
+    if (Optional<QuestGiverStatus> status = sHookMgr->GetDialogStatus(player, creature))
     {
         player->PlayerTalkClass->ClearMenus();
-        return dialogid;
+        return *status;
     }
 #endif
 
-    /// @todo 100 is a funny magic number to have hanging around here...
-    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, 100);
+    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, std::nullopt);
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->GetDialogStatus(player, creature);
 }
@@ -989,14 +998,6 @@ GameObjectAI* ScriptMgr::GetGameObjectAI(GameObject* gameobject)
 
     GET_SCRIPT_RET(GameObjectScript, gameobject->GetScriptId(), tmpscript, NULL);
     return tmpscript->GetAI(gameobject);
-}
-
-void ScriptMgr::OnCreatureUpdate(Creature* creature, uint32 diff)
-{
-    ASSERT(creature);
-
-    GET_SCRIPT(CreatureScript, creature->GetScriptId(), tmpscript);
-    tmpscript->OnUpdate(creature, diff);
 }
 
 bool ScriptMgr::OnGossipHello(Player* player, GameObject* go)
@@ -1083,20 +1084,19 @@ bool ScriptMgr::OnQuestReward(Player* player, GameObject* go, Quest const* quest
     return tmpscript->OnQuestReward(player, go, quest, opt);
 }
 
-uint32 ScriptMgr::GetDialogStatus(Player* player, GameObject* go)
+Optional<QuestGiverStatus> ScriptMgr::GetDialogStatus(Player* player, GameObject* go)
 {
     ASSERT(player);
     ASSERT(go);
 #ifdef ELUNA
-    if (uint32 dialogid = sHookMgr->GetDialogStatus(player, go))
+    if (Optional<QuestGiverStatus> status = sHookMgr->GetDialogStatus(player, go))
     {
         player->PlayerTalkClass->ClearMenus();
-        return dialogid;
+        return *status;
     }
 #endif
 
-    /// @todo 100 is a funny magic number to have hanging around here...
-    GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, 100);
+    GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, std::nullopt);
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->GetDialogStatus(player, go);
 }
@@ -1163,17 +1163,17 @@ bool ScriptMgr::OnDummyEffect(Unit* caster, uint32 spellId, SpellEffIndex effInd
     return tmpscript->OnDummyEffect(caster, spellId, effIndex, target);
 }
 
-bool ScriptMgr::OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger)
+bool ScriptMgr::OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger, bool entered)
 {
     ASSERT(player);
     ASSERT(trigger);
 #ifdef ELUNA
-    if (sHookMgr->OnAreaTrigger(player, trigger))
+    if (sHookMgr->OnAreaTrigger(player, trigger, entered))
         return true;
 #endif
 
-    GET_SCRIPT_RET(AreaTriggerScript, sObjectMgr->GetAreaTriggerScriptId(trigger->id), tmpscript, false);
-    return tmpscript->OnTrigger(player, trigger);
+    GET_SCRIPT_RET(AreaTriggerScript, sObjectMgr->GetAreaTriggerScriptId(trigger->ID), tmpscript, false);
+    return entered ? tmpscript->OnTrigger(player, trigger) : tmpscript->OnExit(player, trigger);
 }
 
 IAreaTrigger* ScriptMgr::CreateAreaTriggerInterface(uint32 entry)
@@ -1210,8 +1210,16 @@ std::vector<ChatCommand> ScriptMgr::GetChatCommands()
     FOR_SCRIPTS_RET(CommandScript, itr, end, table)
     {
         std::vector<ChatCommand> cmds = itr->second->GetCommands();
-        table.insert(table.end(), cmds.begin(), cmds.end());
+        //table.insert(table.end(), cmds.begin(), cmds.end());
+        std::move(cmds.begin(), cmds.end(), std::back_inserter(table));
     }
+
+    // FOR_SCRIPTS(CommandScript, itr, end)
+    // {
+    //     std::vector<ChatCommand> cmds = itr->second->GetCommands();
+    //     std::move(cmds.begin(), cmds.end(), std::back_inserter(table));
+    // }
+
     return table;
 }
 
@@ -1278,7 +1286,7 @@ void ScriptMgr::OnAuctionExpire(AuctionHouseObject* ah, AuctionEntry* entry)
     FOREACH_SCRIPT(AuctionHouseScript)->OnAuctionExpire(ah, entry);
 }
 
-bool ScriptMgr::OnConditionCheck(Condition* condition, ConditionSourceInfo& sourceInfo)
+bool ScriptMgr::OnConditionCheck(const Condition* condition, ConditionSourceInfo& sourceInfo)
 {
     ASSERT(condition);
 #ifdef ELUNA
@@ -1907,7 +1915,7 @@ void ScriptMgr::FillGameEventWorldStates(GameEventData const& event, Player* pla
     tmpscript->FillWorldStates(player, builder);
 }
 
-void ScriptMgr::OnGlobalItemDelFromDB(SQLTransaction& trans, uint32 itemGuid)
+void ScriptMgr::OnGlobalItemDelFromDB(CharacterDatabaseTransaction trans, uint32 itemGuid)
 {
     ASSERT(trans);
     ASSERT(itemGuid);
@@ -1991,32 +1999,32 @@ bool ScriptMgr::CanHavePetAI(Creature* creature)
 SpellScriptLoader::SpellScriptLoader(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<SpellScriptLoader>::AddScript(this);
+    ScriptRegistry<SpellScriptLoader>::Instance()->AddScript(this);
 }
 
 ServerScript::ServerScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<ServerScript>::AddScript(this);
+    ScriptRegistry<ServerScript>::Instance()->AddScript(this);
 }
 
 WorldScript::WorldScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<WorldScript>::AddScript(this);
+    ScriptRegistry<WorldScript>::Instance()->AddScript(this);
 }
 
 FormulaScript::FormulaScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<FormulaScript>::AddScript(this);
+    ScriptRegistry<FormulaScript>::Instance()->AddScript(this);
 }
 
 UnitScript::UnitScript(const char* name, bool addToScripts)
     : ScriptObject(name)
 {
     if (addToScripts)
-        ScriptRegistry<UnitScript>::AddScript(this);
+        ScriptRegistry<UnitScript>::Instance()->AddScript(this);
 }
 
 WorldMapScript::WorldMapScript(const char* name, uint32 mapId)
@@ -2025,7 +2033,7 @@ WorldMapScript::WorldMapScript(const char* name, uint32 mapId)
     if (GetEntry() && !GetEntry()->IsWorldMap())
         TC_LOG_ERROR("scripts", "WorldMapScript for map %u is invalid.", mapId);
 
-    ScriptRegistry<WorldMapScript>::AddScript(this);
+    ScriptRegistry<WorldMapScript>::Instance()->AddScript(this);
 }
 
 InstanceMapScript::InstanceMapScript(const char* name, uint32 mapId)
@@ -2034,7 +2042,7 @@ InstanceMapScript::InstanceMapScript(const char* name, uint32 mapId)
     if (GetEntry() && !GetEntry()->IsDungeon() && !GetEntry()->IsScenario())
         TC_LOG_ERROR("scripts", "InstanceMapScript for map %u is invalid.", mapId);
 
-    ScriptRegistry<InstanceMapScript>::AddScript(this);
+    ScriptRegistry<InstanceMapScript>::Instance()->AddScript(this);
 }
 
 BattlegroundMapScript::BattlegroundMapScript(const char* name, uint32 mapId)
@@ -2043,137 +2051,138 @@ BattlegroundMapScript::BattlegroundMapScript(const char* name, uint32 mapId)
     if (GetEntry() && !GetEntry()->IsBattleground())
         TC_LOG_ERROR("scripts", "BattlegroundMapScript for map %u is invalid.", mapId);
 
-    ScriptRegistry<BattlegroundMapScript>::AddScript(this);
+    ScriptRegistry<BattlegroundMapScript>::Instance()->AddScript(this);
 }
 
 ItemScript::ItemScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<ItemScript>::AddScript(this);
+    ScriptRegistry<ItemScript>::Instance()->AddScript(this);
 }
 
 CreatureScript::CreatureScript(const char* name)
-    : UnitScript(name, false)
+    : ScriptObject(name)
+    //: UnitScript(name, false)
 {
-    ScriptRegistry<CreatureScript>::AddScript(this);
+    ScriptRegistry<CreatureScript>::Instance()->AddScript(this);
 }
 
 GameObjectScript::GameObjectScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<GameObjectScript>::AddScript(this);
+    ScriptRegistry<GameObjectScript>::Instance()->AddScript(this);
 }
 
 AreaTriggerScript::AreaTriggerScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<AreaTriggerScript>::AddScript(this);
+    ScriptRegistry<AreaTriggerScript>::Instance()->AddScript(this);
 }
 
 SpellAreaTriggerScript::SpellAreaTriggerScript(const char* name)
 : ScriptObject(name)
 {
-    ScriptRegistry<SpellAreaTriggerScript>::AddScript(this);
+    ScriptRegistry<SpellAreaTriggerScript>::Instance()->AddScript(this);
 }
 
 BattlegroundScript::BattlegroundScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<BattlegroundScript>::AddScript(this);
+    ScriptRegistry<BattlegroundScript>::Instance()->AddScript(this);
 }
 
 OutdoorPvPScript::OutdoorPvPScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<OutdoorPvPScript>::AddScript(this);
+    ScriptRegistry<OutdoorPvPScript>::Instance()->AddScript(this);
 }
 
 CommandScript::CommandScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<CommandScript>::AddScript(this);
+    ScriptRegistry<CommandScript>::Instance()->AddScript(this);
 }
 
 WeatherScript::WeatherScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<WeatherScript>::AddScript(this);
+    ScriptRegistry<WeatherScript>::Instance()->AddScript(this);
 }
 
 AuctionHouseScript::AuctionHouseScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<AuctionHouseScript>::AddScript(this);
+    ScriptRegistry<AuctionHouseScript>::Instance()->AddScript(this);
 }
 
 ConditionScript::ConditionScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<ConditionScript>::AddScript(this);
+    ScriptRegistry<ConditionScript>::Instance()->AddScript(this);
 }
 
 VehicleScript::VehicleScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<VehicleScript>::AddScript(this);
+    ScriptRegistry<VehicleScript>::Instance()->AddScript(this);
 }
 DynamicObjectScript::DynamicObjectScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<DynamicObjectScript>::AddScript(this);
+    ScriptRegistry<DynamicObjectScript>::Instance()->AddScript(this);
 }
 
 TransportScript::TransportScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<TransportScript>::AddScript(this);
+    ScriptRegistry<TransportScript>::Instance()->AddScript(this);
 }
 
 AchievementCriteriaScript::AchievementCriteriaScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<AchievementCriteriaScript>::AddScript(this);
+    ScriptRegistry<AchievementCriteriaScript>::Instance()->AddScript(this);
 }
 
 PlayerScript::PlayerScript(const char* name)
     : UnitScript(name, false)
 {
-    ScriptRegistry<PlayerScript>::AddScript(this);
+    ScriptRegistry<PlayerScript>::Instance()->AddScript(this);
 }
 
 GuildScript::GuildScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<GuildScript>::AddScript(this);
+    ScriptRegistry<GuildScript>::Instance()->AddScript(this);
 }
 
 GroupScript::GroupScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<GroupScript>::AddScript(this);
+    ScriptRegistry<GroupScript>::Instance()->AddScript(this);
 }
 
 SceneScript::SceneScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<SceneScript>::AddScript(this);
+    ScriptRegistry<SceneScript>::Instance()->AddScript(this);
 }
 
 GameEventScript::GameEventScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<GameEventScript>::AddScript(this);
+    ScriptRegistry<GameEventScript>::Instance()->AddScript(this);
 }
 
 GlobalScript::GlobalScript(const char* name)
     : ScriptObject(name)
 {
-    ScriptRegistry<GlobalScript>::AddScript(this);
+    ScriptRegistry<GlobalScript>::Instance()->AddScript(this);
 }
 
 // Instantiate static members of ScriptRegistry.
 template<class TScript> std::map<uint32, TScript*> ScriptRegistry<TScript>::ScriptPointerList;
-template<class TScript> uint32 ScriptRegistry<TScript>::_scriptIdCounter = 0;
+template<class TScript> uint32 ScriptRegistry<TScript>::_scriptIdCounter = 100000000;
 
 // Specialize for each script type class like so:
 template class ScriptRegistry<SpellScriptLoader>;

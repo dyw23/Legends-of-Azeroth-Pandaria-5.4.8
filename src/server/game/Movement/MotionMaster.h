@@ -28,11 +28,16 @@ class MovementGenerator;
 class Unit;
 class PathGenerator;
 
+namespace Movement
+{
+    class MoveSplineInit;
+}
+
 // Creature Entry ID used for waypoints show, visible only for GMs
 #define VISUAL_WAYPOINT 1
 
 // values 0 ... MAX_DB_MOTION_TYPE-1 used in DB
-enum MovementGeneratorType
+enum MovementGeneratorType : uint8
 {
     IDLE_MOTION_TYPE      = 0,                              // IdleMovementGenerator.h
     RANDOM_MOTION_TYPE    = 1,                              // RandomMovementGenerator.h
@@ -52,10 +57,12 @@ enum MovementGeneratorType
     FOLLOW_MOTION_TYPE    = 14,
     ROTATE_MOTION_TYPE    = 15,
     EFFECT_MOTION_TYPE    = 16,
-    NULL_MOTION_TYPE      = 17
+    NULL_MOTION_TYPE      = 17,
+    FORMATION_MOTION_TYPE = 18,                             // FormationMovementGenerator.h
+    MAX_MOTION_TYPE                                         // SKIP
 };
 
-enum MovementSlot
+enum MovementSlot : uint8
 {
     MOTION_SLOT_IDLE,
     MOTION_SLOT_ACTIVE,
@@ -80,7 +87,10 @@ enum RotateDirection
 // assume it is 25 yard per 0.6 second
 #define SPEED_CHARGE    42.0f
 
-class MotionMaster //: private std::stack<MovementGenerator *>
+inline bool IsInvalidMovementGeneratorType(uint8 const type) { return type == MAX_DB_MOTION_TYPE || type >= MAX_MOTION_TYPE; }
+inline bool IsInvalidMovementSlot(uint8 const slot) { return slot >= MAX_MOTION_SLOT; }
+
+class TC_GAME_API MotionMaster //: private std::stack<MovementGenerator *>
 {
     private:
         //typedef std::stack<MovementGenerator *> Impl;
@@ -124,6 +134,10 @@ class MotionMaster //: private std::stack<MovementGenerator *>
 
         bool empty() const { return (_top < 0); }
         int size() const { return _top + 1; }
+
+        //MovementGeneratorType GetCurrentMovementGeneratorType() const; // hack
+
+
         _Ty top() const { ASSERT(_top < MAX_MOTION_SLOT && _top >= 0);  return Impl[_top]; }
         _Ty GetMotionSlot(int slot) const { ASSERT(_top < MAX_MOTION_SLOT && _top >= 0); return Impl[slot]; }
 
@@ -193,6 +207,8 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void MovePath(uint32 path_id, bool repeatable);
         void MoveSplinePath(const Position* path, uint32 count, bool fly = false, bool walk = false, float speed = 0.0f, bool cyclic = false, bool catmullrom = true, bool uncompressed = true);
         void MoveRotate(uint32 time, RotateDirection direction);
+
+        void LaunchMoveSpline(Movement::MoveSplineInit&& init, uint32 id = 0, MovementSlot slot = MOTION_SLOT_ACTIVE, MovementGeneratorType type = EFFECT_MOTION_TYPE);
 
         MovementGeneratorType GetCurrentMovementGeneratorType() const;
         MovementGeneratorType GetMotionSlotType(int slot) const;

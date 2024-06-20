@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -21,6 +21,15 @@
 #include "Define.h"
 #include <map>
 
+enum GroupAIFlags
+{
+    FLAG_AGGRO_NONE            = 0,                                                         // No creature group behavior
+    FLAG_MEMBERS_ASSIST_LEADER = 0x00000001,                                                // The member aggroes if the leader aggroes
+    FLAG_LEADER_ASSISTS_MEMBER = 0x00000002,                                                // The leader aggroes if the member aggroes
+    FLAG_MEMBERS_ASSIST_MEMBER = (FLAG_MEMBERS_ASSIST_LEADER | FLAG_LEADER_ASSISTS_MEMBER), // every member will assist if any member is attacked
+    FLAG_IDLE_IN_FORMATION     = 0x00000200,                                                // The member will follow the leader when pathing idly
+};
+
 class Creature;
 class CreatureGroup;
 
@@ -34,25 +43,28 @@ struct FormationInfo
     uint16 point_2;
 };
 
-typedef std::unordered_map<uint32/*memberDBGUID*/, FormationInfo*>   CreatureGroupInfoType;
+typedef std::unordered_map<uint32/*memberDBGUID*/, FormationInfo> CreatureGroupInfoType;
 
-class FormationMgr
+class TC_GAME_API FormationMgr
 {
-    friend class ACE_Singleton<FormationMgr, ACE_Null_Mutex>;
-    public:
+    private:
         FormationMgr() { }
-        ~FormationMgr();
+        ~FormationMgr() { }
+
+    public:
+        static FormationMgr* instance();
+
         void AddCreatureToGroup(uint32 group_id, Creature* creature);
         void RemoveCreatureFromGroup(CreatureGroup* group, Creature* creature);
         void LoadCreatureFormations();
         CreatureGroupInfoType CreatureGroupMap;
 };
 
-class CreatureGroup
+class TC_GAME_API CreatureGroup
 {
     private:
         Creature* m_leader; //Important do not forget sometimes to work with pointers instead synonims :D:D
-        typedef std::map<Creature*, FormationInfo*>  CreatureGroupMemberType;
+        typedef std::map<Creature*, FormationInfo> CreatureGroupMemberType;
         CreatureGroupMemberType m_members;
 
         uint32 m_groupID;
@@ -60,22 +72,23 @@ class CreatureGroup
 
     public:
         //Group cannot be created empty
-        explicit CreatureGroup(uint32 id) : m_leader(NULL), m_groupID(id), m_Formed(false) { }
+        explicit CreatureGroup(uint32 id) : m_leader(nullptr), m_groupID(id), m_Formed(false) { }
         ~CreatureGroup() { }
 
-        Creature* getLeader() const { return m_leader; }
+        Creature* GetLeader() const { return m_leader; }
         uint32 GetId() const { return m_groupID; }
         bool isEmpty() const { return m_members.empty(); }
-        bool isFormed() const { return m_Formed; }
+        bool IsFormed() const { return m_Formed; }
+        bool IsLeader(Creature const* creature) const { return m_leader == creature; }
 
         void AddMember(Creature* member);
         void RemoveMember(Creature* member);
         void FormationReset(bool dismiss);
 
         void LeaderMoveTo(float x, float y, float z);
-        void MemberAttackStart(Creature* member, Unit* target);
+        void MemberEngagingTarget(Creature* member, Unit* target);
 };
 
-#define sFormationMgr ACE_Singleton<FormationMgr, ACE_Null_Mutex>::instance()
+#define sFormationMgr FormationMgr::instance()
 
 #endif

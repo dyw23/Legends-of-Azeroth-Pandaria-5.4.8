@@ -218,7 +218,7 @@ class boss_yorsahj_the_unsleeping: public CreatureScript
                 me->GetMap()->SetWorldState(WORLDSTATE_TASTE_THE_RAINBOW_PY, 0);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 if (instance->GetBossState(DATA_MORCHOK) != DONE)
                 {
@@ -1032,7 +1032,7 @@ class spell_yorsahj_the_unsleeping_mana_void : public SpellScriptLoader
                             return true;
                         if (unit->ToPlayer()->GetPowerType() == POWER_MANA)
                             return false;
-                        return GetPowerIndexByClass(POWER_MANA, unit->ToPlayer()->getClass()) == MAX_POWERS;
+                        return GetPowerIndexByClass(POWER_MANA, unit->ToPlayer()->GetClass()) == MAX_POWERS;
                     }
             };
 

@@ -336,6 +336,7 @@ class InstanceScript : public ZoneScript
 
         // Complete Achievement for all players in instance
         DECLSPEC_DEPRECATED void DoCompleteAchievement(uint32 achievement) ATTR_DEPRECATED;
+        //void DoCompleteAchievement(uint32 achievement);
 
         // Update Achievement Criteria for all players in instance
         void DoUpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, Unit* unit = NULL);
@@ -508,15 +509,26 @@ class InstanceScript : public ZoneScript
         time_t startFightTime;
 };
 
-template<class AI, class T>
+TC_GAME_API bool InstanceHasScript(WorldObject const* obj, char const* scriptName);
+
+template <class AI, class T>
 AI* GetInstanceAI(T* obj, char const* scriptName)
 {
-    if (InstanceMap* instance = obj->GetMap()->ToInstanceMap())
-        if (instance->GetInstanceScript())
-            if (instance->GetScriptId() == sObjectMgr->GetScriptId(scriptName))
-                return new AI(obj);
+    if (InstanceHasScript(obj, scriptName))
+        return new AI(obj);
 
-    return NULL;
+    return nullptr;
 }
+
+// template<class AI, class T>
+// AI* GetInstanceAI(T* obj, char const* scriptName)
+// {
+//     if (InstanceMap* instance = obj->GetMap()->ToInstanceMap())
+//         if (instance->GetInstanceScript())
+//             if (instance->GetScriptId() == sObjectMgr->GetScriptId(scriptName))
+//                 return new AI(obj);
+
+//     return NULL;
+// }
 
 #endif // TRINITY_INSTANCE_DATA_H

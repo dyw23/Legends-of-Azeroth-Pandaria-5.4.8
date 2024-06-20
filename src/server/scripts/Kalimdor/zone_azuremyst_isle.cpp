@@ -72,7 +72,7 @@ struct npc_draenei_survivor : public ScriptedAI
         me->SetStandState(UNIT_STAND_STATE_SLEEP);
     }
 
-    void EnterCombat(Unit* /*who*/) override { }
+    void JustEngagedWith(Unit* /*who*/) override { }
 
     void MoveInLineOfSight(Unit* who) override
     {
@@ -191,7 +191,7 @@ public:
         if (action == GOSSIP_ACTION_INFO_DEF)
         {
             player->CLOSE_GOSSIP_MENU();
-            creature->setFaction(FACTION_HOSTILE);
+            creature->SetFaction(FACTION_HOSTILE);
             CAST_AI(npc_engineer_spark_overgrind::npc_engineer_spark_overgrindAI, creature->AI())->AttackStart(player);
         }
         return true;
@@ -215,7 +215,7 @@ public:
     {
         npc_engineer_spark_overgrindAI(Creature* creature) : ScriptedAI(creature)
         {
-            NormFaction = creature->getFaction();
+            NormFaction = creature->GetFaction();
             NpcFlags = creature->GetUInt32Value(UNIT_FIELD_NPC_FLAGS);
 
             if (creature->GetAreaId() == AREA_COVE || creature->GetAreaId() == AREA_ISLE)
@@ -235,13 +235,13 @@ public:
             DynamiteTimer = 8000;
             EmoteTimer = urand(120000, 150000);
 
-            me->setFaction(NormFaction);
+            me->SetFaction(NormFaction);
             me->SetUInt32Value(UNIT_FIELD_NPC_FLAGS, NpcFlags);
 
             IsTreeEvent = false;
         }
 
-        void EnterCombat(Unit* who) override
+        void JustEngagedWith(Unit* who) override
         {
             Talk(ATTACK_YELL, who);
         }
@@ -309,7 +309,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/) override { }
+        void JustEngagedWith(Unit* /*who*/) override { }
 
         void MoveInLineOfSight(Unit* /*who*/) override { }
 
@@ -344,7 +344,7 @@ public:
     {
         if (quest->GetQuestId() == QUEST_A_CRY_FOR_SAY_HELP)
         {
-            creature->setFaction(113);
+            creature->SetFaction(113);
             if (npc_escortAI* pEscortAI = CAST_AI(npc_escortAI, creature->AI()))
                 pEscortAI->Start(true, false, player->GetGUID());
         }
@@ -384,7 +384,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* who) override
+        void JustEngagedWith(Unit* who) override
         {
             Talk(SAY_AGGRO, who);
         }
@@ -448,7 +448,7 @@ public:
             StartEvent();
         }
 
-        void EnterCombat(Unit* /*who*/)override { }
+        void JustEngagedWith(Unit* /*who*/)override { }
 
         void StartEvent()
         {

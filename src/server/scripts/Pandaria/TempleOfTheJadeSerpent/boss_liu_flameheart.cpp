@@ -116,13 +116,13 @@ class boss_liu_flameheart : public CreatureScript
                     Talk(TALK_KILL);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (!inCombat)
                 {
                     inCombat = true;
                     
-                    _EnterCombat();
+                    _JustEngagedWith();
                     Talk(TALK_AGGRO);
                     events.ScheduleEvent(EVENT_SERPENT_STRIKE, 5000);
                     events.ScheduleEvent(EVENT_SERPENT_KICK, 5000);
@@ -394,7 +394,7 @@ class boss_yu_lon_tjs : public CreatureScript
                         case EVENT_LEAVE:
                              {
                                  Talk(TALK_LEAVE);
-                                 me->setFaction(35);
+                                 me->SetFaction(35);
                                  Movement::MoveSplineInit init(me);
                                  for (uint8 i = 0; i < 3; ++i)
                                  {
@@ -637,7 +637,7 @@ class npc_lesser_sha : public CreatureScript
                 targeted = false;
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 events.ScheduleEvent(EVENT_SHA_SCREECH, 2 * IN_MILLISECONDS);
             }

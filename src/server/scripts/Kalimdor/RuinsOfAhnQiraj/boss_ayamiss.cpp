@@ -128,9 +128,9 @@ class boss_ayamiss : public CreatureScript
                 BossAI::EnterEvadeMode();
             }
 
-            void EnterCombat(Unit* attacker) override
+            void JustEngagedWith(Unit* attacker) override
             {
-                BossAI::EnterCombat(attacker);
+                BossAI::JustEngagedWith(attacker);
 
                 events.ScheduleEvent(EVENT_STINGER_SPRAY, urand(20000, 30000));
                 events.ScheduleEvent(EVENT_POISON_STINGER, 5000);
@@ -175,6 +175,7 @@ class boss_ayamiss : public CreatureScript
                     _enraged = true;
                 }
 
+                Position Pos;
                 while (uint32 eventId = events.ExecuteEvent())
                 {
                     switch (eventId)
@@ -207,7 +208,6 @@ class boss_ayamiss : public CreatureScript
                             events.ScheduleEvent(EVENT_SWARMER_ATTACK, 60000);
                             break;
                         case EVENT_SUMMON_SWARMER:
-                            Position Pos;
                             me->GetRandomPoint(SwarmerPos, 80.0f, Pos);
                             me->SummonCreature(NPC_SWARMER, Pos);
                             events.ScheduleEvent(EVENT_SUMMON_SWARMER, 5000);

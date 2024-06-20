@@ -31,10 +31,25 @@
 #include "SpellMgr.h"
 #include "TimeValue.h"
 #include "SpellInfo.h"
+#include "UnitDefines.h"
 #include <array>
 #include <memory>
 
 #define WORLD_TRIGGER   12999
+
+enum UnitModifierFlatType
+{
+    BASE_VALUE = 0,
+    TOTAL_VALUE = 1,
+    MODIFIER_TYPE_FLAT_END = 2
+};
+
+enum UnitModifierPctType
+{
+    BASE_PCT = 0,
+    TOTAL_PCT = 1,
+    MODIFIER_TYPE_PCT_END = 2
+};
 
 enum SpellModOp
 {
@@ -125,53 +140,12 @@ enum SpellFacingFlags
     SPELL_FACING_FLAG_INFRONT = 0x0001
 };
 
-#define BASE_MINDAMAGE 1.0f
-#define BASE_MAXDAMAGE 2.0f
-#define BASE_ATTACK_TIME 2000
 
-// byte value (UNIT_FIELD_ANIM_TIER, 0)
-enum UnitStandStateType
-{
-    UNIT_STAND_STATE_STAND = 0,
-    UNIT_STAND_STATE_SIT = 1,
-    UNIT_STAND_STATE_SIT_CHAIR = 2,
-    UNIT_STAND_STATE_SLEEP = 3,
-    UNIT_STAND_STATE_SIT_LOW_CHAIR = 4,
-    UNIT_STAND_STATE_SIT_MEDIUM_CHAIR = 5,
-    UNIT_STAND_STATE_SIT_HIGH_CHAIR = 6,
-    UNIT_STAND_STATE_DEAD = 7,
-    UNIT_STAND_STATE_KNEEL = 8,
-    UNIT_STAND_STATE_SUBMERGED = 9
-};
 
-// byte flag value (UNIT_FIELD_ANIM_TIER, 2)
-enum UnitStandFlags
-{
-    UNIT_STAND_FLAGS_UNK1 = 0x01,
-    UNIT_STAND_FLAGS_CREEP = 0x02,
-    UNIT_STAND_FLAGS_UNTRACKABLE = 0x04,
-    UNIT_STAND_FLAGS_UNK4 = 0x08,
-    UNIT_STAND_FLAGS_UNK5 = 0x10,
-    UNIT_STAND_FLAGS_ALL = 0xFF
-};
 
-// byte value (UNIT_FIELD_ANIM_TIER,3)
-// Used to switch between different animations sets for creatures that have them.
-// Last column in AnimationData.dbc specifies which tier does the animation belong to.
-// Second to last column specifies which animation behavior ID it is, same purpose animations from different tiers share the same behavior ID and it is used to find fallback animations in case the model is missing them.
-// Is also sent in spline movement flags to play tier transition animations:
-//    Ground -> Hover|Fly    - plays 458 ToFly
-// Hover|Fly -> Ground       - plays 460 ToGround
-//       Fly -> Ground|Hover - plays 463 FlyToGround (only when handling spline, is delayed until near the end of the spline (animation duration is subtracted from spline duration))
-//     Hover -> Ground       - plays 463 FlyToGround (only when handling spline, is delayed until near the end of the spline (animation duration is subtracted from spline duration))
-enum class UnitAnimationTier : uint8
-{                  // Name from client executable
-    Ground    = 0, // Normal/Ground                   - Plays ground tier animations
-    Swim      = 1, // Swim (NOT YET IMPLEMENTED)      - Falls back to ground tier animations, not handled by the client, should never appear in sniffs, will prevent tier change animations from playing correctly if used
-    Hover     = 2, // Hover                           - Plays flying tier animations or falls back to ground tier animations, automatically enables hover clientside when entering visibility with this value
-    Fly       = 3, // Fly                             - Plays flying tier animations
-    Submerged = 4, // Submerged (NOT YET IMPLEMENTED)
-};
+
+
+
 
 // high byte (3 from 0..3) of UNIT_FIELD_SHAPESHIFT_FORM
 enum ShapeshiftForm
@@ -211,35 +185,9 @@ enum ShapeshiftForm
     FORM_SPIRITOFREDEMPTION = 0x20
 };
 
-// low byte (0 from 0..3) of UNIT_FIELD_SHAPESHIFT_FORM
-enum SheathState
-{
-    SHEATH_STATE_UNARMED = 0,                              // non prepared weapon
-    SHEATH_STATE_MELEE = 1,                              // prepared melee weapon
-    SHEATH_STATE_RANGED = 2                               // prepared ranged weapon
-};
 
-#define MAX_SHEATH_STATE    3
 
-// byte (1 from 0..3) of UNIT_FIELD_SHAPESHIFT_FORM
-enum UnitPVPStateFlags
-{
-    UNIT_BYTE2_FLAG_PVP = 0x01,
-    UNIT_BYTE2_FLAG_UNK1 = 0x02,
-    UNIT_BYTE2_FLAG_FFA_PVP = 0x04,
-    UNIT_BYTE2_FLAG_SANCTUARY = 0x08,
-    UNIT_BYTE2_FLAG_UNK4 = 0x10,
-    UNIT_BYTE2_FLAG_UNK5 = 0x20,
-    UNIT_BYTE2_FLAG_UNK6 = 0x40,
-    UNIT_BYTE2_FLAG_UNK7 = 0x80
-};
 
-// byte (2 from 0..3) of UNIT_FIELD_SHAPESHIFT_FORM
-enum UnitRename
-{
-    UNIT_CAN_BE_RENAMED = 0x01,
-    UNIT_CAN_BE_ABANDONED = 0x02
-};
 
 #define CREATURE_MAX_SPELLS     8
 #define MAX_SPELL_CHARM         4
@@ -356,14 +304,14 @@ struct SpellImmune
 
 typedef std::list<SpellImmune> SpellImmuneList;
 
-enum UnitModifierType
-{
-    BASE_VALUE = 0,
-    BASE_PCT = 1,
-    TOTAL_VALUE = 2,
-    TOTAL_PCT = 3,
-    MODIFIER_TYPE_END = 4
-};
+// enum UnitModifierType
+// {
+//     BASE_VALUE = 0,
+//     BASE_PCT = 1,
+//     TOTAL_VALUE = 2,
+//     TOTAL_PCT = 3,
+//     MODIFIER_TYPE_END = 4
+// };
 
 enum WeaponDamageRange
 {
@@ -427,7 +375,7 @@ enum UnitMods
     UNIT_MOD_RAGE,
     UNIT_MOD_FOCUS,
     UNIT_MOD_ENERGY,
-    UNIT_MOD_UNUSED,                                        // Old UNIT_MOD_HAPPINESS
+    UNIT_MOD_HAPPINESS,                                     // Old UNIT_MOD_HAPPINESS
     UNIT_MOD_RUNE,
     UNIT_MOD_RUNIC_POWER,
     UNIT_MOD_SOUL_SHARDS,
@@ -539,21 +487,6 @@ enum UnitState : uint32
     UNIT_STATE_ALL_STATE           = 0xffffffff
 };
 
-enum UnitMoveType
-{
-    MOVE_WALK = 0,
-    MOVE_RUN = 1,
-    MOVE_RUN_BACK = 2,
-    MOVE_SWIM = 3,
-    MOVE_SWIM_BACK = 4,
-    MOVE_TURN_RATE = 5,
-    MOVE_FLIGHT = 6,
-    MOVE_FLIGHT_BACK = 7,
-    MOVE_PITCH_RATE = 8
-};
-
-#define MAX_MOVE_TYPE     9
-
 extern float baseMoveSpeed [MAX_MOVE_TYPE];
 extern float playerBaseMoveSpeed [MAX_MOVE_TYPE];
 
@@ -608,105 +541,6 @@ enum DamageEffectType
     SELF_DAMAGE = 5
 };
 
-// Value masks for UNIT_FIELD_FLAGS
-enum UnitFlags
-{
-    UNIT_FLAG_SERVER_CONTROLLED     = 0x00000001,           // set only when unit movement is controlled by server - by SPLINE/MONSTER_MOVE packets, together with UNIT_FLAG_STUNNED; only set to units controlled by client; client function CGUnit_C::IsClientControlled returns false when set for owner
-    UNIT_FLAG_NON_ATTACKABLE        = 0x00000002,           // not attackable
-    UNIT_FLAG_DISABLE_MOVE          = 0x00000004,
-    UNIT_FLAG_PVP_ATTACKABLE        = 0x00000008,           // allow apply pvp rules to attackable state in addition to faction dependent state
-    UNIT_FLAG_RENAME                = 0x00000010,
-    UNIT_FLAG_PREPARATION           = 0x00000020,           // don't take reagents for spells with SPELL_ATTR5_NO_REAGENT_WHILE_PREP
-    UNIT_FLAG_UNK_6                 = 0x00000040,
-    UNIT_FLAG_NOT_ATTACKABLE_1      = 0x00000080,           // ?? (UNIT_FLAG_PVP_ATTACKABLE | UNIT_FLAG_NOT_ATTACKABLE_1) is NON_PVP_ATTACKABLE
-    UNIT_FLAG_IMMUNE_TO_PC          = 0x00000100,           // disables combat/assistance with PlayerCharacters (PC) - see Unit::IsValidAttackTarget, Unit::_IsValidAssistTarget
-    UNIT_FLAG_IMMUNE_TO_NPC         = 0x00000200,           // disables combat/assistance with NonPlayerCharacters (NPC) - see Unit::IsValidAttackTarget, Unit::_IsValidAssistTarget
-    UNIT_FLAG_LOOTING               = 0x00000400,           // loot animation
-    UNIT_FLAG_PET_IN_COMBAT         = 0x00000800,           // in combat?, 2.0.8
-    UNIT_FLAG_PVP                   = 0x00001000,           // changed in 3.0.3
-    UNIT_FLAG_SILENCED              = 0x00002000,           // silenced, 2.1.1
-    UNIT_FLAG_UNK_14                = 0x00004000,           // 2.0.8
-    UNIT_FLAG_UNK_15                = 0x00008000,
-    UNIT_FLAG_UNK_16                = 0x00010000,
-    UNIT_FLAG_PACIFIED              = 0x00020000,           // 3.0.3 ok
-    UNIT_FLAG_STUNNED               = 0x00040000,           // 3.0.3 ok
-    UNIT_FLAG_IN_COMBAT             = 0x00080000,
-    UNIT_FLAG_TAXI_FLIGHT           = 0x00100000,           // disable casting at client side spell not allowed by taxi flight (mounted?), probably used with 0x4 flag
-    UNIT_FLAG_DISARMED              = 0x00200000,           // 3.0.3, disable melee spells casting..., "Required melee weapon" added to melee spells tooltip.
-    UNIT_FLAG_CONFUSED              = 0x00400000,
-    UNIT_FLAG_FLEEING               = 0x00800000,
-    UNIT_FLAG_PLAYER_CONTROLLED     = 0x01000000,           // used in spell Eyes of the Beast for pet... let attack by controlled creature
-    UNIT_FLAG_NOT_SELECTABLE        = 0x02000000,
-    UNIT_FLAG_SKINNABLE             = 0x04000000,
-    UNIT_FLAG_MOUNT                 = 0x08000000,
-    UNIT_FLAG_UNK_28                = 0x10000000,
-    UNIT_FLAG_UNK_29                = 0x20000000,           // used in Feing Death spell
-    UNIT_FLAG_SHEATHE               = 0x40000000,
-    UNIT_FLAG_UNK_31                = 0x80000000,
-    MAX_UNIT_FLAGS                  = 33
-};
-
-// Value masks for UNIT_FIELD_FLAGS2
-enum UnitFlags2
-{
-    UNIT_FLAG2_FEIGN_DEATH                = 0x00000001,
-    UNIT_FLAG2_UNK1                       = 0x00000002,   // Hide unit model (show only player equip)
-    UNIT_FLAG2_IGNORE_REPUTATION          = 0x00000004,
-    UNIT_FLAG2_COMPREHEND_LANG            = 0x00000008,
-    UNIT_FLAG2_MIRROR_IMAGE               = 0x00000010,
-    UNIT_FLAG2_INSTANTLY_APPEAR_MODEL     = 0x00000020,   // Unit model instantly appears when summoned (does not fade in)
-    UNIT_FLAG2_FORCE_MOVEMENT             = 0x00000040,
-    UNIT_FLAG2_DISARM_OFFHAND             = 0x00000080,
-    UNIT_FLAG2_DISABLE_PRED_STATS         = 0x00000100,   // Player has disabled predicted stats (Used by raid frames)
-    UNIT_FLAG2_DISARM_RANGED              = 0x00000400,   // this does not disable ranged weapon display (maybe additional flag needed?)
-    UNIT_FLAG2_REGENERATE_POWER           = 0x00000800,
-    UNIT_FLAG2_RESTRICT_PARTY_INTERACTION = 0x00001000,   // Restrict interaction to party or raid
-    UNIT_FLAG2_PREVENT_SPELL_CLICK        = 0x00002000,   // Prevent spellclick
-    UNIT_FLAG2_ALLOW_ENEMY_INTERACT       = 0x00004000,
-    UNIT_FLAG2_DISABLE_TURN               = 0x00008000,
-    UNIT_FLAG2_UNK2                       = 0x00010000,
-    UNIT_FLAG2_PLAY_DEATH_ANIM            = 0x00020000,   // Plays special death animation upon death
-    UNIT_FLAG2_ALLOW_CHEAT_SPELLS         = 0x00040000    // Allows casting spells with AttributesEx7 & SPELL_ATTR7_IS_CHEAT_SPELL
-};
-
-/// Non Player Character flags
-enum NPCFlags : uint32
-{
-    UNIT_NPC_FLAG_NONE               = 0x00000000,
-    UNIT_NPC_FLAG_GOSSIP             = 0x00000001,       // 100%
-    UNIT_NPC_FLAG_QUESTGIVER         = 0x00000002,       // 100%
-    UNIT_NPC_FLAG_UNK1               = 0x00000004,
-    UNIT_NPC_FLAG_UNK2               = 0x00000008,
-    UNIT_NPC_FLAG_TRAINER            = 0x00000010,       // 100%
-    UNIT_NPC_FLAG_TRAINER_CLASS      = 0x00000020,       // 100%
-    UNIT_NPC_FLAG_TRAINER_PROFESSION = 0x00000040,       // 100%
-    UNIT_NPC_FLAG_VENDOR             = 0x00000080,       // 100%
-    UNIT_NPC_FLAG_VENDOR_AMMO        = 0x00000100,       // 100%, general goods vendor
-    UNIT_NPC_FLAG_VENDOR_FOOD        = 0x00000200,       // 100%
-    UNIT_NPC_FLAG_VENDOR_POISON      = 0x00000400,       // guessed
-    UNIT_NPC_FLAG_VENDOR_REAGENT     = 0x00000800,       // 100%
-    UNIT_NPC_FLAG_REPAIR             = 0x00001000,       // 100%
-    UNIT_NPC_FLAG_FLIGHTMASTER       = 0x00002000,       // 100%
-    UNIT_NPC_FLAG_SPIRITHEALER       = 0x00004000,       // guessed
-    UNIT_NPC_FLAG_SPIRITGUIDE        = 0x00008000,       // guessed
-    UNIT_NPC_FLAG_INNKEEPER          = 0x00010000,       // 100%
-    UNIT_NPC_FLAG_BANKER             = 0x00020000,       // 100%
-    UNIT_NPC_FLAG_PETITIONER         = 0x00040000,       // 100% 0xC0000 = guild petitions, 0x40000 = arena team petitions
-    UNIT_NPC_FLAG_TABARDDESIGNER     = 0x00080000,       // 100%
-    UNIT_NPC_FLAG_BATTLEMASTER       = 0x00100000,       // 100%
-    UNIT_NPC_FLAG_AUCTIONEER         = 0x00200000,       // 100%
-    UNIT_NPC_FLAG_STABLEMASTER       = 0x00400000,       // 100%
-    UNIT_NPC_FLAG_GUILD_BANKER       = 0x00800000,       // cause client to send 997 opcode
-    UNIT_NPC_FLAG_SPELLCLICK         = 0x01000000,       // cause client to send 1015 opcode (spell click)
-    UNIT_NPC_FLAG_PLAYER_VEHICLE     = 0x02000000,       // players with mounts that have vehicle data should have it set
-    UNIT_NPC_FLAG_MAILBOX            = 0x04000000,       // 100%
-    UNIT_NPC_FLAG_REFORGER           = 0x08000000,       // reforging
-    UNIT_NPC_FLAG_TRANSMOGRIFIER     = 0x10000000,       // transmogrification
-    UNIT_NPC_FLAG_VAULTKEEPER        = 0x20000000,       // void storage
-    UNIT_NPC_FLAG_WILDPET_CAPTURABLE = 0x40000000,       // wild pet
-    UNIT_NPC_FLAG_BLACK_MARKET       = 0x80000000        // black market auction house
-
-};
 
 enum NPCFlags2
 {
@@ -714,87 +548,8 @@ enum NPCFlags2
     UNIT_NPC_FLAG2_ITEM_UPGRADE      = 0x00000001,    // Item Upgrade
 };
 
-enum MovementFlags
-{
-    MOVEMENTFLAG_NONE = 0x00000000,
-    MOVEMENTFLAG_FORWARD = 0x00000001,
-    MOVEMENTFLAG_BACKWARD = 0x00000002,
-    MOVEMENTFLAG_STRAFE_LEFT = 0x00000004,
-    MOVEMENTFLAG_STRAFE_RIGHT = 0x00000008,
-    MOVEMENTFLAG_LEFT = 0x00000010,
-    MOVEMENTFLAG_RIGHT = 0x00000020,
-    MOVEMENTFLAG_PITCH_UP = 0x00000040,
-    MOVEMENTFLAG_PITCH_DOWN = 0x00000080,
-    MOVEMENTFLAG_WALKING = 0x00000100,               // Walking
-    MOVEMENTFLAG_DISABLE_GRAVITY = 0x00000200,               // Former MOVEMENTFLAG_LEVITATING. This is used when walking is not possible.
-    MOVEMENTFLAG_ROOT = 0x00000400,               // Must not be set along with MOVEMENTFLAG_MASK_MOVING
-    MOVEMENTFLAG_FALLING = 0x00000800,               // damage dealt on that type of falling
-    MOVEMENTFLAG_FALLING_FAR = 0x00001000,
-    MOVEMENTFLAG_PENDING_STOP = 0x00002000,
-    MOVEMENTFLAG_PENDING_STRAFE_STOP = 0x00004000,
-    MOVEMENTFLAG_PENDING_FORWARD = 0x00008000,
-    MOVEMENTFLAG_PENDING_BACKWARD = 0x00010000,
-    MOVEMENTFLAG_PENDING_STRAFE_LEFT = 0x00020000,
-    MOVEMENTFLAG_PENDING_STRAFE_RIGHT = 0x00040000,
-    MOVEMENTFLAG_PENDING_ROOT = 0x00080000,
-    MOVEMENTFLAG_SWIMMING = 0x00100000,               // appears with fly flag also
-    MOVEMENTFLAG_ASCENDING = 0x00200000,               // press "space" when flying
-    MOVEMENTFLAG_DESCENDING = 0x00400000,
-    MOVEMENTFLAG_CAN_FLY = 0x00800000,               // Appears when unit can fly AND also walk
-    MOVEMENTFLAG_FLYING = 0x01000000,               // unit is actually flying. pretty sure this is only used for players. creatures use disable_gravity
-    MOVEMENTFLAG_SPLINE_ELEVATION = 0x02000000,               // used for flight paths
-    MOVEMENTFLAG_WATERWALKING = 0x04000000,               // prevent unit from falling through water
-    MOVEMENTFLAG_FALLING_SLOW = 0x08000000,               // active rogue safe fall spell (passive)
-    MOVEMENTFLAG_HOVER = 0x10000000,               // hover, cannot jump
-    MOVEMENTFLAG_DISABLE_COLLISION = 0x20000000,
 
-    /// @todo Check if PITCH_UP and PITCH_DOWN really belong here..
-    MOVEMENTFLAG_MASK_MOVING =
-    MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD | MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT |
-    MOVEMENTFLAG_PITCH_UP | MOVEMENTFLAG_PITCH_DOWN | MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR | MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING |
-    MOVEMENTFLAG_SPLINE_ELEVATION,
 
-    MOVEMENTFLAG_MASK_TURNING =
-    MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT,
-
-    MOVEMENTFLAG_MASK_MOVING_FLY =
-    MOVEMENTFLAG_FLYING | MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING,
-
-    // Movement flags allowed for creature in CreateObject - we need to keep all other enabled serverside
-    // to properly calculate all movement
-    MOVEMENTFLAG_MASK_CREATURE_ALLOWED =
-    MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_ROOT | MOVEMENTFLAG_SWIMMING |
-    MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_WATERWALKING | MOVEMENTFLAG_FALLING_SLOW | MOVEMENTFLAG_HOVER,
-
-    /// @todo if needed: add more flags to this masks that are exclusive to players
-    MOVEMENTFLAG_MASK_PLAYER_ONLY =
-    MOVEMENTFLAG_FLYING,
-
-    /// Movement flags that have change status opcodes associated for players
-    MOVEMENTFLAG_MASK_HAS_PLAYER_STATUS_OPCODE = MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_ROOT |
-    MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_WATERWALKING | MOVEMENTFLAG_FALLING_SLOW | MOVEMENTFLAG_HOVER
-};
-
-enum MovementFlags2
-{
-    MOVEMENTFLAG2_NONE = 0x00000000,
-    MOVEMENTFLAG2_NO_STRAFE = 0x00000001,
-    MOVEMENTFLAG2_NO_JUMPING = 0x00000002,
-    MOVEMENTFLAG2_FULL_SPEED_TURNING = 0x00000004,
-    MOVEMENTFLAG2_FULL_SPEED_PITCHING = 0x00000008,
-    MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING = 0x00000010,
-    MOVEMENTFLAG2_UNK5 = 0x00000020,
-    MOVEMENTFLAG2_UNK6 = 0x00000040,
-    MOVEMENTFLAG2_UNK7 = 0x00000080,
-    MOVEMENTFLAG2_UNK8 = 0x00000100,
-    MOVEMENTFLAG2_UNK9 = 0x00000200,
-    MOVEMENTFLAG2_CAN_SWIM_TO_FLY_TRANS = 0x00000400,
-    MOVEMENTFLAG2_UNK11 = 0x00000800,
-    MOVEMENTFLAG2_UNK12 = 0x00001000,
-    MOVEMENTFLAG2_INTERPOLATED_MOVEMENT = 0x00002000,
-    MOVEMENTFLAG2_INTERPOLATED_TURNING = 0x00004000,
-    MOVEMENTFLAG2_INTERPOLATED_PITCHING = 0x00008000
-};
 
 enum UnitTypeMask
 {
@@ -1257,99 +1012,87 @@ enum ActionBarIndex
 
 #define MAX_UNIT_ACTION_BAR_INDEX (ACTION_BAR_INDEX_END-ACTION_BAR_INDEX_START)
 
-struct CharmInfo
+struct TC_GAME_API CharmInfo
 {
     public:
-    explicit CharmInfo(Unit* unit);
-    ~CharmInfo();
-    void RestoreState();
-    uint32 GetPetNumber() const
-    {
-        return _petnumber;
-    }
-    void SetPetNumber(uint32 petnumber, bool statwindow);
+        explicit CharmInfo(Unit* unit);
+        ~CharmInfo();
+        void RestoreState();
+        uint32 GetPetNumber() const { return _petnumber; }
+        void SetPetNumber(uint32 petnumber, bool statwindow);
 
-    void SetCommandState(CommandStates st)
-    {
-        _CommandState = st;
-    }
-    CommandStates GetCommandState() const
-    {
-        return _CommandState;
-    }
-    bool HasCommandState(CommandStates state) const
-    {
-        return (_CommandState == state);
-    }
+        void SetCommandState(CommandStates st) { _CommandState = st; }
+        CommandStates GetCommandState() const { return _CommandState; }
+        bool HasCommandState(CommandStates state) const { return (_CommandState == state); }
 
-    void InitPossessCreateSpells();
-    void InitCharmCreateSpells();
-    void InitPetActionBar();
-    void InitEmptyActionBar(bool withAttack = true);
+        void InitPossessCreateSpells();
+        void InitCharmCreateSpells();
+        void InitPetActionBar();
+        void InitEmptyActionBar(bool withAttack = true);
 
-    //return true if successful
-    bool AddSpellToActionBar(SpellInfo const* spellInfo, ActiveStates newstate = ACT_DECIDE);
-    bool RemoveSpellFromActionBar(uint32 spell_id);
-    void LoadPetActionBar(const std::string& data);
-    void BuildActionBar(WorldPacket* data);
-    void SetSpellAutocast(SpellInfo const* spellInfo, bool state);
-    void SetActionBar(uint8 index, uint32 spellOrAction, ActiveStates type)
-    {
-        PetActionBar [index].SetActionAndType(spellOrAction, type);
-    }
-    UnitActionBarEntry const* GetActionBarEntry(uint8 index) const
-    {
-        return &(PetActionBar [index]);
-    }
+        //return true if successful
+        bool AddSpellToActionBar(SpellInfo const* spellInfo, ActiveStates newstate = ACT_DECIDE, uint8 preferredSlot = 0);
+        bool RemoveSpellFromActionBar(uint32 spell_id);
+        void LoadPetActionBar(const std::string& data);
+        void BuildActionBar(WorldPacket* data);
+        void SetSpellAutocast(SpellInfo const* spellInfo, bool state);
+        void SetActionBar(uint8 index, uint32 spellOrAction, ActiveStates type)
+        {
+            PetActionBar [index].SetActionAndType(spellOrAction, type);
+        }
+        UnitActionBarEntry const* GetActionBarEntry(uint8 index) const
+        {
+            return &(PetActionBar [index]);
+        }
 
-    void ToggleCreatureAutocast(SpellInfo const* spellInfo, bool apply);
+        void ToggleCreatureAutocast(SpellInfo const* spellInfo, bool apply);
 
-    CharmSpellInfo* GetCharmSpell(uint8 index)
-    {
-        return &(_charmspells [index]);
-    }
+        CharmSpellInfo* GetCharmSpell(uint8 index)
+        {
+            return &(_charmspells [index]);
+        }
 
-    GlobalCooldownMgr& GetGlobalCooldownMgr()
-    {
-        return m_GlobalCooldownMgr;
-    }
+        GlobalCooldownMgr& GetGlobalCooldownMgr()
+        {
+            return m_GlobalCooldownMgr;
+        }
 
-    void SetIsCommandAttack(bool val);
-    bool IsCommandAttack();
-    void SetIsCommandFollow(bool val);
-    bool IsCommandFollow();
-    void SetIsAtStay(bool val);
-    bool IsAtStay();
-    void SetIsFollowing(bool val);
-    bool IsFollowing();
-    void SetIsReturning(bool val);
-    bool IsReturning();
-    void SaveStayPosition();
-    void SaveStayPosition(float x, float y, float z);
-    void GetStayPosition(float &x, float &y, float &z);
+        void SetIsCommandAttack(bool val);
+        bool IsCommandAttack();
+        void SetIsCommandFollow(bool val);
+        bool IsCommandFollow();
+        void SetIsAtStay(bool val);
+        bool IsAtStay();
+        void SetIsFollowing(bool val);
+        bool IsFollowing();
+        void SetIsReturning(bool val);
+        bool IsReturning();
+        void SaveStayPosition();
+        void SaveStayPosition(float x, float y, float z);
+        void GetStayPosition(float &x, float &y, float &z);
 
     private:
 
-    Unit* _unit;
-    UnitActionBarEntry PetActionBar [MAX_UNIT_ACTION_BAR_INDEX];
-    CharmSpellInfo _charmspells [4];
-    CommandStates _CommandState;
-    uint32 _petnumber;
-    bool _barInit;
+        Unit* _unit;
+        UnitActionBarEntry PetActionBar [MAX_UNIT_ACTION_BAR_INDEX];
+        CharmSpellInfo _charmspells [4];
+        CommandStates _CommandState;
+        uint32 _petnumber;
+        bool _barInit;
 
-    //for restoration after charmed
-    ReactStates     _oldReactState;
+        //for restoration after charmed
+        ReactStates     _oldReactState;
 
-    bool _isCommandAttack;
-    bool _isCommandFollow;
-    bool _isAtStay;
-    bool _isFollowing;
-    bool _isReturning;
-    float _stayX;
-    float _stayY;
-    float _stayZ;
+        bool _isCommandAttack;
+        bool _isCommandFollow;
+        bool _isAtStay;
+        bool _isFollowing;
+        bool _isReturning;
+        float _stayX;
+        float _stayY;
+        float _stayZ;
 
-    GlobalCooldownMgr m_GlobalCooldownMgr;
+        GlobalCooldownMgr m_GlobalCooldownMgr;
 };
 
 // for clearing special attacks
@@ -1412,7 +1155,7 @@ struct ProcTriggerContext
     ProcPhase Phase = ProcPhase::Hit;
 };
 
-class Unit : public WorldObject
+class TC_GAME_API Unit : public WorldObject
 {
 public:
 
@@ -1457,24 +1200,24 @@ public:
 
     typedef std::set<uint32> ComboPointHolderSet;
 
-
-
     virtual ~Unit();
 
-    UnitAI* GetAI()
-    {
-        return i_AI;
-    }
+    UnitAI* GetAI() const { return i_AI; }
     void SetAI(UnitAI* newAI)
     {
         i_AI = newAI;
     }
+
+public:
 
     void AddToWorld() override;
     void RemoveFromWorld() override;
 
     void CleanupBeforeRemoveFromMap(bool finalCleanup);
     void CleanupsBeforeDelete(bool finalCleanup = true) override;                        // used in ~Creature/~Player (or before mass creature delete to remove cross-references to already deleted units)
+
+    // uint32 GetDynamicFlags() const override { return GetUInt32Value(UNIT_DYNAMIC_FLAGS); }
+    // void ReplaceAllDynamicFlags(uint32 flag) override { SetUInt32Value(UNIT_DYNAMIC_FLAGS, flag); }
 
     DiminishingLevels GetDiminishing(DiminishingGroup  group);
     void IncrDiminishing(DiminishingGroup group);
@@ -1489,7 +1232,7 @@ public:
     float GetSpellMaxRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const;
     float GetSpellMinRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const;
 
-    virtual void Update(uint32 time);
+    virtual void Update(uint32 time) override;
 
     void UpdateAttackTimer(WeaponAttackType type, uint32 diff);
     void setAttackTimer(WeaponAttackType type, uint32 time)
@@ -1505,19 +1248,10 @@ public:
     {
         return m_attackTimer [type] == 0;
     }
-    bool HasOffhandWeapon() const;
-    bool CanDualWield() const
-    {
-        return m_canDualWield;
-    }
-    void SetCanDualWield(bool value)
-    {
-        m_canDualWield = value;
-    }
-    float GetCombatReach() const
-    {
-        return m_floatValues [UNIT_FIELD_COMBAT_REACH];
-    }
+    bool haveOffhandWeapon() const;
+    bool CanDualWield() const { return m_canDualWield; }
+    virtual void SetCanDualWield(bool value) { m_canDualWield = value; }
+    float GetCombatReach() const override { return m_floatValues [UNIT_FIELD_COMBAT_REACH]; }
     float GetMeleeReach() const;
     bool IsWithinCombatRange(const Unit* obj, float dist2compare) const;
     bool IsWithinMeleeRange(const Unit* obj, float dist = NOMINAL_MELEE_RANGE) const;
@@ -1576,60 +1310,24 @@ public:
     uint8 GetLevel() const { return uint8(GetUInt32Value(UNIT_FIELD_LEVEL)); }
     uint8 GetLevelForTarget(WorldObject const* /*target*/) const override { return GetLevel(); }
     void SetLevel(uint8 lvl, bool sendUpdate = true);
-
-    uint8 getRace() const
-    {
-        return GetByteValue(UNIT_FIELD_SEX, 0);
-    }
-    uint32 getRaceMask() const
-    {
-        return 1 << (getRace() - 1);
-    }
-    uint8 getClass() const
-    {
-        return GetByteValue(UNIT_FIELD_SEX, 1);
-    }
-    uint32 getClassMask() const
-    {
-        return 1 << (getClass() - 1);
-    }
-    uint8 getGender() const
-    {
-        return GetByteValue(UNIT_FIELD_SEX, 3);
-    }
+    // uint8 GetRace() const { return GetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_RACE); }
+    // void SetRace(uint8 race) { SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_RACE, race); }
+    uint8 GetRace() const { return GetByteValue(UNIT_FIELD_SEX, 0); }
+    void SetRace(uint8 race) { SetByteValue(UNIT_FIELD_SEX, 0, race);}
+    uint32 GetRaceMask() const { return 1 << (GetRace() - 1); }
+    uint8 GetClass() const { return GetByteValue(UNIT_FIELD_SEX, 1); }
+    void SetClass(uint8 newClass) { SetByteValue(UNIT_FIELD_SEX, 1, newClass);}
+    uint32 GetClassMask() const { return 1 << (GetClass() - 1); }
+    uint8 GetGender() const { return GetByteValue(UNIT_FIELD_SEX, 3); }
+    void SetGender(uint8 gender) { SetByteValue(UNIT_FIELD_SEX, 3, gender); }
 
     // Gender GetGender() const { return Gender(GetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER)); }
     // void SetGender(Gender gender) { SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER, gender); }
 
-    void SetRace(uint8 race)
-    {
-        SetByteValue(UNIT_FIELD_SEX, 0, race);
-    }
-    void SetClass(uint8 newClass)
-    {
-        SetByteValue(UNIT_FIELD_SEX, 1, newClass);
-    }
-    void SetGender(uint8 gender)
-    {
-        SetByteValue(UNIT_FIELD_SEX, 3, gender);
-    }
-
-    float GetStat(Stats stat) const
-    {
-        return float(GetUInt32Value(UNIT_FIELD_STATS + stat));
-    }
-    void SetStat(Stats stat, int32 val)
-    {
-        SetStatInt32Value(UNIT_FIELD_STATS + stat, val);
-    }
-    uint32 GetArmor() const
-    {
-        return GetResistance(SPELL_SCHOOL_NORMAL);
-    }
-    void SetArmor(int32 val)
-    {
-        SetResistance(SPELL_SCHOOL_NORMAL, val);
-    }
+    float GetStat(Stats stat) const { return float(GetUInt32Value(UNIT_FIELD_STATS + stat)); }
+    void SetStat(Stats stat, int32 val) { SetStatInt32Value(UNIT_FIELD_STATS + stat, val); }
+    uint32 GetArmor() const { return GetResistance(SPELL_SCHOOL_NORMAL); }
+    void SetArmor(int32 val) { SetResistance(SPELL_SCHOOL_NORMAL, val); }
 
     uint32 GetResistance(SpellSchools school) const
     {
@@ -1707,12 +1405,15 @@ public:
         return power == POWER_ECLIPSE ? -100 : 0;
     }
     int32 GetMaxPower(Powers power) const;
+    float GetPowerPct(Powers power) const { return GetMaxPower(power) ? 100.f * GetPower(power) / GetMaxPower(power) : 0.0f; }
+
     int32 CountPctFromMaxPower(Powers power, int32 pct) const
     {
         return CalculatePct(GetMaxPower(power), pct);
     }
     void SetPower(Powers power, int32 val);
     void SetMaxPower(Powers power, int32 val);
+    inline void SetFullPower(Powers power) { SetPower(power, GetMaxPower(power)); }
     // returns the change in power
     int32 ModifyPower(Powers power, int32 val);
     int32 ModifyPowerPct(Powers power, float pct, bool apply = true);
@@ -1726,24 +1427,27 @@ public:
         SetFloatValue(UNIT_FIELD_ATTACK_ROUND_BASE_TIME + att, val*m_modAttackSpeedPct [att]);
     }
 
-    SheathState GetSheath() const
-    {
-        return SheathState(GetByteValue(UNIT_FIELD_SHAPESHIFT_FORM, 0));
-    }
-    virtual void SetSheath(SheathState sheathed)
-    {
-        SetByteValue(UNIT_FIELD_SHAPESHIFT_FORM, 0, sheathed);
-    }
+    UnitFlags GetUnitFlags() const { return UnitFlags(GetUInt32Value(UNIT_FIELD_FLAGS)); }
+    bool HasUnitFlag(UnitFlags flags) const { return HasFlag(UNIT_FIELD_FLAGS, flags); }
+    void SetUnitFlag(UnitFlags flags) { SetFlag(UNIT_FIELD_FLAGS, flags); }
+    void RemoveUnitFlag(UnitFlags flags) { RemoveFlag(UNIT_FIELD_FLAGS, flags); }
+    void ReplaceAllUnitFlags(UnitFlags flags) { SetUInt32Value(UNIT_FIELD_FLAGS, flags); }
+
+    UnitFlags2 GetUnitFlags2() const { return UnitFlags2(GetUInt32Value(UNIT_FIELD_FLAGS2)); }
+    bool HasUnitFlag2(UnitFlags2 flags) const { return HasFlag(UNIT_FIELD_FLAGS2, flags); }
+    void SetUnitFlag2(UnitFlags2 flags) { SetFlag(UNIT_FIELD_FLAGS2, flags); }
+    void RemoveUnitFlag2(UnitFlags2 flags) { RemoveFlag(UNIT_FIELD_FLAGS2, flags); }
+    void ReplaceAllUnitFlags2(UnitFlags2 flags) { SetUInt32Value(UNIT_FIELD_FLAGS2, flags); }
+
+    Emote GetEmoteState() const { return Emote(GetUInt32Value(UNIT_FIELD_NPC_EMOTESTATE)); }
+    void SetEmoteState(Emote emote) { SetUInt32Value(UNIT_FIELD_NPC_EMOTESTATE, emote); }
+
+    SheathState GetSheath() const { return SheathState(GetByteValue(UNIT_FIELD_SHAPESHIFT_FORM, 0)); }
+    virtual void SetSheath(SheathState sheathed) { SetByteValue(UNIT_FIELD_SHAPESHIFT_FORM, 0, sheathed); }
 
     // faction template id
-    uint32 getFaction() const
-    {
-        return GetUInt32Value(UNIT_FIELD_FACTION_TEMPLATE);
-    }
-    void setFaction(uint32 faction)
-    {
-        SetUInt32Value(UNIT_FIELD_FACTION_TEMPLATE, faction);
-    }
+    uint32 GetFaction() const { return GetUInt32Value(UNIT_FIELD_FACTION_TEMPLATE); }
+    void SetFaction(uint32 faction) { SetUInt32Value(UNIT_FIELD_FACTION_TEMPLATE, faction); }
     FactionTemplateEntry const* GetFactionTemplateEntry() const;
 
     ReputationRank GetReactionTo(Unit const* target) const;
@@ -1773,11 +1477,11 @@ public:
     bool IsStandState() const;
     void SetStandState(uint8 state);
 
-    void  SetStandFlags(uint8 flags)
+    void SetStandFlags(uint8 flags)
     {
         SetByteFlag(UNIT_FIELD_ANIM_TIER, 2, flags);
     }
-    void  RemoveStandFlags(uint8 flags)
+    void RemoveStandFlags(uint8 flags)
     {
         RemoveByteFlag(UNIT_FIELD_ANIM_TIER, 2, flags);
     }
@@ -1785,14 +1489,9 @@ public:
     UnitAnimationTier GetAnimationTier() const { return (UnitAnimationTier)GetByteValue(UNIT_FIELD_ANIM_TIER, 3); }
     void SetAnimationTier(UnitAnimationTier tier) { SetByteValue(UNIT_FIELD_ANIM_TIER, 3, (uint8)tier); }
 
-    bool IsMounted() const
-    {
-        return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT);
-    }
-    uint32 GetMountID() const
-    {
-        return GetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID);
-    }
+    bool IsMounted() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT); }
+    uint32 GetMountDisplayId() const { return GetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID); }
+    void SetMountDisplayId(uint32 mountDisplayId) { SetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID, mountDisplayId); }
     void Mount(uint32 mount, uint32 vehicleId = 0, uint32 creatureEntry = 0);
     void Dismount();
     MountCapabilityEntry const* GetMountCapability(uint32 mountType) const;
@@ -1864,10 +1563,13 @@ public:
 
     MeleeHitOutcome RollMeleeOutcomeAgainst(const Unit* victim, WeaponAttackType attType) const;
 
-    bool IsVendor() const
-    {
-        return HasFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR);
-    }
+    NPCFlags GetNpcFlags() const { return NPCFlags(GetUInt32Value(UNIT_FIELD_NPC_FLAGS)); }
+    bool HasNpcFlag(NPCFlags flags) const { return HasFlag(UNIT_FIELD_NPC_FLAGS, flags) != 0; }
+    void SetNpcFlag(NPCFlags flags) { SetFlag(UNIT_FIELD_NPC_FLAGS, flags); }
+    void RemoveNpcFlag(NPCFlags flags) { RemoveFlag(UNIT_FIELD_NPC_FLAGS, flags); }
+    void ReplaceAllNpcFlags(NPCFlags flags) { SetUInt32Value(UNIT_FIELD_NPC_FLAGS, flags); } // UNIT_NPC_FLAGS
+
+    bool IsVendor() const { return HasFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR); }
     bool IsTrainer() const
     {
         return HasFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_TRAINER);
@@ -1944,10 +1646,7 @@ public:
     void ResetPvECombatTimer() { m_combatTimerPvE = 0; }
 
     bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName, uint32 familyFlags) const;
-    bool virtual HasSpell(uint32 /*spellID*/) const
-    {
-        return false;
-    }
+    bool virtual HasSpell(uint32 /*spellID*/) const { return false; }
 
     bool HasCrowdControlAuraType(AuraType type, uint32 excludeAura = 0, uint32 dispelType = 0) const;
     bool HasCrowdControlAura(Unit* excludeCasterChannel = NULL, uint32 dispelType = 0) const;
@@ -1984,10 +1683,11 @@ public:
     bool IsValidAssistTarget(Unit const* target) const;
     bool _IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) const;
 
-    virtual bool IsInWater() const;
-    virtual bool IsUnderWater() const;
-    virtual void UpdateUnderwaterState(Map* m, float x, float y, float z);
+    bool IsInWater() const;
+    bool IsUnderWater() const;
     bool isInAccessiblePlaceFor(Creature const* c) const;
+
+    bool IsInteractionAllowedWhileHostile() const { return HasUnitFlag2(UNIT_FLAG2_ALLOW_ENEMY_INTERACT); }
 
     void SendHealSpellLog(Unit* victim, uint32 SpellID, uint32 Damage, uint32 OverHeal, uint32 Absorb, bool critical = false);
     int32 HealBySpell(Unit* victim, SpellInfo const* spellInfo, uint32 addHealth, bool critical = false);
@@ -2047,7 +1747,7 @@ public:
     void BuildTeleportUpdateData(WorldPacket* data);
     virtual bool UpdatePosition(float x, float y, float z, float ang, bool teleport = false);
     // returns true if unit's position really changed
-    bool UpdatePosition(const Position &pos, bool teleport = false);
+    virtual bool UpdatePosition(const Position &pos, bool teleport = false);
     void UpdateOrientation(float orientation);
     void UpdateHeight(float newZ);
 
@@ -2207,10 +1907,7 @@ public:
     bool isPossessing() const;
     bool isPossessing(Unit* u) const;
 
-    CharmInfo* GetCharmInfo()
-    {
-        return m_charmInfo;
-    }
+    CharmInfo* GetCharmInfo() { return m_charmInfo; }
     CharmInfo* InitCharmInfo();
     void DeleteCharmInfo();
     void UpdateCharmAI();
@@ -2282,7 +1979,7 @@ public:
     void RemoveAurasDueToItemSpell(uint32 spellId, uint64 castItemGuid);
     void RemoveAurasByType(AuraType auraType, uint64 casterGUID = 0, Aura* except = NULL, bool negative = true, bool positive = true);
     void RemoveAurasByTypeOnImmunity(AuraType auraType);
-    void RemoveBoundAuras(uint32 newPhase = 0x0);
+    void RemoveBoundAuras(uint32 newPhase = 0x0, bool phaseid = false);
     void RemoveAurasWithInterruptFlags(SpellAuraInterruptFlags flag, uint32 except = 0, SpellInfo const* bySpell = nullptr)
     {
         RemoveAurasWithInterruptFlags(flag64{ uint32(flag), 0 }, except, bySpell);
@@ -2381,6 +2078,8 @@ public:
     float GetTotalAuraMultiplierByAffectMask(AuraType auratype, SpellInfo const* affectedSpell) const;
     int32 GetMaxPositiveAuraModifierByAffectMask(AuraType auratype, SpellInfo const* affectedSpell) const;
     int32 GetMaxNegativeAuraModifierByAffectMask(AuraType auratype, SpellInfo const* affectedSpell) const;
+
+    void UpdateResistanceBuffModsMod(SpellSchools school);
 
     template <class Cond>
     float GetTotalAuraMultiplier(AuraType auraType, Cond cond) const;
@@ -2489,25 +2188,33 @@ public:
     void Schedule(TimeValue const& timer, std::function<void(Unit*)> const& func) { m_Events.Schedule(timer.ToMilliseconds(), std::bind(func, this)); }
 
     // stat system
-    bool HandleStatModifier(UnitMods unitMod, UnitModifierType modifierType, float amount, bool apply);
-    void SetModifierValue(UnitMods unitMod, UnitModifierType modifierType, float value)
-    {
-        m_auraModifiersGroup [unitMod] [modifierType] = value;
-    }
-    float GetModifierValue(UnitMods unitMod, UnitModifierType modifierType) const;
+    void HandleStatFlatModifier(UnitMods unitMod, UnitModifierFlatType modifierType, float amount, bool apply);
+    void ApplyStatPctModifier(UnitMods unitMod, UnitModifierPctType modifierType, float amount);
+
+    void SetStatFlatModifier(UnitMods unitMod, UnitModifierFlatType modifierType, float val);
+    void SetStatPctModifier(UnitMods unitMod, UnitModifierPctType modifierType, float val);
+
+    float GetFlatModifierValue(UnitMods unitMod, UnitModifierFlatType modifierType) const;
+    float GetPctModifierValue(UnitMods unitMod, UnitModifierPctType modifierType) const;
+
+    void UpdateUnitMod(UnitMods unitMod);
+
+    // only players have item requirements
+    virtual bool CheckAttackFitToAuraRequirement(WeaponAttackType /*attackType*/, AuraEffect const* /*aurEff*/) const { return true; }
+
+    virtual void UpdateDamageDoneMods(WeaponAttackType attackType, int32 skipEnchantSlot = -1);
+    void UpdateAllDamageDoneMods();
+
+    void UpdateDamagePctDoneMods(WeaponAttackType attackType);
+    void UpdateAllDamagePctDoneMods();
+
     float GetTotalStatValue(Stats stat) const;
     float GetTotalAuraModValue(UnitMods unitMod) const;
     SpellSchools GetSpellSchoolByAuraGroup(UnitMods unitMod) const;
     Stats GetStatByAuraGroup(UnitMods unitMod) const;
     Powers GetPowerTypeByAuraGroup(UnitMods unitMod) const;
-    bool CanModifyStats() const
-    {
-        return m_canModifyStats;
-    }
-    void SetCanModifyStats(bool modifyStats)
-    {
-        m_canModifyStats = modifyStats;
-    }
+    bool CanModifyStats() const { return m_canModifyStats; }
+    void SetCanModifyStats(bool modifyStats) { m_canModifyStats = modifyStats; }
     virtual bool UpdateStats(Stats stat) = 0;
     virtual bool UpdateAllStats() = 0;
     virtual void UpdateResistances(uint32 school) = 0;
@@ -2515,7 +2222,7 @@ public:
     virtual void UpdateMaxHealth() = 0;
     virtual void UpdateMaxPower(Powers power) = 0;
     virtual void UpdateAttackPowerAndDamage(bool ranged = false) = 0;
-    virtual void UpdateDamagePhysical(WeaponAttackType attType) = 0;
+    virtual void UpdateDamagePhysical(WeaponAttackType attType);
     void UpdateCastingSpeed();
     void UpdateAttackSpeed(WeaponAttackType att);
     void UpdateHasteRegen();
@@ -2523,22 +2230,22 @@ public:
     // "True" haste. Used for power regen, rppm and global/normal cooldown modifications
     float GetHasteMultiplier() const;
     float GetTotalAttackPowerValue(WeaponAttackType attType) const;
-    float GetWeaponDamageRange(WeaponAttackType attType, WeaponDamageRange type) const;
-    void SetBaseWeaponDamage(WeaponAttackType attType, WeaponDamageRange damageRange, float value)
-    {
-        m_weaponDamage [attType] [damageRange] = value;
-    }
-
+    float GetWeaponDamageRange(WeaponAttackType attType, WeaponDamageRange type, uint8 damageIndex = 0) const;
+    void SetBaseWeaponDamage(WeaponAttackType attType, WeaponDamageRange damageRange, float value) { m_weaponDamage [attType] [damageRange] = value; }
+    virtual void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, uint8 damageIndex) const = 0;
+    
     bool isInFrontInMap(Unit const* target, float distance, float arc = M_PI) const;
     bool isInBackInMap(Unit const* target, float distance, float arc = M_PI) const;
 
     // Visibility system
     bool IsVisible() const;
     void SetVisible(bool x);
+    void ClearPhases(bool update = false);
+    bool SetPhased(uint32 id, bool update, bool apply);
 
     // common function for visibility checks for player/creatures with detection code
-    void SetPhaseMask(uint32 newPhaseMask, bool update);// overwrite WorldObject::SetPhaseMask
-    void UpdateObjectVisibility(bool forced = true);
+    void SetPhaseMask(uint32 newPhaseMask, bool update) override;// overwrite WorldObject::SetPhaseMask
+    void UpdateObjectVisibility(bool forced = true) override;
 
     SpellImmuneList m_spellImmune [MAX_SPELL_IMMUNITY];
     uint32 m_lastSanctuaryTime;
@@ -2628,7 +2335,7 @@ public:
     void RemoveAreaTrigger(AuraEffect const* eff);
     void RemoveAllAreasTrigger();
 
-    void AddAuraAreaTrigger(IAreaTrigger* interface);
+    void AddAuraAreaTrigger(IAreaTrigger* interfaceAreaTrigger);
     IAreaTrigger* RemoveAuraAreaTrigger(AuraEffect const* auraEffect, AuraApplication const* auraApplication);
 
     GameObject* GetGameObject(uint32 spellId) const;
@@ -2637,8 +2344,8 @@ public:
     void RemoveGameObject(uint32 spellid, bool del);
     void RemoveAllGameObjects();
 
-    uint32 CalculateDamage(WeaponAttackType attType, bool normalized, bool addTotalPct);
-    float GetAPMultiplier(WeaponAttackType attType, bool normalized);
+    uint32 CalculateDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, uint8 itemDamagesMask = 0) const;
+    float GetAPMultiplier(WeaponAttackType attType, bool normalized) const;
     void ModifyAuraState(AuraStateType flag, bool apply);
     uint32 BuildAuraStateUpdateForTarget(Unit* target) const;
     bool HasAuraState(AuraStateType flag, SpellInfo const* spellProto = NULL, Unit const* Caster = NULL) const;
@@ -2718,33 +2425,17 @@ public:
     static Player* GetPlayer(WorldObject& object, uint64 guid);
     static Creature* GetCreature(WorldObject& object, uint64 guid);
 
-    MotionMaster* GetMotionMaster()
-    {
-        return i_motionMaster;
-    }
-    const MotionMaster* GetMotionMaster() const
-    {
-        return i_motionMaster;
-    }
+    MotionMaster* GetMotionMaster() { return i_motionMaster; }
+    MotionMaster const* GetMotionMaster() const { return i_motionMaster; }
 
-    bool IsStopped() const
-    {
-        return !(HasUnitState(UNIT_STATE_MOVING));
-    }
+    bool IsStopped() const { return !(HasUnitState(UNIT_STATE_MOVING)); }
     void StopMoving();
+    void PauseMovement(uint32 timer = 0, uint8 slot = 0, bool forced = true); // timer in ms
+    void ResumeMovement(uint32 timer = 0, uint8 slot = 0); // timer in ms
 
-    void AddUnitMovementFlag(uint32 f)
-    {
-        m_movementInfo.AddMovementFlag(f);
-    }
-    void RemoveUnitMovementFlag(uint32 f)
-    {
-        m_movementInfo.RemoveMovementFlag(f);
-    }
-    bool HasUnitMovementFlag(uint32 f) const
-    {
-        return m_movementInfo.HasMovementFlag(f);
-    }
+    void AddUnitMovementFlag(uint32 f) { m_movementInfo.AddMovementFlag(f); }
+    void RemoveUnitMovementFlag(uint32 f) { m_movementInfo.RemoveMovementFlag(f); }
+    bool HasUnitMovementFlag(uint32 f) const { return m_movementInfo.HasMovementFlag(f); }
     uint32 GetUnitMovementFlags() const
     {
         return m_movementInfo.GetMovementFlags();
@@ -2865,7 +2556,7 @@ public:
     bool IsOnVehicle(const Unit* vehicle) const;
     Unit* GetVehicleBase()  const;
     Creature* GetVehicleCreatureBase() const;
-    uint64 GetTransGUID() const;
+    uint64 GetTransGUID() const override;
     /// Returns the transport this unit is on directly (if on vehicle and transport, return vehicle)
     TransportBase* GetDirectTransport() const;
 
@@ -2882,20 +2573,19 @@ public:
 
     void WriteMovementInfo(WorldPacket& data, Movement::ExtraMovementStatusElement* extras = NULL);
 
-    bool isMoving() const
-    {
-        return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_MOVING);
-    }
-    bool isTurning() const
-    {
-        return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_TURNING);
-    }
+    bool isMoving() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_MOVING); }
+    bool isTurning() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_TURNING); }
     virtual bool CanFly() const = 0;
-    bool IsFlying() const
-    {
-        return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY);
-    }
+    bool IsFlying() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY); }
     bool IsFalling() const;
+    virtual bool CanEnterWater() const = 0;
+    virtual bool CanSwim() const;    
+
+    float GetHoverOffset() const
+    {
+        return HasUnitMovementFlag(MOVEMENTFLAG_HOVER) ? GetFloatValue(UNIT_FIELD_HOVER_HEIGHT) : 0.0f;
+    }
+
     bool IsHovering() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_HOVER); }
 
     void RewardRage(float baseRage, bool attacker);
@@ -2917,43 +2607,24 @@ public:
         return m_duringRemoveFromWorld;
     }
 
-    Pet* ToPet()
-    {
-        if (IsPet()) return reinterpret_cast<Pet*>(this); else return NULL;
-    }
-    Pet const* ToPet() const
-    {
-        if (IsPet()) return reinterpret_cast<Pet const*>(this); else return NULL;
-    }
+    Pet* ToPet() { if (IsPet()) return reinterpret_cast<Pet*>(this); else return nullptr; }
+    Pet const* ToPet() const { if (IsPet()) return reinterpret_cast<Pet const*>(this); else return nullptr; }
 
-    Totem* ToTotem()
-    {
-        if (IsTotem()) return reinterpret_cast<Totem*>(this); else return NULL;
-    }
-    Totem const* ToTotem() const
-    {
-        if (IsTotem()) return reinterpret_cast<Totem const*>(this); else return NULL;
-    }
+    Totem* ToTotem() { if (IsTotem()) return reinterpret_cast<Totem*>(this); else return nullptr; }
+    Totem const* ToTotem() const { if (IsTotem()) return reinterpret_cast<Totem const*>(this); else return nullptr; }
 
-    TempSummon* ToTempSummon()
-    {
-        if (IsSummon()) return reinterpret_cast<TempSummon*>(this); else return NULL;
-    }
-    TempSummon const* ToTempSummon() const
-    {
-        if (IsSummon()) return reinterpret_cast<TempSummon const*>(this); else return NULL;
-    }
+    TempSummon* ToTempSummon() { if (IsSummon()) return reinterpret_cast<TempSummon*>(this); else return nullptr; }
+    TempSummon const* ToTempSummon() const { if (IsSummon()) return reinterpret_cast<TempSummon const*>(this); else return nullptr; }
 
-    uint64 GetTarget() const
-    {
-        return GetUInt64Value(UNIT_FIELD_TARGET);
-    }
+    uint64 GetTarget() const { return GetUInt64Value(UNIT_FIELD_TARGET); }
     virtual void SetTarget(uint64 /*guid*/) = 0;
 
     void OnRelocated();
 
     // Movement info
     Movement::MoveSpline* movespline;
+
+    float GetCollisionHeight() const override;
 
     uint32 GetMovementCounter() const
     {
@@ -3012,9 +2683,9 @@ public:
     void JumpWithDelay(uint32 delay, float x, float y, float z, float speedXY, float speedZ, uint32 id);
 
 protected:
-    explicit Unit(bool isWorldObject);
+    explicit Unit (bool isWorldObject);
 
-    void BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, Player* target) const;
+    void BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, Player* target) const override;
 
     UnitAI* i_AI, *i_disabledAI;
 
@@ -3069,7 +2740,8 @@ protected:
     std::map<AuraType, float> m_totalAuraEffectValue;
     flag64 m_interruptMask;
 
-    float m_auraModifiersGroup [UNIT_MOD_END] [MODIFIER_TYPE_END];
+    float m_auraFlatModifiersGroup[UNIT_MOD_END][MODIFIER_TYPE_FLAT_END];
+    float m_auraPctModifiersGroup[UNIT_MOD_END][MODIFIER_TYPE_PCT_END];    
     float m_weaponDamage [MAX_ATTACK] [2];
     bool m_canModifyStats;
     VisibleAuraMap m_visibleAuras;
@@ -3092,10 +2764,13 @@ protected:
     uint32 m_unitTypeMask;
     LiquidTypeEntry const* _lastLiquid;
 
-    bool IsAlwaysVisibleFor(WorldObject const* seer) const;
-    bool IsAlwaysDetectableFor(WorldObject const* seer) const;
+    bool IsAlwaysVisibleFor(WorldObject const* seer) const override;
+    bool IsAlwaysDetectableFor(WorldObject const* seer) const override;
 
     void DisableSpline();
+
+    void ProcessPositionDataChanged(PositionFullTerrainStatus const& data) override;
+    virtual void ProcessTerrainStatusUpdate(ZLiquidStatus oldLiquidStatus, Optional<LiquidData> const& newLiquidData);
 
 private:
     bool IsTriggeredAtSpellProcEvent(Unit* victim, ProcTriggeredData& triggerData, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active);
@@ -3173,8 +2848,17 @@ namespace Trinity
     class PowerPctOrderPred
     {
         public:
-            PowerPctOrderPred(Powers power, bool ascending = true) : m_power(power), m_ascending(ascending)
-            { }
+            PowerPctOrderPred(Powers power, bool ascending = true) : m_power(power), m_ascending(ascending) { }
+
+            bool operator()(WorldObject const* objA, WorldObject const* objB) const
+            {
+                Unit const* a = objA->ToUnit();
+                Unit const* b = objB->ToUnit();
+                float rA = a ? a->GetPowerPct(m_power) : 0.0f;
+                float rB = b ? b->GetPowerPct(m_power) : 0.0f;
+                return m_ascending ? rA < rB : rA > rB;
+            }
+
             bool operator() (const Unit* a, const Unit* b) const
             {
                 float rA = a->GetMaxPower(m_power) ? float(a->GetPower(m_power)) / float(a->GetMaxPower(m_power)) : 0.0f;
@@ -3190,8 +2874,17 @@ namespace Trinity
     class HealthPctOrderPred
     {
         public:
-            HealthPctOrderPred(bool ascending = true) : m_ascending(ascending)
-            { }
+            HealthPctOrderPred(bool ascending = true) : m_ascending(ascending) { }
+
+            bool operator()(WorldObject const* objA, WorldObject const* objB) const
+            {
+                Unit const* a = objA->ToUnit();
+                Unit const* b = objB->ToUnit();
+                float rA = (a && a->GetMaxHealth()) ? float(a->GetHealth()) / float(a->GetMaxHealth()) : 0.0f;
+                float rB = (b && b->GetMaxHealth()) ? float(b->GetHealth()) / float(b->GetMaxHealth()) : 0.0f;
+                return m_ascending ? rA < rB : rA > rB;
+            }
+
             bool operator() (const Unit* a, const Unit* b) const
             {
                 float rA = a->GetMaxHealth() ? float(a->GetHealth()) / float(a->GetMaxHealth()) : 0.0f;

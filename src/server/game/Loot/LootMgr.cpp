@@ -28,6 +28,7 @@
 #include "Containers.h"
 #include "LootLockoutMap.h"
 #include "Guild.h"
+#include "Random.h"
 
 static Rates const qualityToRate[MAX_ITEM_QUALITY] =
 {
@@ -106,7 +107,7 @@ class LootTemplate::LootGroup                               // A set of loot def
         void CheckLootRefs(LootTemplateMap const& store, LootIdSet* ref_set) const;
         LootStoreItemList* GetExplicitlyChancedItemList() { return &ExplicitlyChanced; }
         LootStoreItemList* GetEqualChancedItemList() { return &EqualChanced; }
-        void CopyConditions(ConditionList conditions);
+        void CopyConditions(ConditionContainer conditions);
     private:
         LootStoreItemList ExplicitlyChanced;                // Entries with chances defined in DB
         LootStoreItemList EqualChanced;                     // Zero chances - every entry takes the same chance
@@ -240,7 +241,7 @@ void LootStore::ResetConditions()
 {
     for (LootTemplateMap::iterator itr = m_LootTemplates.begin(); itr != m_LootTemplates.end(); ++itr)
     {
-        ConditionList empty;
+        ConditionContainer empty;
         itr->second->CopyConditions(empty);
     }
 }
@@ -1198,7 +1199,7 @@ void Loot::generateMoneyLoot(uint32 minAmount, uint32 maxAmount)
 void Loot::DeleteLootItemFromContainerItemDB(uint32 itemID)
 {
     // Deletes a single item associated with an openable item from the DB
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEMCONTAINER_ITEM);
+    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEMCONTAINER_ITEM);
     stmt->setUInt32(0, containerID);
     stmt->setUInt32(1, itemID);
     CharacterDatabase.Execute(stmt);
@@ -1217,7 +1218,7 @@ void Loot::DeleteLootItemFromContainerItemDB(uint32 itemID)
 void Loot::DeleteLootMoneyFromContainerItemDB()
 {
     // Deletes money loot associated with an openable item from the DB
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEMCONTAINER_MONEY);
+    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEMCONTAINER_MONEY);
     stmt->setUInt32(0, containerID);
     CharacterDatabase.Execute(stmt);
 }
@@ -1927,7 +1928,7 @@ bool LootTemplate::LootGroup::HasQuestDropForPlayer(Player const* player) const
     return false;
 }
 
-void LootTemplate::LootGroup::CopyConditions(ConditionList /*conditions*/)
+void LootTemplate::LootGroup::CopyConditions(ConditionContainer /*conditions*/)
 {
     for (LootStoreItemList::iterator i = ExplicitlyChanced.begin(); i != ExplicitlyChanced.end(); ++i)
         (*i)->conditions.clear();
@@ -2041,7 +2042,7 @@ void LootTemplate::AddEntry(LootStoreItem* item)
         Entries.push_back(item);
 }
 
-void LootTemplate::CopyConditions(const ConditionList& conditions)
+void LootTemplate::CopyConditions(const ConditionContainer& conditions)
 {
     for (LootStoreItemList::iterator i = Entries.begin(); i != Entries.end(); ++i)
         (*i)->conditions.clear();
@@ -2775,9 +2776,7 @@ void PersonalLoot::Reward(Player* player)
         Item* item = Item::CreateItem(itemId, 1, player);
         player->SendDisplayToast(item, 0, 0, TOAST_TYPE_ITEM, TOAST_DISPLAY_TYPE_ITEM);
         player->StoreNewItem(item);
-        if (Group* group = player->GetGroup())
-            if (group->IsLogging())
-                group->LogEvent("Personal loot: %s by %s", Group::Format(item).c_str(), Group::Format(player).c_str());
+
         uint32 questId = m_loot->QuestTracker ? m_loot->QuestTracker : 0;
         if (questId)
             if (player->GetQuestStatus(questId) != QUEST_STATUS_REWARDED)
@@ -2881,10 +2880,6 @@ void BonusLoot::Reward(Player* player)
         player->StoreNewItem(item);
         player->SetBonusRollExtraChance(0.0f);
 
-        if (Group* group = player->GetGroup())
-            if (group->IsLogging())
-                group->LogEvent("Bonus roll loot: %s by %s", Group::Format(item).c_str(), Group::Format(player).c_str());
-
         if (Guild* guild = player->GetGuild())
             guild->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CRAFT_ITEMS_GUILD, newItem->ItemId, 1, 0, nullptr, player);
     }
@@ -2897,9 +2892,6 @@ void BonusLoot::Reward(Player* player)
         player->ModifyMoney(money);
         player->SendDisplayToast(nullptr, 0, money, TOAST_TYPE_MONEY, TOAST_DISPLAY_TYPE_ITEM, bonusLoot);
 
-        if (Group* group = player->GetGroup())
-            if (group->IsLogging())
-                group->LogEvent("Bonus roll failed, gold reward: %s by %s", Group::FormatMoney(money).c_str(), Group::Format(player).c_str());
     }
 }
 

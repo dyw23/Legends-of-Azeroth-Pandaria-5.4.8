@@ -79,7 +79,6 @@ void AddSC_mmaps_commandscript();
 void AddSC_modify_commandscript();
 void AddSC_npc_commandscript();
 void AddSC_pet_commandscript();
-void AddSC_premium_commandscript();
 void AddSC_quest_commandscript();
 void AddSC_reload_commandscript();
 void AddSC_reset_commandscript();
@@ -604,6 +603,7 @@ void AddSC_boss_xt002();
 void AddSC_boss_kologarn();
 void AddSC_boss_assembly_of_iron();
 void AddSC_boss_general_vezax();
+void AddSC_ulduar();
 void AddSC_ulduar_teleporter();
 void AddSC_boss_mimiron();
 void AddSC_boss_hodir();
@@ -1089,8 +1089,6 @@ void AddSpellScripts()
 
 void AddCommandScripts()
 {
-    AddSC_premium_commandscript();
-
     AddSC_server_commandscript();
     AddSC_account_commandscript();
     AddSC_achievement_commandscript();
@@ -1759,6 +1757,7 @@ void AddNorthrendScripts()
     AddSC_boss_general_vezax();
     AddSC_boss_assembly_of_iron();
     AddSC_boss_kologarn();
+    AddSC_ulduar();
     AddSC_ulduar_teleporter();
     AddSC_boss_mimiron();
     AddSC_boss_hodir();

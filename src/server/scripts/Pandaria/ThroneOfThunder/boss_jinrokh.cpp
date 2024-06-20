@@ -18,6 +18,7 @@
 #include "throne_of_thunder.h"
 #include "GridNotifiers.h"
 #include "Vehicle.h"
+#include "Random.h"
 
 enum eSpells
 {
@@ -228,7 +229,7 @@ class boss_jinrokh : public CreatureScript
                 });
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 events.ScheduleEvent(EVENT_STATIC_BURST, 13 * IN_MILLISECONDS);
                 events.ScheduleEvent(EVENT_FOCUSED_LIGHTNING, 7500);
@@ -240,7 +241,7 @@ class boss_jinrokh : public CreatureScript
                 if (IsHeroic())
                     events.ScheduleEvent(EVENT_IONIZATION, 60 * IN_MILLISECONDS);
 
-                _EnterCombat();
+                _JustEngagedWith();
 
                 if (instance)
                     instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
@@ -1023,17 +1024,16 @@ class spell_thundering_throw : public SpellScript
                     StatueList.sort(Trinity::ObjectDistanceOrderPred(caster));
 
                     // select farthest statue
-                    if (target = StatueList.back())
-                    {
-                        m_victim->ExitVehicle();
-                        m_victim->CastSpell(target, SPELL_THUNDERING_THROW_JUMP, true);
+                    target = StatueList.back();
+                    m_victim->ExitVehicle();
+                    m_victim->CastSpell(target, SPELL_THUNDERING_THROW_JUMP, true);
 
-                        if (target->AI())
-                        {
-                            target->AI()->DoAction(ACTION_DESTROYED);
-                            target->AI()->SetGUID(caster->GetGUID());
-                        }
+                    if (target->AI())
+                    {
+                        target->AI()->DoAction(ACTION_DESTROYED);
+                        target->AI()->SetGUID(caster->GetGUID());
                     }
+                    
                 }
             }
         }

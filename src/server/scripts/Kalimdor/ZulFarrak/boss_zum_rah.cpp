@@ -63,13 +63,13 @@ public:
 
         void Reset() override
         {
-            me->setFaction(ZUMRAH_FRIENDLY_FACTION); // areatrigger sets faction to enemy
+            me->SetFaction(ZUMRAH_FRIENDLY_FACTION); // areatrigger sets faction to enemy
             _ward80 = false;
             _ward40 = false;
             _heal30 = false;
         }
 
-        void EnterCombat(Unit* /*who*/) override
+        void JustEngagedWith(Unit* /*who*/) override
         {
             Talk(SAY_SANCT_INVADE);
             events.ScheduleEvent(EVENT_SHADOW_BOLT, 1000);

@@ -34,6 +34,7 @@
 #include "PassiveAI.h"
 #include "TotemAI.h"
 #include "Pet.h"
+#include "Random.h"
 
 enum ShamanSpells
 {
@@ -1853,7 +1854,7 @@ class spell_sha_windfury_weapon : public AuraScript
 
     Player* m_caster = nullptr;
 
-    bool Load()
+    bool Load() override
     {
         m_caster = GetOwner()->ToPlayer();
         return m_caster != nullptr;
@@ -2156,7 +2157,7 @@ class spell_sha_purification : public AuraScript
     {
         int32 amount = CalculatePct(eventInfo.GetHealInfo()->GetHeal(), 10);
         Unit* target = eventInfo.GetActionTarget();
-        int32 max = (target->GetMaxHealth() / target->GetModifierValue(UNIT_MOD_HEALTH, TOTAL_PCT) - target->GetModifierValue(UNIT_MOD_HEALTH, TOTAL_VALUE)) * 0.1f;
+        int32 max = (target->GetMaxHealth() / target->GetPctModifierValue(UNIT_MOD_HEALTH, TOTAL_PCT) - target->GetFlatModifierValue(UNIT_MOD_HEALTH, TOTAL_VALUE)) * 0.1f;
         amount = std::min(max, amount);
         if (AuraEffect* existing = target->GetAuraEffect(SPELL_SHA_ANCESTRAL_VIGOR, EFFECT_0))
         {
@@ -2256,7 +2257,7 @@ class spell_sha_flametongue_weapon : public AuraScript
 {
     PrepareAuraScript(spell_sha_flametongue_weapon);
 
-    bool Load()
+    bool Load() override
     {
         return GetUnitOwner()->GetTypeId() == TYPEID_PLAYER;
     }
@@ -2508,7 +2509,7 @@ class spell_sha_stormlash_totem : public AuraScript
         if (!player)
             return;
 
-        WeaponAttackType attack = actor->getClass() == CLASS_HUNTER ? RANGED_ATTACK : BASE_ATTACK;
+        WeaponAttackType attack = actor->GetClass() == CLASS_HUNTER ? RANGED_ATTACK : BASE_ATTACK;
         if (eventInfo.GetTypeMask() & PROC_FLAG_DONE_OFFHAND_ATTACK)
             attack = OFF_ATTACK;
 
@@ -2772,7 +2773,7 @@ struct npc_sha_spiritwalker_champion : public PassiveAI
 {
     npc_sha_spiritwalker_champion(Creature* c) : PassiveAI(c) { }
 
-    void IsSummonedBy(Unit* summoner)
+    void IsSummonedBy(Unit* summoner) override
     {
         summoner->CastSpell(me, SPELL_CLONE_ME, true);
         summoner->CastSpell(me, SPELL_COPY_WEAPONS, true);
@@ -2902,7 +2903,7 @@ struct npc_sha_lightning_elemental : public ScriptedAI
             casterMovement.Chase(target);
     }
 
-    void UpdateAI(uint32 diff)
+    void UpdateAI(uint32 diff) override
     {
         if (!UpdateVictim())
             return;
@@ -3215,7 +3216,7 @@ class spell_sha_summon_elemental_familiar : public SpellScript
             if (TempSummon* familiar = GetCaster()->GetMap()->SummonCreature(familiars[urand(0, familiars.size() - 1)], pos, sSummonPropertiesStore.LookupEntry(64)))
             {
                 familiar->SetTempSummonType(TEMPSUMMON_MANUAL_DESPAWN);
-                familiar->setFaction(GetCaster()->getFaction());
+                familiar->SetFaction(GetCaster()->GetFaction());
                 familiar->SetOwnerGUID(GetCaster()->GetGUID());
                 familiar->SetUInt64Value(UNIT_FIELD_DEMON_CREATOR, GetCaster()->GetGUID());
                 familiar->AI()->EnterEvadeMode();

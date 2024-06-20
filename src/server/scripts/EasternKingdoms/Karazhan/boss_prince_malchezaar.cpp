@@ -111,7 +111,7 @@ class netherspite_infernal : public CreatureScript
             InfernalPoint* point;
 
             void Reset() override { }
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
             void MoveInLineOfSight(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
@@ -256,7 +256,7 @@ class boss_malchezaar : public CreatureScript
                     instance->HandleGameObject(instance->GetData64(DATA_GO_NETHER_DOOR), true);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 Talk(SAY_AGGRO);
 
@@ -298,8 +298,8 @@ class boss_malchezaar : public CreatureScript
 
                 // damage
                 const CreatureTemplate* cinfo = me->GetCreatureTemplate();
-                me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg);
-                me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg);
+                // me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, cinfo->mindmg);
+                // me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, cinfo->maxdmg);
                 me->UpdateDamagePhysical(BASE_ATTACK);
             }
 
@@ -365,7 +365,7 @@ class boss_malchezaar : public CreatureScript
                 if (Creature* Infernal = me->SummonCreature(NETHERSPITE_INFERNAL, pos, TEMPSUMMON_TIMED_DESPAWN, 180000))
                 {
                     Infernal->SetDisplayId(INFERNAL_MODEL_INVISIBLE);
-                    Infernal->setFaction(me->getFaction());
+                    Infernal->SetFaction(me->GetFaction());
                     if (point)
                         CAST_AI(netherspite_infernal::netherspite_infernalAI, Infernal->AI())->point=point;
                     CAST_AI(netherspite_infernal::netherspite_infernalAI, Infernal->AI())->malchezaarGUID = me->GetGUID();
@@ -416,15 +416,15 @@ class boss_malchezaar : public CreatureScript
 
                         // damage
                         const CreatureTemplate* cinfo = me->GetCreatureTemplate();
-                        me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 2 * cinfo->mindmg);
-                        me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 2 * cinfo->maxdmg);
+                        // me->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, 2 * cinfo->mindmg);
+                        // me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 2 * cinfo->maxdmg);
                         me->UpdateDamagePhysical(BASE_ATTACK);
 
-                        me->SetBaseWeaponDamage(OFF_ATTACK, MINDAMAGE, cinfo->mindmg);
-                        me->SetBaseWeaponDamage(OFF_ATTACK, MAXDAMAGE, cinfo->maxdmg);
+                        // me->SetBaseWeaponDamage(OFF_ATTACK, MINDAMAGE, cinfo->mindmg);
+                        // me->SetBaseWeaponDamage(OFF_ATTACK, MAXDAMAGE, cinfo->maxdmg);
                         // Sigh, updating only works on main attack, do it manually....
-                        me->SetFloatValue(UNIT_FIELD_MIN_OFF_HAND_DAMAGE, cinfo->mindmg);
-                        me->SetFloatValue(UNIT_FIELD_MAX_OFF_HAND_DAMAGE, cinfo->maxdmg);
+                        // me->SetFloatValue(UNIT_FIELD_MIN_OFF_HAND_DAMAGE, cinfo->mindmg);
+                        // me->SetFloatValue(UNIT_FIELD_MAX_OFF_HAND_DAMAGE, cinfo->maxdmg);
 
                         me->SetAttackTime(OFF_ATTACK, (me->GetAttackTime(BASE_ATTACK) * 150) / 100);
                     }
@@ -450,7 +450,7 @@ class boss_malchezaar : public CreatureScript
                             if (Creature* axe = me->SummonCreature(MALCHEZARS_AXE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000))
                             {
                                 axe->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                                axe->setFaction(me->getFaction());
+                                axe->SetFaction(me->GetFaction());
                                 axes[i] = axe->GetGUID();
                                 if (target)
                                 {

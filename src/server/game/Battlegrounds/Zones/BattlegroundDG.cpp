@@ -808,7 +808,7 @@ void BattlegroundDG::EventPlayerClickedOnFlag(Player* player, GameObject* gameOb
     player->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
 }
 
-void BattlegroundDG::HandleAreaTrigger(Player* player, uint32 triggerId)
+void BattlegroundDG::HandleAreaTrigger(Player* player, uint32 triggerId, bool entered)
 {
     switch (triggerId)
     {
@@ -840,7 +840,7 @@ void BattlegroundDG::HandleAreaTrigger(Player* player, uint32 triggerId)
                 triggerId, player->GetName().c_str(), GUID_LOPART(player->GetGUID()));
             break;
         default:
-            Battleground::HandleAreaTrigger(player, triggerId);
+            Battleground::HandleAreaTrigger(player, triggerId, entered);
             break;
     }
 }

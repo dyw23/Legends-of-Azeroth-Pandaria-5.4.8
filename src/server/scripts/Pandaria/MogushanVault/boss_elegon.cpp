@@ -262,7 +262,7 @@ class boss_elegon : public CreatureScript
             void InitializeAI() override
             {
                 me->setActive(true);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_UNK_15 | UNIT_FLAG_NOT_SELECTABLE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_CAN_SWIM | UNIT_FLAG_NOT_SELECTABLE);
                 me->SetDisplayId(11686);
                 me->AddAura(SPELL_APPARITION_VISUAL, me);
                 //hardcoded
@@ -286,7 +286,7 @@ class boss_elegon : public CreatureScript
 
                 me->AddAura(SPELL_APPARITION_VISUAL, me);
 
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_UNK_15 | UNIT_FLAG_NOT_SELECTABLE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_CAN_SWIM | UNIT_FLAG_NOT_SELECTABLE);
 
                 me->RemoveAurasDueToSpell(SPELL_UNSTABLE_ENERGY);
                 me->RemoveAurasDueToSpell(SPELL_PHASE_SHIFTED);
@@ -320,7 +320,7 @@ class boss_elegon : public CreatureScript
                     instance->SetBossState(DATA_ELEGON, FAIL);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 me->SetFloatValue(UNIT_FIELD_BOUNDING_RADIUS, 24.0f);
                 me->SetFloatValue(UNIT_FIELD_COMBAT_REACH, 24.0f);
@@ -331,7 +331,7 @@ class boss_elegon : public CreatureScript
                     instance->SetBossState(DATA_ELEGON, IN_PROGRESS);
                 }
 
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_UNK_15 | UNIT_FLAG_NOT_SELECTABLE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_CAN_SWIM | UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveAurasDueToSpell(SPELL_APPARITION_VISUAL);
 
                 Talk(TALK_AGGRO);
@@ -934,7 +934,7 @@ class npc_empyreal_focus : public CreatureScript
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             }
 
-            void SpellHit(Unit* caster, SpellInfo const* spell)
+            void SpellHit(Unit* caster, SpellInfo const* spell) override
             {
                 if (spell->Id == 116598)
                     targetfocusGUID = caster->GetGUID();
@@ -1177,7 +1177,7 @@ class npc_celestial_protector : public CreatureScript
                 events.Reset();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_ARCING_ENERGY, 10000);
                 events.ScheduleEvent(EVENT_CHECK_UNIT_ON_PLATFORM, 1000);
@@ -1202,7 +1202,7 @@ class npc_celestial_protector : public CreatureScript
                     {
                         uint32 delay = 0;
                         me->PrepareChanneledCast(me->GetOrientation());
-                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_UNK_15);
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_CAN_SWIM);
                         me->m_Events.Schedule(delay += 500, 1, [this]()
                         {
                             DoCast(me, SPELL_TOTAL_ANNIHILATION);
@@ -1632,7 +1632,7 @@ class npc_infinite_energy : public CreatureScript
                             {
                                 elegon->OverrideInhabitType(INHABIT_GROUND);
                                 elegon->UpdateMovementFlags();
-                                elegon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_UNK_15 | UNIT_FLAG_NOT_SELECTABLE);
+                                elegon->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_CAN_SWIM | UNIT_FLAG_NOT_SELECTABLE);
                             }
                         }
 

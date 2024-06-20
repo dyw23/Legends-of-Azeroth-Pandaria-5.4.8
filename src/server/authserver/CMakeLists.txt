@@ -48,30 +48,29 @@ if( WIN32 )
   endif ()
 endif()
 
-include_directories(
+add_executable(authserver
+  ${authserver_SRCS}
+)
+
+target_include_directories(authserver
   PUBLIC
     ${CMAKE_BINARY_DIR}
   PRIVATE
+    common 
+    database
     ${CMAKE_SOURCE_DIR}/src/server/shared
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Database
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Debugging
+    ${CMAKE_SOURCE_DIR}/src/server/shared/Networking    
     ${CMAKE_SOURCE_DIR}/src/server/shared/Packets
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Cryptography
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Cryptography/Authentication
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Logging
+    ${CMAKE_SOURCE_DIR}/src/server/shared/Realms
     ${CMAKE_SOURCE_DIR}/src/server/shared/Threading
     ${CMAKE_SOURCE_DIR}/src/server/shared/Utilities
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/Authentication
-    ${CMAKE_CURRENT_SOURCE_DIR}/Realms
     ${CMAKE_CURRENT_SOURCE_DIR}/Server
-    ${ACE_INCLUDE_DIR}
-    ${MYSQL_INCLUDE_DIR}
-    ${OPENSSL_INCLUDE_DIR}
-)
-
-add_executable(authserver
-  ${authserver_SRCS}
+    openssl
+    mysql
+    boost
+    ${CMAKE_SOURCE_DIR}/dep/fmt/include
 )
 
 add_dependencies(authserver revision.h)
@@ -83,12 +82,15 @@ if( NOT WIN32 )
 endif()
 
 target_link_libraries(authserver
+  common
   shared
-  ${MYSQL_LIBRARY}
-  ${OPENSSL_LIBRARIES}
-  ${CMAKE_THREAD_LIBS_INIT}
-  ${ACE_LIBRARY}
-  ${Boost_LIBRARIES}
+  database
+  jemalloc
+  mysql
+  openssl
+  threads
+  ${CMAKE_DL_LIBS}
+  boost
 )
 
 if( WIN32 )

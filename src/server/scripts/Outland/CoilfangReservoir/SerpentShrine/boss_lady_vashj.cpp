@@ -250,7 +250,7 @@ public:
                 instance->SetData(DATA_LADYVASHJEVENT, IN_PROGRESS);
         }
 
-        void EnterCombat(Unit* who) override
+        void JustEngagedWith(Unit* who) override
         {
             if (instance)
             {
@@ -261,7 +261,7 @@ public:
                     if (Player* player = itr->GetSource())
                         player->DestroyItemCount(31088, 1, true);
             }
-            StartEvent(); // this is EnterCombat(), so were are 100% in combat, start the event
+            StartEvent(); // this is JustEngagedWith(), so were are 100% in combat, start the event
 
             if (Phase != 2)
                 AttackStart(who);
@@ -600,7 +600,7 @@ public:
                 VashjGUID = instance->GetData64(DATA_LADYVASHJ);
         }
 
-        void EnterCombat(Unit* /*who*/) override { }
+        void JustEngagedWith(Unit* /*who*/) override { }
 
         void MoveInLineOfSight(Unit* /*who*/) override { }
 
@@ -678,7 +678,7 @@ public:
                     CAST_AI(boss_lady_vashj::boss_lady_vashjAI, vashj->AI())->EventTaintedElementalDeath();
         }
 
-        void EnterCombat(Unit* who) override
+        void JustEngagedWith(Unit* who) override
         {
             me->AddThreat(who, 0.1f);
         }
@@ -740,7 +740,7 @@ public:
         void Reset() override
         {
             me->SetDisableGravity(true);
-            me->setFaction(14);
+            me->SetFaction(14);
             MovementTimer = 0;
             ToxicSporeTimer = 5000;
             BoltTimer = 5500;
@@ -778,7 +778,7 @@ public:
                 {
                     if (Creature* trig = me->SummonCreature(TOXIC_SPORES_TRIGGER, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 30000))
                     {
-                        trig->setFaction(14);
+                        trig->SetFaction(14);
                         trig->CastSpell(trig, SPELL_TOXIC_SPORES, true);
                     }
                 }
@@ -798,7 +798,7 @@ public:
                         // remove
                         me->setDeathState(DEAD);
                         me->RemoveCorpse();
-                        me->setFaction(35);
+                        me->SetFaction(35);
                     }
                 }
 

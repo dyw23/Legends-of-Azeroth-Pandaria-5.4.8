@@ -264,6 +264,7 @@ enum GossipEvents
 
 struct HookMgr
 {
+    static HookMgr* instance();
     struct ElunaCreatureAI;
     struct ElunaGameObjectAI;
     struct ElunaWorldAI;
@@ -295,7 +296,7 @@ struct HookMgr
     bool OnQuestSelect(Player* pPlayer, Creature* pCreature, Quest const* pQuest);
     bool OnQuestComplete(Player* pPlayer, Creature* pCreature, Quest const* pQuest);
     bool OnQuestReward(Player* pPlayer, Creature* pCreature, Quest const* pQuest);
-    uint32 GetDialogStatus(Player* pPlayer, Creature* pCreature);
+    Optional<QuestGiverStatus> GetDialogStatus(Player* pPlayer, Creature* pCreature);
     /* GameObject */
     bool OnDummyEffect(Unit* pCaster, uint32 spellId, SpellEffIndex effIndex, GameObject* pTarget);
     bool OnGossipHello(Player* pPlayer, GameObject* pGameObject);
@@ -305,13 +306,13 @@ struct HookMgr
     bool OnQuestComplete(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest);
     bool OnQuestReward(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest);
     bool OnGameObjectUse(Player* pPlayer, GameObject* pGameObject) { return false; }; // TODO? Not on TC
-    uint32 GetDialogStatus(Player* pPlayer, GameObject* pGameObject);
+    Optional<QuestGiverStatus> GetDialogStatus(Player* pPlayer, GameObject* pGameObject);
     void OnDestroyed(GameObject* pGameObject, Player* pPlayer);
     void OnDamaged(GameObject* pGameObject, Player* pPlayer);
     void OnLootStateChanged(GameObject* pGameObject, uint32 state, Unit* pUnit);
     void OnGameObjectStateChanged(GameObject* pGameObject, uint32 state);
     /* Player */
-    void OnPlayerEnterCombat(Player* pPlayer, Unit* pEnemy);
+    void OnPlayerJustEngagedWith(Player* pPlayer, Unit* pEnemy);
     void OnPlayerLeaveCombat(Player* pPlayer);
     void OnPVPKill(Player* pKiller, Player* pKilled);
     void OnCreatureKill(Player* pKiller, Creature* pKilled);
@@ -350,7 +351,7 @@ struct HookMgr
     void OnAddPassenger(Vehicle* vehicle, Unit* passenger, int8 seatId);
     void OnRemovePassenger(Vehicle* vehicle, Unit* passenger);
     /* AreaTrigger */
-    bool OnAreaTrigger(Player* pPlayer, AreaTriggerEntry const* pTrigger);
+    bool OnAreaTrigger(Player* pPlayer, AreaTriggerEntry const* pTrigger, bool entered);
     /* Weather */
     void OnChange(Weather* weather, WeatherState state, float grade);
     /* Auction House */
@@ -359,7 +360,7 @@ struct HookMgr
     void OnSuccessful(AuctionHouseObject* ah);
     void OnExpire(AuctionHouseObject* ah);
     /* Condition */
-    bool OnConditionCheck(Condition* condition, ConditionSourceInfo& sourceInfo) { return false; }; // TODO ?
+    bool OnConditionCheck(const Condition* condition, ConditionSourceInfo& sourceInfo) { return false; }; // TODO ?
     /* Transport */
     void OnAddPassenger(Transport* transport, Player* player);
     void OnAddCreaturePassenger(Transport* transport, Creature* creature);
@@ -385,7 +386,7 @@ struct HookMgr
     void OnDisband(Group* group);
     void OnCreate(Group* group, uint64 leaderGuid, GroupType groupType);
 };
-#define sHookMgr ACE_Singleton<HookMgr, ACE_Null_Mutex>::instance()
+#define sHookMgr HookMgr::instance()
 
 class ElunaCreatureScript : public CreatureScript
 {
@@ -408,5 +409,7 @@ public:
         return sHookMgr->GetAI(gameObject);
     }
 };
+
+void AddElunaScripts();
 
 #endif

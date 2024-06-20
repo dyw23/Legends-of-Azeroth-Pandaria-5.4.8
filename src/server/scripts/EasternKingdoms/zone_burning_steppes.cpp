@@ -22,6 +22,8 @@ SDComment:
 SDCategory: Burning Steppes
 EndScriptData */
 
+#include "Random.h"
+
 enum ScrappedGolemsType
 {
     SPELL_CREATE_WAR_REAVER_PARTS_AB = 89413, // Sieve & Piston
@@ -85,7 +87,7 @@ struct npc_burning_steppes_war_reaver : public customCreatureAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_UPPERCUTE, 5.5 * IN_MILLISECONDS);
         events.ScheduleEvent(SPELL_FLAME_BLAST, 8 * IN_MILLISECONDS);
@@ -196,7 +198,7 @@ class npc_burning_steppes_chiseled_golem : public CreatureScript
                 targetGUID = 0;
                 hasDefeat = false;
                 me->SetReactState(REACT_AGGRESSIVE);
-                me->setFaction(1474); // default
+                me->SetFaction(1474); // default
             }
 
             void SetGUID(uint64 guid, int32 /*type*/) override
@@ -208,7 +210,7 @@ class npc_burning_steppes_chiseled_golem : public CreatureScript
             {
                 if (actionId == ACTION_GOLEM_TRAINING)
                 {
-                    me->setFaction(16);
+                    me->SetFaction(16);
 
                     if (Player* target = ObjectAccessor::GetPlayer(*me, targetGUID))
                         AttackStart(target);
@@ -278,7 +280,7 @@ class npc_burning_steppes_chiseled_golem : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {

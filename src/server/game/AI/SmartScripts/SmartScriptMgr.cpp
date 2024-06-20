@@ -33,6 +33,22 @@
 
 #include "SmartScriptMgr.h"
 
+#define TC_SAI_IS_BOOLEAN_VALID(e, value) \
+{ \
+    if (value > 1) \
+    { \
+        TC_LOG_ERROR("sql.sql", "SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses param %s of type Boolean with value %u, valid values are 0 or 1, skipped.", \
+            e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), STRINGIZE(value), value); \
+        return false; \
+    } \
+}
+
+SmartWaypointMgr* SmartWaypointMgr::instance()
+{
+    static SmartWaypointMgr instance;
+    return &instance;
+}
+
 void SmartWaypointMgr::LoadFromDB()
 {
     uint32 oldMSTime = getMSTime();
@@ -47,7 +63,7 @@ void SmartWaypointMgr::LoadFromDB()
 
     waypoint_map.clear();
 
-    PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_SMARTAI_WP);
+    WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_SMARTAI_WP);
     PreparedQueryResult result = WorldDatabase.Query(stmt);
 
     if (!result)
@@ -71,6 +87,10 @@ void SmartWaypointMgr::LoadFromDB()
         x = fields[2].GetFloat();
         y = fields[3].GetFloat();
         z = fields[4].GetFloat();
+        Optional<float> o;
+        if (!fields[5].IsNull())
+            o = fields[5].GetFloat();
+        uint32 delay = fields[6].GetUInt32();
 
         if (last_entry != entry)
         {
@@ -83,7 +103,7 @@ void SmartWaypointMgr::LoadFromDB()
             TC_LOG_ERROR("sql.sql", "SmartWaypointMgr::LoadFromDB: Path entry %u, unexpected point id %u, expected %u.", entry, id, last_id);
 
         last_id++;
-        (*waypoint_map[entry])[id] = new WayPoint(id, x, y, z);
+        (*waypoint_map[entry])[id] = new WayPoint(id, x, y, z, o, delay);
 
         last_entry = entry;
         total++;
@@ -94,15 +114,28 @@ void SmartWaypointMgr::LoadFromDB()
 
 }
 
-SmartWaypointMgr::~SmartWaypointMgr()
+WPPath* SmartWaypointMgr::GetPath(uint32 id)
 {
-    for (std::unordered_map<uint32, WPPath*>::iterator itr = waypoint_map.begin(); itr != waypoint_map.end(); ++itr)
-    {
-        for (WPPath::iterator pathItr = itr->second->begin(); pathItr != itr->second->end(); ++pathItr)
-            delete pathItr->second;
+    if (waypoint_map.find(id) != waypoint_map.end())
+        return waypoint_map[id];
+    else return 0;
+}
 
-        delete itr->second;
-    }
+// SmartWaypointMgr::~SmartWaypointMgr()
+// {
+//     for (std::unordered_map<uint32, WPPath*>::iterator itr = waypoint_map.begin(); itr != waypoint_map.end(); ++itr)
+//     {
+//         for (WPPath::iterator pathItr = itr->second->begin(); pathItr != itr->second->end(); ++pathItr)
+//             delete pathItr->second;
+
+//         delete itr->second;
+//     }
+// }
+
+SmartAIMgr* SmartAIMgr::instance()
+{
+    static SmartAIMgr instance;
+    return &instance;
 }
 
 void SmartAIMgr::LoadSmartAIFromDB()
@@ -112,7 +145,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
     for (uint8 i = 0; i < SMART_SCRIPT_TYPE_MAX; i++)
         mEventMap[i].clear();  //Drop Existing SmartAI List
 
-    PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_SMART_SCRIPTS);
+    WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_SMART_SCRIPTS);
     PreparedQueryResult result = WorldDatabase.Query(stmt);
 
     if (!result)
@@ -232,23 +265,25 @@ void SmartAIMgr::LoadSmartAIFromDB()
         temp.event.raw.param2 = fields[9].GetUInt32();
         temp.event.raw.param3 = fields[10].GetUInt32();
         temp.event.raw.param4 = fields[11].GetUInt32();
+        temp.event.raw.param5 = fields[12].GetUInt32();
 
-        temp.action.type = (SMART_ACTION)fields[12].GetUInt8();
-        temp.action.raw.param1 = fields[13].GetUInt32();
-        temp.action.raw.param2 = fields[14].GetUInt32();
-        temp.action.raw.param3 = fields[15].GetUInt32();
-        temp.action.raw.param4 = fields[16].GetUInt32();
-        temp.action.raw.param5 = fields[17].GetUInt32();
-        temp.action.raw.param6 = fields[18].GetUInt32();
+        temp.action.type = (SMART_ACTION)fields[13].GetUInt8();
+        temp.action.raw.param1 = fields[14].GetUInt32();
+        temp.action.raw.param2 = fields[15].GetUInt32();
+        temp.action.raw.param3 = fields[16].GetUInt32();
+        temp.action.raw.param4 = fields[17].GetUInt32();
+        temp.action.raw.param5 = fields[18].GetUInt32();
+        temp.action.raw.param6 = fields[19].GetUInt32();
 
-        temp.target.type = (SMARTAI_TARGETS)fields[19].GetUInt8();
-        temp.target.raw.param1 = fields[20].GetUInt32();
-        temp.target.raw.param2 = fields[21].GetUInt32();
-        temp.target.raw.param3 = fields[22].GetUInt32();
-        temp.target.x = fields[23].GetFloat();
-        temp.target.y = fields[24].GetFloat();
-        temp.target.z = fields[25].GetFloat();
-        temp.target.o = fields[26].GetFloat();
+        temp.target.type = (SMARTAI_TARGETS)fields[20].GetUInt8();
+        temp.target.raw.param1 = fields[21].GetUInt32();
+        temp.target.raw.param2 = fields[22].GetUInt32();
+        temp.target.raw.param3 = fields[23].GetUInt32();
+        temp.target.raw.param4 = fields[24].GetUInt32();
+        temp.target.x = fields[25].GetFloat();
+        temp.target.y = fields[26].GetFloat();
+        temp.target.z = fields[27].GetFloat();
+        temp.target.o = fields[28].GetFloat();
 
         //check target
         if (!IsTargetValid(temp))
@@ -479,7 +514,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
             case SMART_EVENT_VICTIM_CASTING:
                 if (e.event.targetCasting.spellId > 0 && !sSpellMgr->GetSpellInfo(e.event.targetCasting.spellId))
                 {
-                    sLog->outError("sql.sql", "SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent Spell entry %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.event.spellHit.spell);
+                    TC_LOG_DEBUG("sql.sql", "SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent Spell entry %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.event.spellHit.spell);
                     return false;
                 }
 
@@ -731,6 +766,15 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
 
     switch (e.GetActionType())
     {
+        case SMART_ACTION_TALK:
+            TC_SAI_IS_BOOLEAN_VALID(e, e.action.talk.useTalkTarget);
+            if (!IsTextValid(e, e.action.talk.textGroupID))
+                return false;
+            break;
+        case SMART_ACTION_SIMPLE_TALK:
+            if (!IsTextValid(e, e.action.simpleTalk.textGroupID))
+                return false;
+            break;
         case SMART_ACTION_SET_FACTION:
             if (e.action.faction.factionID && !sFactionTemplateStore.LookupEntry(e.action.faction.factionID))
             {
@@ -766,6 +810,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
         case SMART_ACTION_SOUND:
             if (!IsSoundValid(e, e.action.sound.sound))
                 return false;
+            TC_SAI_IS_BOOLEAN_VALID(e, e.action.sound.onlySelf);
             break;
         case SMART_ACTION_SET_EMOTE_STATE:
         case SMART_ACTION_PLAY_EMOTE:
@@ -1146,8 +1191,8 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
         case SMART_ACTION_SET_NPC_FLAG:
         case SMART_ACTION_ADD_NPC_FLAG:
         case SMART_ACTION_REMOVE_NPC_FLAG:
-        case SMART_ACTION_TALK:
-        case SMART_ACTION_SIMPLE_TALK:
+        // case SMART_ACTION_TALK:
+        // case SMART_ACTION_SIMPLE_TALK:
         case SMART_ACTION_CROSS_CAST:
         case SMART_ACTION_CALL_RANDOM_TIMED_ACTIONLIST:
         case SMART_ACTION_CALL_RANDOM_RANGE_TIMED_ACTIONLIST:
@@ -1178,6 +1223,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
         case SMART_ACTION_COMBAT_STOP:
         case SMART_ACTION_STOP_FOLLOW:
         case SMART_ACTION_SPELL_VISUAL_KIT:
+        case SMART_ACTION_SET_INGAME_PHASE_ID:
             break;
         default:
             TC_LOG_ERROR("sql.sql", "SmartAIMgr: Not handled action_type(%u), event_type(%u), Entry %d SourceType %u Event %u, skipped.", e.GetActionType(), e.GetEventType(), e.entryOrGuid, e.GetScriptType(), e.event_id);
@@ -1187,9 +1233,59 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
     return true;
 }
 
-/*bool SmartAIMgr::IsTextValid(SmartScriptHolder const& e, uint32 id) // unused
+// tc version
+// bool SmartAIMgr::IsTextValid(SmartScriptHolder const& e, uint32 id)
+// {
+//     if (e.GetScriptType() != SMART_SCRIPT_TYPE_CREATURE)
+//         return true;
+
+//     uint32 entry = 0;
+
+//     if (e.GetEventType() == SMART_EVENT_TEXT_OVER)
+//     {
+//         entry = e.event.textOver.creatureEntry;
+//     }
+//     else
+//     {
+//         switch (e.GetTargetType())
+//         {
+//             case SMART_TARGET_CREATURE_DISTANCE:
+//             case SMART_TARGET_CREATURE_RANGE:
+//             case SMART_TARGET_CLOSEST_CREATURE:
+//                 return true; // ignore
+//             default:
+//                 if (e.entryOrGuid < 0)
+//                 {
+//                     ObjectGuid::LowType guid = ObjectGuid::LowType(-e.entryOrGuid);
+//                     CreatureData const* data = sObjectMgr->GetCreatureData(guid);
+//                     if (!data)
+//                     {
+//                         TC_LOG_ERROR("sql.sql", "SmartAIMgr: Entry %d SourceType %u Event %u Action %u using non-existent Creature guid %d, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), guid);
+//                         return false;
+//                     }
+//                     else
+//                         entry = data->id;
+//                 }
+//                 else
+//                     entry = uint32(e.entryOrGuid);
+//                 break;
+//         }
+//     }
+
+//     if (!entry || !sCreatureTextMgr->TextExist(entry, uint8(id)))
+//     {
+//         TC_LOG_ERROR("sql.sql", "SmartAIMgr: Entry %d SourceType %u Event %u Action %u using non-existent Text id %d, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), id);
+//         return false;
+//     }
+
+//     return true;
+// }
+
+bool SmartAIMgr::IsTextValid(SmartScriptHolder const& e, uint32 id) 
 {
-    bool error = false;
+    if (e.GetScriptType() != SMART_SCRIPT_TYPE_CREATURE)
+        return true;
+
     uint32 entry = 0;
     if (e.entryOrGuid >= 0)
         entry = uint32(e.entryOrGuid);
@@ -1204,12 +1300,12 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
         else
             entry = data->id;
     }
+
     if (!entry || !sCreatureTextMgr->TextExist(entry, uint8(id)))
-        error = true;
-    if (error)
     {
         TC_LOG_ERROR("sql.sql", "SmartAIMgr: Entry %d SourceType %u Event %u Action %u using non-existent Text id %d, skipped.", e.entryOrGuid, e.GetScriptType(), e.source_type, e.GetActionType(), id);
         return false;
     }
+
     return true;
-}*/
+}

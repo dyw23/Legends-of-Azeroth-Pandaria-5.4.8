@@ -118,9 +118,9 @@ class boss_mandokir : public CreatureScript
                 _reviveGUID = 0;
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
                 Talk(SAY_AGGRO);
 
                 DoCastAOE(SPELL_BLOODLORD_AURA);
@@ -131,7 +131,7 @@ class boss_mandokir : public CreatureScript
                     {
                         if (Creature* chainedSpirit = ObjectAccessor::GetCreature(*me, *itr))
                             if (chainedSpirit->GetEntry() == NPC_CHAINED_SPIRIT && chainedSpirit->AI())
-                                chainedSpirit->setFaction(FACTION_NONE);
+                                chainedSpirit->SetFaction(FACTION_NONE);
                     }
                 }
 
@@ -289,7 +289,7 @@ class npc_ohgan : public CreatureScript
                 instance = me->GetInstanceScript();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 DoCastAOE(SPELL_OHGAN_ORDERS, true);
             }
@@ -466,7 +466,7 @@ class spell_mandokir_bloodletting : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mandokir_bloodletting_AuraScript);
 
-            bool Validate(SpellInfo const* /*spell*/)
+            bool Validate(SpellInfo const* /*spell*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_BLOODLETTING_DAMAGE))
                     return false;

@@ -35,7 +35,7 @@ typedef std::vector<uint32> AutoSpellList;
 
 class Player;
 
-class Pet : public Guardian
+class TC_GAME_API Pet : public Guardian
 {
     public:
         static const float BaseRunSpeedRate;
@@ -43,10 +43,10 @@ class Pet : public Guardian
         explicit Pet(Player* owner, PetType type = MAX_PET_TYPE);
         virtual ~Pet();
 
-        void AddToWorld();
-        void RemoveFromWorld();
+        void AddToWorld() override;
+        void RemoveFromWorld() override;
 
-        void SetDisplayId(uint32 modelId);
+        void SetDisplayId(uint32 modelId) override;
 
         PetType getPetType() const { return m_petType; }
         void setPetType(PetType type) { m_petType = type; }
@@ -60,17 +60,17 @@ class Pet : public Guardian
         bool CreateBaseAtCreatureInfo(CreatureTemplate const* cinfo, Unit* owner);
         bool CreateBaseAtTamed(CreatureTemplate const* cinfo, Map* map, uint32 phaseMask);
         bool LoadPetFromDB(PetLoadMode mode, uint32 param, Position const* pos = nullptr);
-        bool isBeingLoaded() const { return m_loading;}
-        void SavePetToDB(SQLTransaction trans = nullptr);
+        bool isBeingLoaded() const override { return m_loading;}
+        void SavePetToDB(CharacterDatabaseTransaction trans = nullptr);
         void DeletePetFromDB() { Pet::DeleteFromDB(GetCharmInfo()->GetPetNumber()); }
         void Remove(PetRemoveMode mode, int32 flags = PET_REMOVE_FLAG_NONE);
         static void DeleteFromDB(uint32 guidlow);
 
-        void setDeathState(DeathState s);                   // overwrite virtual Creature::setDeathState and Unit::setDeathState
-        void Update(uint32 diff);                           // overwrite virtual Creature::Update and Unit::Update
+        void setDeathState(DeathState s) override;                   // overwrite virtual Creature::setDeathState and Unit::setDeathState
+        void Update(uint32 diff) override;                           // overwrite virtual Creature::Update and Unit::Update
 
-        uint8 GetPetAutoSpellSize() const { return m_autospells.size(); }
-        uint32 GetPetAutoSpellOnPos(uint8 pos) const
+        uint8 GetPetAutoSpellSize() const override { return m_autospells.size(); }
+        uint32 GetPetAutoSpellOnPos(uint8 pos) const override
         {
             if (pos >= m_autospells.size())
                 return 0;
@@ -100,16 +100,16 @@ class Pet : public Guardian
 
         void ToggleAutocast(SpellInfo const* spellInfo, bool apply);
 
-        bool HasSpell(uint32 spell) const;
+        bool HasSpell(uint32 spell) const override;
 
         void CastPetAuras(bool current);
         void CastPetAura(PetAura const* aura);
         bool IsPetAura(Aura const* aura);
 
         void _LoadAuras(uint32 timediff);
-        void _SaveAuras(SQLTransaction& trans);
+        void _SaveAuras(CharacterDatabaseTransaction trans);
         void _LoadSpells();
-        void _SaveSpells(SQLTransaction& trans);
+        void _SaveSpells(CharacterDatabaseTransaction trans);
 
         bool AddSpell(uint32 spellId, ActiveStates active = ACT_DECIDE);
         bool LearnSpell(uint32 spell_id);
@@ -118,7 +118,7 @@ class Pet : public Guardian
         bool UnlearnSpell(uint32 spellId, bool learnPrev, bool cleaActionBar = true);
         bool RemoveSpell(uint32 spell_id, bool learn_prev, bool clear_ab = true);
         void CleanupActionBar();
-        virtual void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs);
+        virtual void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs) override;
 
         PetSpellMap     m_spells;
         AutoSpellList   m_autospells;
@@ -164,13 +164,10 @@ class Pet : public Guardian
         DeclinedName *m_declinedname;
 
     private:
-        void SaveToDB(uint32, uint16, uint32)                // override of Creature::SaveToDB     - must not be called
+        void SaveToDB(uint32, uint16, uint32) override               // override of Creature::SaveToDB     - must not be called
         {
             ASSERT(false);
         }
-        void DeleteFromDB()                                 // override of Creature::DeleteFromDB - must not be called
-        {
-            ASSERT(false);
-        }
+
 };
 #endif

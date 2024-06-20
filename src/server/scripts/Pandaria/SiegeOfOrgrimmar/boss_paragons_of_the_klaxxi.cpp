@@ -18,7 +18,6 @@
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "siege_of_orgrimmar.h"
-#include <ace/Stack_Trace.h>
 
 enum Spells
 {                                   
@@ -463,9 +462,9 @@ class boss_paragon_of_the_klaxxi : public CreatureScript
                 paragonSequence = { NPC_RIKKAL_THE_DISSECTOR, NPC_HISEK_THE_SWARMKEEPER, NPC_SKEER_THE_BLOODSEEKER, NPC_KAROZ_THE_LOCUST, NPC_KORVEN_THE_PRIME, NPC_IYYOKUK_THE_LUCID, NPC_XARIL_THE_POISONED_MIND, NPC_KAZTIK_THE_MANIPULATOR, NPC_KILRUK_THE_WIND_REAVER };
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
 
                 evadeEvents.ScheduleEvent(EVENT_CHECK_EVADE, 1 * IN_MILLISECONDS);
                 
@@ -549,8 +548,7 @@ class boss_paragon_of_the_klaxxi : public CreatureScript
                     {
                         if (paragonSequence.size() < 4)
                         {
-                            ACE_Stack_Trace st;
-                            TC_LOG_ERROR("shitlog", "boss_paragon_of_the_klaxxi paragonSequence.size() %u, boss state %u\n%s", uint32(paragonSequence.size()), instance ? instance->GetBossState(DATA_PARAGONS_OF_THE_KLAXXI) : 0, st.c_str());
+                            TC_LOG_ERROR("shitlog", "boss_paragon_of_the_klaxxi paragonSequence.size() %u, boss state %u\n", uint32(paragonSequence.size()), instance ? instance->GetBossState(DATA_PARAGONS_OF_THE_KLAXXI) : 0);
                             return;
                         }
 
@@ -762,7 +760,7 @@ class boss_paragon_of_the_klaxxi : public CreatureScript
                         if (Creature* klaxxi = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(paragonMemberEntry) : 0))
                         {
                             klaxxi->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                            klaxxi->setFaction(14);
+                            klaxxi->SetFaction(14);
                             klaxxi->RemoveFlag(UNIT_FIELD_FLAGS2, 69240832);
                             klaxxi->RemoveAurasDueToSpell(SPELL_PERMANENT_FEIGN_DEATH);
 
@@ -864,7 +862,7 @@ struct soo_paragon_typeAI : public ScriptedAI
         events.Reset();
         nonCombatEvents.Reset();
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_PACIFIED);
-        me->setFaction(14);
+        me->SetFaction(14);
         me->RemoveFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
         prevToxin       = 0;
         targetGUID      = 0;
@@ -1114,7 +1112,7 @@ struct soo_paragon_typeAI : public ScriptedAI
             me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
             me->PrepareChanneledCast(me->GetOrientation());
             me->SetHealth(1);
-            me->setFaction(35); // cuz ref doesn`t work
+            me->SetFaction(35); // cuz ref doesn`t work
             me->SetFlag(UNIT_FIELD_FLAGS2, 69240832);
             DoCast(me, SPELL_PERMANENT_FEIGN_DEATH, true);
             DoCast(me, SPELL_CLICK_ME);
@@ -1178,7 +1176,7 @@ struct boss_kilruk_the_wind_reaver : public soo_paragon_typeAI
 {
     boss_kilruk_the_wind_reaver(Creature* creature) : soo_paragon_typeAI(creature) { }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_MUTILATE, 17 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_DEATH_FROM_ABOVE, 26 * IN_MILLISECONDS);
@@ -1334,7 +1332,7 @@ struct boss_xaril_the_poisoned_mind : public soo_paragon_typeAI
 {
     boss_xaril_the_poisoned_mind(Creature* creature) : soo_paragon_typeAI(creature) { }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         DoCast(me, SPELL_TOXIC_INJECTION);
         events.ScheduleEvent(EVENT_TOXIN_REACT, 17 * IN_MILLISECONDS);
@@ -1407,7 +1405,7 @@ struct boss_kaztik_the_manipulator : public soo_paragon_typeAI
 {
     boss_kaztik_the_manipulator(Creature* creature) : soo_paragon_typeAI(creature) { }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_SONIC_PROJECTION, urand(3 * IN_MILLISECONDS, 4 * IN_MILLISECONDS));
         events.ScheduleEvent(EVENT_KUNCHONG, 25 * IN_MILLISECONDS);
@@ -1512,7 +1510,7 @@ struct boss_korven_the_prime : public soo_paragon_typeAI
 {
     boss_korven_the_prime(Creature* creature) : soo_paragon_typeAI(creature) { }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_SHIELD_BASH, 18 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_AMBER_REGENERATION, 5 * IN_MILLISECONDS);
@@ -1685,7 +1683,7 @@ struct boss_iyyokuk_the_lucid : public soo_paragon_typeAI
 {
     boss_iyyokuk_the_lucid(Creature* creature) : soo_paragon_typeAI(creature) { }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_DIMINISH, 4 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_CALCULATE, 1 * IN_MILLISECONDS);
@@ -1753,7 +1751,7 @@ struct boss_karoz_the_locust : public soo_paragon_typeAI
 {
     boss_karoz_the_locust(Creature* creature) : soo_paragon_typeAI(creature) { }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_STORE_KINETIC_ENERGY, 9 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_PREPARE_TO_JUMP, 45 * IN_MILLISECONDS);
@@ -1898,7 +1896,7 @@ struct boss_skeer_the_bloodseeker : public soo_paragon_typeAI
 {
     boss_skeer_the_bloodseeker(Creature* creature) : soo_paragon_typeAI(creature) { }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_BLOODLETTING, 5 * IN_MILLISECONDS);
         me->SetAutoattackOverrideSpell(SPELL_HEW, 0);
@@ -1960,7 +1958,7 @@ struct boss_rikkal_the_dissector : public soo_paragon_typeAI
 {
     boss_rikkal_the_dissector(Creature* creature) : soo_paragon_typeAI(creature) { }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_INJECTION, 8 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_MUTATE, 20 * IN_MILLISECONDS);
@@ -2022,7 +2020,7 @@ struct boss_hisek_the_swarmkeeper : public soo_paragon_typeAI
 {
     boss_hisek_the_swarmkeeper(Creature* creature) : soo_paragon_typeAI(creature) { }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         me->HandleEmoteStateCommand(EMOTE_STATE_READY_RIFLE);
 
@@ -2333,7 +2331,7 @@ struct npc_blood : public ScriptedAI
             targetGUID = skeer->AI()->GetGUID();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         me->PrepareChanneledCast(me->GetOrientation());
 
@@ -2642,7 +2640,7 @@ class spell_soo_paragon_toxic_injection : public SpellScript
 {
     PrepareSpellScript(spell_soo_paragon_toxic_injection);
 
-    bool Load()
+    bool Load() override
     {
         prevToxinID = 0;
         return true;
@@ -3699,7 +3697,7 @@ class spell_paragon_fiery_edge_eff : public SpellScript
 {
     PrepareSpellScript(spell_paragon_fiery_edge_eff);
 
-    bool Load()
+    bool Load() override
     {
         linkedTargetGUID = 0;
         return true;
@@ -3779,7 +3777,7 @@ class spell_paragon_feed : public SpellScript
 
     std::list<WorldObject*> m_targets, copyTargets;
 
-    bool Load()
+    bool Load() override
     {
         allowPrevTarget = false;
         return true;
@@ -4309,7 +4307,7 @@ class spell_paragon_rapid_rife : public AuraScript
 {
     PrepareAuraScript(spell_paragon_rapid_rife);
 
-    bool Load()
+    bool Load() override
     {
         sonicEntry = SPELL_SONIC_PULSE_1;
         keyId = 1;

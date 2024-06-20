@@ -75,7 +75,7 @@ class boss_taran_zhu : public CreatureScript
                 {
                     if (instance->GetBossState(DATA_TARAN_ZHU) == DONE)
                     {
-                        me->setFaction(35);
+                        me->SetFaction(35);
                         me->RemoveAllAuras();
                         me->SetReactState(REACT_PASSIVE);
                         me->SetStandState(UNIT_STAND_STATE_KNEEL);
@@ -108,9 +108,9 @@ class boss_taran_zhu : public CreatureScript
                 gripHatredCount = 0;
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
                 Talk(TALK_AGGRO);
                 if (instance)
                 {
@@ -160,7 +160,7 @@ class boss_taran_zhu : public CreatureScript
 
                         _JustDied();
                         me->StopMoving();
-                        me->setFaction(35);
+                        me->SetFaction(35);
                         me->RemoveAllAuras();
                         me->CombatStop(true);
                         me->DeleteThreatList();

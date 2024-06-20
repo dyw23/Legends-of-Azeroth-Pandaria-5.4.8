@@ -149,7 +149,7 @@ class boss_master_snowdrift : public CreatureScript
 
                     if (instance->GetBossState(DATA_MASTER_SNOWDRIFT) == DONE)
                     {
-                        me->setFaction(35);
+                        me->SetFaction(35);
                         me->SetReactState(REACT_PASSIVE);
                         me->SetStandState(UNIT_STAND_STATE_KNEEL);
                         nonCombatEvents.ScheduleEvent(EVENT_POSSESIONS, 1 * IN_MILLISECONDS);
@@ -189,7 +189,7 @@ class boss_master_snowdrift : public CreatureScript
                 targetGUID = 0;
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 if (!aggroDone)
                 {
@@ -208,7 +208,7 @@ class boss_master_snowdrift : public CreatureScript
                     me->m_Events.Schedule(delay += 2500, 10, [this]()
                     {
                         if (me->IsInCombat())
-                            _EnterCombat();
+                            _JustEngagedWith();
                     });
                 }
             }
@@ -325,7 +325,7 @@ class boss_master_snowdrift : public CreatureScript
                         _JustDied();
                         Talk(TALK_DEATH);
                         me->StopMoving();
-                        me->setFaction(35);
+                        me->SetFaction(35);
                         me->RemoveAllAuras();
                         me->CombatStop(true);
                         me->DeleteThreatList();
@@ -874,7 +874,7 @@ class npc_snowdrift_novice : public CreatureScript
                     damage = 0;
                     stillInFight = false;
                     me->StopMoving();
-                    me->setFaction(35);
+                    me->SetFaction(35);
                     me->RemoveAllAuras();
                     me->CombatStop(true);
                     me->DeleteThreatList();
@@ -1010,7 +1010,7 @@ class npc_snowdrift_miniboss : public CreatureScript
             InstanceScript* instance;       
             bool stillInFight;
 
-            void PassengerBoarded(Unit* who, int8 seatId, bool apply)
+            void PassengerBoarded(Unit* who, int8 seatId, bool apply) override
             {
                 if (who->GetTypeId() != TYPEID_UNIT)
                     return;
@@ -1073,7 +1073,7 @@ class npc_snowdrift_miniboss : public CreatureScript
                     damage = 0;
                     stillInFight = false;
                     me->StopMoving();
-                    me->setFaction(35);
+                    me->SetFaction(35);
                     me->RemoveAllAuras();
                     me->CombatStop(true);
                     me->DeleteThreatList();

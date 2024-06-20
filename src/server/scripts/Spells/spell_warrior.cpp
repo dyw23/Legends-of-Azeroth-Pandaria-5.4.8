@@ -29,7 +29,7 @@
 #include "GridNotifiers.h"
 #include "MoveSpline.h"
 #include "Player.h"
-
+#include "Random.h"
 
 enum WarriorSpells
 {
@@ -1637,7 +1637,7 @@ class spell_warr_shield_visual : public AuraScript
                     spellId = spellWithShield;
 
             if (!spellId)
-                spellId = warrior->getRaceMask() & RACEMASK_ALLIANCE ? spellAlliance : spellHorde;
+                spellId = warrior->GetRaceMask() & RACEMASK_ALLIANCE ? spellAlliance : spellHorde;
 
             warrior->CastSpell(warrior, spellId, true);
         }

@@ -95,7 +95,7 @@ class boss_tharon_ja : public CreatureScript
                     instance->SetData(DATA_THARON_JA_EVENT, NOT_STARTED);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 Talk(SAY_AGGRO, who);
 
@@ -276,12 +276,12 @@ class cond_draktharon_keep_drakkari_infighting : public ConditionScript
     public:
         cond_draktharon_keep_drakkari_infighting() : ConditionScript("cond_draktharon_keep_drakkari_infighting") { }
 
-        bool OnConditionCheck(Condition* cond, ConditionSourceInfo& source) override
+        bool OnConditionCheck(const Condition* cond, ConditionSourceInfo& source) override
         {
             if (source.mConditionTargets[1])
                 if (Unit* unit = source.mConditionTargets[1]->ToUnit())
                     if (Unit* victim = unit->GetVictim())
-                        if (victim->getFaction() == 1814 || victim->getFaction() == 1965)
+                        if (victim->GetFaction() == 1814 || victim->GetFaction() == 1965)
                             return true;
 
             return false;

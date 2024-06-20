@@ -29,6 +29,7 @@ class Creature;
 class Player;
 class PlayerAI;
 class SpellInfo;
+enum class QuestGiverStatus : uint32;
 
 #define TIME_INTERVAL_LOOK   5000
 #define VISIBILITY_RANGE    10000
@@ -64,7 +65,7 @@ enum SCEquip
     EQUIP_UNEQUIP   = 0
 };
 
-class CreatureAI : public UnitAI
+class TC_GAME_API CreatureAI : public UnitAI
 {
     protected:
         Creature* const me;
@@ -82,10 +83,9 @@ class CreatureAI : public UnitAI
         void Talk(uint8 id, WorldObject const* whisperTarget = nullptr);
         void TalkToMap(uint8 id, WorldObject const* whisperTarget = nullptr);
 
-        explicit CreatureAI(Creature* creature) : UnitAI(creature), me(creature), m_MoveInLineOfSight_locked(false), m_canSeeEvenInPassiveMode(false)
-        { }
+        explicit CreatureAI(Creature* creature);
 
-        virtual ~CreatureAI() { }
+        virtual ~CreatureAI();
 
         /// == Reactions At =================================
 
@@ -102,7 +102,7 @@ class CreatureAI : public UnitAI
         virtual void EnterEvadeMode();
 
         // Called for reaction at enter to combat if not in combat yet (enemy can be NULL)
-        virtual void EnterCombat(Unit* /*victim*/) { }
+        virtual void JustEngagedWith(Unit* /*victim*/) { }
 
         // Called when the creature is killed
         virtual void JustDied(Unit* /*killer*/) { }
@@ -141,14 +141,14 @@ class CreatureAI : public UnitAI
         // Called at waypoint reached or point movement finished
         virtual void MovementInform(uint32 /*type*/, uint32 /*id*/) { }
 
-        void OnCharmed(bool apply);
+        void OnCharmed(bool apply) override;
 
         // Called at reaching home after evade
         virtual void JustReachedHome() { }
 
-        void DoZoneInCombat(Creature* creature = NULL, float maxRangeToNearestTarget = 50.0f);
+        void DoZoneInCombat(Creature* creature = nullptr, float maxRangeToNearestTarget = 50.0f);
 
-        void DoAttackerAreaInCombat(Unit* attacker, float range, Unit* pUnit = NULL);
+        void DoAttackerAreaInCombat(Unit* attacker, float range, Unit* pUnit = nullptr);
         void DoAttackerGroupInCombat(Player* attacker);
 
         // Called at text emote receive from player
@@ -183,7 +183,7 @@ class CreatureAI : public UnitAI
         /// == Gossip system ================================
 
         // Called when the dialog status between a player and the creature is requested.
-        // virtual Optional<QuestGiverStatus> GetDialogStatus(Player* player); TC master branch
+        virtual Optional<QuestGiverStatus> GetDialogStatus(Player* /*player*/) { return {}; }
 
         // Called when a player opens a gossip dialog with the creature.
         virtual bool OnGossipHello(Player* /*player*/) { return false; }
@@ -271,7 +271,7 @@ class VehicleAIBase
 
         void LoadConditions();
         void CheckConditions(uint32 const diff);
-        ConditionList conditions;
+        bool m_HasConditions;
         bool m_registered = false;
         uint32 m_ConditionsTimer = VEHICLE_CONDITION_CHECK_TIME;
 

@@ -559,20 +559,20 @@ struct AreaTableEntry
 {
     uint32  ID;                                             // 0
     uint32  mapid;                                          // 1
-    uint32  zone;                                           // 2 if 0 then it's zone, else it's zone id of this area
+    uint32  ParentAreaID;                                   // 2 if 0 then it's zone, else it's zone id of this area
     uint32  exploreFlag;                                    // 3,
-    uint32  flags;                                          // 5,
+    uint32  Flags;                                          // 5,
     //uint32 unk1;                                          // 6, Pandaria
     //uint32 soundPreferences;                              // 7,
     //uint32 SoundPreferencesUnderwater;                    // 8,
     //uint32 SoundAmbience;                                 // 9,
-    //DbcStr   areaName2;                                    // 10, without whitespaces
+    //DbcStr   areaName2;                                   // 10, without whitespaces
     //uint32 ZoneMusic;                                     // 11,
     //uint32 ZoneIntroMusicTable;                           // 12
     int32   area_level;                                     // 13
     DbcStr  area_name;                                      // 14
     uint32  team;                                           // 15
-    uint32  LiquidTypeOverride[4];                          // 16-19 liquid override by type
+    uint32  LiquidTypeID[4];                                // 16-19 liquid override by type
     float   MaxDepth;                                       // 20,
     float   AmbientMultiplier;                              // 21 client only?
     uint32  LightId;                                        // 22
@@ -589,7 +589,7 @@ struct AreaTableEntry
     {
         if (mapid == 609)
             return true;
-        return (flags & AREA_FLAG_SANCTUARY);
+        return (Flags & AREA_FLAG_SANCTUARY);
     }
 };
 
@@ -621,22 +621,20 @@ struct AreaPOIEntry
 
 struct AreaTriggerEntry
 {
-    uint32  id;                                             // 0        m_ID
-    uint32  mapid;                                          // 1        m_ContinentID
-    float   x;                                              // 2        m_x
-    float   y;                                              // 3        m_y
-    float   z;                                              // 4        m_z
-    //uint32                                                // 5
-    //uint32                                                // 6
-    //uint32                                                // 7
-    float   radius;                                         // 8        m_radius
-    float   box_x;                                          // 9        m_box_length
-    float   box_y;                                          // 10       m_box_width
-    float   box_z;                                          // 11       m_box_heigh
-    float   box_orientation;                                // 12       m_box_yaw
-    //uint32  unk1;                                         // 13 - Pandaria
-    //uint32  unk2;                                         // 14 - Pandaria
-    //uint32  unk3;                                         // 15 - Pandaria
+    uint32        ID;                                       // 0
+    uint32        ContinentID;                              // 1
+    DBCPosition3D Pos;                                      // 2-4
+    uint32        PhaseUseFlags;                            // 5
+    uint32        PhaseID;                                  // 6
+    uint32        PhaseGroupID;                             // 7
+    float         Radius;                                   // 8
+    float         BoxLength;                                // 9
+    float         BoxWidth;                                 // 10
+    float         BoxHeight;                                // 11
+    float         BoxYaw;                                   // 12
+    uint32        ShapeType;                                // 13
+    uint32        ShapeID;                                  // 14
+    uint32        AreaTriggerActionSetID;                   // 15
 };
 
 struct ArmorLocationEntry
@@ -823,34 +821,30 @@ struct ChrSpecializationEntry
     // DbcStr unkName2                                      // 13
 };
 
-/* not used
 struct CinematicCameraEntry
 {
-    uint32      id;                                         // 0 index
-    DbcStr      filename;                                   // 1
-    uint32      soundid;                                    // 2 in SoundEntries.dbc or 0
-    float       start_x;                                    // 3
-    float       start_y;                                    // 4
-    float       start_z;                                    // 5
-    float       unk6;                                       // 6 speed?
+    uint32 ID;                                              // 0
+    char const* Model;                                      // 1 Model filename (translate .mdx to .m2)
+    uint32 SoundID;                                         // 2 Sound ID (voiceover for cinematic)
+    DBCPosition3D Origin;                                   // 3-5 Position in map used for basis for M2 co-ordinates
+    float OriginFacing;                                     // 6 Orientation in map used for basis for M2 co-ordinates
 };
-*/
 
 struct CinematicSequencesEntry
 {
     uint32      Id;                                         // 0 index
     //uint32      unk1;                                     // 1 always 0
-    //uint32      cinematicCamera;                          // 2 id in CinematicCamera.dbc
+    uint32      Camera[8];                                  // 2 id in CinematicCamera.dbc
                                                             // 3-9 always 0
 };
 
 struct CreatureDisplayInfoEntry
 {
-    uint32      Displayid;                                  // 0        m_ID
-    uint32      ModelId;                                    // 1        m_modelID
+    uint32      ID;                                         // 0        m_ID
+    uint32      ModelID;                                    // 1        m_modelID
                                                             // 2        m_soundID
-                                                            // 3        m_extendedDisplayInfoID
-    float       scale;                                      // 4        m_creatureModelScale
+    uint32      ExtendedDisplayInfoID;                      // 3        m_extendedDisplayInfoID
+    float       CreatureModelScale;                         // 4        m_creatureModelScale
                                                             // 5        m_creatureModelAlpha
                                                             // 6-8      m_textureVariation[3]
                                                             // 9        m_portraitTextureName
@@ -897,10 +891,10 @@ struct CreatureImmunitiesEntry
 struct CreatureModelDataEntry
 {
     uint32 Id;
-    //uint32 Flags;
+    uint32 Flags;
     DbcStr ModelPath;
     //uint32 Unk1;
-    //float Scale;                                             // Used in calculation of unit collision data
+    float ModelScale;                                        // Used in calculation of unit collision data
     //int32 Unk2
     //int32 Unk3
     //uint32 Unk4
@@ -1720,9 +1714,9 @@ struct LiquidTypeEntry
     uint32 Id;
     //DbcStr Name;
     //uint32 Flags;
-    uint32 Type;
+    uint32 SoundBank;
     //uint32 SoundId;
-    uint32 SpellId;
+    uint32 SpellID;
     //float MaxDarkenDepth;
     //float FogDarkenIntensity;
     //float AmbDarkenIntensity;
@@ -1756,6 +1750,13 @@ struct PhaseEntry
     uint32    flag;                                         // 2
 };
 
+struct PhaseGroupEntry
+{
+    uint32 ID;
+    uint32 PhaseId;
+    uint32 GroupId;
+};
+
 struct MailTemplateEntry
 {
     uint32    ID;                                           // 0
@@ -1771,7 +1772,7 @@ struct MapEntry
     //uint32 flags;                                         // 3
     //uint32 isPvp;                                         // 4
     DbcStr name;                                            // 5        m_MapName_lang
-    uint32  linked_zone;                                    // 6        m_areaTableID
+    uint32  AreaTableID;                                    // 6        m_areaTableID
     //DbcStr    hordeIntro;                                 // 7        m_MapDescription0_lang
     //DbcStr    allianceIntro;                              // 8        m_MapDescription1_lang
     uint32  multimap_id;                                    // 9        m_LoadingScreenID (LoadingScreens.dbc)
@@ -2051,10 +2052,12 @@ struct SkillRaceClassInfoEntry
     uint32    SkillTierId;
 };
 
+#define MAX_SKILL_STEP 16
+
 struct SkillTiersEntry
 {
     uint32 Id;                                              // 0
-    uint32 MaxSkillValue[16];                               // 1-16
+    uint32 MaxSkillValue[MAX_SKILL_STEP];                   // 1-16
 };
 
 struct SkillLineEntry
@@ -2774,7 +2777,7 @@ struct WMOAreaTableEntry
     //uint32 field7;
     //uint32 field8;
     uint32 Flags;                                           // 9 used for indoor/outdoor determination
-    uint32 areaId;                                          // 10 link to AreaTableEntry.ID
+    uint32 AreaTableID;                                     // 10 link to AreaTableEntry.ID
     //char *Name;                                           // 11       m_AreaName_lang
     //uint32 field12;                                       // 12
     //uint32 field13;                                       // 13
@@ -2871,6 +2874,8 @@ struct WorldStateUI
 #else
 #pragma pack(pop)
 #endif
+
+typedef std::unordered_map<uint32, std::set<uint32>> PhaseGroupContainer;
 
 struct VectorArray
 {

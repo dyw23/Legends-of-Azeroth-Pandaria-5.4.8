@@ -150,7 +150,7 @@ class boss_archbishop_benedictus : public CreatureScript
                 me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_DISORIENTED, true);
                 me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CONFUSE, true);
                 me->setActive(true);
-                me->setFaction(14);
+                me->SetFaction(14);
                 bPhase = false;
             }
 
@@ -171,7 +171,7 @@ class boss_archbishop_benedictus : public CreatureScript
             void IsSummonedBy(Unit* /*summoner*/) override 
             { 
                 me->SetReactState(REACT_PASSIVE);
-                me->setFaction(35);
+                me->SetFaction(35);
                 me->GetMotionMaster()->MovePoint(0, BenedictusWayPoint);
                 SetEquipmentSlots(false, ImmaculateRecoveryStaff , 0, EQUIP_NO_CHANGE);
             }
@@ -209,7 +209,7 @@ class boss_archbishop_benedictus : public CreatureScript
                 }
             }
 
-            void Reset()
+            void Reset() override
             {
                 _Reset();
 
@@ -221,11 +221,11 @@ class boss_archbishop_benedictus : public CreatureScript
 
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 me->SetReactState(REACT_AGGRESSIVE);
                 bPhase = false;
-                _EnterCombat();
+                _JustEngagedWith();
                 events.ScheduleEvent(EVENT_PURIFYING_LIGHT, 10000);
                 events.ScheduleEvent(EVENT_SMITE, urand(1000, 2000));
                 events.ScheduleEvent(EVENT_RIGHTEOUS_SNEAR, urand(5000, 10000));
@@ -317,7 +317,7 @@ class boss_archbishop_benedictus : public CreatureScript
                             break;
                         case EVENT_TALK_4:
                             Talk(SAY_EVENT_4);
-                            me->setFaction(14);
+                            me->SetFaction(14);
                             break;
                     }
                 }

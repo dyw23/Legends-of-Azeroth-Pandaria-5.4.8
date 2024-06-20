@@ -5,11 +5,13 @@
 */
 
 #include "LuaEngine.h"
+#include "LuaFunctions.h"
 #include "Config.h"
-// #include "HookMgr.h"
+#include "HookMgr.h"
 
 #if PLATFORM == PLATFORM_UNIX
 #include <dirent.h>
+#include <sys/stat.h>
 #endif
 
 template<typename T> const char* GetTName() { return NULL; }
@@ -32,9 +34,6 @@ template<> const char* GetTName<Map>() { return "Map"; }
 template<> const char* GetTName<Corpse>() { return "Corpse"; }
 template<> const char* GetTName<Weather>() { return "Weather"; }
 template<> const char* GetTName<AuctionHouseObject>() { return "AuctionHouse"; }
-
-extern void RegisterFunctions(lua_State* L);
-extern void AddElunaScripts();
 
 void StartEluna(bool restart)
 {
@@ -163,6 +162,12 @@ void StartEluna(bool restart)
     
     TC_LOG_INFO("server.loading", "[Eluna]: Loaded %u Lua scripts..", count);
     TC_LOG_INFO("server.loading", "");
+}
+
+Eluna* Eluna::instance()
+{
+    static Eluna instance;
+    return &instance;
 }
 
 // Loads lua scripts from given directory

@@ -94,7 +94,7 @@ public:
 
             creature->AI()->Talk(SAY_MAKE_PREPARATIONS);
 
-            creature->setFaction(250);
+            creature->SetFaction(250);
             creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
 
             CAST_AI(npc_escortAI, (creature->AI()))->Start(false, false, player->GetGUID());
@@ -185,7 +185,7 @@ public:
 
         }
 
-        void EnterCombat(Unit* who) override
+        void JustEngagedWith(Unit* who) override
         {
             Talk(SAY_ATTACKED, who);
         }

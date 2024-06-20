@@ -302,9 +302,9 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
 
                 me->SetReactState(REACT_AGGRESSIVE);
                 me->RemoveAurasDueToSpell(SPELL_MELEE);
@@ -921,7 +921,7 @@ struct npc_korkron_jailer : public ScriptedAI
             me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
             me->PrepareChanneledCast(me->GetOrientation());
             me->SetHealth(1);
-            me->setFaction(35); // cuz ref doesn`t work
+            me->SetFaction(35); // cuz ref doesn`t work
             me->SetFlag(UNIT_FIELD_FLAGS2, 69240832);
             DoCast(me, SPELL_PERMANENT_FEIGN_DEATH, true);
 
@@ -930,7 +930,7 @@ struct npc_korkron_jailer : public ScriptedAI
         }
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         Talk(TALK_INTRO);
         events.ScheduleEvent(EVENT_ENRAGE, 7.5 * IN_MILLISECONDS);
@@ -1220,7 +1220,7 @@ struct npc_thok_captive_cave_bat : public ScriptedAI
         return 0;
     }
 
-    void EnterCombat(Unit* /*who*/) override { }
+    void JustEngagedWith(Unit* /*who*/) override { }
 
     void EnterEvadeMode() override
     {

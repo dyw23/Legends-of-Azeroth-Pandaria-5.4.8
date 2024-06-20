@@ -124,7 +124,7 @@ class boss_sha_of_anger : public CreatureScript
                     Talk(TALK_SLAY);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 Talk(TALK_AGGRO);
             }
@@ -325,7 +325,7 @@ class spell_sha_of_anger_aggressive_behaviour : public AuraScript
                 return;
 
             target->SetPvP(true);
-            target->setFaction(16);
+            target->SetFaction(16);
             target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
         }
     }

@@ -13,3 +13,4 @@ jobs:
       uses: Legends-of-Azeroth/GitHub-Actions@issue-labeler-prod
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
+

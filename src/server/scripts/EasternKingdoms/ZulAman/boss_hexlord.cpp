@@ -259,7 +259,7 @@ class boss_hex_lord_malacrass : public CreatureScript
                 me->SetSheath(SHEATH_STATE_MELEE);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_SPIRIT_BOLTS, 10000);
                 events.ScheduleEvent(EVENT_DRAIN_POWER, 6000);
@@ -311,7 +311,7 @@ class boss_hex_lord_malacrass : public CreatureScript
                         case EVENT_SIPHON_SOUL:
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                             {
-                                PlayerClass = target->getClass() - 1;
+                                PlayerClass = target->GetClass() - 1;
                                 if (PlayerClass == CLASS_DRUID-1)
                                     PlayerClass = CLASS_DRUID;
                                 else if (PlayerClass == CLASS_PRIEST-1 && target->HasSpell(15473))
@@ -553,7 +553,7 @@ class spell_hexlord_unstable_affliction : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hexlord_unstable_affliction_AuraScript);
 
-            bool Validate(SpellInfo const* /*spell*/)
+            bool Validate(SpellInfo const* /*spell*/) override
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_WL_UNSTABLE_AFFL_DISPEL))
                     return false;
