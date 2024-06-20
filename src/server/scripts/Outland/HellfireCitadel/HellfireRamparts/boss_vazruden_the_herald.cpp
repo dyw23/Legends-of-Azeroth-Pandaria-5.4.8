@@ -83,7 +83,7 @@ class boss_nazan : public CreatureScript
                 Turn_Timer = 0;
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void IsSummonedBy(Unit* summoner) override
             {
@@ -98,7 +98,7 @@ class boss_nazan : public CreatureScript
                 if (summoned && summoned->GetEntry() == NPC_LIQUID_FIRE)
                 {
                     summoned->SetLevel(me->GetLevel());
-                    summoned->setFaction(me->getFaction());
+                    summoned->SetFaction(me->GetFaction());
                     summoned->CastSpell(summoned, DUNGEON_MODE(SPELL_SUMMON_LIQUID_FIRE, SPELL_SUMMON_LIQUID_FIRE_H), true);
                     summoned->CastSpell(summoned, SPELL_FIRE_NOVA_VISUAL, true);
                 }
@@ -231,10 +231,10 @@ class boss_vazruden : public CreatureScript
                 _Reset();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 Talk(SAY_AGGRO);
-                _EnterCombat();
+                _JustEngagedWith();
             }
 
             void KilledUnit(Unit* who) override
@@ -372,7 +372,7 @@ class boss_vazruden_the_herald : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 if (phase == 0)
                 {
@@ -510,7 +510,7 @@ class npc_hellfire_sentry : public CreatureScript
                 KidneyShot_Timer = urand(3000, 7000);
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void JustDied(Unit* killer) override
             {

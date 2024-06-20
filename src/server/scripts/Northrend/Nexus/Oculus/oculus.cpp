@@ -136,7 +136,7 @@ class npc_verdisa_beglaristrasz_eternos : public CreatureScript
                 player->DestroyItemCount(itemId, 1, true, false);
             }
 
-            void sGossipSelect(Player* player, uint32 menuId, uint32 action) override
+            bool OnGossipSelect(Player* player, uint32 menuId, uint32 action) override
             {
                 switch (menuId)
                 {
@@ -151,7 +151,7 @@ class npc_verdisa_beglaristrasz_eternos : public CreatureScript
                             StoreEssence(player, ITEM_EMERALD_ESSENCE);
                             break;
                         }
-                        return;
+                        return true;
                     case GOSSIP_MENU_ETERNOS:
                         if (action >= 1 && action <= 3)
                         {
@@ -163,7 +163,7 @@ class npc_verdisa_beglaristrasz_eternos : public CreatureScript
                             StoreEssence(player, ITEM_AMBER_ESSENCE);
                             break;
                         }
-                        return;
+                        return true;
                     case GOSSIP_MENU_BELGARISTRASZ:
                         if (action <= 2)
                         {
@@ -175,11 +175,12 @@ class npc_verdisa_beglaristrasz_eternos : public CreatureScript
                             StoreEssence(player, ITEM_RUBY_ESSENCE);
                             break;
                         }
-                        return;
+                        return true;
                     default:
-                        return;
+                        return true;
                 }
                 player->PlayerTalkClass->SendCloseGossip();
+                return true;
             }
 
             void MovementInform(uint32 /*type*/, uint32 pointId) override
@@ -779,7 +780,7 @@ class cond_loot_cache_of_the_ley_guardian : public ConditionScript
     public:
         cond_loot_cache_of_the_ley_guardian() : ConditionScript("cond_loot_cache_of_the_ley_guardian") { }
 
-        bool OnConditionCheck(Condition* /*condition*/, ConditionSourceInfo& sourceInfo) override
+        bool OnConditionCheck(const Condition* /*condition*/, ConditionSourceInfo& sourceInfo) override
         {
             if (!sourceInfo.mConditionTargets[0])
                 return false;

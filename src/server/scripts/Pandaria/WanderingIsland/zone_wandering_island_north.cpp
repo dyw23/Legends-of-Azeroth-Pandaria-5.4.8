@@ -107,50 +107,6 @@ class npc_master_shang_xi : public CreatureScript
         }
 };
 
-class go_wandering_weapon_rack : public GameObjectScript
-{
-    public:
-        go_wandering_weapon_rack() : GameObjectScript("go_wandering_weapon_rack") { }
-
-        bool OnGossipHello(Player* player, GameObject* /*go*/) override
-        {
-            if (player->GetQuestStatus(30027) == QUEST_STATUS_INCOMPLETE && !player->HasItemCount(73209))
-            {
-                player->AddItem(73209, 1);
-            }
-            else if (player->GetQuestStatus(30033) == QUEST_STATUS_INCOMPLETE && (!player->HasItemCount(76392) || !player->HasItemCount(76390)))
-            {
-                player->AddItem(76392, 1);
-                player->AddItem(76390, 1);
-            }
-            else if (player->GetQuestStatus(30034) == QUEST_STATUS_INCOMPLETE && !player->HasItemCount(73211))
-            {
-                player->AddItem(73211, 1);
-            }
-            else if (player->GetQuestStatus(30035) == QUEST_STATUS_INCOMPLETE && (!player->HasItemCount(76393) || !player->HasItemCount(73207)))
-            {
-                player->AddItem(76393, 1);
-                player->AddItem(73207, 1);
-            }
-            else if (player->GetQuestStatus(30036) == QUEST_STATUS_INCOMPLETE && (!player->HasItemCount(73212) || !player->HasItemCount(73208)))
-            {
-                player->AddItem(73212, 1);
-                player->AddItem(73208, 1);
-            }
-            else if (player->GetQuestStatus(30037) == QUEST_STATUS_INCOMPLETE && (!player->HasItemCount(73213) || !player->HasItemCount(76391)))
-            {
-                player->AddItem(73213, 1);
-                player->AddItem(76391, 1);
-            }
-            else if (player->GetQuestStatus(30038) == QUEST_STATUS_INCOMPLETE && !player->HasItemCount(73210))
-            {
-                player->AddItem(73210, 1);
-            }
-
-            return true;
-        }
-};
-
 struct npc_training_target : public ScriptedAI
 {
     uint32 resetTimer;
@@ -245,7 +201,7 @@ class npc_tushui_trainee : public CreatureScript
                 isInCombat = false;
 
                 me->SetReactState(REACT_DEFENSIVE);
-                me->setFaction(2357);
+                me->SetFaction(2357);
                 me->SetFullHealth();
             }
 
@@ -253,7 +209,7 @@ class npc_tushui_trainee : public CreatureScript
             {
                 if (me->HealthBelowPctDamaged(16, damage))
                 {
-                    me->setFaction(35);
+                    me->SetFaction(35);
 
                     if (attacker && attacker->GetTypeId() == TYPEID_PLAYER)
                         attacker->ToPlayer()->KilledMonsterCredit(54586, 0);
@@ -272,7 +228,7 @@ class npc_tushui_trainee : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 isInCombat = true;
             }
@@ -344,7 +300,7 @@ class npc_huojin_trainee : public CreatureScript
                 isInCombat = false;
 
                 me->SetReactState(REACT_DEFENSIVE);
-                me->setFaction(2357);
+                me->SetFaction(2357);
                 me->SetFullHealth();
             }
 
@@ -352,7 +308,7 @@ class npc_huojin_trainee : public CreatureScript
             {
                 if (me->HealthBelowPctDamaged(16, damage))
                 {
-                    me->setFaction(35);
+                    me->SetFaction(35);
 
                     if (attacker && attacker->GetTypeId() == TYPEID_PLAYER)
                         attacker->ToPlayer()->KilledMonsterCredit(54586, 0);
@@ -371,7 +327,7 @@ class npc_huojin_trainee : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 isInCombat = true;
             }
@@ -430,7 +386,7 @@ class boss_jaomin_ro : public CreatureScript
             EventMap events;
             bool isInFalcon;
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_JAOMIN_JUMP, 1000);
                 events.ScheduleEvent(EVENT_HIT_CIRCLE, 2000);
@@ -441,10 +397,10 @@ class boss_jaomin_ro : public CreatureScript
             {
                 isInFalcon = false;
                 me->SetDisplayId(39755);
-                me->setFaction(2357); //mechant!
+                me->SetFaction(2357); //mechant!
             }
 
-            void MoveInLineOfSight(Unit*  who)
+            void MoveInLineOfSight(Unit*  who) override
             {
                 Player * const player = who->ToPlayer();
                 if (!player)
@@ -485,7 +441,7 @@ class boss_jaomin_ro : public CreatureScript
 
                     Talk(1);
                     EnterEvadeMode();
-                    me->setFaction(35);
+                    me->SetFaction(35);
                     me->SetFullHealth();
                     me->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
                     events.Reset();
@@ -771,7 +727,7 @@ class npc_aysa : public CreatureScript
                 timer = 0;
                 lifeiGUID = 0;
                 me->SetReactState(REACT_DEFENSIVE);
-                me->setFaction(2263);
+                me->SetFaction(2263);
             }
 
             EventMap events;
@@ -1172,7 +1128,7 @@ class npc_trainee_nim : public CreatureScript
             npc_trainee_nimAI(Creature* creature) : ScriptedAI(creature) { }
             std::set<uint64> guids;
 
-            void MoveInLineOfSight(Unit*  who)
+            void MoveInLineOfSight(Unit* who) override
             {
                 Player * const player = who->ToPlayer();
                 if (!player)
@@ -1208,7 +1164,7 @@ class npc_merchant_lorvo : public CreatureScript
             npc_merchant_lorvoAI(Creature* creature) : ScriptedAI(creature) { }
             std::set<uint64> guids;
 
-            void MoveInLineOfSight(Unit*  who)
+            void MoveInLineOfSight(Unit* who) override
             {
                 Player * const player = who->ToPlayer();
                 if (!player)
@@ -1348,7 +1304,6 @@ class spell_feet_of_fury : public SpellScriptLoader
 void AddSC_wandering_island_north()
 {
     new npc_master_shang_xi();
-    new go_wandering_weapon_rack();
     new creature_script<npc_training_target>("npc_training_target");
     new npc_tushui_trainee();
     new npc_huojin_trainee();

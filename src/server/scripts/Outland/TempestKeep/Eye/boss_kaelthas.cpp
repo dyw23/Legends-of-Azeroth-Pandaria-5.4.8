@@ -355,7 +355,7 @@ class boss_kaelthas : public CreatureScript
                     {
                         creature->Respawn();
                         creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        creature->setFaction(me->getFaction());
+                        creature->SetFaction(me->GetFaction());
                         creature->AI()->EnterEvadeMode();
                     }
                 }
@@ -430,7 +430,7 @@ class boss_kaelthas : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 if (instance && !instance->GetData(DATA_KAELTHASEVENT) && !Phase)
                     StartEvent();
@@ -520,7 +520,7 @@ class boss_kaelthas : public CreatureScript
                                     if (Advisor)
                                     {
                                         Advisor->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                                        Advisor->setFaction(me->getFaction());
+                                        Advisor->SetFaction(me->GetFaction());
 
                                         target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                                         if (target)
@@ -554,7 +554,7 @@ class boss_kaelthas : public CreatureScript
                                     if (Advisor)
                                     {
                                         Advisor->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                                        Advisor->setFaction(me->getFaction());
+                                        Advisor->SetFaction(me->GetFaction());
 
                                         target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                                         if (target)
@@ -588,7 +588,7 @@ class boss_kaelthas : public CreatureScript
                                     if (Advisor)
                                     {
                                         Advisor->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                                        Advisor->setFaction(me->getFaction());
+                                        Advisor->SetFaction(me->GetFaction());
 
                                         target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                                         if (target)
@@ -622,7 +622,7 @@ class boss_kaelthas : public CreatureScript
                                     if (Advisor)
                                     {
                                         Advisor->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                                        Advisor->setFaction(me->getFaction());
+                                        Advisor->SetFaction(me->GetFaction());
 
                                         target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                                         if (target)
@@ -1044,7 +1044,7 @@ class boss_thaladred_the_darkener : public CreatureScript
                 advisorbase_ai::Reset();
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                     return;
@@ -1137,7 +1137,7 @@ class boss_lord_sanguinar : public CreatureScript
                 advisorbase_ai::Reset();
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                     return;
@@ -1234,7 +1234,7 @@ class boss_grand_astromancer_capernian : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                     return;
@@ -1358,7 +1358,7 @@ class boss_master_engineer_telonicus : public CreatureScript
                     Talk(SAY_TELONICUS_DEATH);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                     return;
@@ -1438,13 +1438,13 @@ class npc_kael_flamestrike : public CreatureScript
                 KillSelf = false;
 
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                me->setFaction(14);
+                me->SetFaction(14);
             }
 
             void MoveInLineOfSight(Unit* /*who*/) override { }
 
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void UpdateAI(uint32 diff) override
             {

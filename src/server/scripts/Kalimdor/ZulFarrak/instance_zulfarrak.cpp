@@ -20,6 +20,7 @@
 #include "zulfarrak.h"
 #include "Player.h"
 #include "TemporarySummon.h"
+#include "Random.h"
 
 enum Misc
 {
@@ -228,7 +229,7 @@ public:
             };
         }
 
-        virtual void Update(uint32 diff)
+        virtual void Update(uint32 diff) override
         {
             switch (PyramidPhase)
             {

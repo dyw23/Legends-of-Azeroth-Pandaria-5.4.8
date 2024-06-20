@@ -26,6 +26,7 @@
 GossipMenu::GossipMenu()
 {
     _menuId = 0;
+    _senderGUID.Clear(); 
 }
 
 GossipMenu::~GossipMenu()
@@ -76,55 +77,53 @@ void GossipMenu::AddMenuItem(uint32 menuId, uint32 menuItemId, uint32 sender, ui
 {
     /// Find items for given menu id.
     GossipMenuItemsMapBounds bounds = sObjectMgr->GetGossipMenuItemsMapBounds(menuId);
-    /// Return if there are none.
-    if (bounds.first == bounds.second)
+    auto itr = std::find_if(bounds.first, bounds.second, [menuItemId](std::pair<uint32 const, GossipMenuItems> const& itemPair)
+    {
+        return itemPair.second.OptionID == menuItemId;
+    });
+
+    if (itr == bounds.second)
         return;
 
-    /// Iterate over each of them.
-    for (GossipMenuItemsContainer::const_iterator itr = bounds.first; itr != bounds.second; ++itr)
+    /// Store texts for localization.
+    std::string strOptionText, strBoxText;
+    BroadcastText const* optionBroadcastText = sObjectMgr->GetBroadcastText(itr->second.OptionBroadcastTextID);
+    BroadcastText const* boxBroadcastText = sObjectMgr->GetBroadcastText(itr->second.BoxBroadcastTextID);
+
+    /// OptionText
+    if (optionBroadcastText)
+        strOptionText = optionBroadcastText->GetText(GetLocale());
+    else
+        strOptionText = itr->second.OptionText;
+
+    /// BoxText
+    if (boxBroadcastText)
+        strBoxText = boxBroadcastText->GetText(GetLocale());
+    else
+        strBoxText = itr->second.BoxText;
+
+    /// Check need of localization.
+    if (GetLocale() != DEFAULT_LOCALE)
     {
-        /// Find the one with the given menu item id.
-        if (itr->second.OptionID != menuItemId)
-            continue;
-
-        /// Store texts for localization.
-        std::string strOptionText, strBoxText;
-        BroadcastText const* optionBroadcastText = sObjectMgr->GetBroadcastText(itr->second.OptionBroadcastTextID);
-        BroadcastText const* boxBroadcastText = sObjectMgr->GetBroadcastText(itr->second.BoxBroadcastTextID);
-
-        /// OptionText
-        if (optionBroadcastText)
-            strOptionText = optionBroadcastText->GetText(GetLocale());
-        else
-            strOptionText = itr->second.OptionText;
-
-        /// BoxText
-        if (boxBroadcastText)
-            strBoxText = boxBroadcastText->GetText(GetLocale());
-        else
-            strBoxText = itr->second.BoxText;
-
-        /// Check need of localization.
-        if (GetLocale() != DEFAULT_LOCALE)
+        if (!optionBroadcastText)
         {
-            if (!optionBroadcastText)
-            {
-                /// Find localizations from database.
-                if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(menuId, menuItemId))
-                    ObjectMgr::GetLocaleString(gossipMenuLocale->OptionText, GetLocale(), strOptionText);
-            }
-
-            if (!boxBroadcastText)
-            {
-                /// Find localizations from database.
-                if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(menuId, menuItemId))
-                    ObjectMgr::GetLocaleString(gossipMenuLocale->BoxText, GetLocale(), strBoxText);
-            }
+            /// Find localizations from database.
+            if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(menuId, menuItemId))
+                ObjectMgr::GetLocaleString(gossipMenuLocale->OptionText, GetLocale(), strOptionText);
         }
 
-        /// Add menu item with existing method. Menu item id -1 is also used in ADD_GOSSIP_ITEM macro.
-        AddMenuItem(-1, itr->second.OptionIcon, strOptionText, sender, action, strBoxText, itr->second.BoxMoney, itr->second.BoxCoded);
+        if (!boxBroadcastText)
+        {
+            /// Find localizations from database.
+            if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(menuId, menuItemId))
+                ObjectMgr::GetLocaleString(gossipMenuLocale->BoxText, GetLocale(), strBoxText);
+        }
     }
+
+    /// Add menu item with existing method. Menu item id -1 is also used in ADD_GOSSIP_ITEM macro.
+    AddMenuItem(itr->second.OptionID, itr->second.OptionIcon, strOptionText, sender, action, strBoxText, itr->second.BoxMoney, itr->second.BoxCoded);
+    AddGossipMenuItemData(itr->second.OptionID, itr->second.ActionMenuID, itr->second.ActionPoiID);
+
 }
 
 void GossipMenu::AddGossipMenuItemData(uint32 menuItemId, uint32 gossipActionMenuId, uint32 gossipActionPoi)
@@ -209,8 +208,8 @@ void PlayerMenu::SendGossipMenu(uint32 titleTextId, ObjectGuid objectGUID) const
 
         LocaleConstant localeConstant = _session->GetSessionDbLocaleIndex();
         if (localeConstant != LOCALE_enUS)
-            if (QuestLocale const* localeData = sObjectMgr->GetQuestLocale(questId))
-                ObjectMgr::GetLocaleString(localeData->Title, localeConstant, title);
+            if (QuestTemplateLocale const* localeData = sObjectMgr->GetQuestLocale(questId))
+                ObjectMgr::GetLocaleString(localeData->LogTitle, localeConstant, title);
 
         if (questLevelInTitle)
             AddQuestLevelToTitle(title, quest->GetQuestLevel());
@@ -392,8 +391,8 @@ void PlayerMenu::SendQuestGiverQuestList(QEmote eEmote, const std::string& Title
 
             LocaleConstant localeConstant = _session->GetSessionDbLocaleIndex();
             if (localeConstant != LOCALE_enUS)
-                if (QuestLocale const* localeData = sObjectMgr->GetQuestLocale(questID))
-                    ObjectMgr::GetLocaleString(localeData->Title, localeConstant, title);
+                if (QuestTemplateLocale const* localeData = sObjectMgr->GetQuestLocale(questID))
+                    ObjectMgr::GetLocaleString(localeData->LogTitle, localeConstant, title);
 
             if (questLevelInTitle)
                 AddQuestLevelToTitle(title, quest->GetQuestLevel());
@@ -434,7 +433,7 @@ void PlayerMenu::SendQuestGiverQuestList(QEmote eEmote, const std::string& Title
     TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUESTGIVER_QUEST_LIST NPC Guid=%u", GUID_LOPART(npcGUID));
 }
 
-void PlayerMenu::SendQuestGiverStatus(uint32 questStatus, uint64 npcGUID) const
+void PlayerMenu::SendQuestGiverStatus(QuestGiverStatus questStatus, uint64 npcGUID) const
 {
     ObjectGuid guid = npcGUID;
 
@@ -464,7 +463,6 @@ void PlayerMenu::SendQuestGiverStatus(uint32 questStatus, uint64 npcGUID) const
 
 void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, bool activateAccept, bool startedByAreaTrigger) const
 {
-    projectMemberInfo* info = quest->HasSpecialFlag(QUEST_SPECIAL_FLAGS_project_DAILY_QUEST) ? _session->GetprojectMemberInfo() : nullptr;
 
     std::string questTitle           = quest->GetTitle();
     std::string questDetails         = quest->GetDetails();
@@ -477,15 +475,15 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, 
     LocaleConstant localeConstant = _session->GetSessionDbLocaleIndex();
     if (localeConstant != LOCALE_enUS)
     {
-        if (QuestLocale const* localeData = sObjectMgr->GetQuestLocale(quest->GetQuestId()))
+        if (QuestTemplateLocale const* localeData = sObjectMgr->GetQuestLocale(quest->GetQuestId()))
         {
-            ObjectMgr::GetLocaleString(localeData->Title, localeConstant, questTitle);
-            ObjectMgr::GetLocaleString(localeData->Details, localeConstant, questDetails);
-            ObjectMgr::GetLocaleString(localeData->Objectives, localeConstant, questObjectives);
-            ObjectMgr::GetLocaleString(localeData->QuestGiverTextWindow, localeConstant, questGiverTextWindow);
-            ObjectMgr::GetLocaleString(localeData->QuestGiverTargetName, localeConstant, questGiverTargetName);
-            ObjectMgr::GetLocaleString(localeData->QuestTurnTextWindow, localeConstant, questTurnTextWindow);
-            ObjectMgr::GetLocaleString(localeData->QuestTurnTargetName, localeConstant, questTurnTargetName);
+            ObjectMgr::GetLocaleString(localeData->LogTitle, localeConstant, questTitle);
+            ObjectMgr::GetLocaleString(localeData->QuestDescription, localeConstant, questDetails);
+            ObjectMgr::GetLocaleString(localeData->LogDescription, localeConstant, questObjectives);
+            ObjectMgr::GetLocaleString(localeData->PortraitGiverText, localeConstant, questGiverTextWindow);
+            ObjectMgr::GetLocaleString(localeData->PortraitGiverName, localeConstant, questGiverTargetName);
+            ObjectMgr::GetLocaleString(localeData->PortraitTurnInText, localeConstant, questTurnTextWindow);
+            ObjectMgr::GetLocaleString(localeData->PortraitTurnInName, localeConstant, questTurnTargetName);
         }
     }
 
@@ -510,10 +508,6 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, 
     {
         uint32 id = quest->RewardItemId[i];
         uint32 count = quest->RewardItemIdCount[i];
-
-        // Add fake reward item for premium players
-        if (info)
-            info->ModifyQuestReward(quest, i, id, count);
 
         if (ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(id))
             rewItemDisplayId[i] = itemTemplate->DisplayInfoID;
@@ -589,7 +583,7 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, 
     data << uint32(quest->GetFlags2());
     data << uint32(0); // should be quest->GetRewSpellCast(), but need to know in which cases this need sends
     data << uint32(quest->RewardChoiceItemId[3]);
-    data << uint32(quest->GetRewItemsCount() + (info && info->GetPremiumQuestRewardBonus(quest) ? 1 : 0) + (info && info->GetVotingQuestRewardBonus(quest) ? 1 : 0));
+    data << uint32(quest->GetRewItemsCount());
     data << uint32(quest->GetRewardSkillPoints());
     data << uint32(rewItemDisplayId[0]);
     data << uint32(quest->RewardChoiceItemId[4]);
@@ -672,7 +666,6 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, 
 
 void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
 {
-    projectMemberInfo* info = quest->HasSpecialFlag(QUEST_SPECIAL_FLAGS_project_DAILY_QUEST) ? _session->GetprojectMemberInfo() : nullptr;
 
     std::string questTitle = quest->GetTitle();
     std::string questDetails = quest->GetDetails();
@@ -687,18 +680,19 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     LocaleConstant localeConstant = _session->GetSessionDbLocaleIndex();
     if (localeConstant != LOCALE_enUS)
     {
-        if (QuestLocale const* localeData = sObjectMgr->GetQuestLocale(quest->GetQuestId()))
+        if (QuestTemplateLocale const* localeData = sObjectMgr->GetQuestLocale(quest->GetQuestId()))
         {
-            ObjectMgr::GetLocaleString(localeData->Title, localeConstant, questTitle);
-            ObjectMgr::GetLocaleString(localeData->Details, localeConstant, questDetails);
-            ObjectMgr::GetLocaleString(localeData->Objectives, localeConstant, questObjectives);
-            ObjectMgr::GetLocaleString(localeData->EndText, localeConstant, questEndText);
-            ObjectMgr::GetLocaleString(localeData->CompletedText, localeConstant, questCompletedText);
-            ObjectMgr::GetLocaleString(localeData->QuestGiverTextWindow, localeConstant, questGiverTextWindow);
-            ObjectMgr::GetLocaleString(localeData->QuestGiverTargetName, localeConstant, questGiverTargetName);
-            ObjectMgr::GetLocaleString(localeData->QuestTurnTextWindow, localeConstant, questTurnTextWindow);
-            ObjectMgr::GetLocaleString(localeData->QuestTurnTargetName, localeConstant, questTurnTargetName);
+            ObjectMgr::GetLocaleString(localeData->LogTitle, localeConstant, questTitle);
+            ObjectMgr::GetLocaleString(localeData->QuestDescription, localeConstant, questDetails);
+            ObjectMgr::GetLocaleString(localeData->LogDescription, localeConstant, questObjectives);
+            ObjectMgr::GetLocaleString(localeData->AreaDescription, localeConstant, questEndText);
+            ObjectMgr::GetLocaleString(localeData->QuestCompletionLog, localeConstant, questCompletedText);
+            ObjectMgr::GetLocaleString(localeData->PortraitGiverText, localeConstant, questGiverTextWindow);
+            ObjectMgr::GetLocaleString(localeData->PortraitGiverName, localeConstant, questGiverTargetName);
+            ObjectMgr::GetLocaleString(localeData->PortraitTurnInText, localeConstant, questTurnTextWindow);
+            ObjectMgr::GetLocaleString(localeData->PortraitTurnInName, localeConstant, questTurnTargetName);            
         }
+
     }
 
     std::vector<std::pair<uint32 /*itemId*/, uint32 /*count*/>> rewInfo;
@@ -706,10 +700,6 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     {
         uint32 id = quest->RewardItemId[i];
         uint32 count = quest->RewardItemIdCount[i];
-
-        // Add fake reward item for premium players
-        if (info)
-            info->ModifyQuestReward(quest, i, id, count);
 
         rewInfo.push_back(std::make_pair(id, count));
     }
@@ -739,7 +729,8 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
 
         std::string descriptionText = questObjective->Description;
         if (localeConstant != LOCALE_enUS)
-            if (QuestObjectiveLocale const* questObjectiveLocale = sObjectMgr->GetQuestObjectiveLocale(questObjective->Id))
+            if (QuestObjectivesLocale const* questObjectiveLocale = sObjectMgr->GetQuestObjectivesLocale(questObjective->Id))
+            //if (QuestObjectiveLocale const* questObjectiveLocale = sObjectMgr->GetQuestObjectiveLocale(questObjective->Id))
                 ObjectMgr::GetLocaleString(questObjectiveLocale->Description, localeConstant, descriptionText);
 
         data.WriteBits(descriptionText.size(), 8);
@@ -863,7 +854,6 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
 
 void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, uint64 npcGuid, bool enableNext) const
 {
-    projectMemberInfo* info = quest->HasSpecialFlag(QUEST_SPECIAL_FLAGS_project_DAILY_QUEST) ? _session->GetprojectMemberInfo() : nullptr;
 
     std::string questTitle = quest->GetTitle();
     std::string questOfferRewardText = quest->GetOfferRewardText();
@@ -875,15 +865,17 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, uint64 npcGuid, b
     LocaleConstant localeConstant = _session->GetSessionDbLocaleIndex();
     if (localeConstant != LOCALE_enUS)
     {
-        if (QuestLocale const* localeData = sObjectMgr->GetQuestLocale(quest->GetQuestId()))
+        if (QuestTemplateLocale const* questTemplateLocale = sObjectMgr->GetQuestLocale(quest->GetQuestId()))
         {
-            ObjectMgr::GetLocaleString(localeData->Title, localeConstant, questTitle);
-            ObjectMgr::GetLocaleString(localeData->OfferRewardText, localeConstant, questOfferRewardText);
-            ObjectMgr::GetLocaleString(localeData->QuestGiverTextWindow, localeConstant, questGiverTextWindow);
-            ObjectMgr::GetLocaleString(localeData->QuestGiverTargetName, localeConstant, questGiverTargetName);
-            ObjectMgr::GetLocaleString(localeData->QuestTurnTextWindow, localeConstant, questTurnTextWindow);
-            ObjectMgr::GetLocaleString(localeData->QuestTurnTargetName, localeConstant, questTurnTargetName);
+            ObjectMgr::GetLocaleString(questTemplateLocale->LogTitle,           localeConstant, questTitle);
+            ObjectMgr::GetLocaleString(questTemplateLocale->PortraitGiverText,  localeConstant, questGiverTextWindow);
+            ObjectMgr::GetLocaleString(questTemplateLocale->PortraitGiverName,  localeConstant, questGiverTargetName);
+            ObjectMgr::GetLocaleString(questTemplateLocale->PortraitTurnInText, localeConstant, questTurnTextWindow);
+            ObjectMgr::GetLocaleString(questTemplateLocale->PortraitTurnInName, localeConstant, questTurnTargetName);            
         }
+
+        if (QuestOfferRewardLocale const* questOfferRewardLocale = sObjectMgr->GetQuestOfferRewardLocale(quest->GetQuestId()))
+            ObjectMgr::GetLocaleString(questOfferRewardLocale->RewardText, localeConstant, questOfferRewardText);
     }
 
     if (sWorld->getBoolConfig(CONFIG_UI_QUESTLEVELS_IN_DIALOGS))
@@ -895,10 +887,6 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, uint64 npcGuid, b
     {
         uint32 id = quest->RewardItemId[i];
         uint32 count = quest->RewardItemIdCount[i];
-
-        // Add fake reward item for premium players
-        if (info)
-            info->ModifyQuestReward(quest, i, id, count);
 
         ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(id);
         rewItemDisplayId[i] = itemTemplate ? itemTemplate->DisplayInfoID : 0;
@@ -979,7 +967,7 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, uint64 npcGuid, b
     data << uint32(quest->XPValue(_session->GetPlayer()) * sWorld->getRate(RATE_XP_QUEST));
     data << uint32(quest->GetCharTitleId());
     data << uint32(quest->RewardChoiceItemId[2]);
-    data << uint32(quest->GetRewItemsCount() + (info && info->GetPremiumQuestRewardBonus(quest) ? 1 : 0) + (info && info->GetVotingQuestRewardBonus(quest) ? 1 : 0));
+    data << uint32(quest->GetRewItemsCount());
     data << uint32(quest->GetSuggestedPlayers());
     data << uint32(quest->RewardChoiceItemId[4]);
     data << uint32(questEnderEntry);
@@ -1059,11 +1047,11 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, uint64 npcGuid, 
     LocaleConstant localeConstant = _session->GetSessionDbLocaleIndex();
     if (localeConstant != LOCALE_enUS)
     {
-        if (QuestLocale const* localeData = sObjectMgr->GetQuestLocale(quest->GetQuestId()))
-        {
-            ObjectMgr::GetLocaleString(localeData->Title, localeConstant, questTitle);
-            ObjectMgr::GetLocaleString(localeData->RequestItemsText, localeConstant, requestItemsText);
-        }
+        if (QuestTemplateLocale const* questTemplateLocale = sObjectMgr->GetQuestLocale(quest->GetQuestId()))
+            ObjectMgr::GetLocaleString(questTemplateLocale->LogTitle, localeConstant, questTitle);
+
+        if (QuestRequestItemsLocale const* questRequestItemsLocale = sObjectMgr->GetQuestRequestItemsLocale(quest->GetQuestId()))
+            ObjectMgr::GetLocaleString(questRequestItemsLocale->CompletionText, localeConstant, requestItemsText);        
     }
 
     uint32 requiredMoney = 0;

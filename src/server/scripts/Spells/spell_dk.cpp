@@ -28,6 +28,7 @@
 #include "Pet.h"
 #include "Battleground.h"
 #include "SpellHistory.h"
+#include "Random.h"
 
 enum DeathKnightSpells
 {
@@ -1027,7 +1028,7 @@ class spell_dk_death_gate : public SpellScriptLoader
 
             SpellCastResult CheckClass()
             {
-                if (GetCaster()->getClass() != CLASS_DEATH_KNIGHT)
+                if (GetCaster()->GetClass() != CLASS_DEATH_KNIGHT)
                 {
                     SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_MUST_BE_DEATH_KNIGHT);
                     return SPELL_FAILED_CUSTOM_ERROR;
@@ -1492,8 +1493,8 @@ class spell_dk_death_coil : public SpellScript
 
     void HandleHit(SpellEffIndex)
     {
-        uint32 healSpell = GetCaster()->getClass() == CLASS_DRUID ? SPELL_DRUID_DEATH_COIL_HEAL : SPELL_DK_DEATH_COIL_HEAL;
-        uint32 dmgSpell = GetCaster()->getClass() == CLASS_DRUID ? SPELL_DRUID_DEATH_COIL_DAMAGE : SPELL_DK_DEATH_COIL_DAMAGE;
+        uint32 healSpell = GetCaster()->GetClass() == CLASS_DRUID ? SPELL_DRUID_DEATH_COIL_HEAL : SPELL_DK_DEATH_COIL_HEAL;
+        uint32 dmgSpell = GetCaster()->GetClass() == CLASS_DRUID ? SPELL_DRUID_DEATH_COIL_DAMAGE : SPELL_DK_DEATH_COIL_DAMAGE;
         Unit* dk = GetCaster();
         Unit* target = GetHitUnit();
         if (dk->IsValidAssistTarget(target))
@@ -1698,7 +1699,7 @@ class spell_dk_threat_of_tassarian : public AuraScript
 
     void HandleProc(ProcEventInfo& eventInfo)
     {
-        if (!eventInfo.GetSpellInfo() || !GetUnitOwner()->HasOffhandWeapon())
+        if (!eventInfo.GetSpellInfo() || !GetUnitOwner()->haveOffhandWeapon())
             return;
 
         uint32 spell;
@@ -1794,7 +1795,7 @@ class spell_dk_rune_converter : public AuraScript
     bool Load() override
     {
         dk = GetOwner()->ToPlayer();
-        return dk && dk->getClass() == CLASS_DEATH_KNIGHT;
+        return dk && dk->GetClass() == CLASS_DEATH_KNIGHT;
     }
 
     bool CheckProc(ProcEventInfo& eventInfo)
@@ -2324,7 +2325,7 @@ struct npc_ebon_gargoyle : ScriptedAI
         }
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         m_scheduler.Schedule(Milliseconds(1), std::bind(&npc_ebon_gargoyle::DoAttack, this, std::placeholders::_1));
     }
@@ -2778,7 +2779,7 @@ class spel_dk_death_shroud_duration : public SpellScript
 {
     PrepareSpellScript(spel_dk_death_shroud_duration);
 
-    bool Load()
+    bool Load() override
     {
         return GetCaster()->GetTypeId() == TYPEID_PLAYER;
     }
@@ -2905,7 +2906,7 @@ class spell_dk_t16_blood_4p_bonus : public AuraScript
 
     bool Load() override
     {
-        return GetOwner()->GetTypeId() == TYPEID_PLAYER && GetUnitOwner()->getClass() == CLASS_DEATH_KNIGHT;
+        return GetOwner()->GetTypeId() == TYPEID_PLAYER && GetUnitOwner()->GetClass() == CLASS_DEATH_KNIGHT;
     }
 
     void HandleProc(ProcEventInfo& eventInfo)
@@ -3141,7 +3142,7 @@ struct npc_dk_army_of_the_dead_ghoul : public ScriptedAI
         });
     }
 
-    void UpdateAI(uint32 diff)
+    void UpdateAI(uint32 diff) override
     {
         assist.Update(diff);
         scheduler.Update(diff);
@@ -3305,7 +3306,7 @@ class sat_dk_anti_magic_zone : public IAreaTriggerAura
         target->ToUnit()->CastSpell(target->ToUnit(), SPELL_DK_ANTI_MAGIC_ZONE, true);
     }
 
-    void OnTriggeringRemove(WorldObject* target)
+    void OnTriggeringRemove(WorldObject* target) override
     {
         target->ToUnit()->RemoveAurasDueToSpell(SPELL_DK_ANTI_MAGIC_ZONE);
     }

@@ -155,7 +155,7 @@ class npc_lord_hiram_creed : public CreatureScript
                 bDragon = false;
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 Talk(SAY_AGGRO);
                 events.ScheduleEvent(EVENT_BERSERK, 4 * MINUTE * IN_MILLISECONDS);
@@ -165,7 +165,7 @@ class npc_lord_hiram_creed : public CreatureScript
                 events.ScheduleEvent(EVENT_CHECK_DISTANCE, 5000);
             }
 
-            void JustSummoned(Creature* summon)
+            void JustSummoned(Creature* summon) override
             {
                 if (summon->GetEntry() == NPC_HIRAM_CREEDS_SHADOW_BREATH)
                 {   
@@ -267,7 +267,7 @@ class npc_lord_hiram_creed : public CreatureScript
                         if (target->GetTypeId() != TYPEID_PLAYER)
                             return false;
 
-                        if (target->getClass() == CLASS_ROGUE)
+                        if (target->GetClass() == CLASS_ROGUE)
                             return false;
 
                         return true;

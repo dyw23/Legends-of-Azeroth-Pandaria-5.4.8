@@ -159,14 +159,14 @@ class boss_grand_warlock_nethekurse : public CreatureScript
                 ScriptedAI::MoveInLineOfSight(who);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 Talk(SAY_AGGRO);
             }
 
             void JustSummoned(Creature* summoned) override
             {
-                summoned->setFaction(16);
+                summoned->SetFaction(16);
                 summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
@@ -270,7 +270,7 @@ class npc_fel_orc_convert : public CreatureScript
                 events.Reset();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_HEMORRHAGE, 3000);
 
@@ -334,7 +334,7 @@ class npc_lesser_shadow_fissure : public CreatureScript
             void Reset() override { }
             void MoveInLineOfSight(Unit* /*who*/) override { }
             void AttackStart(Unit* /*who*/) override { }
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
         };
 
         CreatureAI* GetAI(Creature* creature) const override

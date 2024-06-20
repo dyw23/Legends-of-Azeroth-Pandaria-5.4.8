@@ -101,7 +101,7 @@ public:
             add = NULL;
         }
 
-        void EnterCombat(Unit* /*who*/) override { }
+        void JustEngagedWith(Unit* /*who*/) override { }
 
         /*void SpellHit(Unit* caster, const SpellInfo* spell) override
         {
@@ -315,7 +315,7 @@ public:
         if (go->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER)
         {
             player->PrepareQuestMenu(go->GetGUID());
-            player->SendPreparedQuest(go->GetGUID());
+            player->SendPreparedQuest(go);
         }
 
         Creature* manaforge = NULL;
@@ -425,7 +425,7 @@ public:
             isEvent = false;
         }
 
-        void EnterCombat(Unit* /*who*/) override { }
+        void JustEngagedWith(Unit* /*who*/) override { }
 
         void JustSummoned(Creature* summoned) override
         {
@@ -771,7 +771,7 @@ public:
                 me->UpdateEntry(NPC_PHASE_HUNTER_ENTRY);
         }
 
-        void EnterCombat(Unit* who) override
+        void JustEngagedWith(Unit* who) override
         {
             if (who->GetTypeId() == TYPEID_PLAYER)
                 PlayerGUID = who->GetGUID();
@@ -867,7 +867,7 @@ public:
     {
         if (quest->GetQuestId() == Q_ALMABTRIEB)
         {
-            creature->setFaction(113);
+            creature->SetFaction(113);
             creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             CAST_AI(npc_escortAI, (creature->AI()))->Start(true, false, player->GetGUID());
         }
@@ -1025,7 +1025,7 @@ public:
         {
             if (npc_maxx_a_million_escortAI* pEscortAI = CAST_AI(npc_maxx_a_million_escort::npc_maxx_a_million_escortAI, creature->AI()))
             {
-                creature->setFaction(113);
+                creature->SetFaction(113);
                 pEscortAI->Start(false, false, player->GetGUID());
             }
         }

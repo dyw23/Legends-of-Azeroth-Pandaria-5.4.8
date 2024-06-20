@@ -32,7 +32,6 @@
 #include "ObjectMgr.h"
 #include "MovementStructures.h"
 #include "BattlePetMgr.h"
-#include <ace/Stack_Trace.h>
 #include <boost/accumulators/statistics/variance.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
@@ -102,8 +101,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     bool invalidZ = false;
     if (GetPlayer()->GetPositionZ() > 500000.0f || GetPlayer()->GetPositionZ() <= -200000.0f)
     {
-        ACE_Stack_Trace st;
-        TC_LOG_ERROR("shitlog", "WorldSession::HandleMoveWorldportAckOpcode z coordinate fucked: %s, map %u, z %f\n%s", GetPlayerInfo().c_str(), newMap->GetId(), GetPlayer()->GetPositionZ(), st.c_str());
+        TC_LOG_ERROR("shitlog", "WorldSession::HandleMoveWorldportAckOpcode z coordinate fucked: %s, map %u, z %f\n", GetPlayerInfo().c_str(), newMap->GetId(), GetPlayer()->GetPositionZ());
         invalidZ = true;
     }
 
@@ -391,7 +389,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     if (plrMover && ((movementInfo.flags & MOVEMENTFLAG_SWIMMING) != 0) != plrMover->IsInWater())
     {
         // now client not include swimming flag in case jumping under water
-        plrMover->SetInWater(!plrMover->IsInWater() || plrMover->GetBaseMap()->IsUnderWater(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), _player->GetCollisionHeight(_player->IsMounted())));
+        plrMover->SetInWater(!plrMover->IsInWater() || plrMover->GetBaseMap()->IsUnderWater(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ(), _player->GetCollisionHeight()));
     }
 
     // Client strips this flag for whatever reason when controlling rooted vehicles
@@ -569,6 +567,8 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket& recvPacket)
         if (guid != _player->GetClientMoverGuid())
             TC_LOG_ERROR("network", "HandleSetActiveMoverOpcode: incorrect mover guid: mover is " UI64FMTD " (%s - Entry: %u) and should be " UI64FMTD, uint64(guid), GetLogNameForGuid(guid), GUID_ENPART(guid), _player->GetClientMoverGuid());
     }
+    // Unit* newActivelyMovedUnit = ObjectAccessor::GetUnit(*_player, guid); // todo
+    // _player->SetMover(newActivelyMovedUnit);
 }
 
 void WorldSession::HandleMoveNotActiveMover(WorldPacket &recvData)

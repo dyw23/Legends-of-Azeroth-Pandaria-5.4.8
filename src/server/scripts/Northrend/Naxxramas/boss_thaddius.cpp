@@ -20,6 +20,7 @@
 #include "SpellScript.h"
 #include "Player.h"
 #include "naxxramas.h"
+#include "Random.h"
 
 //Stalagg
 enum StalaggYells
@@ -190,9 +191,9 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/) override
+        void JustEngagedWith(Unit* /*who*/) override
         {
-            _EnterCombat();
+            _JustEngagedWith();
             Talk(SAY_AGGRO);
             events.ScheduleEvent(EVENT_SHIFT, 30000);
             events.ScheduleEvent(EVENT_CHAIN, urand(10000, 20000));
@@ -320,7 +321,7 @@ public:
                 Talk(SAY_STAL_SLAY);
         }
 
-        void EnterCombat(Unit* /*who*/) override
+        void JustEngagedWith(Unit* /*who*/) override
         {
             Talk(SAY_STAL_AGGRO);
             DoCast(SPELL_STALAGG_TESLA);
@@ -412,7 +413,7 @@ public:
                 Talk(SAY_FEUG_SLAY);
         }
 
-        void EnterCombat(Unit* /*who*/) override
+        void JustEngagedWith(Unit* /*who*/) override
         {
             Talk(SAY_FEUG_AGGRO);
             DoCast(SPELL_FEUGEN_TESLA);

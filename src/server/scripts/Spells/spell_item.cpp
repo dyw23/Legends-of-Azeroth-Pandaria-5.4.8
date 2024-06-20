@@ -31,6 +31,7 @@
 #include "Chat.h"
 #include "CreatureTextMgr.h"
 #include "spell_common.h"
+#include "Random.h"
 
 // Generic script for handling item dummy effects which trigger another spell.
 class spell_item_trigger_spell : public SpellScriptLoader
@@ -381,7 +382,7 @@ class spell_item_flask_of_the_north : public SpellScriptLoader
             {
                 Unit* caster = GetCaster();
                 std::vector<uint32> possibleSpells;
-                switch (caster->getClass())
+                switch (caster->GetClass())
                 {
                     case CLASS_WARLOCK:
                     case CLASS_MAGE:
@@ -806,9 +807,9 @@ class spell_item_savory_deviate_delight : public SpellScriptLoader
                 switch (urand(1, 2))
                 {
                     // Flip Out - ninja
-                    case 1: spellId = (caster->getGender() == GENDER_MALE ? SPELL_FLIP_OUT_MALE : SPELL_FLIP_OUT_FEMALE); break;
+                    case 1: spellId = (caster->GetGender() == GENDER_MALE ? SPELL_FLIP_OUT_MALE : SPELL_FLIP_OUT_FEMALE); break;
                     // Yaaarrrr - pirate
-                    case 2: spellId = (caster->getGender() == GENDER_MALE ? SPELL_YAAARRRR_MALE : SPELL_YAAARRRR_FEMALE); break;
+                    case 2: spellId = (caster->GetGender() == GENDER_MALE ? SPELL_YAAARRRR_MALE : SPELL_YAAARRRR_FEMALE); break;
                 }
                 caster->CastSpell(caster, spellId, true, NULL);
             }
@@ -3370,10 +3371,10 @@ private:
                     default:
                     {
                         CreatureDisplayInfoEntry const* info = sCreatureDisplayInfoStore.LookupEntry(unit->GetDisplayId());
-                        if (!info || !info->ModelId)
+                        if (!info || !info->ModelID)
                             return true;
 
-                        CreatureModelDataEntry const* model = sCreatureModelDataStore.LookupEntry(info->ModelId);
+                        CreatureModelDataEntry const* model = sCreatureModelDataStore.LookupEntry(info->ModelID);
                         if (!model)
                             return true;
 
@@ -3423,7 +3424,7 @@ class spell_item_multistrike_trinket_damage : public spell_item_multistrike_trin
         if (trigger->SchoolMask == SPELL_SCHOOL_MASK_NORMAL && trigger->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
             return 146061;
 
-        switch (GetUnitOwner()->getClass())
+        switch (GetUnitOwner()->GetClass())
         {
             case CLASS_PALADIN:
                 if (trigger->SchoolMask & SPELL_SCHOOL_HOLY)
@@ -3662,7 +3663,7 @@ class spell_item_soo_trinket_aoe_damage : public spell_item_soo_trinket_aoe
         if (trigger->SchoolMask == SPELL_SCHOOL_MASK_NORMAL && trigger->DmgClass == SPELL_DAMAGE_CLASS_MELEE)
             return 146137;
 
-        switch (GetUnitOwner()->getClass())
+        switch (GetUnitOwner()->GetClass())
         {
             case CLASS_PALADIN:
                 if (trigger->SchoolMask & SPELL_SCHOOL_HOLY)
@@ -3815,7 +3816,7 @@ class spell_item_legendary_cloak_flurry_of_huen : public AuraScript
 
     void HandleTriggerMelee(AuraEffect const* effect)
     {
-        if (GetUnitOwner()->getClass() == CLASS_HUNTER)
+        if (GetUnitOwner()->GetClass() == CLASS_HUNTER)
             PreventDefaultAction();
         else if (effect->GetTickNumber() % 3 == 0)
             GetUnitOwner()->SendPlaySpellVisual(33874, GetUnitOwner()->GetGUID(), 0.0f);
@@ -3824,7 +3825,7 @@ class spell_item_legendary_cloak_flurry_of_huen : public AuraScript
     void HandleTriggerRanged(AuraEffect const* effect)
     {
         PreventDefaultAction();
-        if (GetUnitOwner()->getClass() == CLASS_HUNTER)
+        if (GetUnitOwner()->GetClass() == CLASS_HUNTER)
         {
             if (Unit* target = ObjectAccessor::GetUnit(*GetUnitOwner(), GetUnitOwner()->GetTarget()))
                 if (GetUnitOwner()->IsValidAttackTarget(target, sSpellMgr->GetSpellInfo(effect->GetSpellEffectInfo().TriggerSpell)))
@@ -4022,7 +4023,7 @@ class spell_item_celestial_defender : public SpellScript
     void HandleDummy(SpellEffIndex /* index */)
     {
         if (Unit* caster = GetCaster())
-            caster->CastSpell(caster, caster->getGender() == GENDER_MALE ? CELESTIAL_DEFENDER_MALE : CELESTIAL_DEFENDER_FEMALE, true);
+            caster->CastSpell(caster, caster->GetGender() == GENDER_MALE ? CELESTIAL_DEFENDER_MALE : CELESTIAL_DEFENDER_FEMALE, true);
     }
 
     void Register()
@@ -4039,7 +4040,7 @@ class spell_item_spectral_grog : public SpellScript
     void HandleDummy(SpellEffIndex /*index*/)
     {
         if (Unit* caster = GetCaster())
-            caster->CastSpell(caster, caster->getGender() == GENDER_MALE ? 148564 : 148563, true);
+            caster->CastSpell(caster, caster->GetGender() == GENDER_MALE ? 148564 : 148563, true);
     }
 
     void Register()
@@ -4061,7 +4062,7 @@ class spell_item_symbiotic_growth : public SpellScript
 
     uint32 GetAuraId()
     {
-        switch (GetCaster()->getClass())
+        switch (GetCaster()->GetClass())
         {
             case CLASS_DEATH_KNIGHT:
                 return 129712;
@@ -4111,7 +4112,7 @@ class spell_item_symbiotic_growth_aura : public AuraScript
 
     uint32 spec = 0;
 
-    bool Load()
+    bool Load() override
     {
         if (GetUnitOwner()->GetTypeId() != TYPEID_PLAYER)
             return false;
@@ -4411,6 +4412,56 @@ class spell_item_seesaw : public SpellScript
     }
 };
 
+// 71610, 71641 - Echoes of Light (Althor's Abacus)
+class spell_item_echoes_of_light : public SpellScript
+{
+    PrepareSpellScript(spell_item_echoes_of_light);
+
+    void FilterTargets(std::list<WorldObject*>& targets)
+    {
+        if (targets.size() < 2)
+            return;
+
+        targets.sort(Trinity::HealthPctOrderPred());
+
+        WorldObject* target = targets.front();
+        targets.clear();
+        targets.push_back(target);
+    }
+
+    void Register() override
+    {
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_item_echoes_of_light::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
+    }
+};
+
+// 7434 - Fate Rune of Unsurpassed Vigor
+enum FateRuneOfUnsurpassedVigor
+{
+    SPELL_UNSURPASSED_VIGOR = 25733
+};
+
+class spell_item_fate_rune_of_unsurpassed_vigor : public AuraScript
+{
+    PrepareAuraScript(spell_item_fate_rune_of_unsurpassed_vigor);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_UNSURPASSED_VIGOR });
+    }
+
+    void HandleProc(AuraEffect const* /*aurEff*/, ProcEventInfo& /*eventInfo*/)
+    {
+        PreventDefaultAction();
+        GetTarget()->CastSpell(GetTarget(), SPELL_UNSURPASSED_VIGOR, true);
+    }
+
+    void Register() override
+    {
+        OnEffectProc += AuraEffectProcFn(spell_item_fate_rune_of_unsurpassed_vigor::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+    }
+};
+
 void AddSC_item_spell_scripts()
 {
     // 23074 Arcanite Dragonling
@@ -4534,4 +4585,8 @@ void AddSC_item_spell_scripts()
     new spell_script<spell_item_party_grenade_eff>("spell_item_party_grenade_eff");
     new aura_script<spell_item_party_grenade>("spell_item_party_grenade");
     new spell_script<spell_item_seesaw>("spell_item_seesaw");
+    //RegisterSpellScript(spell_item_echoes_of_light);
+    new spell_script<spell_item_echoes_of_light>("spell_item_echoes_of_light");
+    new aura_script<spell_item_fate_rune_of_unsurpassed_vigor>("spell_item_fate_rune_of_unsurpassed_vigor");
+    
 }

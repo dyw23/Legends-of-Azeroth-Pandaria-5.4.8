@@ -290,9 +290,9 @@ class boss_lei_shi : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
 
                 if (instance)
                 {
@@ -399,7 +399,7 @@ class boss_lei_shi : public CreatureScript
 
                     me->CombatStop();
                     me->DeleteThreatList();
-                    me->setFaction(35);
+                    me->SetFaction(35);
                     me->CastSpell(me, SPELL_LEI_SHI_TRANSFORM, true);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     me->RestoreDisplayId();
@@ -887,7 +887,7 @@ class npc_lei_shi_corrupted_protector : public CreatureScript
                 InFlee = false;
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_DISPERSE, 1 * IN_MILLISECONDS);
             }
@@ -907,7 +907,7 @@ class npc_lei_shi_corrupted_protector : public CreatureScript
 
                 while (uint32 eventId = events.ExecuteEvent())
                 {
-                    if (eventId = EVENT_DISPERSE)
+                    if (eventId == EVENT_DISPERSE)
                     {
                         me->RemoveAurasDueToSpell(SPELL_DISPERSE);
                         DoCast(me, SPELL_DISPERSE);

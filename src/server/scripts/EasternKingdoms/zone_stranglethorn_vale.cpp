@@ -79,7 +79,7 @@ public:
                     me->HandleEmoteStateCommand(EMOTE_STATE_STUN);
                     me->CombatStop();                   //stop combat
                     me->DeleteThreatList();             //unsure of this
-                    me->setFaction(83);                 //horde generic
+                    me->SetFaction(83);                 //horde generic
 
                     bReset = true;
                     Reset_Timer = 60000;
@@ -87,7 +87,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/) override { }
+        void JustEngagedWith(Unit* /*who*/) override { }
 
         void UpdateAI(uint32 diff) override
         {
@@ -97,7 +97,7 @@ public:
                 {
                     EnterEvadeMode();
                     bReset = false;
-                    me->setFaction(28);                     //troll, bloodscalp
+                    me->SetFaction(28);                     //troll, bloodscalp
                     return;
                 }
 
@@ -184,7 +184,7 @@ class npc_stranglethorn_priestess_hurala : public CreatureScript
     public:
         npc_stranglethorn_priestess_hurala() : CreatureScript("npc_stranglethorn_priestess_hurala") { }
 
-        bool OnGossipHello(Player* player, Creature* creature)
+        bool OnGossipHello(Player* player, Creature* creature) override
         {
             if (creature->IsQuestGiver())
                 player->PrepareQuestMenu(creature->GetGUID());

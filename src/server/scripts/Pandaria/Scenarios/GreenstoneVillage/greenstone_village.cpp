@@ -215,7 +215,7 @@ struct greenstone_village_pillager_typeAI : public ScriptedAI
                 nonCombatEvents.ScheduleEvent(EVENT_COSMETIC, urand(3 * IN_MILLISECONDS, 18 * IN_MILLISECONDS));
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         nonCombatEvents.Reset();
     }
@@ -284,7 +284,7 @@ class npc_greenstone_wily_woodling : public CreatureScript
                 events.Reset();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_WRATH, 1500);
                 events.ScheduleEvent(EVENT_REJV, 8 * IN_MILLISECONDS);
@@ -359,7 +359,7 @@ class npc_greenstone_village_terror : public CreatureScript
                 events.Reset();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_TERROR_SHARDS, urand(3 * IN_MILLISECONDS, 8 * IN_MILLISECONDS));
             }
@@ -418,7 +418,7 @@ class npc_greenstone_belligerent_blossom : public CreatureScript
                 events.Reset();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_POLLEN_PUFF, urand(3 * IN_MILLISECONDS, 8 * IN_MILLISECONDS));
             }
@@ -483,7 +483,7 @@ class npc_greenstone_village_cursed_brew : public CreatureScript
                 events.Reset();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_KEG_SLAM, urand(4 * IN_MILLISECONDS, 8 * IN_MILLISECONDS));
                 events.ScheduleEvent(EVENT_BREW_BUBLE, urand(9 * IN_MILLISECONDS, 16 * IN_MILLISECONDS));
@@ -620,7 +620,7 @@ class npc_greenstone_village_brewmaster_tzu : public CreatureScript
                     case ACTION_INTRO:
                     {
                         me->SetVisible(true);
-                        me->setFaction(2110);
+                        me->SetFaction(2110);
 
                         // Select any monstrosity
                         uint32 m_uiMonstrosity = urand(0, 1) ? NPC_BEAST_OF_JADE : NPC_JADE_DESTROYER;
@@ -628,7 +628,7 @@ class npc_greenstone_village_brewmaster_tzu : public CreatureScript
                         if (Creature* monstrosity = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(m_uiMonstrosity) : 0))
                         {
                             monstrosity->SetVisible(true);
-                            monstrosity->setFaction(16);
+                            monstrosity->SetFaction(16);
                         }
                         break;
                     }
@@ -708,7 +708,7 @@ class npc_greenstone_village_monstrosity : public CreatureScript
                 events.Reset();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 switch (me->GetEntry())
                 {
@@ -927,7 +927,7 @@ class npc_greenstone_vengeful_hui : public CreatureScript
                 summons.DespawnAll();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 if (me->HasAura(SPELL_GIANT_HUI))
                     me->CastSpell(me, SPELL_GIANT_HUI, false);
@@ -942,7 +942,7 @@ class npc_greenstone_vengeful_hui : public CreatureScript
                 if (actionId == ACTION_INTRO)
                 {
                     me->SetVisible(true);
-                    me->setFaction(16);
+                    me->SetFaction(16);
                     Talk(TALK_INTRO);
                     Talk(TALK_PROTECTED); // ann
 
@@ -1200,7 +1200,7 @@ class AreaTrigger_at_greenstone_village : public AreaTriggerScript
             {
                 Creature* m_owner = NULL;
 
-                switch (trigger->id)
+                switch (trigger->ID)
                 {
                     case AT_INTRO:
                         m_owner = ObjectAccessor::GetCreature(*player, instance->GetData64(NPC_COWARDLY_ZUE));

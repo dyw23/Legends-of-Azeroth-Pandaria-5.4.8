@@ -1,4 +1,4 @@
-# This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+# This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -14,6 +14,7 @@ file(GLOB_RECURSE sources_Addons Addons/*.cpp Addons/*.h)
 file(GLOB_RECURSE sources_AI AI/*.cpp AI/*.h)
 file(GLOB_RECURSE sources_Anticheat Anticheat/*.cpp Anticheat/*.h)
 file(GLOB_RECURSE sources_AuctionHouse AuctionHouse/*.cpp AuctionHouse/*.h)
+file(GLOB_RECURSE sources_AuctionHouseBot AuctionHouseBot/*.cpp AuctionHouse/*.h)
 file(GLOB_RECURSE sources_Battlefield Battlefield/*.cpp Battlefield/*.h)
 file(GLOB_RECURSE sources_Battlegrounds Battlegrounds/*.cpp Battlegrounds/*.h)
 file(GLOB_RECURSE sources_BattlePay BattlePay/*.cpp BattlePay/*.h)
@@ -34,11 +35,11 @@ file(GLOB_RECURSE sources_Groups Groups/*.cpp Groups/*.h)
 file(GLOB_RECURSE sources_Guilds Guilds/*.cpp Guilds/*.h)
 file(GLOB_RECURSE sources_Handlers Handlers/*.cpp Handlers/*.h)
 file(GLOB_RECURSE sources_Instances Instances/*.cpp Instances/*.h)
-file(GLOB_RECURSE sources_CustomLogs CustomLogs/*.cpp CustomLogs/*.h)
 file(GLOB_RECURSE sources_Loot Loot/*.cpp Loot/*.h)
 file(GLOB_RECURSE sources_Mails Mails/*.cpp Mails/*.h)
 file(GLOB_RECURSE sources_Maps Maps/*.cpp Maps/*.h)
 file(GLOB_RECURSE sources_Miscellaneous Miscellaneous/*.cpp Miscellaneous/*.h)
+file(GLOB_RECURSE sources_Motd Motd/*.cpp Motd/*.h)
 file(GLOB_RECURSE sources_Movement Movement/*.cpp Movement/*.h)
 file(GLOB_RECURSE sources_OutdoorPvP OutdoorPvP/*.cpp OutdoorPvP/*.h)
 file(GLOB_RECURSE sources_Pools Pools/*.cpp Pools/*.h)
@@ -47,11 +48,12 @@ file(GLOB_RECURSE sources_Quests Quests/*.cpp Quests/*.h)
 file(GLOB_RECURSE sources_Reputation Reputation/*.cpp Reputation/*.h)
 file(GLOB_RECURSE sources_Scenarios Scenarios/*.cpp Scenarios/*.h)
 file(GLOB_RECURSE sources_Scripting Scripting/*.cpp Scripting/*.h)
-file(GLOB_RECURSE sources_Server Server/*.cpp Server/*.h)
+file(GLOB_RECURSE sources_Server Server/*.cpp Server/*.h Server/Packets/*.h Server/Packets/*.cpp Server/Protocol/*.h Server/Protocol/*.cpp)
 file(GLOB_RECURSE sources_Services Services/*.cpp Services/*.h)
 file(GLOB_RECURSE sources_Skills Skills/*.cpp Skills/*.h)
 file(GLOB_RECURSE sources_Spells Spells/*.cpp Spells/*.h)
 file(GLOB_RECURSE sources_Texts Texts/*.cpp Texts/*.h)
+file(GLOB_RECURSE sources_Time Time/*.cpp Time/*.h)
 file(GLOB_RECURSE sources_Tools Tools/*.cpp Tools/*.h)
 file(GLOB_RECURSE sources_Tickets Tickets/*.cpp Tickets/*.h)
 file(GLOB_RECURSE sources_Vignette Vignette/*.cpp Vignette/*.h)
@@ -66,6 +68,7 @@ source_group(Addons FILES ${sources_Addons})
 source_group(AI FILES ${sources_AI})
 source_group(Anticheat FILES ${sources_Anticheat})
 source_group(AuctionHouse FILES ${sources_AuctionHouse})
+source_group(AuctionHouseBot FILES ${sources_AuctionHouseBot})
 source_group(Battlefield FILES ${sources_Battlefield})
 source_group(Battlegrounds FILES ${sources_Battlegrounds})
 source_group(BattlePay FILES ${sources_BattlePay})
@@ -76,7 +79,6 @@ source_group(Chat FILES ${sources_Chat})
 source_group(Combat FILES ${sources_Combat})
 source_group(Conditions FILES ${sources_Conditions})
 source_group(CustomTransmogrification FILES ${sources_CustomTransmogrification})
-source_group(CustomLogs FILES ${sources_CustomLogs})
 source_group(DataStores FILES ${sources_DataStores})
 source_group(DungeonFinding FILES ${sources_DungeonFinding})
 source_group(Entities FILES ${sources_Entities})
@@ -91,6 +93,7 @@ source_group(Loot FILES ${sources_Loot})
 source_group(Mails FILES ${sources_Mails})
 source_group(Maps FILES ${sources_Maps})
 source_group(Miscellaneous FILES ${sources_Miscellaneous})
+source_group(Motd FILES ${sources_Motd})
 source_group(Movement FILES ${sources_Movement})
 source_group(OutdoorPvP FILES ${sources_OutdoorPvP})
 source_group(Pools FILES ${sources_Pools})
@@ -104,6 +107,7 @@ source_group(Services FILES ${sources_Services})
 source_group(Skills FILES ${sources_Skills})
 source_group(Spells FILES ${sources_Spells})
 source_group(Texts FILES ${sources_Texts})
+source_group(Time FILES ${sources_Time})
 source_group(Tools FILES ${sources_Tools})
 source_group(Tickets FILES ${sources_Tickets})
 source_group(Warden FILES ${sources_Warden})
@@ -123,6 +127,7 @@ set(game_STAT_SRCS
   ${sources_AI}
   ${sources_Anticheat}
   ${sources_AuctionHouse}
+  ${sources_AuctionHouseBot}
   ${sources_Battlefield}
   ${sources_Battlegrounds}
   ${sources_BattlePay}
@@ -132,7 +137,6 @@ set(game_STAT_SRCS
   ${sources_Chat}
   ${sources_Combat}
   ${sources_Conditions}
-  ${sources_CustomLogs}
   ${sources_CustomTransmogrification}
   ${sources_DataStores}
   ${sources_DungeonFinding}
@@ -148,6 +152,7 @@ set(game_STAT_SRCS
   ${sources_Mails}
   ${sources_Maps}
   ${sources_Miscellaneous}
+  ${sources_Motd}
   ${sources_Movement}
   ${sources_OutdoorPvP}
   ${sources_Pools}
@@ -160,6 +165,7 @@ set(game_STAT_SRCS
   ${sources_Skills}
   ${sources_Spells}
   ${sources_Texts}
+  ${sources_Time}
   ${sources_Tools}
   ${sources_Tickets}
   ${sources_Vignette}
@@ -169,35 +175,22 @@ set(game_STAT_SRCS
   ${sources_Cfbg}
 )
 
-include_directories(
+if (ELUNA)
+  file(GLOB_RECURSE sources_LuaEngine LuaEngine/*.cpp LuaEngine/*.h)
+  source_group(LuaEngine FILES ${sources_LuaEngine})
+  set(game_STAT_SRCS
+    ${game_STAT_SRCS}
+    ${sources_LuaEngine}
+  )
+endif()
+
+add_library(game STATIC
+  ${game_STAT_SRCS}
+)
+
+target_include_directories(game
   PUBLIC
     ${CMAKE_BINARY_DIR}
-  PRIVATE
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Include
-    ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
-    ${CMAKE_SOURCE_DIR}/dep/SFMT
-    ${CMAKE_SOURCE_DIR}/dep/zlib
-    ${ACE_INCLUDE_DIR}
-    ${MYSQL_INCLUDE_DIR}
-    ${OPENSSL_INCLUDE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/server/collision
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Management
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Models
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Maps
-    ${CMAKE_SOURCE_DIR}/src/server/shared
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Configuration
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Cryptography
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Cryptography/Authentication
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Database
-    ${CMAKE_SOURCE_DIR}/src/server/shared/DataStores
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Debugging
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic/LinkedReference
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Logging
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Packets
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Threading
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Utilities
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/Accounts
     ${CMAKE_CURRENT_SOURCE_DIR}/Achievements
@@ -209,6 +202,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/AI/SmartScripts
     ${CMAKE_CURRENT_SOURCE_DIR}/Anticheat
     ${CMAKE_CURRENT_SOURCE_DIR}/AuctionHouse
+    ${CMAKE_CURRENT_SOURCE_DIR}/AuctionHouseBot
     ${CMAKE_CURRENT_SOURCE_DIR}/Battlefield
     ${CMAKE_CURRENT_SOURCE_DIR}/Battlefield/Zones
     ${CMAKE_CURRENT_SOURCE_DIR}/Battlegrounds
@@ -221,7 +215,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/Chat/Channels
     ${CMAKE_CURRENT_SOURCE_DIR}/Combat
     ${CMAKE_CURRENT_SOURCE_DIR}/Conditions
-    ${CMAKE_CURRENT_SOURCE_DIR}/CustomLogs
     ${CMAKE_CURRENT_SOURCE_DIR}/CustomTransmogrification
     ${CMAKE_CURRENT_SOURCE_DIR}/DataStores
     ${CMAKE_CURRENT_SOURCE_DIR}/DungeonFinding
@@ -254,6 +247,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/Mails
     ${CMAKE_CURRENT_SOURCE_DIR}/Maps
     ${CMAKE_CURRENT_SOURCE_DIR}/Miscellaneous
+    ${CMAKE_CURRENT_SOURCE_DIR}/Motd
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement/Spline
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement/MovementGenerators
@@ -265,52 +259,74 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/Reputation
     ${CMAKE_CURRENT_SOURCE_DIR}/Scenarios
     ${CMAKE_CURRENT_SOURCE_DIR}/Scripting
-    ${CMAKE_CURRENT_SOURCE_DIR}/Server/Protocol
     ${CMAKE_CURRENT_SOURCE_DIR}/Server
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/Packets
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/Protocol
     ${CMAKE_CURRENT_SOURCE_DIR}/Services
     ${CMAKE_CURRENT_SOURCE_DIR}/Skills
     ${CMAKE_CURRENT_SOURCE_DIR}/Spells
     ${CMAKE_CURRENT_SOURCE_DIR}/Spells/Auras
     ${CMAKE_CURRENT_SOURCE_DIR}/Texts
+    ${CMAKE_CURRENT_SOURCE_DIR}/Time
     ${CMAKE_CURRENT_SOURCE_DIR}/Tools
     ${CMAKE_CURRENT_SOURCE_DIR}/Tickets
     ${CMAKE_CURRENT_SOURCE_DIR}/Vignette
     ${CMAKE_CURRENT_SOURCE_DIR}/Warden
     ${CMAKE_CURRENT_SOURCE_DIR}/Warden/Modules
     ${CMAKE_CURRENT_SOURCE_DIR}/Weather
-    ${CMAKE_CURRENT_SOURCE_DIR}/World
-    ${CMAKE_SOURCE_DIR}/src/server/scripts/Pandaria/TimelessIsle
-    ${CMAKE_SOURCE_DIR}/src/server/scripts/PrecompiledHeaders          
+    ${CMAKE_CURRENT_SOURCE_DIR}/World    
+    boost
+    common
+  PRIVATE
+    zlib
+    database
+    shared
+    g3dlite
+    Detour
+    Recast
 )
 
-if (Boost_FOUND)
-  include_directories(
+if (ELUNA)
+  target_include_directories(game
+    PUBLIC
+      ${CMAKE_CURRENT_SOURCE_DIR}/LuaEngine
     PRIVATE
-      ${Boost_INCLUDE_DIRS}
+      lua
   )
+
 endif()
 
+target_link_libraries(game
+  PUBLIC
+    Detour
+    common
+    database
+    shared
+  PRIVATE
+    zlib
+)
+
 if (ELUNA)
-  include_directories(
-    ${CMAKE_SOURCE_DIR}/dep/lualib
-    ${CMAKE_SOURCE_DIR}/src/LuaEngine 
-  )
-
-  add_library(game STATIC
-    ${game_STAT_SRCS}
-    ${lua_STAT_SRCS}
-    ${LuaEngine_STAT_SRCS}
-  )
-
   add_dependencies(game lua)
   target_link_libraries(game
-   lua
-   LuaEngine
+    PRIVATE
+      lua
   )
-else()
-  add_library(game STATIC
-    ${game_STAT_SRCS}
-  )
+  if( WIN32 )
+    if ( MSVC )
+      add_custom_command(TARGET game
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/bin/$(ConfigurationName)/lua_scripts/extensions/"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/LuaEngine/extensions" "${CMAKE_BINARY_DIR}/bin/$(ConfigurationName)/lua_scripts/extensions/"
+      )
+    elseif ( MINGW )
+      add_custom_command(TARGET game
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/bin/lua_scripts/extensions/"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/LuaEngine/extensions" "${CMAKE_BINARY_DIR}/bin/lua_scripts/extensions/"
+      )
+    endif()
+  endif()      
 endif()
 
 add_dependencies(game revision.h)

@@ -149,7 +149,7 @@ class boss_ymiron : public CreatureScript
                 me->GetMap()->SetWorldState(WORLDSTATE_KINGS_BANE, 1);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 Talk(SAY_AGGRO);
                 me->HandleEmoteStateCommand(EMOTE_ONESHOT_NONE);
@@ -320,7 +320,7 @@ class boss_ymiron : public CreatureScript
                                 if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 {
                                     spirit->AddThreat(target, 0.0f);
-                                    spirit->setFaction(14);
+                                    spirit->SetFaction(14);
                                     spirit->AI()->AttackStart(target);
                                 }
                             }

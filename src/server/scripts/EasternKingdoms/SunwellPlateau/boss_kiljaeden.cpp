@@ -563,7 +563,7 @@ class boss_kiljaeden : public CreatureScript
                 else
                     summon->SetLevel(me->GetLevel());
 
-                summon->setFaction(me->getFaction());
+                summon->SetFaction(me->GetFaction());
                 summons.Summon(summon);
             }
 
@@ -603,7 +603,7 @@ class boss_kiljaeden : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 if (instance->GetData(DATA_KALECGOS_EVENT) != DONE || instance->GetData(DATA_BRUTALLUS_EVENT) != DONE || instance->GetData(DATA_FELMYST_EVENT) != DONE)
                 {
@@ -910,11 +910,11 @@ class npc_hand_of_the_deceiver : public CreatureScript
 
             void JustSummoned(Creature* summon) override
             {
-                summon->setFaction(me->getFaction());
+                summon->SetFaction(me->GetFaction());
                 summon->SetLevel(me->GetLevel());
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 if (instance->GetData(DATA_KALECGOS_EVENT) != DONE || instance->GetData(DATA_BRUTALLUS_EVENT) != DONE || instance->GetData(DATA_FELMYST_EVENT) != DONE)
                 {
@@ -1025,7 +1025,7 @@ class npc_felfire_portal : public CreatureScript
 
             void JustSummoned(Creature* summon) override
             {
-                summon->setFaction(me->getFaction());
+                summon->SetFaction(me->GetFaction());
                 summon->SetLevel(me->GetLevel());
             }
 
@@ -1227,7 +1227,7 @@ class npc_shield_orb : public CreatureScript
                 }
             }
 
-            void MovementInform(uint32 type, uint32 /*id*/)
+            void MovementInform(uint32 type, uint32 /*id*/) override
             {
                 if (type != POINT_MOTION_TYPE)
                     return;
@@ -1284,7 +1284,7 @@ class npc_sinster_reflection : public CreatureScript
 
                 if (victimClass == 0 && me->GetVictim())
                 {
-                    victimClass = me->GetVictim()->getClass();
+                    victimClass = me->GetVictim()->GetClass();
                     switch (victimClass)
                     {
                         case CLASS_DRUID:

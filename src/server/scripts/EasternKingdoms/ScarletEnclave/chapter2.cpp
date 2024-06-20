@@ -77,7 +77,7 @@ public:
                         playerGUID = player->GetGUID();
                         speechTimer = 1000;
                         speechCounter = 1;
-                        me->setFaction(player->getFaction());
+                        me->SetFaction(player->GetFaction());
                         me->CombatStop(true);
                         me->GetMotionMaster()->MoveIdle();
                         me->SetReactState(REACT_PASSIVE);
@@ -387,7 +387,7 @@ public:
             uiStage_timer = 3000;
         }
 
-        void EnterCombat(Unit* /*who*/) override
+        void JustEngagedWith(Unit* /*who*/) override
         {
             Talk(SAY_TREE2);
             me->Dismount();
@@ -480,7 +480,7 @@ public:
             uiValroth_Smite_timer = 1000;
         }
 
-        void EnterCombat(Unit* who) override
+        void JustEngagedWith(Unit* who) override
         {
             Talk(SAY_VALROTH_AGGRO);
             DoCast(who, SPELL_VALROTH_SMITE);
@@ -693,7 +693,7 @@ public:
 
                     /// @todo simplify text's selection
 
-                    switch (player->getRace())
+                    switch (player->GetRace())
                     {
                         case RACE_HUMAN:
                             switch (ExecuteSpeech_Counter)

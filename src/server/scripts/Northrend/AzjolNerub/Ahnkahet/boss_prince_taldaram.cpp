@@ -137,7 +137,7 @@ class boss_taldaram : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 if (instance)
                     instance->SetData(DATA_PRINCE_TALDARAM_EVENT, IN_PROGRESS);
@@ -388,7 +388,7 @@ class npc_taldaram_flamesphere : public CreatureScript
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 me->SetFlying(true);
                 me->SetDisplayId(me->GetCreatureTemplate()->Modelid1);
-                me->setFaction(16);
+                me->SetFaction(16);
                 me->SetObjectScale(1.0f);
                 DoCast(me, SPELL_FLAME_SPHERE_VISUAL);
                 DoCast(me, SPELL_FLAME_SPHERE_SPAWN_EFFECT);
@@ -396,9 +396,9 @@ class npc_taldaram_flamesphere : public CreatureScript
                 uiDespawnTimer = 10 * IN_MILLISECONDS;
             }
 
-            void EnterCombat(Unit* /*who*/) { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
-            void MoveInLineOfSight(Unit* /*who*/) { }
+            void MoveInLineOfSight(Unit* /*who*/) override { }
 
             void JustDied(Unit* /*killer*/) override
             {

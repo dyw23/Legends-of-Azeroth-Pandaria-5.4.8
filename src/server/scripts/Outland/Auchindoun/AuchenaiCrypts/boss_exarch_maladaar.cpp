@@ -70,7 +70,7 @@ public:
             Class_Timer = 1000;
         }
 
-        void EnterCombat(Unit* /*who*/) override
+        void JustEngagedWith(Unit* /*who*/) override
         { }
 
         void SetMyClass(uint8 myclass)
@@ -203,7 +203,7 @@ public:
             ScriptedAI::MoveInLineOfSight(who);
         }
 
-        void EnterCombat(Unit* /*who*/) override
+        void JustEngagedWith(Unit* /*who*/) override
         {
             Talk(SAY_AGGRO);
         }
@@ -215,7 +215,7 @@ public:
                 //SPELL_STOLEN_SOUL_VISUAL has shapeshift effect, but not implemented feature in Trinity for this spell.
                 summoned->CastSpell(summoned, SPELL_STOLEN_SOUL_VISUAL, false);
                 summoned->SetDisplayId(soulmodel);
-                summoned->setFaction(me->getFaction());
+                summoned->SetFaction(me->GetFaction());
 
                 if (Unit* target = Unit::GetUnit(*me, soulholder))
                 {
@@ -271,7 +271,7 @@ public:
 
                         soulmodel = target->GetDisplayId();
                         soulholder = target->GetGUID();
-                        soulclass = target->getClass();
+                        soulclass = target->GetClass();
 
                         DoCast(target, SPELL_STOLEN_SOUL);
                         me->SummonCreature(ENTRY_STOLEN_SOUL, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
@@ -322,7 +322,7 @@ public:
             Mortal_Strike_timer = 10000;
         }
 
-        void EnterCombat(Unit* /*who*/) override
+        void JustEngagedWith(Unit* /*who*/) override
         {
         }
 

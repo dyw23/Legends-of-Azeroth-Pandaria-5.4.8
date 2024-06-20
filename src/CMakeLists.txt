@@ -11,19 +11,13 @@
 
 add_subdirectory(genrev)
 add_subdirectory(server)
+add_subdirectory(common)
 
 if(TOOLS)
-  if( MSVC )
     add_subdirectory(tools)
-  else()
-    add_subdirectory(tools)
-  endif()
 endif(TOOLS)
 
 if (UPDATER)
   add_subdirectory(updater)
 endif()
 
-if ( ELUNA )
-  add_subdirectory(LuaEngine)
-endif(ELUNA)

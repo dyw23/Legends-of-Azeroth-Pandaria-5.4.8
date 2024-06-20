@@ -31,6 +31,7 @@
 #include "MapManager.h"
 #include "Config.h"
 #include "Group.h"
+#include "Realm.h"
 
 void WorldSession::SendNameQueryOpcode(ObjectGuid guid)
 {
@@ -61,7 +62,7 @@ void WorldSession::SendNameQueryOpcode(ObjectGuid guid)
 
     if (nameData)
     {
-        data << uint32(realmID); // realmIdSecond
+        data << uint32(realm.Id.Realm); // realmIdSecond
         data << uint32(1); // AccID
         data << uint8(nameData->m_class);
         data << uint8(nameData->m_race);
@@ -185,7 +186,7 @@ void WorldSession::SendRealmNameQueryOpcode(uint32 realmId)
     if (found)
     {
         data.WriteBits(realmName.length(), 8);
-        data.WriteBit(realmId == realmID);
+        data.WriteBit(realmId == realm.Id.Realm);
         data.WriteBits(realmName.length(), 8);
         data.FlushBits();
 
@@ -296,10 +297,10 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket& recvData)
 
     if (creatureInfo)
     {
-        std::string Name, FemaleName, SubName;
+        std::string Name, FemaleName, Title;
         Name = creatureInfo->Name;
         FemaleName = creatureInfo->FemaleName;
-        SubName = creatureInfo->SubName;
+        Title = creatureInfo->SubName;
 
         uint8 qItemsSize = 0;
 
@@ -315,13 +316,13 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket& recvData)
             {
                 ObjectMgr::GetLocaleString(creatureLocale->Name, locale, Name);
                 ObjectMgr::GetLocaleString(creatureLocale->FemaleName, locale, FemaleName);
-                ObjectMgr::GetLocaleString(creatureLocale->SubName, locale, SubName);
+                ObjectMgr::GetLocaleString(creatureLocale->Title, locale, Title);
             }
         }
 
         TC_LOG_DEBUG("network", "WORLD: CMSG_CREATURE_QUERY '%s' - Entry: %u.", creatureInfo->Name.c_str(), entry);
 
-        data.WriteBits(SubName.length() ? SubName.length() + 1 : 0, 11);
+        data.WriteBits(Title.length() ? Title.length() + 1 : 0, 11);
         data.WriteBits(qItemsSize, 22);                       // Quest items
         data.WriteBits(0, 11);
 
@@ -347,8 +348,8 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket& recvData)
         data << uint32(creatureInfo->movementId);                     // CreatureMovementInfo.dbc
         data << Name;
 
-        if (SubName != "")
-            data << SubName;                                          // Subname
+        if (Title != "")
+            data << Title;                                            // Subname
 
         data << uint32(creatureInfo->Modelid1);                       // Modelid1
         data << uint32(creatureInfo->Modelid3);                       // Modelid3
@@ -570,15 +571,38 @@ void WorldSession::HandleNpcTextQueryOpcode(WorldPacket& recvData)
     data << textID;
     data << uint32(64);                                 // size (8 * 4) * 2
 
-    data << float(pGossip ? pGossip->Options[0].Probability : 0);
-    for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS - 1; i++)
+    // hackfix
+    if (!pGossip)
+    {
         data << float(0);
+        for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS - 1; i++)
+            data << float(0);
 
-    //data << textID;    // should be a broadcast id   
-    data << pGossip->Options[0].BroadcastTextID;
-                        
-    for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS - 1; i++)
-        data << uint32(0);
+        data << uint32(1);
+                            
+        for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS - 1; i++)
+            data << uint32(0); 
+    }
+    else
+    {
+        data << float(pGossip->Options[0].Probability);
+        for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS - 1; i++)
+            data << float(0);
+
+        //data << textID;    // should be a broadcast id   
+        if (pGossip->Options[0].BroadcastTextID > 0)
+        {
+            data << pGossip->Options[0].BroadcastTextID;
+        }
+        else
+        {
+            data << uint32(1);
+        }
+                            
+        for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS - 1; i++)
+            data << uint32(0); 
+
+    }
 
     data.WriteBit(1);                                   // has data
     data.FlushBits();
@@ -724,16 +748,22 @@ void WorldSession::HandleQuestPOIQuery(WorldPacket& recvData)
         return;
     }
 
+    // Read quest ids and add the in a unordered_set so we don't send POIs for the same quest multiple times
+    std::unordered_set<uint32> questIds;
+    uint32 questId;
+    for (int32 i = 0; i < count; ++i)
+    {
+        recvData >> questId;
+        questIds.insert(questId);
+    }
+
     ByteBuffer poiData;
 
     WorldPacket data(SMSG_QUEST_POI_QUERY_RESPONSE, 4+(4+4)*count);
-    data.WriteBits(count, 20);
+    data.WriteBits(questIds.size(), 20);
 
-    for (uint32 i = 0; i < count; ++i)
+    for (uint32 questId : questIds)
     {
-        uint32 questId;
-        recvData >> questId;
-
         bool questOk = false;
 
         uint16 questSlot = _player->FindQuestSlot(questId);
@@ -743,38 +773,38 @@ void WorldSession::HandleQuestPOIQuery(WorldPacket& recvData)
 
         if (questOk)
         {
-            QuestPOIVector const* POI = sObjectMgr->GetQuestPOIVector(questId);
+            QuestPOIData const* POI = sObjectMgr->GetQuestPOIData(questId);
 
             if (POI)
             {
-                data.WriteBits(POI->size(), 18);                // POI count bits
+                data.WriteBits(POI->Blobs.size(), 18);          // POI count bits
 
-                for (QuestPOIVector::const_iterator itr = POI->begin(); itr != POI->end(); ++itr)
+                for (const auto&blob : POI->Blobs)
                 {
-                    data.WriteBits(itr->points.size(), 21);     // POI points count bits
+                    data.WriteBits(blob.Points.size(), 21);     // POI points count bits
 
-                    poiData << uint32(itr->FloorId);            // floor id
+                    poiData << uint32(blob.Floor);              // floor id
 
-                    for (std::vector<QuestPOIPoint>::const_iterator itr2 = itr->points.begin(); itr2 != itr->points.end(); ++itr2)
+                    for (auto point : blob.Points)
                     {
-                        poiData << int32(itr2->x);              // POI point x
-                        poiData << int32(itr2->y);              // POI point y
+                        poiData << int32(point.X);              // POI point x
+                        poiData << int32(point.Y);              // POI point y
                     }
 
-                    poiData << int32(itr->ObjectiveIndex);      // objective index
-                    poiData << uint32(itr->Id);                 // POI index
+                    poiData << int32(blob.ObjectiveIndex);      // objective index
+                    poiData << uint32(blob.Idx1);               // POI index
+                    poiData << uint32(blob.QuestObjectiveId);   // quest objective id
                     poiData << uint32(0);                       // unknown (new 5.x.x)
+                    poiData << uint32(blob.MapId);              // mapid
+                    poiData << uint32(blob.Points.size());      // POI points count
+                    poiData << uint32(blob.WorldMapAreaId);     // areaid
                     poiData << uint32(0);                       // unknown (new 5.x.x)
-                    poiData << uint32(itr->MapId);              // mapid
-                    poiData << uint32(itr->points.size());      // POI points count
-                    poiData << uint32(itr->AreaId);             // areaid
-                    poiData << uint32(0);                       // unknown (new 5.x.x)
-                    poiData << uint32(itr->Unk4);               // unknown
-                    poiData << uint32(itr->Unk3);               // unknown
+                    poiData << uint32(blob.Flags);              // flags
+                    poiData << uint32(blob.Priority);           // priority
                 }
 
                 poiData << uint32(questId);                     // quest ID
-                poiData << uint32(POI->size());                 // POI count
+                poiData << uint32(POI->Blobs.size());           // POI count
             }
             else
             {

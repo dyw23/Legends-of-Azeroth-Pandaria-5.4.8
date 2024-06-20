@@ -113,7 +113,7 @@ class boss_erunak_stonespeaker : public CreatureScript
                 events.Reset();
                 summons.DespawnAll(2000);
                 if (instance->GetBossState(DATA_MINDBENDER_GHURSHA) == DONE || bPhase)
-                    me->setFaction(35);
+                    me->SetFaction(35);
             }
 
             void KilledUnit(Unit* /*victim*/) override
@@ -131,7 +131,7 @@ class boss_erunak_stonespeaker : public CreatureScript
                                 me->InterruptSpell(CURRENT_GENERIC_SPELL);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_EARTH_SHARDS, 8000);
                 events.ScheduleEvent(EVENT_EMBERSTRIKE, 11000);
@@ -160,7 +160,7 @@ class boss_erunak_stonespeaker : public CreatureScript
                 {
                     bPhase = true;
                     events.Reset();
-                    me->setFaction(35);
+                    me->SetFaction(35);
                     EnterEvadeMode();
                     if (Creature* pGhursha = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_MINDBENDER_GHURSHA)))
                         pGhursha->AI()->DoAction(ACTION_GHURSHA_START);
@@ -256,9 +256,9 @@ class boss_mindbender_ghursha : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
 
                 if (instance)
                     instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);

@@ -110,7 +110,7 @@ public:
             {
                 std::string name = param1;
                 WorldDatabase.EscapeString(name);
-                whereClause << ", creature_template WHERE creature.id = creature_template.entry AND creature_template.name " _LIKE_ " '" << name << '\'';
+                whereClause << ", creature_template WHERE creature.id = creature_template.entry AND creature_template.name like '" << name << '\'';
             }
             else
                 whereClause <<  "WHERE guid = '" << guid << '\'';
@@ -381,9 +381,9 @@ public:
             return false;
         }
 
-        if (!MapManager::IsValidMapCoord(at->mapid, at->x, at->y, at->z))
+        if (!MapManager::IsValidMapCoord(at->ContinentID, at->Pos.X, at->Pos.Y, at->Pos.Z))
         {
-            handler->PSendSysMessage(LANG_INVALID_TARGET_COORD, at->x, at->y, at->mapid);
+            handler->PSendSysMessage(LANG_INVALID_TARGET_COORD, at->Pos.X, at->Pos.Y, at->ContinentID);
             handler->SetSentErrorMessage(true);
             return false;
         }
@@ -398,7 +398,7 @@ public:
         else
             player->SaveRecallPosition();
 
-        player->TeleportTo(at->mapid, at->x, at->y, at->z, player->GetOrientation());
+        player->TeleportTo(at->ContinentID, at->Pos.X, at->Pos.Y, at->Pos.Z, player->GetOrientation());
         return true;
     }
 
@@ -438,7 +438,7 @@ public:
         }
 
         // update to parent zone if exist (client map show only zones without parents)
-        AreaTableEntry const* zoneEntry = areaEntry->zone ? sAreaTableStore.LookupEntry(areaEntry->zone) : areaEntry;
+        AreaTableEntry const* zoneEntry = areaEntry->ParentAreaID ? sAreaTableStore.LookupEntry(areaEntry->ParentAreaID) : areaEntry;
 
         Map const* map = sMapMgr->CreateBaseMap(zoneEntry->mapid);
 

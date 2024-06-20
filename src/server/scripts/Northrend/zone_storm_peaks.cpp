@@ -65,7 +65,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/) override { }
+        void JustEngagedWith(Unit* /*who*/) override { }
 
         void Reset() override { }
 
@@ -84,14 +84,15 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void sGossipSelect(Player* player, uint32 sender, uint32 action) override
+        bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
         {
             if (sender == GOSSIP_ID && action == GOSSIP_OPTION_ID)
             {
                 player->CLOSE_GOSSIP_MENU();
-                me->setFaction(113);
+                me->SetFaction(113);
                 npc_escortAI::Start(true, true, player->GetGUID());
             }
+            return true;
         }
     };
 
@@ -326,7 +327,7 @@ public:
         npc_icefangAI(Creature* creature) : npc_escortAI(creature) { }
 
         void AttackStart(Unit* /*who*/) override { }
-        void EnterCombat(Unit* /*who*/) override { }
+        void JustEngagedWith(Unit* /*who*/) override { }
         void EnterEvadeMode() override { }
 
         void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply) override

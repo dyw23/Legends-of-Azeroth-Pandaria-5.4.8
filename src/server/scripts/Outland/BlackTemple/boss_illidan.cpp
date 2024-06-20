@@ -348,7 +348,7 @@ class npc_flame_of_azzinoth : public CreatureScript
                 GlaiveGUID = 0;
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 DoZoneInCombat();
             }
@@ -501,7 +501,7 @@ class boss_illidan_stormrage : public CreatureScript
                 });
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 me->setActive(true);
                 DoZoneInCombat();
@@ -733,7 +733,7 @@ class boss_illidan_stormrage : public CreatureScript
                         Creature* flame = me->SummonCreature(FLAME_OF_AZZINOTH, GlaivePosition[i+2].x, GlaivePosition[i+2].y, GlaivePosition[i+2].z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
                         if (flame)
                         {
-                            flame->setFaction(me->getFaction()); // Just in case the database has it as a different faction
+                            flame->SetFaction(me->GetFaction()); // Just in case the database has it as a different faction
                             flame->SetMeleeDamageSchool(SPELL_SCHOOL_FIRE);
                             FlameGUID[i] = flame->GetGUID(); // Record GUID in order to check if they're dead later on to move to the next phase
                             CAST_AI(npc_flame_of_azzinoth::flame_of_azzinothAI, flame->AI())->SetGlaiveGUID(GlaiveGUID[i]);
@@ -789,7 +789,7 @@ class boss_illidan_stormrage : public CreatureScript
                                 GlaiveGUID[i] = glaive->GetGUID();
                                 glaive->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                                 //glaive->SetDisplayId(11686); // idk how it must works, but glaive shoud not be invisible
-                                glaive->setFaction(me->getFaction());
+                                glaive->SetFaction(me->GetFaction());
                                 DoCast(glaive, SPELL_THROW_GLAIVE2);
                             }
                         }
@@ -805,7 +805,7 @@ class boss_illidan_stormrage : public CreatureScript
                                 GlaiveGUID[i] = glaive->GetGUID();
                                 glaive->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                                 //glaive->SetDisplayId(11686); // idk how it must works, but glaive shoud not be invisible
-                                glaive->setFaction(me->getFaction());
+                                glaive->SetFaction(me->GetFaction());
                                 DoCast(glaive, SPELL_THROW_GLAIVE, true);
                             }
                         }
@@ -1136,7 +1136,7 @@ class boss_maiev_shadowsong : public CreatureScript
                 me->SetUInt32Value(UNIT_FIELD_VIRTUAL_ITEM_ID + 2, 32326);
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
             void MoveInLineOfSight(Unit* /*who*/) override { }
             void EnterEvadeMode() override { }
 
@@ -1455,7 +1455,7 @@ class npc_akama_illidan : public CreatureScript
                 me->CombatStop(true);
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
             void MoveInLineOfSight(Unit* /*who*/) override { }
 
             void MovementInform(uint32 type, uint32 /*pointId*/) override
@@ -2029,7 +2029,7 @@ class npc_cage_trap_trigger : public CreatureScript
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             }
 
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
 
             void MoveInLineOfSight(Unit* who) override
             {
@@ -2108,7 +2108,7 @@ class npc_shadow_demon : public CreatureScript
 
             uint64 TargetGUID;
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 DoZoneInCombat();
             }
@@ -2200,7 +2200,7 @@ class npc_parasitic_shadowfiend : public CreatureScript
                 DoCast(me, SPELL_SHADOWFIEND_PASSIVE, true);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 DoZoneInCombat();
             }

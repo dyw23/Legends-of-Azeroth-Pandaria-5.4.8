@@ -19,6 +19,7 @@
 #include "ScriptedCreature.h"
 #include "Object.h"
 #include "Player.h"
+#include "Random.h"
 
 enum TirisfalGlades
 {
@@ -332,7 +333,7 @@ struct npc_deathknell_grave_target : public ScriptedAI
         m_phase = TirisfalGlades::GRAVE_TARGET_PHASE_00;
     }
 
-    void SpellHit(Unit* caster, SpellInfo const* spell)
+    void SpellHit(Unit* caster, SpellInfo const* spell) override
     {
         if (spell->Id == TirisfalGlades::SPELL_RAISE_UNDEAD)
         {
@@ -621,7 +622,7 @@ struct npc_undertaker_mordo : public ScriptedAI
         }
     }
 
-    void sQuestAccept(Player* player, Quest const* quest) override
+    void OnQuestAccept(Player* player, Quest const* quest) override
     {
         if (quest->GetQuestId() == TirisfalGlades::QUEST_THE_SHADOW_GRAVE)
             player->CastSpell(player, TirisfalGlades::SPELL_SUMMON_DARNELL);
@@ -688,7 +689,7 @@ struct npc_mindless_zombie : public ScriptedAI
     }
 };
 
-enum PlaceDescription
+enum class PlaceDescription : uint8
 {
     Unknown                                 = 0,
     Outsite                                 = 1,
@@ -710,7 +711,8 @@ struct npc_darnell : public ScriptedAI
 
         if (Unit* npc = me->GetCharmerOrOwner())
         {
-            if (m_player = npc->ToPlayer())
+            m_player = npc->ToPlayer();
+            if (m_player)
             {
                 if (m_player->GetQuestStatus(TirisfalGlades::QUEST_THE_SHADOW_GRAVE) == QuestStatus::QUEST_STATUS_INCOMPLETE)
                 {
@@ -1321,12 +1323,12 @@ struct npc_vile_fin_puddlejumper : public ScriptedAI
         uint64 m_playerGUID = 0;
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         me->CastSpell(who, TirisfalGlades::SPELL_LEAPING_RUSH);
     }
 
-    void DamageTaken(Unit* attacker, uint32& damage) 
+    void DamageTaken(Unit* attacker, uint32& damage) override
     { 
         if (Player* player = attacker->ToPlayer())
         {
@@ -1339,7 +1341,7 @@ struct npc_vile_fin_puddlejumper : public ScriptedAI
         }
     }
 
-    void SpellHit(Unit* caster, SpellInfo const* spell)
+    void SpellHit(Unit* caster, SpellInfo const* spell) override
     {
         if (caster->ToPlayer())
         {
@@ -1374,7 +1376,7 @@ struct npc_vile_fin_minor_oracle : public ScriptedAI
         m_lightning_shield_timer = 10 * MINUTE * IN_MILLISECONDS;
     }
 
-    void DamageTaken(Unit* attacker, uint32& damage)
+    void DamageTaken(Unit* attacker, uint32& damage) override
     {
         if (Player* player = attacker->ToPlayer())
         {
@@ -1387,7 +1389,7 @@ struct npc_vile_fin_minor_oracle : public ScriptedAI
         }
     }
 
-    void SpellHit(Unit* caster, SpellInfo const* spell)
+    void SpellHit(Unit* caster, SpellInfo const* spell) override
     {
         if (caster->ToPlayer())
         {
@@ -1399,7 +1401,7 @@ struct npc_vile_fin_minor_oracle : public ScriptedAI
         }
     }
 
-    void UpdateAI(const uint32 diff)
+    void UpdateAI(const uint32 diff) override
     {
         if (m_lightning_shield_timer <= diff)
         {
@@ -1480,14 +1482,14 @@ struct npc_captured_vile_fin_puddlejumper : public ScriptedAI
     EventMap m_events;
     uint64 m_playerGUID;
 
-    void Reset()
+    void Reset() override
     {
         m_events.Reset();
         m_events.ScheduleEvent(TirisfalGlades::EVENT_CHECK_PLAYER, 1 * IN_MILLISECONDS);
         uint64 m_playerGUID = 0;
     }
 
-    void IsSummonedBy(Unit* summoner)
+    void IsSummonedBy(Unit* summoner) override
     { 
         if (Player* player = summoner->ToPlayer())
         {
@@ -1514,7 +1516,7 @@ struct npc_captured_vile_fin_minor_oracle : public ScriptedAI
         uint64 m_playerGUID = 0;
     }
 
-    void IsSummonedBy(Unit* summoner)
+    void IsSummonedBy(Unit* summoner) override
     {
         if (Player* player = summoner->ToPlayer())
         {

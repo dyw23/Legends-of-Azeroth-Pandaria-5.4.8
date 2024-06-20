@@ -175,8 +175,8 @@ void WorldSession::HandleChannelList(WorldPacket& recvPacket)
     std::string channelName = recvPacket.ReadString(length);
 
     TC_LOG_DEBUG("chat.system", "%s %s Channel: %s",
-        recvPacket.GetOpcode() == CMSG_CHANNEL_DISPLAY_LIST ? "CMSG_CHANNEL_DISPLAY_LIST" : "CMSG_CHANNEL_LIST",
-        GetPlayerInfo().c_str(), channelName.c_str());
+        "CMSG_CHANNEL_LIST",
+        GetPlayerInfo().c_str(), channelName.c_str()); // recvPacket.GetOpcode() == CMSG_CHANNEL_DISPLAY_LIST ? "CMSG_CHANNEL_DISPLAY_LIST" : "CMSG_CHANNEL_LIST"
 
     if (ChannelMgr* cMgr = ChannelMgr::forTeam(GetPlayer()->GetTeam()))
         if (Channel* channel = cMgr->GetChannel(channelName, GetPlayer()))
@@ -411,29 +411,30 @@ void WorldSession::HandleChannelDisplayListQuery(WorldPacket &recvPacket)
     HandleChannelList(recvPacket);
 }
 
-void WorldSession::HandleGetChannelMemberCount(WorldPacket &recvPacket)
-{
-    std::string channelName;
-    recvPacket >> channelName;
+// not in 5.4.8
+// void WorldSession::HandleGetChannelMemberCount(WorldPacket &recvPacket)
+// {
+//     std::string channelName;
+//     recvPacket >> channelName;
 
-    TC_LOG_DEBUG("chat.system", "CMSG_GET_CHANNEL_MEMBER_COUNT %s Channel: %s",
-        GetPlayerInfo().c_str(), channelName.c_str());
+//     TC_LOG_DEBUG("chat.system", "CMSG_GET_CHANNEL_MEMBER_COUNT %s Channel: %s",
+//         GetPlayerInfo().c_str(), channelName.c_str());
 
-    if (ChannelMgr* cMgr = ChannelMgr::forTeam(GetPlayer()->GetTeam()))
-    {
-        if (Channel* channel = cMgr->GetChannel(channelName, GetPlayer()))
-        {
-            TC_LOG_DEBUG("chat.system", "SMSG_CHANNEL_MEMBER_COUNT %s Channel: %s Count: %u",
-                GetPlayerInfo().c_str(), channelName.c_str(), channel->GetNumPlayers());
+//     if (ChannelMgr* cMgr = ChannelMgr::forTeam(GetPlayer()->GetTeam()))
+//     {
+//         if (Channel* channel = cMgr->GetChannel(channelName, GetPlayer()))
+//         {
+//             TC_LOG_DEBUG("chat.system", "SMSG_CHANNEL_MEMBER_COUNT %s Channel: %s Count: %u",
+//                 GetPlayerInfo().c_str(), channelName.c_str(), channel->GetNumPlayers());
 
-            WorldPacket data(SMSG_CHANNEL_MEMBER_COUNT, channel->GetName().size() + 1 + 4);
-            data << channel->GetName();
-            data << uint8(channel->GetFlags());
-            data << uint32(channel->GetNumPlayers());
-            SendPacket(&data);
-        }
-    }
-}
+//             WorldPacket data(SMSG_CHANNEL_MEMBER_COUNT, channel->GetName().size() + 1 + 4);
+//             data << channel->GetName();
+//             data << uint8(channel->GetFlags());
+//             data << uint32(channel->GetNumPlayers());
+//             SendPacket(&data);
+//         }
+//     }
+// }
 
 void WorldSession::HandleSetChannelWatch(WorldPacket& recvPacket)
 {

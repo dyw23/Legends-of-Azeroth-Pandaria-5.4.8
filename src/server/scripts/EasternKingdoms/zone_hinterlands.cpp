@@ -57,16 +57,16 @@ class npc_00x09hl : public CreatureScript
 public:
     npc_00x09hl() : CreatureScript("npc_00x09hl") { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, const Quest* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, const Quest* quest) override
     {
         if (quest->GetQuestId() == QUEST_RESQUE_OOX_09)
         {
             creature->SetStandState(UNIT_STAND_STATE_STAND);
 
             if (player->GetTeam() == ALLIANCE)
-                creature->setFaction(FACTION_ESCORTEE_A);
+                creature->SetFaction(FACTION_ESCORTEE_A);
             else if (player->GetTeam() == HORDE)
-                creature->setFaction(FACTION_ESCORTEE_H);
+                creature->SetFaction(FACTION_ESCORTEE_H);
 
             creature->AI()->Talk(SAY_OOX_START, player);
 
@@ -87,7 +87,7 @@ public:
 
         void Reset() override { }
 
-        void WaypointReached(uint32 waypointId)
+        void WaypointReached(uint32 waypointId) override
         {
             switch (waypointId)
             {
@@ -105,7 +105,7 @@ public:
             }
         }
 
-        void WaypointStart(uint32 uiPointId)
+        void WaypointStart(uint32 uiPointId) override
         {
             switch (uiPointId)
             {
@@ -130,7 +130,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* who)
+        void JustEngagedWith(Unit* who) override
         {
             if (who->GetEntry() == NPC_MARAUDING_OWL || who->GetEntry() == NPC_VILE_AMBUSHER)
                 return;

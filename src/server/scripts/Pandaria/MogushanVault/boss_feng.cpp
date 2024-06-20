@@ -361,7 +361,7 @@ class boss_feng : public CreatureScript
                 me->SummonCreature(NPC_LOREWALKER_CHO, ChoPastFengSpawn, TEMPSUMMON_MANUAL_DESPAWN);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (!instance->CheckRequiredBosses(DATA_FENG, who->ToPlayer()))
                 {
@@ -376,7 +376,7 @@ class boss_feng : public CreatureScript
                 me->m_Events.Schedule(delay += 3000, 20, [this]()
                 {
                     if (me->IsInCombat())
-                        _EnterCombat();
+                        _JustEngagedWith();
                 });
                 Talk(TALK_AGGRO);
                 berserkEvents.ScheduleEvent(EVENT_BERSERK, IsHeroic() ? 10 * MINUTE * IN_MILLISECONDS : 9 * MINUTE * IN_MILLISECONDS);
@@ -872,7 +872,7 @@ class npc_siphon_shield : public CreatureScript
             InstanceScript* instance;
             std::map<uint32, uint32> soulsMap;
 
-            void Reset()
+            void Reset() override
             {
                 instance = me->GetInstanceScript();
                 // Set invisible
@@ -1033,7 +1033,7 @@ class npc_soul_fragment : public CreatureScript
 
                 events.ScheduleEvent(EVENT_SOUL_WALK, 2000);
                 events.ScheduleEvent(EVENT_SOUL_GROW, 100);
-                me->setFaction(16);
+                me->SetFaction(16);
                 me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
                 CanMove = false;
@@ -1448,7 +1448,7 @@ class go_inversion : public GameObjectScript
         {
             go_inversionAI(GameObject* go) : GameObjectAI(go) { }
 
-            bool GossipHello(Player* player) override
+            bool OnGossipHello(Player* player) override
             {
                 if (!player->IsInCombat())
                     return true;
@@ -1461,7 +1461,7 @@ class go_inversion : public GameObjectScript
                     return true;
 
                 player->CastSpell(player, SPELL_SHROUD_OF_REVERASL_BUTTON, false);
-                go->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND | GO_FLAG_NOT_SELECTABLE);
+                me->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND | GO_FLAG_NOT_SELECTABLE);
 
                 return false;
             }
@@ -1483,7 +1483,7 @@ class go_cancel : public GameObjectScript
         {
             go_cancelAI(GameObject* go) : GameObjectAI(go) { }
 
-            bool GossipHello(Player* player) override
+            bool OnGossipHello(Player* player) override
             {
                 if (!player->IsInCombat())
                     return true;
@@ -1495,7 +1495,7 @@ class go_cancel : public GameObjectScript
                     return true;
 
                 player->CastSpell(player, SPELL_NULLIFICATION_BARRIER_BUTTON, false);
-                go->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND | GO_FLAG_NOT_SELECTABLE);
+                me->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND | GO_FLAG_NOT_SELECTABLE);
 
                 return false;
             }

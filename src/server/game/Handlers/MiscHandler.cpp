@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -15,49 +15,52 @@
 * with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Common.h"
-#include "Language.h"
-#include "DatabaseEnv.h"
-#include "WorldPacket.h"
-#include "Opcodes.h"
-#include "Log.h"
-#include "Player.h"
-#include "GossipDef.h"
-#include "World.h"
-#include "ObjectMgr.h"
-#include "GuildMgr.h"
-#include "WorldSession.h"
-#include "BigNumber.h"
-#include "SHA1.h"
-#include "UpdateData.h"
-#include "LootMgr.h"
-#include "Chat.h"
-#include "zlib.h"
-#include "ObjectAccessor.h"
-#include "Object.h"
-#include "Battleground.h"
-#include "OutdoorPvP.h"
-#include "Pet.h"
-#include "SocialMgr.h"
-#include "CellImpl.h"
+#include <mutex>
 #include "AccountMgr.h"
-#include "Vehicle.h"
-#include "CreatureAI.h"
-#include "DBCEnums.h"
-#include "ScriptMgr.h"
-#include "MapManager.h"
-#include "InstanceScript.h"
-#include "GameObjectAI.h"
-#include "Group.h"
-#include "AccountMgr.h"
-#include "Spell.h"
-#include "BattlegroundMgr.h"
-#include "Battlefield.h"
-#include "BattlefieldMgr.h"
-#include "DB2Stores.h"
 #include "AchievementMgr.h"
 #include "ArenaTeam.h"
+#include "Battlefield.h"
+#include "BattlefieldMgr.h"
+#include "Battleground.h"
+#include "BattlegroundMgr.h"
+#include "BigNumber.h"
+#include "CellImpl.h"
+#include "CharacterPackets.h"
+#include "Chat.h"
+#include "CinematicMgr.h"
+#include "Common.h"
+#include "CreatureAI.h"
+#include "DatabaseEnv.h"
+#include "DB2Stores.h"
+#include "DBCEnums.h"
+#include "GameObjectAI.h"
+#include "GameTime.h"
+#include "GossipDef.h"
+#include "Group.h"
+#include "GuildMgr.h"
+#include "InstanceScript.h"
+#include "Language.h"
 #include "LFGMgr.h"
+#include "Log.h"
+#include "LootMgr.h"
+#include "MapManager.h"
+#include "Object.h"
+#include "ObjectAccessor.h"
+#include "ObjectMgr.h"
+#include "Opcodes.h"
+#include "OutdoorPvP.h"
+#include "Pet.h"
+#include "Player.h"
+#include "Realm.h"
+#include "SocialMgr.h"
+#include "Spell.h"
+#include "ScriptMgr.h"
+#include "UpdateData.h"
+#include "Vehicle.h"
+#include "World.h"
+#include "WorldPacket.h"
+#include "WorldSession.h"
+#include "zlib.h"
 
 bool AFDRoyaleRepopRequestHook(Player* player);
 
@@ -182,7 +185,7 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
-    if ((unit && unit->GetCreatureTemplate()->ScriptID != unit->LastUsedScriptID) || (go && go->GetGOInfo()->ScriptId != go->LastUsedScriptID))
+    if ((unit && unit->GetScriptId() != unit->LastUsedScriptID) || (go && go->GetGOInfo()->ScriptId != go->LastUsedScriptID))
     {
         TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOptionOpcode - Script reloaded while in use, ignoring and set new scipt id");
         if (unit)
@@ -196,13 +199,18 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
     {
         if (unit)
         {
-            unit->AI()->sGossipSelectCode(_player, menuId, gossipListId, code.c_str());
-            if (!sScriptMgr->OnGossipSelectCode(_player, unit, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId), code.c_str()))
+            if (!sScriptMgr->OnGossipSelectCode(_player, unit, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId), code.c_str()) && !unit->AI()->OnGossipSelectCode(_player, menuId, gossipListId, code.c_str()))
+            {
                 _player->OnGossipSelect(unit, gossipListId, menuId);
+            }
+            // if (!unit->AI()->OnGossipSelectCode(_player, menuId, gossipListId, code.c_str())) // hack, add to support ScriptAI
+            // {
+            //     _player->OnGossipSelect(unit, gossipListId, menuId);  
+            // }
         }
         else if (go)
         {
-            go->AI()->GossipSelectCode(_player, menuId, gossipListId, code.c_str());
+            go->AI()->OnGossipSelectCode(_player, menuId, gossipListId, code.c_str());
             sScriptMgr->OnGossipSelectCode(_player, go, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId), code.c_str());
         }
         else if (item)
@@ -218,13 +226,14 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
     {
         if (unit)
         {
-            unit->AI()->sGossipSelect(_player, menuId, gossipListId);
-            if (!sScriptMgr->OnGossipSelect(_player, unit, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId)))
-                _player->OnGossipSelect(unit, gossipListId, menuId);
+            if (!sScriptMgr->OnGossipSelect(_player, unit, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId)) && !unit->AI()->OnGossipSelect(_player, menuId, gossipListId))
+            {
+                 _player->OnGossipSelect(unit, gossipListId, menuId);   
+            }
         }
         else if (go)
         {
-            go->AI()->GossipSelect(_player, menuId, gossipListId);
+            go->AI()->OnGossipSelect(_player, menuId, gossipListId);
             if (!sScriptMgr->OnGossipSelect(_player, go, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId)))
                 _player->OnGossipSelect(go, gossipListId, menuId);
         }
@@ -350,7 +359,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
     size_t pos = data.bitwpos();
     data.WriteBits(displaycount, 6);
 
-    TRINITY_READ_GUARD(HashMapHolder<Player>::LockType, *HashMapHolder<Player>::GetLock());
+    std::shared_lock<std::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
     HashMapHolder<Player>::MapType const& m = sObjectAccessor->GetPlayers();
     for (auto itr = m.begin(); itr != m.end() && displaycount <= sWorld->getIntConfig(CONFIG_MAX_WHO); ++itr)
     {
@@ -380,17 +389,17 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
             continue;
 
         // check if class matches classmask
-        uint8 class_ = target->getClass();
+        uint8 class_ = target->GetClass();
         if (!(classMask & (1 << class_)))
             continue;
 
         // check if race matches racemask
-        uint32 race = target->getRace();
+        uint32 race = target->GetRace();
         if (!(raceMask & (1 << race)))
             continue;
 
         uint32 zoneId = target->GetZoneId();
-        uint8 gender = target->getGender();
+        uint8 gender = target->GetGender();
 
         bool z_show = true;
         for (uint32 i = 0; i < zonesCount; ++i)
@@ -492,9 +501,9 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
         data.WriteBits(pname.size(), 6);
 
         bytesData.WriteByteSeq(playerGuid[1]);
-        bytesData << uint32(realmID);
+        bytesData << uint32(realm.Id.Realm);
         bytesData.WriteByteSeq(playerGuid[7]);
-        bytesData << uint32(realmID);
+        bytesData << uint32(realm.Id.Realm);
         bytesData.WriteByteSeq(playerGuid[4]);
         bytesData.WriteString(pname);
         bytesData.WriteByteSeq(guildGuid[1]);
@@ -567,15 +576,14 @@ void WorldSession::HandleLogoutRequestOpcode(WorldPacket& /*recvData*/)
     else if (GetPlayer()->duel || GetPlayer()->HasAura(9454)) // is dueling or frozen by GM via freeze command
         reason = 2;                                         // FIXME - Need the correct value
 
-    WorldPacket data(SMSG_LOGOUT_RESPONSE, 1+4);
-    data << uint32(reason);
-    data.WriteBit(instantLogout);
-    data.FlushBits();
-    SendPacket(&data);
+    WorldPackets::Character::LogoutResponse logoutResponse;
+    logoutResponse.LogoutResult = reason;
+    logoutResponse.Instant = instantLogout;
+    SendPacket(logoutResponse.Write());
 
     if (reason)
     {
-        LogoutRequest(0);
+        SetLogoutStartTime(0);
         return;
     }
 
@@ -594,7 +602,7 @@ void WorldSession::HandleLogoutRequestOpcode(WorldPacket& /*recvData*/)
         GetPlayer()->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
     }
 
-    LogoutRequest(time(NULL));
+    SetLogoutStartTime(GameTime::GetGameTime());
 }
 
 void WorldSession::HandlePlayerLogoutOpcode(WorldPacket& /*recvData*/)
@@ -610,7 +618,7 @@ void WorldSession::HandleLogoutCancelOpcode(WorldPacket& /*recvData*/)
     if (!GetPlayer())
         return;
 
-    LogoutRequest(0);
+    SetLogoutStartTime(0);
 
     WorldPacket data(SMSG_LOGOUT_CANCEL_ACK, 0);
     SendPacket(&data);
@@ -655,10 +663,9 @@ void WorldSession::HandleZoneUpdateOpcode(WorldPacket& recvData)
 
     TC_LOG_DEBUG("network", "WORLD: Recvd ZONE_UPDATE: %u", newZone);
 
-    // use server size data
-    uint32 newzone, newarea;
-    GetPlayer()->GetZoneAndAreaId(newzone, newarea);
-    GetPlayer()->UpdateZone(newzone, newarea);
+    // use server side data, but only after update the player position. See Player::UpdatePosition().
+    GetPlayer()->SetNeedsZoneUpdate(true);
+
     //GetPlayer()->SendInitWorldStates(true, newZone);
 }
 
@@ -763,66 +770,126 @@ void WorldSession::HandleAddFriendOpcode(WorldPacket& recvData)
     TC_LOG_DEBUG("network", "WORLD: %s asked to add friend : '%s'",
         GetPlayer()->GetName().c_str(), friendName.c_str());
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GUID_RACE_ACC_BY_NAME);
+    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GUID_RACE_ACC_BY_NAME);
 
     stmt->setString(0, friendName);
 
-    _addFriendCallback.SetParam(friendNote);
-    _addFriendCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
+    // _addFriendCallback.SetParam(friendNote);
+    // _addFriendCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
+
+    _queryProcessor.AddCallback(CharacterDatabase.AsyncQuery(stmt)
+        .WithChainingPreparedCallback([this, friendNote](QueryCallback& queryCallback, PreparedQueryResult result)
+    {
+
+        if (!GetPlayer())
+            return;
+
+        uint64 friendGuid;
+        uint32 friendAccountId;
+        uint32 team;
+        FriendsResult friendResult;
+
+        friendResult = FRIEND_NOT_FOUND;
+        friendGuid = 0;
+
+        if (result)
+        {
+            Field* fields = result->Fetch();
+
+            friendGuid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
+            team = Player::TeamForRace(fields[1].GetUInt8());
+            friendAccountId = fields[2].GetUInt32();
+
+            if (GetSecurity() >= SEC_MODERATOR || sWorld->getBoolConfig(CONFIG_ALLOW_GM_FRIEND) || AccountMgr::GetSecurity(friendAccountId, realm.Id.Realm) < SEC_MODERATOR)
+            {
+                if (friendGuid)
+                {
+                    if (friendGuid == GetPlayer()->GetGUID())
+                        friendResult = FRIEND_SELF;
+                    else if (GetPlayer()->GetTeam() != team && !sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_ADD_FRIEND) && GetSecurity() < SEC_MODERATOR)
+                        friendResult = FRIEND_ENEMY;
+                    else if (GetPlayer()->GetSocial()->HasFriend(GUID_LOPART(friendGuid)))
+                        friendResult = FRIEND_ALREADY;
+                    else
+                    {
+                        Player* pFriend = ObjectAccessor::FindPlayer(friendGuid);
+                        if (pFriend && pFriend->IsInWorld() && pFriend->IsVisibleGloballyFor(GetPlayer()))
+                            friendResult = FRIEND_ADDED_ONLINE;
+                        else
+                            friendResult = FRIEND_ADDED_OFFLINE;
+                        if (!GetPlayer()->GetSocial()->AddToSocialList(GUID_LOPART(friendGuid), false))
+                        {
+                            friendResult = FRIEND_LIST_FULL;
+                            TC_LOG_DEBUG("network", "WORLD: %s's friend list is full.", GetPlayer()->GetName().c_str());
+                        }
+                    }
+                    GetPlayer()->GetSocial()->SetFriendNote(GUID_LOPART(friendGuid), friendNote);
+                }
+            }
+        }
+
+        sSocialMgr->SendFriendStatus(GetPlayer(), friendResult, friendGuid, false);
+
+        TC_LOG_DEBUG("network", "WORLD: Sent (SMSG_FRIEND_STATUS)");
+
+    }));
+
+
+
 }
 
 void WorldSession::HandleAddFriendOpcodeCallBack(PreparedQueryResult result, std::string const& friendNote)
 {
-    if (!GetPlayer())
-        return;
+    // if (!GetPlayer())
+    //     return;
 
-    uint64 friendGuid;
-    uint32 friendAccountId;
-    uint32 team;
-    FriendsResult friendResult;
+    // uint64 friendGuid;
+    // uint32 friendAccountId;
+    // uint32 team;
+    // FriendsResult friendResult;
 
-    friendResult = FRIEND_NOT_FOUND;
-    friendGuid = 0;
+    // friendResult = FRIEND_NOT_FOUND;
+    // friendGuid = 0;
 
-    if (result)
-    {
-        Field* fields = result->Fetch();
+    // if (result)
+    // {
+    //     Field* fields = result->Fetch();
 
-        friendGuid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
-        team = Player::TeamForRace(fields[1].GetUInt8());
-        friendAccountId = fields[2].GetUInt32();
+    //     friendGuid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
+    //     team = Player::TeamForRace(fields[1].GetUInt8());
+    //     friendAccountId = fields[2].GetUInt32();
 
-        if (GetSecurity() >= SEC_MODERATOR || sWorld->getBoolConfig(CONFIG_ALLOW_GM_FRIEND) || AccountMgr::GetSecurity(friendAccountId, realmID) < SEC_MODERATOR)
-        {
-            if (friendGuid)
-            {
-                if (friendGuid == GetPlayer()->GetGUID())
-                    friendResult = FRIEND_SELF;
-                else if (GetPlayer()->GetTeam() != team && !sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_ADD_FRIEND) && GetSecurity() < SEC_MODERATOR)
-                    friendResult = FRIEND_ENEMY;
-                else if (GetPlayer()->GetSocial()->HasFriend(GUID_LOPART(friendGuid)))
-                    friendResult = FRIEND_ALREADY;
-                else
-                {
-                    Player* pFriend = ObjectAccessor::FindPlayer(friendGuid);
-                    if (pFriend && pFriend->IsInWorld() && pFriend->IsVisibleGloballyFor(GetPlayer()))
-                        friendResult = FRIEND_ADDED_ONLINE;
-                    else
-                        friendResult = FRIEND_ADDED_OFFLINE;
-                    if (!GetPlayer()->GetSocial()->AddToSocialList(GUID_LOPART(friendGuid), false))
-                    {
-                        friendResult = FRIEND_LIST_FULL;
-                        TC_LOG_DEBUG("network", "WORLD: %s's friend list is full.", GetPlayer()->GetName().c_str());
-                    }
-                }
-                GetPlayer()->GetSocial()->SetFriendNote(GUID_LOPART(friendGuid), friendNote);
-            }
-        }
-    }
+    //     if (GetSecurity() >= SEC_MODERATOR || sWorld->getBoolConfig(CONFIG_ALLOW_GM_FRIEND) || AccountMgr::GetSecurity(friendAccountId, realm.Id.Realm) < SEC_MODERATOR)
+    //     {
+    //         if (friendGuid)
+    //         {
+    //             if (friendGuid == GetPlayer()->GetGUID())
+    //                 friendResult = FRIEND_SELF;
+    //             else if (GetPlayer()->GetTeam() != team && !sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_ADD_FRIEND) && GetSecurity() < SEC_MODERATOR)
+    //                 friendResult = FRIEND_ENEMY;
+    //             else if (GetPlayer()->GetSocial()->HasFriend(GUID_LOPART(friendGuid)))
+    //                 friendResult = FRIEND_ALREADY;
+    //             else
+    //             {
+    //                 Player* pFriend = ObjectAccessor::FindPlayer(friendGuid);
+    //                 if (pFriend && pFriend->IsInWorld() && pFriend->IsVisibleGloballyFor(GetPlayer()))
+    //                     friendResult = FRIEND_ADDED_ONLINE;
+    //                 else
+    //                     friendResult = FRIEND_ADDED_OFFLINE;
+    //                 if (!GetPlayer()->GetSocial()->AddToSocialList(GUID_LOPART(friendGuid), false))
+    //                 {
+    //                     friendResult = FRIEND_LIST_FULL;
+    //                     TC_LOG_DEBUG("network", "WORLD: %s's friend list is full.", GetPlayer()->GetName().c_str());
+    //                 }
+    //             }
+    //             GetPlayer()->GetSocial()->SetFriendNote(GUID_LOPART(friendGuid), friendNote);
+    //         }
+    //     }
+    // }
 
-    sSocialMgr->SendFriendStatus(GetPlayer(), friendResult, friendGuid, false);
+    // sSocialMgr->SendFriendStatus(GetPlayer(), friendResult, friendGuid, false);
 
-    TC_LOG_DEBUG("network", "WORLD: Sent (SMSG_FRIEND_STATUS)");
+    // TC_LOG_DEBUG("network", "WORLD: Sent (SMSG_FRIEND_STATUS)");
 }
 
 void WorldSession::HandleDelFriendOpcode(WorldPacket& recvData)
@@ -854,11 +921,13 @@ void WorldSession::HandleAddIgnoreOpcode(WorldPacket& recvData)
     TC_LOG_DEBUG("network", "WORLD: %s asked to Ignore: '%s'",
         GetPlayer()->GetName().c_str(), ignoreName.c_str());
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GUID_BY_NAME);
+    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GUID_BY_NAME);
 
     stmt->setString(0, ignoreName);
 
-    _addIgnoreCallback = CharacterDatabase.AsyncQuery(stmt);
+    //_addIgnoreCallback = CharacterDatabase.AsyncQuery(stmt);
+    _queryProcessor.AddCallback(CharacterDatabase.AsyncQuery(stmt)
+        .WithPreparedCallback(std::bind(&WorldSession::HandleAddIgnoreOpcodeCallBack, this, std::placeholders::_1 )));
 }
 
 void WorldSession::HandleAddIgnoreOpcodeCallBack(PreparedQueryResult result)
@@ -941,7 +1010,7 @@ void WorldSession::HandleBugOpcode(WorldPacket& recvData)
     TC_LOG_DEBUG("network", "%s", type.c_str());
     TC_LOG_DEBUG("network", "%s", content.c_str());
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_BUG_REPORT);
+    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_BUG_REPORT);
 
     stmt->setString(0, type);
     stmt->setString(1, content);
@@ -1050,149 +1119,117 @@ void WorldSession::HandleResurrectResponseOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
 {
-    uint32 triggerId;
-    uint8 unk1, unk2;
-    recvData >> triggerId;
-    unk1 = recvData.ReadBit();
-    unk2 = recvData.ReadBit();
+    uint32 areaTriggerId;
+    uint8 entered, fromClient;
+    recvData >> areaTriggerId;
+    fromClient = recvData.ReadBit();
+    entered = recvData.ReadBit();
 
-    TC_LOG_DEBUG("network", "CMSG_AREATRIGGER. Trigger ID: %u", triggerId);
+    TC_LOG_DEBUG("network", "CMSG_AREATRIGGER. Trigger ID: %u, Entered: %u, From Client: %u", areaTriggerId, entered, fromClient);
 
     Player* player = GetPlayer();
     if (player->IsInFlight())
     {
         TC_LOG_DEBUG("network", "HandleAreaTriggerOpcode: Player '%s' (GUID: %u) in flight, ignore Area Trigger ID:%u",
-            player->GetName().c_str(), player->GetGUIDLow(), triggerId);
+            player->GetName().c_str(), player->GetGUIDLow(), areaTriggerId);
         return;
     }
 
-    AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(triggerId);
+    AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(areaTriggerId);
     if (!atEntry)
     {
         TC_LOG_DEBUG("network", "HandleAreaTriggerOpcode: Player '%s' (GUID: %u) send unknown (by DBC) Area Trigger ID:%u",
-            player->GetName().c_str(), player->GetGUIDLow(), triggerId);
+            player->GetName().c_str(), player->GetGUIDLow(), areaTriggerId);
         return;
     }
 
-    if (player->GetMapId() != atEntry->mapid)
+    if (entered != player->IsInAreaTrigger(atEntry))
     {
         TC_LOG_DEBUG("network", "HandleAreaTriggerOpcode: Player '%s' (GUID: %u) too far (trigger map: %u player map: %u), ignore Area Trigger ID: %u",
-            player->GetName().c_str(), atEntry->mapid, player->GetMapId(), player->GetGUIDLow(), triggerId);
+                     player->GetName().c_str(), atEntry->ContinentID, player->GetMapId(), player->GetGUIDLow(), areaTriggerId);
         return;
-    }
-
-    // delta is safe radius
-    const float delta = 5.0f;
-
-    if (atEntry->radius > 0)
-    {
-        // if we have radius check it
-        float dist = player->GetDistance(atEntry->x, atEntry->y, atEntry->z);
-        if (dist > atEntry->radius + delta)
-        {
-            TC_LOG_DEBUG("network", "HandleAreaTriggerOpcode: Player '%s' (GUID: %u) too far (radius: %f distance: %f), ignore Area Trigger ID: %u",
-                player->GetName().c_str(), player->GetGUIDLow(), atEntry->radius, dist, triggerId);
-            return;
-        }
-    }
-    else
-    {
-        // we have only extent
-
-        // rotate the players position instead of rotating the whole cube, that way we can make a simplified
-        // is-in-cube check and we have to calculate only one point instead of 4
-
-        // 2PI = 360°, keep in mind that ingame orientation is counter-clockwise
-        double rotation = 2 * M_PI - atEntry->box_orientation;
-        double sinVal = std::sin(rotation);
-        double cosVal = std::cos(rotation);
-
-        float playerBoxDistX = player->GetPositionX() - atEntry->x;
-        float playerBoxDistY = player->GetPositionY() - atEntry->y;
-
-        float rotPlayerX = float(atEntry->x + playerBoxDistX * cosVal - playerBoxDistY*sinVal);
-        float rotPlayerY = float(atEntry->y + playerBoxDistY * cosVal + playerBoxDistX*sinVal);
-
-        // box edges are parallel to coordiante axis, so we can treat every dimension independently :D
-        float dz = player->GetPositionZ() - atEntry->z;
-        float dx = rotPlayerX - atEntry->x;
-        float dy = rotPlayerY - atEntry->y;
-        if ((fabs(dx) > atEntry->box_x / 2 + delta) ||
-            (fabs(dy) > atEntry->box_y / 2 + delta) ||
-            (fabs(dz) > atEntry->box_z / 2 + delta))
-        {
-            TC_LOG_DEBUG("network", "HandleAreaTriggerOpcode: Player '%s' (GUID: %u) too far (1/2 box X: %f 1/2 box Y: %f 1/2 box Z: %f rotatedPlayerX: %f rotatedPlayerY: %f dZ:%f), ignore Area Trigger ID: %u",
-                player->GetName().c_str(), player->GetGUIDLow(), atEntry->box_x/2, atEntry->box_y/2, atEntry->box_z/2, rotPlayerX, rotPlayerY, dz, triggerId);
-            return;
-        }
     }
 
     if (player->isDebugAreaTriggers)
-        ChatHandler(player->GetSession()).PSendSysMessage(LANG_DEBUG_AREATRIGGER_REACHED, triggerId);
+      ChatHandler(player->GetSession()).PSendSysMessage(entered ? LANG_DEBUG_AREATRIGGER_ENTERED : LANG_DEBUG_AREATRIGGER_LEFT, areaTriggerId);
 
-    if (sScriptMgr->OnAreaTrigger(player, atEntry))
+    if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_AREATRIGGER_CLIENT_TRIGGERED, atEntry->ID, player))
         return;
 
-    if (player->IsAlive())
+    if (sScriptMgr->OnAreaTrigger(player, atEntry, entered))
+        return;
+
+    if (player->IsAlive() && entered)
     {
-        if (uint32 questId = sObjectMgr->GetQuestGiverForAreaTrigger(triggerId))
+        if (std::unordered_set<uint32> const* quests = sObjectMgr->GetQuestGiverForAreaTrigger(areaTriggerId))
         {
-            Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
-            if (quest && player->GetQuestStatus(questId) == QUEST_STATUS_NONE && player->CanTakeQuest(quest, false) && player->CanAddQuest(quest, false))
+            for (uint32 questId : *quests)
             {
-                player->AddQuest(quest, player);
-                player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, player->GetGUID(), true, true);
-                if (_player->CanCompleteQuest(quest->GetQuestId()))
-                    _player->CompleteQuest(quest->GetQuestId());
+                Quest const *quest = sObjectMgr->GetQuestTemplate(questId);
+                if (quest && player->GetQuestStatus(questId) == QUEST_STATUS_NONE && player->CanTakeQuest(quest, false) && player->CanAddQuest(quest, false))
+                {
+                    player->AddQuest(quest, player);
+                    player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, player->GetGUID(), true, true);
+                    if (_player->CanCompleteQuest(quest->GetQuestId()))
+                        _player->CompleteQuest(quest->GetQuestId());
+                }
             }
         }
-        if (uint32 questId = sObjectMgr->GetQuestForAreaTrigger(triggerId))
-        {
-            Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
-            if (quest && player->GetQuestStatus(questId) == QUEST_STATUS_INCOMPLETE)
-            {
-                for (auto&& objective : quest->m_questObjectives)
-                {
-                    if (objective->Type == QUEST_OBJECTIVE_TYPE_AREATRIGGER && player->GetQuestObjectiveCounter(objective->Id) == 0)
-                    {
-                        player->m_questObjectiveStatus[objective->Id] += 1;
-                        player->MarkQuestObjectiveToSave(questId, objective->Id);
-                        player->SendQuestUpdateAddCreditSimple(quest, objective);
-                        break;
-                    }
-                }
 
-                if (player->CanCompleteQuest(questId))
-                    player->CompleteQuest(questId);
+        if (std::unordered_set<uint32> const* quests = sObjectMgr->GetQuestsForAreaTrigger(areaTriggerId))
+        {
+            for (uint32 questId : *quests)
+            {
+                Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+                uint16 slot = player->FindQuestSlot(questId);
+                if (quest && slot < MAX_QUEST_LOG_SIZE && player->GetQuestStatus(questId) == QUEST_STATUS_INCOMPLETE)
+                {
+                    for (auto objective: quest->m_questObjectives)
+                    {
+                        if (objective->Type == QUEST_OBJECTIVE_TYPE_AREATRIGGER)
+                        {
+                            player->m_questObjectiveStatus[objective->Id] += 1;
+                            player->MarkQuestObjectiveToSave(questId, objective->Id);
+                            player->SendQuestUpdateAddCreditSimple(quest, objective);
+                            break;
+                        }
+                    }
+
+                    if (player->CanCompleteQuest(questId))
+                        player->CompleteQuest(questId);
+                }
             }
         }
     }
 
-    if (sObjectMgr->IsTavernAreaTrigger(triggerId))
+    if (sObjectMgr->IsTavernAreaTrigger(areaTriggerId))
     {
         // set resting flag we are in the inn
-        player->SetFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
-        player->InnEnter(time(NULL), atEntry->mapid, atEntry->x, atEntry->y, atEntry->z);
-        player->SetRestType(REST_TYPE_IN_TAVERN);
+        if (entered)
+            player->SetRestFlag(REST_FLAG_IN_TAVERN, atEntry->ID);
+        else
+            player->RemoveRestFlag(REST_FLAG_IN_TAVERN);
 
         if (sWorld->IsFFAPvPRealm())
-            player->RemoveByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+        {
+            if (entered)
+                player->RemoveByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+            else
+                player->SetByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+        }
 
         return;
     }
 
     if (Battleground* bg = player->GetBattleground())
         if (bg->GetStatus() == STATUS_IN_PROGRESS)
-        {
-            bg->HandleAreaTrigger(player, triggerId);
-            return;
-        }
+            bg->HandleAreaTrigger(player, areaTriggerId, entered);
 
     if (OutdoorPvP* pvp = player->GetOutdoorPvP())
-        if (pvp->HandleAreaTrigger(_player, triggerId))
+        if (pvp->HandleAreaTrigger(_player, areaTriggerId, entered))
             return;
 
-    AreaTriggerStruct const* at = sObjectMgr->GetAreaTrigger(triggerId);
+    AreaTriggerStruct const* at = sObjectMgr->GetAreaTrigger(areaTriggerId);
     if (!at)
         return;
 
@@ -1201,7 +1238,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
     {
         if (!sMapMgr->CanPlayerEnter(at->target_mapId, player, false))
         {
-            player->SendAreaTriggerDenied(triggerId, false);
+            player->SendAreaTriggerDenied(areaTriggerId, false);
             return;
         }
 
@@ -1388,6 +1425,15 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
 void WorldSession::HandleCompleteCinematic(WorldPacket& /*recvData*/)
 {
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_COMPLETE_CINEMATIC");
+    // If player has sight bound to visual waypoint NPC we should remove it
+    GetPlayer()->GetCinematicMgr()->EndCinematic();    
+}
+
+void WorldSession::HandleNextCinematicCamera(WorldPacket& /*recvData*/)
+{
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_NEXT_CINEMATIC_CAMERA");
+    // Sent by client when cinematic actually begun. So we begin the server side process
+    GetPlayer()->GetCinematicMgr()->BeginCinematic();    
 }
 
 void WorldSession::HandleCompleteMovie(WorldPacket& /*recvData*/)
@@ -1397,11 +1443,6 @@ void WorldSession::HandleCompleteMovie(WorldPacket& /*recvData*/)
     if (_player)
         if (InstanceScript* instance = _player->GetInstanceScript())
             instance->OnMovieEnded(_player);
-}
-
-void WorldSession::HandleNextCinematicCamera(WorldPacket& /*recvData*/)
-{
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_NEXT_CINEMATIC_CAMERA");
 }
 
 void WorldSession::HandleMoveTimeSkippedOpcode(WorldPacket& recvData)
@@ -1654,7 +1695,7 @@ void WorldSession::HandleWhoisOpcode(WorldPacket& recvData)
 
     uint32 accid = player->GetSession()->GetAccountId();
 
-    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_WHOIS);
+    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_WHOIS);
 
     stmt->setUInt32(0, accid);
 
@@ -1690,46 +1731,47 @@ void WorldSession::HandleWhoisOpcode(WorldPacket& recvData)
         GetPlayer()->GetName().c_str(), charname.c_str());
 }
 
-void WorldSession::HandleComplainOpcode(WorldPacket& recvData)
-{
-    TC_LOG_DEBUG("network", "WORLD: CMSG_COMPLAIN");
+// not in 5.4.8
+// void WorldSession::HandleComplainOpcode(WorldPacket& recvData)
+// {
+//     TC_LOG_DEBUG("network", "WORLD: CMSG_COMPLAIN");
 
-    uint8 spam_type;                                        // 0 - mail, 1 - chat
-    uint64 spammer_guid;
-    uint32 unk1 = 0;
-    uint32 unk2 = 0;
-    uint32 unk3 = 0;
-    uint32 unk4 = 0;
-    std::string description = "";
-    recvData >> spam_type;                                 // unk 0x01 const, may be spam type (mail/chat)
-    recvData >> spammer_guid;                              // player guid
-    switch (spam_type)
-    {
-        case 0:
-            recvData >> unk1;                              // const 0
-            recvData >> unk2;                              // probably mail id
-            recvData >> unk3;                              // const 0
-            break;
-        case 1:
-            recvData >> unk1;                              // probably language
-            recvData >> unk2;                              // message type?
-            recvData >> unk3;                              // probably channel id
-            recvData >> unk4;                              // time
-            recvData >> description;                       // spam description string (messagetype, channel name, player name, message)
-            break;
-    }
+//     uint8 spam_type;                                        // 0 - mail, 1 - chat
+//     uint64 spammer_guid;
+//     uint32 unk1 = 0;
+//     uint32 unk2 = 0;
+//     uint32 unk3 = 0;
+//     uint32 unk4 = 0;
+//     std::string description = "";
+//     recvData >> spam_type;                                 // unk 0x01 const, may be spam type (mail/chat)
+//     recvData >> spammer_guid;                              // player guid
+//     switch (spam_type)
+//     {
+//         case 0:
+//             recvData >> unk1;                              // const 0
+//             recvData >> unk2;                              // probably mail id
+//             recvData >> unk3;                              // const 0
+//             break;
+//         case 1:
+//             recvData >> unk1;                              // probably language
+//             recvData >> unk2;                              // message type?
+//             recvData >> unk3;                              // probably channel id
+//             recvData >> unk4;                              // time
+//             recvData >> description;                       // spam description string (messagetype, channel name, player name, message)
+//             break;
+//     }
 
-    // NOTE: all chat messages from this spammer automatically ignored by spam reporter until logout in case chat spam.
-    // if it's mail spam - ALL mails from this spammer automatically removed by client
+//     // NOTE: all chat messages from this spammer automatically ignored by spam reporter until logout in case chat spam.
+//     // if it's mail spam - ALL mails from this spammer automatically removed by client
 
-    // Complaint Received message
-    WorldPacket data(SMSG_COMPLAIN_RESULT, 2);
-    data << uint8(0); // value 1 resets CGChat::m_complaintsSystemStatus in client. (unused?)
-    data << uint8(0); // value 0xC generates a "CalendarError" in client.
-    SendPacket(&data);
+//     // Complaint Received message
+//     WorldPacket data(SMSG_COMPLAIN_RESULT, 2);
+//     data << uint8(0); // value 1 resets CGChat::m_complaintsSystemStatus in client. (unused?)
+//     data << uint8(0); // value 0xC generates a "CalendarError" in client.
+//     SendPacket(&data);
 
-    TC_LOG_DEBUG("network", "REPORT SPAM: type %u, guid %u, unk1 %u, unk2 %u, unk3 %u, unk4 %u, message %s", spam_type, GUID_LOPART(spammer_guid), unk1, unk2, unk3, unk4, description.c_str());
-}
+//     TC_LOG_DEBUG("network", "REPORT SPAM: type %u, guid %u, unk1 %u, unk2 %u, unk3 %u, unk4 %u, message %s", spam_type, GUID_LOPART(spammer_guid), unk1, unk2, unk3, unk4, description.c_str());
+// }
 
 void WorldSession::HandleRealmSplitOpcode(WorldPacket& recvData)
 {
@@ -2058,7 +2100,7 @@ void WorldSession::HandleReadyForAccountDataTimes(WorldPacket& /*recvData*/)
     SendAccountDataTimes(GLOBAL_CACHE_MASK);
 }
 
-void WorldSession::SendSetPhaseShift(std::set<uint32> const& phaseIds, std::set<uint32> const& terrainswaps, std::set<uint32> const& worldMapAreas)
+void WorldSession::SendSetPhaseShift(std::set<uint32> const& phaseIds, std::set<uint32> const& terrainswaps, std::set<uint32> const& worldMapAreas, uint32 flags)
 {
     ObjectGuid guid = _player->GetGUID();
 
@@ -2100,7 +2142,7 @@ void WorldSession::SendSetPhaseShift(std::set<uint32> const& phaseIds, std::set<
 
     data.WriteByteSeq(guid[5]);
 
-    data << uint32(phaseIds.size() ? 0 : 8);  // flags (not phasemask)
+    data << uint32(!flags ? 0x1F : flags);
 
     SendPacket(&data);
 }
@@ -2186,7 +2228,7 @@ void WorldSession::HandleHearthAndResurrect(WorldPacket& /*recvData*/)
     }
 
     AreaTableEntry const* atEntry = sAreaTableStore.LookupEntry(_player->GetAreaId());
-    if (!atEntry || !(atEntry->flags & AREA_FLAG_WINTERGRASP_2))
+    if (!atEntry || !(atEntry->Flags & AREA_FLAG_WINTERGRASP_2))
         return;
 
     _player->BuildPlayerRepop();
@@ -2321,8 +2363,8 @@ void WorldSession::SendBroadcastTextDb2Reply(uint32 entry, ByteBuffer& buffer)
     {
         if (NpcTextLocale const* localeData = sObjectMgr->GetNpcTextLocale(entry))
         {
-            ObjectMgr::GetLocaleStringOld(localeData->Text_0[0], locale, Text_0);
-            ObjectMgr::GetLocaleStringOld(localeData->Text_1[0], locale, Text_1);
+            ObjectMgr::GetLocaleString(localeData->Text_0[0], locale, Text_0);
+            ObjectMgr::GetLocaleString(localeData->Text_1[0], locale, Text_1);
         }
     }
     buffer << uint32(entry);
@@ -2568,7 +2610,7 @@ void WorldSession::HandleSelectFactionOpcode(WorldPacket& recvPacket)
 {
     uint32 choice = recvPacket.read<uint32>();
 
-    if (_player->getRace() != RACE_PANDAREN_NEUTRAL)
+    if (_player->GetRace() != RACE_PANDAREN_NEUTRAL)
         return;
 
     if (_player->GetQuestStatus(31450) == QUEST_STATUS_INCOMPLETE)

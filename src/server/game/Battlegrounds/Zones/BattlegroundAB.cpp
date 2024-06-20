@@ -233,7 +233,7 @@ void BattlegroundAB::RemovePlayer(Player* player, uint64 guid, uint32 team)
     Battleground::RemovePlayer(player, guid, team);
 }
 
-void BattlegroundAB::HandleAreaTrigger(Player* player, uint32 trigger)
+void BattlegroundAB::HandleAreaTrigger(Player* player, uint32 trigger, bool entered)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -262,7 +262,7 @@ void BattlegroundAB::HandleAreaTrigger(Player* player, uint32 trigger)
         case 4674:                                          // Unk3
             //break;
         default:
-            Battleground::HandleAreaTrigger(player, trigger);
+            Battleground::HandleAreaTrigger(player, trigger, entered);
             break;
     }
 }
@@ -403,7 +403,7 @@ void BattlegroundAB::_NodeOccupied(uint8 node, Team team)
     //aura should only apply to players who have accupied the node, set correct faction for trigger
     if (trigger)
     {
-        trigger->setFaction(team == ALLIANCE ? 84 : 83);
+        trigger->SetFaction(team == ALLIANCE ? 84 : 83);
         trigger->CastSpell(trigger, SPELL_HONORABLE_DEFENDER_25Y, false);
     }
 }

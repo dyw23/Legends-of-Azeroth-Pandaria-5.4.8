@@ -658,7 +658,7 @@ class npc_rotting_frost_giant : public CreatureScript
                     instance->SetData(DATA_ROTTING_FROST_GIANT_STATE, NOT_STARTED);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 me->setActive(true);
                 DoZoneInCombat();
@@ -928,7 +928,7 @@ class npc_alchemist_adrianna : public CreatureScript
         {
             npc_alchemist_adriannaAI(Creature* creature) : ScriptedAI(creature) { }
 
-            void sGossipSelect(Player* player, uint32 sender, uint32 action) override
+            bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
             {
                 if (sender == 11034 && action == 0)
                 {
@@ -943,6 +943,7 @@ class npc_alchemist_adrianna : public CreatureScript
                         }
                     }
                 }
+                return true;
             }
         };
 
@@ -998,9 +999,9 @@ class boss_sister_svalna : public CreatureScript
                     crok->m_Events.Schedule(delay + 3000, [crok]() { crok->GetMotionMaster()->MovePoint(POINT_CROK_FINAL, 4335.371094f, 2484.422363f, 358.441711f); });
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
                 if (Creature* crok = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_CROK_SCOURGEBANE)))
                     crok->AI()->Talk(SAY_CROK_COMBAT_SVALNA);
                 events.ScheduleEvent(EVENT_SVALNA_COMBAT, 1);
@@ -1276,7 +1277,7 @@ class npc_crok_scourgebane : public CreatureScript
                 }
             }
 
-            void WaypointReached(uint32 waypointId)
+            void WaypointReached(uint32 waypointId) override
             {
                 switch (waypointId)
                 {
@@ -1307,7 +1308,7 @@ class npc_crok_scourgebane : public CreatureScript
                 }
             }
 
-            void WaypointStart(uint32 waypointId)
+            void WaypointStart(uint32 waypointId) override
             {
                 _currentWPid = waypointId;
                 switch (waypointId)
@@ -1396,7 +1397,7 @@ class npc_crok_scourgebane : public CreatureScript
                 }
             }
 
-            void UpdateEscortAI(uint32 diff)
+            void UpdateEscortAI(uint32 diff) override
             {
                 if (_wipeCheckTimer <= diff)
                     _wipeCheckTimer = 0;
@@ -1541,7 +1542,7 @@ struct npc_argent_captainAI : public ScriptedAI
             }
         }
 
-        void EnterCombat(Unit* /*who*/) override
+        void JustEngagedWith(Unit* /*who*/) override
         {
             me->SetHomePosition(*me);
             if (IsUndead)
@@ -2462,9 +2463,9 @@ class npc_sindragosas_ward : public CreatureScript
                             DoZoneInCombat(me, 150.0f);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
                 _isEventInProgressOrDone = true;
                 _spawnCountToBeSummonedInWave = 32;
                 _waveNumber = 1;
@@ -2694,7 +2695,7 @@ class npc_icc_sindragosa_gauntlet_frostwarden : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 DoZoneInCombat(nullptr, 150.0f);
             }
@@ -2803,7 +2804,7 @@ class npc_icc_sindragosa_gauntlet_nerubar : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 DoZoneInCombat(nullptr, 150.0f);
             }
@@ -3072,12 +3073,12 @@ class go_inconspicuous_lever : public GameObjectScript
                 if (state != GO_JUST_DEACTIVATED)
                     return;
 
-                if (InstanceScript* instance = go->GetInstanceScript())
+                if (InstanceScript* instance = me->GetInstanceScript())
                 {
                     if (instance->GetData(DATA_COLDFLAME_JETS) == IN_PROGRESS)
                     {
                         std::list<Creature*> traps;
-                        GetCreatureListWithEntryInGrid(traps, go, NPC_FROST_FREEZE_TRAP, 120.0f);
+                        GetCreatureListWithEntryInGrid(traps, me, NPC_FROST_FREEZE_TRAP, 120.0f);
                         for (std::list<Creature*>::iterator itr = traps.begin(); itr != traps.end(); ++itr)
                             (*itr)->AI()->DoAction(0);
 
@@ -3256,7 +3257,8 @@ class spell_icc_leap_to_a_random_location : public SpellScriptLoader
                     return;
 
                 dest._position.m_positionZ = caster->GetPositionZ();
-                caster->UpdateGroundPositionZ(dest._position.GetPositionX(), dest._position.GetPositionY(), dest._position.m_positionZ, 0, 100.0f);
+                //caster->UpdateGroundPositionZ(dest._position.GetPositionX(), dest._position.GetPositionY(), dest._position.m_positionZ, 0, 100.0f);
+                caster->UpdateGroundPositionZ(dest._position.GetPositionX(), dest._position.GetPositionY(), dest._position.m_positionZ);
             }
 
             void Register() override
@@ -3929,13 +3931,13 @@ class npc_icc_ormus_the_penitent : public CreatureScript
         {
             npc_icc_ormus_the_penitentAI(Creature* creature) : ScriptedAI(creature) { }
 
-            void sGossipSelect(Player* player, uint32 sender, uint32 action) override
+            bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
             {
                 if (sender != 10998 || action != 0)
-                    return;
+                    return false;
 
                 if (!CheckAshenVerdictRingRetrieveAvailability(player))
-                    return;
+                    return false;
 
                 player->CLOSE_GOSSIP_MENU();
 
@@ -3946,7 +3948,7 @@ class npc_icc_ormus_the_penitent : public CreatureScript
                         ownedClass = c;
 
                 if (ownedClass == -1)
-                    return;
+                    return false;
 
                 // Find max owned ring rank
                 int8 ownedRank = -1;
@@ -3956,9 +3958,10 @@ class npc_icc_ormus_the_penitent : public CreatureScript
                             ownedRank = r;
 
                 if (ownedRank == -1)
-                    return;
+                    return false;
 
                 player->AddItem(AshenVerdictRingItemIDs[ownedClass][ownedRank], 1);
+                return true;
             }
         };
 
@@ -3973,7 +3976,7 @@ class cond_icc_ashen_verdict_ring_retrieve : public ConditionScript
     public:
         cond_icc_ashen_verdict_ring_retrieve() : ConditionScript("cond_icc_ashen_verdict_ring_retrieve") { }
 
-        bool OnConditionCheck(Condition* /*condition*/, ConditionSourceInfo& sourceInfo) override
+        bool OnConditionCheck(const Condition* /*condition*/, ConditionSourceInfo& sourceInfo) override
         {
             if (!sourceInfo.mConditionTargets[0])
                 return false;

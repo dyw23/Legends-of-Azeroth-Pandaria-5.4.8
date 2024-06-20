@@ -159,7 +159,7 @@ class boss_akmahat : public CreatureScript
                 summons.DespawnAll();
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_SHOCKWAVE, 16000);
                 events.ScheduleEvent(EVENT_FURY_OF_THE_SANDS, 9000);
@@ -352,7 +352,7 @@ class npc_sun_moon_colossus : public CreatureScript
             void Reset() override
             {
                 events.Reset();
-                me->setFaction(35);
+                me->SetFaction(35);
             }
 
             void DoAction(int32 actionId) override
@@ -361,7 +361,7 @@ class npc_sun_moon_colossus : public CreatureScript
                 {
                     me->ExitVehicle();
                     me->HandleEmoteStateCommand(EMOTE_STATE_NONE);
-                    me->setFaction(14);
+                    me->SetFaction(14);
                 }
             }
 

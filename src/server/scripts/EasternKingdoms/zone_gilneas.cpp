@@ -20,6 +20,7 @@
 #include "ScriptedEscortAI.h"
 #include "PassiveAI.h"
 #include "Vehicle.h"
+#include "GameObjectAI.h"
 #include "TaskScheduler.h"
 
 enum Gilneas
@@ -181,7 +182,15 @@ enum Gilneas
     ACTION_START_WP                         = 1,
 
     GO_FIRST_GATE                           = 196401,
-    GO_KINGS_GATE                           = 196412
+    GO_KINGS_GATE                           = 196412,
+
+    NPC_KOROTH_THE_HILLBREAKER              = 36294,
+
+    ACTION_START_KOROTH_EVENT               = 1,
+
+    EVENT_KOROTH_THE_HILLBREAKER_2          = 2,
+    SAY_KOROTH_THE_HILLBREAKER_1            = 0,
+    SAY_KOROTH_THE_HILLBREAKER_2            = 1
 };
 
 Position const runt2SummonJumpPos = { -1671.915f, 1446.734f, 52.28712f };
@@ -512,11 +521,20 @@ Position const childrenBasementPath[][childrenBasementPathLenght] =
     },
 };
 
-const std::string PlayerText[3] =
+uint8 const KorothPathLenght = 2;
+Position const KorothPath[][KorothPathLenght] =
 {
-    "It's not safe here. Go to the Allens' basement.",
-    "Join the others inside the basement next door. Hurry!",
-    "Your mother's in the basement next door. Get to her now!",
+    {
+        { -2271.431f, 1963.941f, 99.342613f, 0.0f },
+        { -2284.237f, 1963.801f, 95.656654f, 0.0f },
+    },
+};
+
+const uint32 PlayerText[3] =
+{
+    36329,   //"It's not safe here.  Go to the Allens' basement.",
+    36331,   //"Join the others inside the basement next door. Hurry!",
+    36328    //"Your mother's in the basement next door. Get to her now!",
 };
 
 struct npc_gilneas_crow : public ScriptedAI
@@ -730,7 +748,7 @@ struct npc_worgen_runt : public ScriptedAI
         _playerGuid = 0;
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         _events.SetPhase(PHASE_COMBAT);
     }
@@ -999,7 +1017,7 @@ struct npc_josiah_avery_worgen_form : public PassiveAI
         }, 200);
     }
 
-    void SpellHit(Unit* /*caster*/, const SpellInfo* spell)
+    void SpellHit(Unit* /*caster*/, const SpellInfo* spell) override
     {
         if (spell->Id == SPELL_SHOOT_INSTAKILL)
             me->CastSpell(me, SPELL_GET_SHOT);
@@ -1082,13 +1100,13 @@ class spell_gilneas_pull_to : public SpellScript
 class npc_lorna_crowley_basement : public CreatureScript
 {
 public:
-    npc_lorna_crowley_basement(const char *ScriptName) : CreatureScript(ScriptName) { }
+    npc_lorna_crowley_basement(const char* ScriptName) : CreatureScript(ScriptName) { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest) override
     {
         if (quest->GetQuestId() == QUEST_FROM_THE_SHADOWS)
         {
-            if (player->getClass() == CLASS_HUNTER)
+            if (player->GetClass() == CLASS_HUNTER)
                 player->UnsummonPetTemporaryIfAny();
 
             player->CastSpell(player, SPELL_SUMMON_MASTIFF, false);
@@ -1097,7 +1115,7 @@ public:
         return true;
     }
 
-    bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 /*opt*/)
+    bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 /*opt*/) override
     {
         if (quest->GetQuestId() == QUEST_FROM_THE_SHADOWS)
             if (Unit* charm = Unit::GetCreature(*creature, player->GetMinionGUID()))
@@ -1105,7 +1123,7 @@ public:
                     if (Creature* mastiff = charm->ToCreature())
                         mastiff->DespawnOrUnsummon();
 
-        if (player->getClass() == CLASS_HUNTER)
+        if (player->GetClass() == CLASS_HUNTER)
             player->ResummonPetTemporaryUnSummonedIfAny();
 
         return true;
@@ -1267,7 +1285,7 @@ class npc_king_genn_greymane : public CreatureScript
 public:
     npc_king_genn_greymane() : CreatureScript("npc_king_genn_greymane") { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest) override
     {
         if (quest->GetQuestId() == QUEST_SAVE_KRENNAN_ARANAS)
         {
@@ -1380,7 +1398,7 @@ public:
         bool _aranasSaved;
 
         void AttackStart(Unit* /*who*/) override { }
-        void EnterCombat(Unit* /*who*/) override { }
+        void JustEngagedWith(Unit* /*who*/) override { }
         void EnterEvadeMode() override { }
 
         void Reset() override
@@ -1388,7 +1406,7 @@ public:
             _playerSeated = false;
         }
 
-        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
+        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply) override
         {
             if (who->GetTypeId() == TYPEID_PLAYER)
             {
@@ -1415,7 +1433,7 @@ public:
             }
         }
 
-        void WaypointReached(uint32 i)
+        void WaypointReached(uint32 i) override
         {
             Player* player = GetPlayerForEscort();
 
@@ -1515,7 +1533,7 @@ public:
             }
         }
 
-        void OnCharmed(bool /*apply*/) { }
+        void OnCharmed(bool /*apply*/) override { }
 
         void UpdateAI(uint32 diff) override
         {
@@ -1584,15 +1602,19 @@ class npc_gilneas_children : public CreatureScript
                     events.ScheduleEvent(EVENT_CRY, 1s);
             }
 
-            void SpellHit(Unit* caster, const SpellInfo* spell)
+            void SpellHit(Unit* caster, const SpellInfo* spell) override
             {
                 if (!activated && spell->Id == _spellId)
                 {
                     if (Player* player = caster->ToPlayer())
                     {
                         activated = true;
-                        playerGUID = player->GetGUID();
-                        player->Say(PlayerText[_playerSayId], LANG_UNIVERSAL);
+                        BroadcastText const* bct = sObjectMgr->GetBroadcastText(PlayerText[_playerSayId]);
+                        LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
+                        std::string baseText = "";
+                        if (bct)
+                            baseText = bct->GetText(loc_idx, player->GetGender());
+                            player->Say(baseText, LANG_UNIVERSAL);
                         player->KilledMonsterCredit(me->GetEntry(), 0);
                         me->RemoveFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
                         events.ScheduleEvent(EVENT_TALK_TO_PLAYER, 3s + 500ms);
@@ -1669,7 +1691,7 @@ class npc_gilneas_children : public CreatureScript
 class npc_wahl : public CreatureScript
 {
 public:
-    npc_wahl(const char *ScriptName) : CreatureScript(ScriptName) { }
+    npc_wahl(const char* ScriptName) : CreatureScript(ScriptName) { }
 
     struct npc_wahlAI : public npc_escortAI
     {
@@ -1691,7 +1713,7 @@ public:
             }
         }
 
-        void WaypointReached(uint32 point)
+        void WaypointReached(uint32 point) override
         {
             if (point == 1)
                 if (me->IsSummon())
@@ -1726,7 +1748,7 @@ public:
 class npc_lucius_the_cruel : public CreatureScript
 {
 public:
-    npc_lucius_the_cruel(const char *ScriptName) : CreatureScript(ScriptName) { }
+    npc_lucius_the_cruel(const char* ScriptName) : CreatureScript(ScriptName) { }
 
     struct npc_lucius_the_cruelAI : public ScriptedAI
     {
@@ -1913,9 +1935,9 @@ struct npc_chance_the_cat : public ScriptedAI
 class npc_mountain_horse : public CreatureScript
 {
 public:
-    npc_mountain_horse(const char *ScriptName) : CreatureScript(ScriptName) { }
+    npc_mountain_horse(const char* ScriptName) : CreatureScript(ScriptName) { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(Player* player, Creature* creature) override
     {
         if (player->GetQuestStatus(QUEST_THE_HUNGRY_ETTIN) == QUEST_STATUS_INCOMPLETE)
         {
@@ -1939,7 +1961,7 @@ public:
                 me->GetMotionMaster()->MoveRandom(8.0f);
         }
 
-        void SpellHit(Unit* caster, SpellInfo const* spell)
+        void SpellHit(Unit* caster, SpellInfo const* spell) override
         {
             switch (spell->Id)
             {
@@ -1956,7 +1978,7 @@ public:
             }
         }
 
-        void PassengerBoarded(Unit* /*passenger*/, int8 /*SeatId*/, bool apply)
+        void PassengerBoarded(Unit* /*passenger*/, int8 /*SeatId*/, bool apply) override
         {
             if (!apply)
             {
@@ -1966,7 +1988,7 @@ public:
             }
         }
 
-        void OnCharmed(bool apply) { }
+        void OnCharmed(bool apply) override { }
     };
 
     CreatureAI* GetAI(Creature* creature) const override
@@ -2061,9 +2083,9 @@ class spell_gilneas_test_telescope : public SpellScript
 class npc_stagecoach_carriage_exodus : public CreatureScript
 {
 public:
-    npc_stagecoach_carriage_exodus(const char *ScriptName) : CreatureScript(ScriptName) { }
+    npc_stagecoach_carriage_exodus(const char* ScriptName) : CreatureScript(ScriptName) { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(Player* player, Creature* creature) override
     {
         if (player->GetQuestStatus(QUEST_ENTRY_EXODUS) == QUEST_STATUS_COMPLETE)
         {
@@ -2129,21 +2151,21 @@ public:
 class npc_stagecoach_harness : public CreatureScript
 {
 public:
-    npc_stagecoach_harness(const char *ScriptName) : CreatureScript(ScriptName) { }
+    npc_stagecoach_harness(const char* ScriptName) : CreatureScript(ScriptName) { }
 
     struct npc_stagecoach_harnessAI : public npc_escortAI
     {
         npc_stagecoach_harnessAI(Creature* creature) : npc_escortAI(creature) { }
 
-        void OnCharmed(bool apply) { }
+        void OnCharmed(bool apply) override { }
 
-        void IsSummonedBy(Unit* owner)
+        void IsSummonedBy(Unit* owner) override
         {
             DoAction(ACTION_START_WP);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
         }
 
-        void DoAction(int32 action)
+        void DoAction(int32 action) override
         {
             switch (action)
             {
@@ -2207,6 +2229,85 @@ public:
     }
 };
 
+struct npc_koroth_the_hillbreaker : public ScriptedAI
+{
+    npc_koroth_the_hillbreaker(Creature* creature) : ScriptedAI(creature) { }
+
+    EventMap m_events;
+
+    void DoAction(int32 const action) override
+    {
+        switch (action)
+        {
+            case ACTION_START_KOROTH_EVENT:
+                Talk(SAY_KOROTH_THE_HILLBREAKER_1);
+				me->GetMotionMaster()->MoveSplinePath(KorothPath[0], KorothPathLenght, false, true, 0.f, false, false);
+                //TalkWithDelay(me->GetSplineDuration(), SAY_KOROTH_THE_HILLBREAKER_2);
+                m_events.ScheduleEvent(EVENT_KOROTH_THE_HILLBREAKER_2, me->GetSplineDuration());
+
+                me->m_Events.AddLambdaEventAtOffset([this]()
+                {
+                    me->GetMotionMaster()->MoveTargetedHome();
+                }, me->GetSplineDuration() + 3500);
+                break;
+        }
+    }
+
+    void UpdateAI(uint32 const diff) override
+    {
+        
+       m_events.Update(diff);
+
+        while (uint32 eventId = m_events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case EVENT_KOROTH_THE_HILLBREAKER_2:
+                {
+                    Talk(SAY_KOROTH_THE_HILLBREAKER_2);
+                    break;
+                }
+
+            }
+        }
+
+        if (!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+class go_koroth_banner : public GameObjectScript
+{
+public:
+    go_koroth_banner(const char* ScriptName) : GameObjectScript(ScriptName) { }
+
+    struct go_koroth_bannerAI : public GameObjectAI
+    {
+        go_koroth_bannerAI(GameObject* go) : GameObjectAI(go) { }
+
+        void OnStateChanged(uint32 state, Unit* /*unit*/) override
+        {
+            if (state != GO_JUST_DEACTIVATED)
+                return;
+
+            if (Creature* koroth = me->FindNearestCreature(NPC_KOROTH_THE_HILLBREAKER, 30.0f))
+            {
+                if (koroth->IsAIEnabled)
+                {
+                    koroth->GetAI()->DoAction(ACTION_START_KOROTH_EVENT);
+                }
+            }
+        }
+    };
+
+    GameObjectAI* GetAI(GameObject* go) const override
+    {
+        return new go_koroth_bannerAI(go);
+    }
+};
+
 void AddSC_gilneas()
 {
     new creature_script<npc_gilneas_crow>("npc_gilneas_crow");
@@ -2235,4 +2336,6 @@ void AddSC_gilneas()
     new spell_script<spell_gilneas_test_telescope>("spell_gilneas_test_telescope");
     new npc_stagecoach_carriage_exodus("npc_stagecoach_carriage_exodus");
     new npc_stagecoach_harness("npc_stagecoach_harness");
+    new creature_script<npc_koroth_the_hillbreaker>("npc_koroth_the_hillbreaker");
+    new go_koroth_banner("go_koroth_banner");
 }

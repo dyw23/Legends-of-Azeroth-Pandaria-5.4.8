@@ -23,37 +23,36 @@
 #include "GridStates.h"
 #include "MapUpdater.h"
 
-#include <ace/Singleton.h>
-#include <ace/Thread_Mutex.h>
+#include <mutex>
 
 
 class Transport;
 struct TransportCreatureProto;
 
-class MapManager
+class TC_GAME_API MapManager
 {
-    friend class ACE_Singleton<MapManager, ACE_Thread_Mutex>;
 
     public:
+        static MapManager* instance();
         Map* CreateBaseMap(uint32 mapId);
         Map* FindBaseNonInstanceMap(uint32 mapId) const;
         Map* CreateMap(uint32 mapId, Player* player);
         Map* FindMap(uint32 mapId, uint32 instanceId) const;
 
-        uint32 GetAreaId(uint32 mapid, float x, float y, float z) const
+        uint32 GetAreaId(uint32 phaseMask, uint32 mapid, float x, float y, float z) const
         {
             Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
-            return m->GetAreaId(x, y, z);
+            return m->GetAreaId(phaseMask, x, y, z);
         }
-        uint32 GetZoneId(uint32 mapid, float x, float y, float z) const
+        uint32 GetZoneId(uint32 phaseMask, uint32 mapid, float x, float y, float z) const
         {
             Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
-            return m->GetZoneId(x, y, z);
+            return m->GetZoneId(phaseMask, x, y, z);
         }
-        void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, uint32 mapid, float x, float y, float z)
+        void GetZoneAndAreaId(uint32 phaseMask, uint32& zoneid, uint32& areaid, uint32 mapid, float x, float y, float z) const
         {
             Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
-            m->GetZoneAndAreaId(zoneid, areaid, x, y, z);
+            m->GetZoneAndAreaId(phaseMask, zoneid, areaid, x, y, z);
         }
 
         void Initialize(void);
@@ -145,7 +144,7 @@ class MapManager
         MapManager(const MapManager &);
         MapManager& operator=(const MapManager &);
 
-        ACE_Thread_Mutex Lock;
+        std::mutex Lock;
         uint32 i_gridCleanUpDelay;
         MapMapType i_maps;
         IntervalTimer i_timer;
@@ -154,5 +153,5 @@ class MapManager
         uint32 _nextInstanceId;
         MapUpdater m_updater;
 };
-#define sMapMgr ACE_Singleton<MapManager, ACE_Thread_Mutex>::instance()
+#define sMapMgr MapManager::instance()
 #endif

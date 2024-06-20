@@ -437,7 +437,7 @@ class npc_orange_painted_turnip : public CreatureScript
             npc_orange_painted_turnipAI(Creature* creature) : ScriptedAI(creature)
             {
                 creature->SetReactState(REACT_PASSIVE);
-                creature->setFaction(35);
+                creature->SetFaction(35);
             }
 
             uint32 timer;
@@ -922,7 +922,7 @@ class AreaTrigger_cavern_of_endless_echoes : public AreaTriggerScript
             if (!summons.empty())
                 fish = summons.back();
 
-            switch (trigger->id)
+            switch (trigger->ID)
             {
                 case AT_CAVE_ENTRANCE:
                     if (!player->GetQuestObjectiveCounter(OBJ_FIND_CAVE_ENTRANCE))
@@ -968,7 +968,7 @@ struct npc_liang_thunderfoot : public ScriptedAI
 {
     npc_liang_thunderfoot(Creature* creature) : ScriptedAI(creature) { }
 
-    void sQuestAccept(Player* player, Quest const* quest) override
+    void OnQuestAccept(Player* player, Quest const* quest) override
     {
         if (quest->GetQuestId() == QUEST_A_NEIGHBORS_DURY)
         {
@@ -1005,7 +1005,7 @@ struct npc_francis_the_shepherd_boy : public ScriptedAI
 {
     npc_francis_the_shepherd_boy(Creature* creature) : ScriptedAI(creature) { }
 
-    void sQuestReward(Player* player, Quest const* quest, uint32 /*opt*/) override
+    void OnQuestReward(Player* player, Quest const* quest, uint32 /*opt*/) override
     {
         if (quest->GetQuestId() == QUEST_A_NEIGHBORS_DURY)
         {
@@ -1135,11 +1135,12 @@ struct npc_just_a_folk_story_quest : public ScriptedAI
 {
     npc_just_a_folk_story_quest(Creature* creature) : ScriptedAI(creature) { }
 
-    void sGossipSelect(Player* player, uint32 /*sender*/, uint32 /*action*/) override
+    bool OnGossipSelect(Player* player, uint32 /*sender*/, uint32 /*action*/) override
     {
         player->CLOSE_GOSSIP_MENU();
         player->KilledMonsterCredit(me->GetEntry());
         Talk(0, player);
+        return true;
     }
 };
 
@@ -1165,7 +1166,7 @@ struct npc_granary_vandal : public ScriptedAI
         me->SetReactState(REACT_DEFENSIVE);
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.Reset();
     }
@@ -1342,7 +1343,7 @@ struct npc_vfw_adolescent_mushan : public customCreatureAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_BELLY_FLOP, 4 * IN_MILLISECONDS);
     }
@@ -1377,7 +1378,7 @@ struct npc_vfw_wyrmhorn_turtle : public customCreatureAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_BUBBLE_BLAST, urand(2 * IN_MILLISECONDS, 5 * IN_MILLISECONDS));
     }
@@ -1412,7 +1413,7 @@ struct npc_vfw_lupello : public customCreatureAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_FEARSOME_HOWL, 10 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_PREY_POUNCE, 5 * IN_MILLISECONDS);
@@ -1449,7 +1450,7 @@ struct npc_vfw_snagtooth_hooligan : public customCreatureAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_CHUCK_WATERMELON, 1.5 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_WIGGLE_FLIP, 5 * IN_MILLISECONDS);
@@ -1486,7 +1487,7 @@ struct npc_vfw_frenzyhop : public customCreatureAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_FRENZIED_HOP, 6 * IN_MILLISECONDS);
     }
@@ -1521,7 +1522,7 @@ struct npc_vfw_hornbill_strider : public customCreatureAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         DoCast(me, SPELL_DASH);
         events.ScheduleEvent(EVENT_DASH, 18 * IN_MILLISECONDS);
@@ -1562,7 +1563,7 @@ struct npc_vfw_grainhunter_hawk : public customCreatureAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_DIVE, 2.5 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_HAWK_REND, 5 * IN_MILLISECONDS);
@@ -1599,7 +1600,7 @@ struct npc_vfw_springtail_gnasher : public customCreatureAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_GNASH, 8 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_WIGGLE_FLIP, 5 * IN_MILLISECONDS);
@@ -1636,7 +1637,7 @@ struct npc_vfw_mothfighter : public customCreatureAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_SUNDER_ARMOR, 4 * IN_MILLISECONDS);
     }
@@ -1671,7 +1672,7 @@ struct npc_vfw_wildscale_herbalist : public customCreatureAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_WRATH, 1 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_HEALING_WAVE, 12 * IN_MILLISECONDS);
@@ -1708,7 +1709,7 @@ struct npc_vfw_ikthik_vanguard : public customCreatureAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_THRASH, urand(5 * IN_MILLISECONDS, 8 * IN_MILLISECONDS));
     }
@@ -1744,7 +1745,7 @@ struct npc_vfw_darkhide : public customCreatureAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_BLUDGEON, 3.5 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_GROUND_AND_POUND, 10 * IN_MILLISECONDS);
@@ -1907,7 +1908,7 @@ struct npc_vfw_ik_thik_wing_commander : public customCreatureAI
             summon->AI()->AttackStart(target);
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_PANICKED_STRIKE, 3.5 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_LASH_OUT, 6 * IN_MILLISECONDS);
@@ -1968,7 +1969,7 @@ struct npc_vfw_manifestation_of_fear : public customCreatureAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_FAR_REACHING_FEAR, 2.5 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_WHAT_LURK_BENEATH, 8 * IN_MILLISECONDS);
@@ -2080,7 +2081,7 @@ struct npc_vfw_krungko_fingerlicker : public customCreatureAI
         hasTriggered = false;
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_HOZEN_STRIKE, 2.5 * IN_MILLISECONDS);
     }

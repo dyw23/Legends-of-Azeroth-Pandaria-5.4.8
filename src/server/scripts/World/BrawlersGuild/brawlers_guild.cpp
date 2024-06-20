@@ -20,6 +20,7 @@
 #include "Vehicle.h"
 #include "Creature.h"
 #include "brawlers_guild.h"
+#include "Random.h"
 
 /* @Note:
  In Patch 5.1 was added brawlers guild with 7 ranks.
@@ -1287,7 +1288,7 @@ struct npc_brawlers_guild_bruce : public brawlers_guild_encounter_typeAI
         targetGUID = 0;
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_CHOMP_CHOMP_CHOMP, urand(5 * IN_MILLISECONDS, 9.5 * IN_MILLISECONDS));
     }
@@ -1359,7 +1360,7 @@ struct npc_brawlers_guild_vian_the_volatile : public brawlers_guild_encounter_ty
         lineStep = 6;
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         Talk(TALK_INTR0);
         events.ScheduleEvent(EVENT_VOLATILE_FLAMES, 1 * IN_MILLISECONDS);
@@ -1586,7 +1587,7 @@ struct npc_brawlers_guild_goredome : public brawlers_guild_encounter_typeAI
         prevLumberingLow = 0;
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_LUMBERING_CHARGE, 3 * IN_MILLISECONDS);
     }
@@ -1682,7 +1683,7 @@ struct npc_brawlers_guild_dungeon_master_vishas : public brawlers_guild_encounte
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         Talk(TALK_INTR0);
         events.ScheduleEvent(EVENT_HEATED_POKETS, 9 * IN_MILLISECONDS);
@@ -1751,7 +1752,7 @@ struct npc_brawlers_guild_dippy : public brawlers_guild_encounter_typeAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         DoCast(me, SPELL_SLIPPY);
     }
@@ -1799,7 +1800,7 @@ struct npc_brawlers_guild_kirrawk : public brawlers_guild_encounter_typeAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         Talk(TALK_INTR0);
         events.ScheduleEvent(EVENT_STORM_OF_CLOUD, 1.5 * IN_MILLISECONDS);
@@ -1929,7 +1930,7 @@ struct npc_brawlers_guild_fran : public brawlers_guild_encounter_typeAI
             me->EnterVehicle(riddoh);
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         Talk(TALK_INTR0);
         events.ScheduleEvent(EVENT_THROW_DYMANITE, urand(3 * IN_MILLISECONDS, 5 * IN_MILLISECONDS));
@@ -2051,7 +2052,7 @@ struct npc_brawlers_guild_riddoh : public brawlers_miscAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_NET_TOSS, urand(6 * IN_MILLISECONDS, 10 * IN_MILLISECONDS));
     }
@@ -2129,7 +2130,7 @@ struct npc_brawlers_guild_king_kulaka : public brawlers_guild_encounter_typeAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_DASH, urand(6 * IN_MILLISECONDS, 11 * IN_MILLISECONDS));
     }
@@ -2187,7 +2188,7 @@ struct npc_brawlers_guild_blat : public brawlers_guild_encounter_typeAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_SPLIT, urand(4 * IN_MILLISECONDS, 5 * IN_MILLISECONDS));
     }
@@ -2268,7 +2269,7 @@ struct npc_brawlers_guild_sanoriak : public brawlers_guild_encounter_typeAI
         allowCast = true;
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         Talk(TALK_INTR0);
         events.ScheduleEvent(EVENT_FIREBALL, urand(4 * IN_MILLISECONDS, 5 * IN_MILLISECONDS));
@@ -2413,7 +2414,7 @@ struct npc_brawlers_guild_ixx : public brawlers_guild_encounter_typeAI
         me->setRegeneratingHealth(false);
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         me->SetHealth((uint32)(me->GetMaxHealth() * 0.2f));
         events.ScheduleEvent(EVENT_DEVASTATING_THRUST, 5 * IN_MILLISECONDS);
@@ -2478,7 +2479,7 @@ struct npc_brawlers_guild_mazhareen : public brawlers_guild_encounter_typeAI
 {
     npc_brawlers_guild_mazhareen(Creature* creature) : brawlers_guild_encounter_typeAI(creature) { }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         DoCast(me, SPELL_RAGEFUL_SPIRIT);
     }
@@ -2538,7 +2539,7 @@ struct npc_brawlers_guild_crush : public brawlers_guild_encounter_typeAI
         notAllowCollisionCast = 1;
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_COLLISION, 6 * IN_MILLISECONDS);
     }
@@ -2647,7 +2648,7 @@ struct npc_brawlers_guild_leona_earthwind : public brawlers_guild_encounter_type
         SetCombatMovement(false);
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_WRATH, 1 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_SOLAR_BEAM, 6.5 * IN_MILLISECONDS);
@@ -2728,7 +2729,7 @@ struct npc_brawlers_guild_dominika_the_illusionist : public brawlers_guild_encou
 {
     npc_brawlers_guild_dominika_the_illusionist(Creature* creature) : brawlers_guild_encounter_typeAI(creature) { }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         Talk(TALK_INTR0);
         DoCast(me, SPELL_ILLUSIONIST);
@@ -2809,7 +2810,7 @@ struct npc_brawlers_guild_dominika_illusion : public brawlers_miscAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_ARCANE_BARRAGE, urand(1 * IN_MILLISECONDS, 2 * IN_MILLISECONDS));
     }
@@ -2837,7 +2838,7 @@ struct npc_brawlers_guild_deeken : public brawlers_guild_encounter_typeAI
 {
     npc_brawlers_guild_deeken(Creature* creature) : brawlers_guild_encounter_typeAI(creature) { }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         Talk(TALK_INTR0);
 
@@ -3044,7 +3045,7 @@ struct npc_brawlers_guild_millie_watt : public brawlers_guild_encounter_typeAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         Talk(TALK_INTR0);
         DoCast(me, SPELL_SHRINK_RAY_AFTERMATH);
@@ -3117,7 +3118,7 @@ struct npc_brawlers_guild_fjoll : public brawlers_guild_encounter_typeAI
 {
     npc_brawlers_guild_fjoll(Creature* creature) : brawlers_guild_encounter_typeAI(creature) { }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         Talk(TALK_INTR0);
         DoCast(me, SPELL_FLAMES_OF_FALLEN_GLORY);
@@ -3202,7 +3203,7 @@ struct npc_brawlers_guild_proboskus : public brawlers_guild_encounter_typeAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_RAIN_DANCE, 10 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_TORRENT, urand(5 * IN_MILLISECONDS, 6 * IN_MILLISECONDS));
@@ -3316,7 +3317,7 @@ struct npc_brawlers_guild_lepregnomes : public brawlers_guild_encounter_typeAI
         return me->GetEntry() == NPC_QUEAZY ? summonerGUID : 0;
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         if (me->GetEntry() == NPC_SLEAZY)
             Talk(TALK_INTR0);
@@ -3436,7 +3437,7 @@ struct npc_brawlers_guild_yikkan_izu : public brawlers_guild_encounter_typeAI
             me->SummonCreature(NPC_IZUS_RAVEN, me->GetPositionX() + frand(-3.0f, 3.0f), me->GetPositionY() + frand(-4.0f, 4.0f), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN);
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         HandleSummonRavens();
         events.ScheduleEvent(EVENT_RAVENS, urand(10 * IN_MILLISECONDS, 12.5 * IN_MILLISECONDS));
@@ -3538,7 +3539,7 @@ struct npc_brawlers_guild_akama : public brawlers_guild_encounter_typeAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         Talk(TALK_INTR0);
         events.ScheduleEvent(EVENT_FERAL_SPIRIT, 8 * IN_MILLISECONDS);
@@ -3634,7 +3635,7 @@ struct npc_brawlers_guild_smash_hoofstomp : public brawlers_guild_encounter_type
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         Talk(TALK_INTR0);
 
@@ -3783,7 +3784,7 @@ struct npc_brawlers_guild_gg_ingeenering : public brawlers_guild_encounter_typeA
         events.Reset();
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         targetGUID = who->GetGUID();
 
@@ -3907,7 +3908,7 @@ struct npc_brawlers_guild_dark_summoner : public brawlers_guild_encounter_typeAI
         events.Reset();
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         Talk(TALK_INTR0);
 
@@ -4056,7 +4057,7 @@ struct npc_brawlers_guild_battletron : public brawlers_guild_encounter_typeAI
         mDeathCount = 0;
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         Talk(TALK_INTR0);
         DoCast(me, SPELL_PROTECTED_BY_UNSTABLE_MINES);
@@ -4237,7 +4238,7 @@ struct npc_brawlers_guild_meatball : public brawlers_guild_encounter_typeAI
         yellType = TALK_SPECIAL;
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         Talk(TALK_INTR0);
         events.ScheduleEvent(EVENT_RAGE, 1 * MINUTE * IN_MILLISECONDS);
@@ -4318,7 +4319,7 @@ struct npc_brawlers_guild_mecha_bruce : public brawlers_guild_encounter_typeAI
         targetGUID = 0;
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         events.ScheduleEvent(EVENT_CHOMP_CHOMP_CHOMP, 2.5 * IN_MILLISECONDS);
         events.ScheduleEvent(EVENT_POWERFUL_BITE, 10 * IN_MILLISECONDS);
@@ -4409,7 +4410,7 @@ struct npc_brawlers_guild_grandpa_grumplefloot : public brawlers_guild_encounter
         targetGUID = 0;
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         Talk(TALK_DEATH);
         events.ScheduleEvent(EVENT_SONG_OF_FLOOT, 3 * IN_MILLISECONDS);
@@ -4503,7 +4504,7 @@ struct npc_brawlers_guild_blingtron_3000 : public brawlers_guild_encounter_typeA
         events.Reset();
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         Talk(TALK_INTR0);
         events.ScheduleEvent(EVENT_MOSTLY_ACCURATE_ROCKET,  2 * IN_MILLISECONDS);
@@ -5636,7 +5637,7 @@ class cond_brawlers_guild_far_sight_totem : public ConditionScript
     public:
         cond_brawlers_guild_far_sight_totem() : ConditionScript("cond_brawlers_guild_far_sight_totem") { }
 
-        bool OnConditionCheck(Condition* cond, ConditionSourceInfo& source) override
+        bool OnConditionCheck(const Condition* cond, ConditionSourceInfo& source) override
         {
             if (source.mConditionTargets[0])
                 if (Player* target = source.mConditionTargets[0]->ToPlayer())

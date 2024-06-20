@@ -66,7 +66,7 @@ class npc_ironwork_cannon : public CreatureScript
                 me->SetPower(POWER_ENERGY, 100);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (who->GetTypeId() != TYPEID_PLAYER && !who->IsVehicle())
                    _EnterEvadeMode();
@@ -286,13 +286,13 @@ class npc_brann_bronzebeard : public CreatureScript
                     loaded = false;
             }
 
-            void sGossipSelect(Player* player, uint32 menuId, uint32 optionId) override
+            bool OnGossipSelect(Player* player, uint32 menuId, uint32 optionId) override
             {
                 if (!player)
-                    return;
+                    return false;
 
                 if (instance->GetData(DATA_SHIELD_DISABLED) || instance->GetBossState(BOSS_LEVIATHAN) == DONE)
-                    return;
+                    return false;
 
                 if (menuId == 10355 && optionId == 0)
                 {
@@ -303,6 +303,7 @@ class npc_brann_bronzebeard : public CreatureScript
 
                     SetGUID(player->GetGUID(), ACTION_START);
                 }
+                return true;
             }
 
             void EventBrann()
@@ -626,13 +627,13 @@ class npc_ulduar_lorekeeper : public CreatureScript
                 return event;
             }
 
-            void sGossipSelect(Player* player, uint32 menuId, uint32 optionId) override
+            bool OnGossipSelect(Player* player, uint32 menuId, uint32 optionId) override
             {
                 if (!player)
-                    return;
+                    return false;
 
                 if (instance->GetData(DATA_SHIELD_DISABLED) || instance->GetData(DATA_LEVI_HARD_MODE) || instance->GetBossState(BOSS_LEVIATHAN) == DONE)
-                    return;
+                    return false;
 
                 if (menuId == 10477 && optionId == 0)
                 {
@@ -645,6 +646,7 @@ class npc_ulduar_lorekeeper : public CreatureScript
                     hardTimer = 100;
                     HardMode(player->GetGUID());
                 }
+                return true;
             }
 
             void Intro()
@@ -961,7 +963,7 @@ class npc_ulduar_steelforged_defender : public CreatureScript
         {
             npc_ulduar_steelforged_defenderAI(Creature* creature) : ScriptedAI(creature) { }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_SUNDER_ARMOR, urand(4 * IN_MILLISECONDS, 4.5 * IN_MILLISECONDS));
                 events.ScheduleEvent(EVENT_HAMSTRING, urand(5 * IN_MILLISECONDS, 7 * IN_MILLISECONDS));
@@ -1060,7 +1062,7 @@ class npc_ulduar_runeforged_sentry : public CreatureScript
         {
             npc_ulduar_runeforged_sentryAI(Creature* creature) : ScriptedAI(creature) { }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_FLAMING_RUNE, 8 * IN_MILLISECONDS);
                 events.ScheduleEvent(EVENT_LAVA_BURST, urand(3 * IN_MILLISECONDS, 3.5 * IN_MILLISECONDS));
@@ -1148,7 +1150,7 @@ class npc_ulduar_mechagnome_battletank : public CreatureScript
         {
             npc_ulduar_mechagnome_battletankAI(Creature* creature) : ScriptedAI(creature) { }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 DoCastVictim(SPELL_JUMP);
                 events.ScheduleEvent(EVENT_FLAME_CANNON_TANK, urand(4 * IN_MILLISECONDS, 4.5 * IN_MILLISECONDS));
@@ -1256,7 +1258,7 @@ class npc_storm_tempered_keeper : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (!companionGUID)
                     FindCompanion();
@@ -1551,7 +1553,7 @@ class npc_arachnopod_destroyer : public CreatureScript
                     CreatureAI::AttackStart(victim);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (!damaged)
                     DoCast(who, SPELL_MACHINE_GUN);
@@ -1570,7 +1572,7 @@ class npc_arachnopod_destroyer : public CreatureScript
                 if (damaged)
                 {
                     // Can be reset to default on exit vehicle
-                    me->setFaction(FACTION_ARACHNOPOD_FRIENDLY);
+                    me->SetFaction(FACTION_ARACHNOPOD_FRIENDLY);
                     me->SetReactState(REACT_PASSIVE);
                 }
 
@@ -1591,7 +1593,7 @@ class npc_arachnopod_destroyer : public CreatureScript
                     DoCast(me, SPELL_EJECT_ALL_PASSENGERS, true);
                     DoCast(me, SPELL_DAMAGED, true);
                     me->setRegeneratingHealth(false);
-                    me->setFaction(FACTION_ARACHNOPOD_FRIENDLY);
+                    me->SetFaction(FACTION_ARACHNOPOD_FRIENDLY);
                     me->SetReactState(REACT_PASSIVE);
                     me->CombatStop(true);
                     return;
@@ -1656,7 +1658,7 @@ class npc_clockwork_mechanic : public CreatureScript
                     me->DespawnOrUnsummon();
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (Creature* vehicle = me->GetVehicleCreatureBase())
                     vehicle->AI()->AttackStart(who);
@@ -1778,7 +1780,7 @@ class at_ulduar_event_areatrigger : public AreaTriggerScript
         bool OnTrigger(Player* player, AreaTriggerEntry const* trigger) override
         {
             if (InstanceScript* instance = player->GetInstanceScript())
-                instance->SetData(DATA_AREATRIGGER_EVENT, trigger->id);
+                instance->SetData(DATA_AREATRIGGER_EVENT, trigger->ID);
 
             return true;
         }

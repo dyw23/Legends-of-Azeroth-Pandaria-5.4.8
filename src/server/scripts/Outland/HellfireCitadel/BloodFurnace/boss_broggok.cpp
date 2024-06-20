@@ -73,14 +73,14 @@ class boss_broggok : public CreatureScript
                 instance->SetData(TYPE_BROGGOK_EVENT, NOT_STARTED);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 Talk(SAY_AGGRO);
             }
 
             void JustSummoned(Creature* summoned) override
             {
-                summoned->setFaction(16);
+                summoned->SetFaction(16);
                 summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 summoned->CastSpell(summoned, SPELL_POISON, false, 0, 0, me->GetGUID());

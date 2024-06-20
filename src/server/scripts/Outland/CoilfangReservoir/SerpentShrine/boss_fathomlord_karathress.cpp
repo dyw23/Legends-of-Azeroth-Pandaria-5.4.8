@@ -216,7 +216,7 @@ public:
             me->SummonCreature(SEER_OLUM, OLUM_X, OLUM_Y, OLUM_Z, OLUM_O, TEMPSUMMON_TIMED_DESPAWN, 3600000);
         }
 
-        void EnterCombat(Unit* who) override
+        void JustEngagedWith(Unit* who) override
         {
             StartEvent(who);
         }
@@ -362,7 +362,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* who) override
+        void JustEngagedWith(Unit* who) override
         {
             if (instance)
             {
@@ -495,7 +495,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* who) override
+        void JustEngagedWith(Unit* who) override
         {
             if (instance)
             {
@@ -618,7 +618,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* who) override
+        void JustEngagedWith(Unit* who) override
         {
             if (instance)
             {
@@ -674,7 +674,7 @@ public:
                 {
                     Cyclone->SetObjectScale(3.0f);
                     Cyclone->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    Cyclone->setFaction(me->getFaction());
+                    Cyclone->SetFaction(me->GetFaction());
                     Cyclone->CastSpell(Cyclone, SPELL_CYCLONE_CYCLONE, true);
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         Cyclone->AI()->AttackStart(target);

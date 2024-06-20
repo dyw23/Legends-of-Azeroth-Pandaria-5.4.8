@@ -676,7 +676,7 @@ void BattlegroundTP::UpdateTeamScore(Team team)
         UpdateWorldState(BG_TP_FLAG_CAPTURES_HORDE, GetTeamScore(GetTeamIndexByTeamId(team)));
 }
 
-void BattlegroundTP::HandleAreaTrigger(Player* player, uint32 trigger)
+void BattlegroundTP::HandleAreaTrigger(Player* player, uint32 trigger, bool entered)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -708,7 +708,7 @@ void BattlegroundTP::HandleAreaTrigger(Player* player, uint32 trigger)
         case 5921:                                          // Horde Start left Water channel
             break;
         default:
-            Battleground::HandleAreaTrigger(player, trigger);
+            Battleground::HandleAreaTrigger(player, trigger, entered);
             break;
     }
 }

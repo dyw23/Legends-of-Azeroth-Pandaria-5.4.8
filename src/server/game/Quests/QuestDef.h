@@ -19,10 +19,10 @@
 #define TRINITYCORE_QUEST_H
 
 #include "Define.h"
-#include "DatabaseEnv.h"
 #include "SharedDefines.h"
 #include "WorldPacket.h"
 #include "DBCEnums.h"
+#include "EnumFlag.h"
 
 #include <string>
 #include <vector>
@@ -105,21 +105,25 @@ enum QuestStatus
     MAX_QUEST_STATUS
 };
 
-enum QuestGiverStatus
+enum class QuestGiverStatus : uint32
 {
-    DIALOG_STATUS_NONE                     = 0x000,
-    DIALOG_STATUS_UNK                      = 0x001,
-    DIALOG_STATUS_UNAVAILABLE              = 0x002,
-    DIALOG_STATUS_LOW_LEVEL_AVAILABLE      = 0x004,
-    DIALOG_STATUS_LOW_LEVEL_REWARD_REP     = 0x008,
-    DIALOG_STATUS_LOW_LEVEL_AVAILABLE_REP  = 0x010,
-    DIALOG_STATUS_INCOMPLETE               = 0x020,
-    DIALOG_STATUS_REWARD_REP               = 0x040,
-    DIALOG_STATUS_AVAILABLE_REP            = 0x080,
-    DIALOG_STATUS_AVAILABLE                = 0x100,
-    DIALOG_STATUS_REWARD2                  = 0x200,         // no yellow dot on minimap
-    DIALOG_STATUS_REWARD                   = 0x400          // yellow dot on minimap
+    None                         = 0x0000,
+    Future                       = 0x0002,
+    Trivial                      = 0x0004,
+    TrivialRepeatableTurnin      = 0x0008,
+    TrivialDailyQuest            = 0x0010,
+    Incomplete                   = 0x0020,
+    RepeatableTurnin             = 0x0040,
+    DailyQuest                   = 0x0080,
+    Quest                        = 0x0100,
+    RewardCompleteNoPOI          = 0x0200,
+    RewardCompletePOI            = 0x0400,
+    LegendaryQuest               = 0x0800,
+    LegendaryRewardCompleteNoPOI = 0x1000,
+    LegendaryRewardCompletePOI   = 0x2000
 };
+
+DEFINE_ENUM_FLAG(QuestGiverStatus);
 
 enum QuestFlags
 {
@@ -233,6 +237,34 @@ struct QuestLocale
 struct QuestObjectiveLocale
 {
     StringVector Description;
+};
+
+struct QuestTemplateLocale
+{
+    std::vector<std::string> LogTitle;
+    std::vector<std::string> LogDescription;
+    std::vector<std::string> QuestDescription;
+    std::vector<std::string> AreaDescription;
+    std::vector<std::string> PortraitGiverText;
+    std::vector<std::string> PortraitGiverName;
+    std::vector<std::string> PortraitTurnInText;
+    std::vector<std::string> PortraitTurnInName;
+    std::vector<std::string> QuestCompletionLog;
+};
+
+struct QuestRequestItemsLocale
+{
+    std::vector<std::string> CompletionText;
+};
+
+struct QuestObjectivesLocale
+{
+    std::vector<std::string> Description;
+};
+
+struct QuestOfferRewardLocale
+{
+    std::vector<std::string> RewardText;
 };
 
 typedef std::vector<uint32> VisualEffectVec;

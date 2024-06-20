@@ -156,10 +156,10 @@ struct npc_dunwald_victim : public ScriptedAI
 {
     npc_dunwald_victim(Creature* creature) : ScriptedAI(creature) { }
 
-    void sGossipHello(Player* player) override
+    bool OnGossipHello(Player* player) override
     {
         if (player->GetQuestStatus(27642) != QUEST_STATUS_INCOMPLETE && !plrs_credited.empty() && std::find_if(plrs_credited.begin(), plrs_credited.end(), std::bind(std::equal_to<uint64>(), std::bind(&dunwald_victim_credit_store::player_guid, std::placeholders::_1), player->GetGUID())) != plrs_credited.end())
-            return;
+            return false;
 
         dunwald_victim_credit_store temp_player;
         temp_player.player_guid = player->GetGUID();
@@ -167,6 +167,7 @@ struct npc_dunwald_victim : public ScriptedAI
         plrs_credited.push_back(temp_player);
 
         player->KilledMonsterCredit(46609);
+        return true;
     }
 
     void UpdateAI(uint32 diff) override
@@ -585,7 +586,7 @@ struct npc_twilight_hurp_derp : public customCreatureAI
         scheduler.CancelAll();
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         scheduler.CancelAll();
 
@@ -714,7 +715,7 @@ struct npc_twilight_faction_champions : public customCreatureAI
         scheduler.CancelAll();
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         scheduler.CancelAll();
 
@@ -881,7 +882,7 @@ struct npc_twilight_calders_creation : public customCreatureAI
         summon->CastSpell(summon, SPELL_POISON_CLOUD_TRIGGERING, true);
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         scheduler.CancelAll();
 
@@ -1054,7 +1055,7 @@ struct npc_twilight_lord_tulvan : public customCreatureAI
         secondEnrage = false;
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         scheduler.CancelAll();
 
@@ -1191,7 +1192,7 @@ struct npc_twilight_emberscar_devourer : public customCreatureAI
         hasEnrage = false;
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         scheduler.CancelAll();
 

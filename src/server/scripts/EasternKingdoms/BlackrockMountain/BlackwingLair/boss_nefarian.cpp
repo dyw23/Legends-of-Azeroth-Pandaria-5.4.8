@@ -178,7 +178,7 @@ class boss_victor_nefarius : public CreatureScript
                     me->SetVisible(true);
                     me->SetPhaseMask(1, true);
                     me->SetUInt32Value(UNIT_FIELD_NPC_FLAGS, 1);
-                    me->setFaction(35);
+                    me->SetFaction(35);
                     me->SetStandState(UNIT_STAND_STATE_SIT_HIGH_CHAIR);
                     me->RemoveAura(SPELL_NEFARIANS_BARRIER);
                 }
@@ -191,11 +191,11 @@ class boss_victor_nefarius : public CreatureScript
 
             void BeginEvent(Player* target)
             {
-                _EnterCombat();
+                _JustEngagedWith();
 
                 Talk(SAY_GAMESBEGIN_2);
 
-                me->setFaction(103);
+                me->SetFaction(103);
                 me->SetUInt32Value(UNIT_FIELD_NPC_FLAGS, 0);
                 DoCast(me, SPELL_NEFARIANS_BARRIER);
                 me->SetStandState(UNIT_STAND_STATE_STAND);
@@ -331,7 +331,7 @@ class boss_victor_nefarius : public CreatureScript
                                         CreatureID = Entry[urand(0, 4)];
                                     if (Creature* dragon = me->SummonCreature(CreatureID, DrakeSpawnLoc[i]))
                                     {
-                                        dragon->setFaction(103);
+                                        dragon->SetFaction(103);
                                         dragon->AI()->AttackStart(me->GetVictim());
                                     }
 
@@ -359,7 +359,7 @@ class boss_victor_nefarius : public CreatureScript
                 }
             }
 
-            void sGossipSelect(Player* player, uint32 sender, uint32 action) override
+            bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override
             {
                 if (sender == GOSSIP_ID && action == GOSSIP_OPTION_ID)
                 {
@@ -367,6 +367,7 @@ class boss_victor_nefarius : public CreatureScript
                     Talk(SAY_GAMESBEGIN_1);
                     BeginEvent(player);
                 }
+                return true;
             }
 
             private:
@@ -401,7 +402,7 @@ class boss_nefarian : public CreatureScript
                 canDespawn = true;
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 events.ScheduleEvent(EVENT_SHADOWFLAME, 12000);
                 events.ScheduleEvent(EVENT_FEAR, urand(25000, 35000));
@@ -513,7 +514,7 @@ class boss_nefarian : public CreatureScript
                             break;
                         case EVENT_CLASSCALL:
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
-                                switch (target->getClass())
+                                switch (target->GetClass())
                             {
                                 case CLASS_MAGE:
                                     Talk(SAY_MAGE);

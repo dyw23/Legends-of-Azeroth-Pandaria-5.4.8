@@ -69,7 +69,7 @@ class AreaTrigger_at_bassin_curse : public AreaTriggerScript
 
         bool OnTrigger(Player* player, AreaTriggerEntry const* trigger) override
         {
-            switch (trigger->id)
+            switch (trigger->ID)
             {
                 case AREA_CRANE:     AddOrRemoveSpell(player, SPELL_CRANE);     break;
                 case AREA_SKUNK:     AddOrRemoveSpell(player, SPELL_SKUNK);     break;
@@ -107,7 +107,7 @@ class npc_tushui_monk : public CreatureScript
                 for (auto&& creature: poleList)
                     me->EnterVehicle(creature);
 
-                me->setFaction(2357);
+                me->SetFaction(2357);
             }
 
             void JustDied(Unit* /*killer*/) override

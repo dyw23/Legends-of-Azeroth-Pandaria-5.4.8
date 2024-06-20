@@ -58,6 +58,7 @@ EndContentData */
 #include "Pet.h"
 #include "BlackMarketMgr.h"
 #include "CombatAI.h"
+#include "Random.h"
 
 /*########
 # npc_air_force_bots
@@ -338,11 +339,11 @@ public:
         void Reset() override
         {
             ResetFlagTimer = 120000;
-            me->setFaction(FACTION_CHICKEN);
+            me->SetFaction(FACTION_CHICKEN);
             me->RemoveFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
         }
 
-        void EnterCombat(Unit* /*who*/) override { }
+        void JustEngagedWith(Unit* /*who*/) override { }
 
         void UpdateAI(uint32 diff) override
         {
@@ -370,7 +371,7 @@ public:
                     if (player->GetQuestStatus(QUEST_CLUCK) == QUEST_STATUS_NONE && rand() % 30 == 1)
                     {
                         me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
-                        me->setFaction(FACTION_FRIENDLY);
+                        me->SetFaction(FACTION_FRIENDLY);
                         Talk(player->GetTeam() == HORDE ? EMOTE_HELLO_H : EMOTE_HELLO_A);
                     }
                     break;
@@ -378,7 +379,7 @@ public:
                     if (player->GetQuestStatus(QUEST_CLUCK) == QUEST_STATUS_COMPLETE)
                     {
                         me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
-                        me->setFaction(FACTION_FRIENDLY);
+                        me->SetFaction(FACTION_FRIENDLY);
                         Talk(EMOTE_CLUCK_TEXT);
                     }
                     break;
@@ -459,7 +460,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/)override { }
+        void JustEngagedWith(Unit* /*who*/)override { }
 
         void ReceiveEmote(Player* player, uint32 emote) override
         {
@@ -688,7 +689,7 @@ public:
 
         void UpdateAI(uint32 diff) override;
 
-        void EnterCombat(Unit* /*who*/) override { }
+        void JustEngagedWith(Unit* /*who*/) override { }
     };
 
     bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest) override
@@ -754,7 +755,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/)override { }
+        void JustEngagedWith(Unit* /*who*/)override { }
 
         void SpellHit(Unit* caster, SpellInfo const* spell) override
         {
@@ -937,7 +938,7 @@ public:
             me->SetHealth(me->CountPctFromMaxHealth(70));
         }
 
-        void EnterCombat(Unit* /*who*/) override { }
+        void JustEngagedWith(Unit* /*who*/) override { }
 
         void SpellHit(Unit* caster, SpellInfo const* spell) override
         {
@@ -1125,7 +1126,7 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
 
-        void EnterCombat(Unit* /*who*/) override
+        void JustEngagedWith(Unit* /*who*/) override
         {
         }
 
@@ -1163,7 +1164,7 @@ public:
             player->PrepareQuestMenu(creature->GetGUID());
 
         bool canBuy = false;
-        uint8 race = player->getRace();
+        uint8 race = player->GetRace();
 
         switch (creature->GetEntry())
         {
@@ -1283,16 +1284,16 @@ public:
         if (creature->IsTrainer())
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, GOSSIP_TEXT_TRAIN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRAIN);
 
-        if (player->getClass() == CLASS_ROGUE)
+        if (player->GetClass() == CLASS_ROGUE)
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, GOSSIP_HELLO_ROGUE1, GOSSIP_SENDER_MAIN, GOSSIP_OPTION_UNLEARNTALENTS);
 
-        if (player->getClass() == CLASS_ROGUE)
+        if (player->GetClass() == CLASS_ROGUE)
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, GOSSIP_HELLO_ROGUE4, GOSSIP_SENDER_MAIN, GOSSIP_OPTION_UNLEARN_SPEC);
 
         if (player->GetSpecsCount() == 1 && player->GetLevel() >= sWorld->getIntConfig(CONFIG_MIN_DUALSPEC_LEVEL))
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, GOSSIP_HELLO_ROGUE3, GOSSIP_SENDER_MAIN, GOSSIP_OPTION_LEARNDUALSPEC);
 
-        if (player->getClass() == CLASS_ROGUE && player->GetLevel() >= 24 && !player->HasItemCount(17126) && !player->GetQuestRewardStatus(6681))
+        if (player->GetClass() == CLASS_ROGUE && player->GetLevel() >= 24 && !player->HasItemCount(17126) && !player->GetQuestRewardStatus(6681))
         {
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_ROGUE2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
             player->SEND_GOSSIP_MENU(5996, creature->GetGUID());
@@ -1523,7 +1524,7 @@ public:
         npc_steam_tonkAI(Creature* creature) : ScriptedAI(creature) { }
 
         void Reset() override { }
-        void EnterCombat(Unit* /*who*/) override { }
+        void JustEngagedWith(Unit* /*who*/) override { }
 
         void OnPossess(bool apply)
         {
@@ -1570,7 +1571,7 @@ public:
             ExplosionTimer = 3000;
         }
 
-        void EnterCombat(Unit* /*who*/) override { }
+        void JustEngagedWith(Unit* /*who*/) override { }
         void AttackStart(Unit* /*who*/) override { }
         void MoveInLineOfSight(Unit* /*who*/) override { }
 
@@ -1883,7 +1884,7 @@ public:
         if (creature->IsQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
 
-        if (player->getClass() == CLASS_HUNTER)
+        if (player->GetClass() == CLASS_HUNTER)
         {
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_PET1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
             if (player->GetPet() && player->GetPet()->getPetType() == HUNTER_PET)
@@ -2451,7 +2452,7 @@ public:
                 me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
         }
 
-        void EnterCombat(Unit* /*who*/) override { }
+        void JustEngagedWith(Unit* /*who*/) override { }
 
         void DoAction(int32 /*param*/) override
         {
@@ -2518,7 +2519,7 @@ struct npc_stone_statue : public ScriptedAI
     void EnterEvadeMode() override { }
     bool CanAIAttack(Unit const* /*who*/) const override { return false; }
     void AttackStart(Unit* /*who*/) override { }
-    void EnterCombat(Unit* /*who*/) override { }
+    void JustEngagedWith(Unit* /*who*/) override { }
     void UpdateAI(uint32 /*diff*/) override { }
 };
 
@@ -2546,7 +2547,7 @@ struct npc_sky_lantern : public ScriptedAI
     void EnterEvadeMode() override { }
     bool CanAIAttack(Unit const* /*who*/) const override { return false; }
     void AttackStart(Unit* /*who*/) override { }
-    void EnterCombat(Unit* /*who*/) override { }
+    void JustEngagedWith(Unit* /*who*/) override { }
     void UpdateAI(uint32 /*diff*/) override { }
 };
 
@@ -2711,7 +2712,7 @@ struct npc_anatomical_dummy : public ScriptedAI
 {
     npc_anatomical_dummy(Creature* creature) : ScriptedAI(creature) { }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         talk_timer = 5000;
     }
@@ -3231,7 +3232,7 @@ struct npc_rogue_rare_npc : public ScriptedAI
         me->setRegeneratingHealth(true);
     }
 
-    void EnterCombat(Unit* who) override
+    void JustEngagedWith(Unit* who) override
     {
         Talk(0);
         me->setRegeneratingHealth(false);

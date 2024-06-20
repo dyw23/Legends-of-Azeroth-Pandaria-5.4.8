@@ -182,9 +182,9 @@ class boss_dark_animus : public CreatureScript
                 return animaRingGUID;
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
 
                 if (GameObject* go = ObjectAccessor::GetGameObject(*me, instance ? instance->GetData64(GO_ANIMUS_ENTRANCE) : 0))
                     go->SetGoState(GO_STATE_READY);
@@ -414,7 +414,7 @@ class npc_anima_orb : public CreatureScript
 
                 me->SetDisplayId(me->GetCreatureTemplate()->Modelid2);
                 DoCast(me, SPELL_ANIMA_ORB_VISUAL, true);
-                me->setFaction(14);
+                me->SetFaction(14);
                 me->SetMaxHealth(1);
                 me->SetVisible(true);
                 me->SetReactState(REACT_PASSIVE);
@@ -578,7 +578,7 @@ struct golemsBaseAI : public ScriptedAI
         Reset();
     }
 
-    void Reset()
+    void Reset() override
     {
         events.Reset();
         scheduler.CancelAll();
@@ -745,7 +745,7 @@ class npc_animus_golem : public CreatureScript
         {
             npc_animus_golemAI(Creature* creature) : golemsBaseAI(creature) { }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 if (instance && instance->GetBossState(DATA_DARK_ANIMUS) != IN_PROGRESS)
                     instance->SetBossState(DATA_DARK_ANIMUS, IN_PROGRESS);
@@ -1661,7 +1661,7 @@ class cond_anima_transfusion : public ConditionScript
     public:
         cond_anima_transfusion() : ConditionScript("cond_anima_transfusion") { }
     
-        bool OnConditionCheck(Condition* cond, ConditionSourceInfo& source) override
+        bool OnConditionCheck(const Condition* cond, ConditionSourceInfo& source) override
         {
             if (source.mConditionTargets[0] && source.mConditionTargets[1])
                 if (Creature* caster = source.mConditionTargets[1]->ToCreature())

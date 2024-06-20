@@ -21,6 +21,7 @@
 
 #include "ConfusedMovementGenerator.h"
 #include "FleeingMovementGenerator.h"
+#include "GenericMovementGenerator.h"
 #include "HomeMovementGenerator.h"
 #include "IdleMovementGenerator.h"
 #include "PointMovementGenerator.h"
@@ -76,6 +77,29 @@ MotionMaster::~MotionMaster()
     }
 }
 
+// MovementGenerator* MotionMaster::GetCurrentMovementGenerator() const
+// {
+//     if (!_generators.empty())
+//         return *_generators.begin();
+
+//     if (_defaultGenerator)
+//         return _defaultGenerator.get();
+
+//     return nullptr;
+// }
+
+// MovementGeneratorType MotionMaster::GetCurrentMovementGeneratorType() const
+// {
+//     if (Empty())
+//         return MAX_MOTION_TYPE;
+
+//     MovementGenerator const* movement = GetCurrentMovementGenerator();
+//     if (!movement)
+//         return MAX_MOTION_TYPE;
+
+//     return movement->GetMovementGeneratorType();
+// }
+
 void MotionMaster::UpdateMotion(uint32 diff)
 {
     if (!_owner)
@@ -116,8 +140,6 @@ void MotionMaster::UpdateMotion(uint32 diff)
         _cleanFlag &= ~MMCF_RESET;
     }
 
-    // probably not the best place to pu this but im not really sure where else to put it.
-    _owner->UpdateUnderwaterState(_owner->GetMap(), _owner->GetPositionX(), _owner->GetPositionY(), _owner->GetPositionZ());
 }
 
 void MotionMaster::DirectClean(bool reset)
@@ -694,6 +716,18 @@ void MotionMaster::MoveRotate(uint32 time, RotateDirection direction)
         return;
 
     Mutate(new RotateMovementGenerator(time, direction), MOTION_SLOT_ACTIVE);
+}
+
+void MotionMaster::LaunchMoveSpline(Movement::MoveSplineInit&& init, uint32 id/*= 0*/, MovementSlot slot/*= MOTION_SLOT_ACTIVE*/, MovementGeneratorType type/*= EFFECT_MOTION_TYPE*/)
+{
+    if (IsInvalidMovementGeneratorType(type))
+    {
+        TC_LOG_DEBUG("movement.motionmaster", "MotionMaster::LaunchMoveSpline: '%u', tried to launch a spline with an invalid MovementGeneratorType: %u (Id: %u, Slot: %u)", _owner->GetGUIDLow(), type, id, slot);
+        return;
+    }
+
+    TC_LOG_DEBUG("movement.motionmaster", "MotionMaster::LaunchMoveSpline: '%u', initiates spline Id: %u (Type: %u, Slot: %u)", _owner->GetGUIDLow(), id, type, slot);
+    Mutate(new GenericMovementGenerator(std::move(init), type, id), slot);
 }
 
 void MotionMaster::propagateSpeedChange()

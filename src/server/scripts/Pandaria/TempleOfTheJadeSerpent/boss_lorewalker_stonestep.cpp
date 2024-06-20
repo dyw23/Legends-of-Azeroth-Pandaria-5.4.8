@@ -365,7 +365,7 @@ class npc_zao : public CreatureScript
                 {
                     attacker->ToCreature()->DespawnOrUnsummon();
                     isCorrupted = true;
-                    me->setFaction(14);
+                    me->SetFaction(14);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     me->CastSpell(me, SPELL_SHA_CORRUPTION, false);
 
@@ -493,7 +493,7 @@ class npc_haunting_sha : public CreatureScript
                     zao->AI()->JustSummoned(me);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 events.ScheduleEvent(EVENT_HAUNTING_GAZE, 1 * IN_MILLISECONDS);
             }
@@ -591,7 +591,7 @@ class npc_strife_peril : public CreatureScript
             void InitializeAI() override
             {
                 isInfight = false;
-                me->setFaction(14);
+                me->SetFaction(14);
                 instance = me->GetInstanceScript();  
                 me->CastSpell(me, SPELL_SHA_CORRUPTION_SP, false);
             }
@@ -638,7 +638,7 @@ class npc_strife_peril : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 events.ScheduleEvent(EVENT_AGONY, 1 * IN_MILLISECONDS);
             }
@@ -714,7 +714,7 @@ class npc_nodding_tiger : public CreatureScript
 
             EventMap events;
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 events.ScheduleEvent(EVENT_CLAW, 2 * IN_MILLISECONDS);
             }
@@ -767,7 +767,7 @@ class npc_golden_beetle : public CreatureScript
 
             EventMap events;
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 events.ScheduleEvent(EVENT_SERRATED_SLASH, 2 * IN_MILLISECONDS);
                 events.ScheduleEvent(EVENT_SHROUD_OF_GOLD, 4 * IN_MILLISECONDS);
@@ -832,7 +832,7 @@ class npc_jiang_xiang : public CreatureScript
 
             EventMap events;
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 events.ScheduleEvent(EVENT_AERIALISTS_KICK, 2 * IN_MILLISECONDS);
                 events.ScheduleEvent(EVENT_THROW_TORCH, 4 * IN_MILLISECONDS);
@@ -890,7 +890,7 @@ class npc_songbird_queen : public CreatureScript
 
             EventMap events;
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 events.ScheduleEvent(EVENT_SONGBIRD_SERENADE, 2 * IN_MILLISECONDS);
             }
@@ -994,7 +994,7 @@ class npc_talking_fish : public CreatureScript
 
             EventMap events;
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 Talk(TALK_0);
                 events.ScheduleEvent(EVENT_BUBBLE_SPRAY, 2000);

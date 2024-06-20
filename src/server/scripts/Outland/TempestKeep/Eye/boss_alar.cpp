@@ -133,7 +133,7 @@ class boss_alar : public CreatureScript
                 me->setActive(false);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 if (instance)
                     instance->SetData(DATA_ALAREVENT, IN_PROGRESS);
@@ -409,7 +409,7 @@ class boss_alar : public CreatureScript
                                 Summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                                 Summoned->SetObjectScale(Summoned->GetObjectScale() * 2.5f);
                                 Summoned->SetDisplayId(11686);
-                                Summoned->setFaction(me->getFaction());
+                                Summoned->SetFaction(me->GetFaction());
                                 Summoned->SetLevel(me->GetLevel());
                                 Summoned->CastSpell(Summoned, SPELL_FLAME_PATCH, false);
                             }
@@ -476,7 +476,7 @@ class npc_ember_of_alar : public CreatureScript
                 toDie = false;
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 DoZoneInCombat();
             }
@@ -540,7 +540,7 @@ class npc_flame_patch_alar : public CreatureScript
         {
             npc_flame_patch_alarAI(Creature* creature) : ScriptedAI(creature) { }
             void Reset() override { }
-            void EnterCombat(Unit* /*who*/) override { }
+            void JustEngagedWith(Unit* /*who*/) override { }
             void AttackStart(Unit* /*who*/) override { }
             void MoveInLineOfSight(Unit* /*who*/) override { }
 

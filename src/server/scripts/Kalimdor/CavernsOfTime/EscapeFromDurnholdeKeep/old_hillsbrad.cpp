@@ -51,49 +51,50 @@ enum Erozion
 ## npc_erozion
 ######*/
 
-class npc_erozion : public CreatureScript
+struct npc_erozion : public ScriptedAI
 {
-public:
-    npc_erozion() : CreatureScript("npc_erozion") { }
+    npc_erozion(Creature* creature) : ScriptedAI(creature), instance(creature->GetInstanceScript()) { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+    InstanceScript* instance;
+
+    bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 gossipListId) override
     {
-        player->PlayerTalkClass->ClearMenus();
-        if (action == GOSSIP_ACTION_INFO_DEF+1)
+        uint32 const action = player->PlayerTalkClass->GetGossipOptionAction(gossipListId);
+        ClearGossipMenuFor(player);
+        if (action == GOSSIP_ACTION_INFO_DEF + 1)
         {
             ItemPosCountVec dest;
             uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_ENTRY_BOMBS, 1);
             if (msg == EQUIP_ERR_OK)
             {
-                 player->StoreNewItem(dest, ITEM_ENTRY_BOMBS, true);
+                player->StoreNewItem(dest, ITEM_ENTRY_BOMBS, true);
             }
-            player->SEND_GOSSIP_MENU(9515, creature->GetGUID());
+            SendGossipMenuFor(player, 9515, me->GetGUID());
         }
-        if (action == GOSSIP_ACTION_INFO_DEF+2)
-        {
-            player->CLOSE_GOSSIP_MENU();
-        }
+        if (action == GOSSIP_ACTION_INFO_DEF + 2)
+            CloseGossipMenuFor(player);
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature) override
+    bool OnGossipHello(Player* player) override
     {
-        if (creature->IsQuestGiver())
-            player->PrepareQuestMenu(creature->GetGUID());
+        InitGossipMenuFor(player, GOSSIP_MENU_EROZION);
+        if (me->IsQuestGiver())
+            player->PrepareQuestMenu(me->GetGUID());
 
-        InstanceScript* instance = creature->GetInstanceScript();
-        if (instance && instance->GetData(TYPE_BARREL_DIVERSION) != DONE && !player->HasItemCount(ITEM_ENTRY_BOMBS))
+        if (instance->GetData(TYPE_BARREL_DIVERSION) != DONE && !player->HasItemCount(ITEM_ENTRY_BOMBS))
             AddGossipItemFor(player, GOSSIP_MENU_EROZION, GOSSIP_OPTION_BOMB, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
         if (player->GetQuestStatus(QUEST_ENTRY_RETURN) == QUEST_STATUS_COMPLETE)
             AddGossipItemFor(player, GOSSIP_ICON_CHAT, GOSSIP_HELLO_EROZION2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 
-        player->SEND_GOSSIP_MENU(9778, creature->GetGUID());
+        SendGossipMenuFor(player, 9778, me->GetGUID());
 
         return true;
     }
-
 };
+
+
 
 /*######
 ## npc_thrall_old_hillsbrad
@@ -246,7 +247,7 @@ public:
         if (creature->IsQuestGiver())
         {
             player->PrepareQuestMenu(creature->GetGUID());
-            player->SendPreparedQuest(creature->GetGUID());
+            player->SendPreparedQuest(creature);
         }
 
         InstanceScript* instance = creature->GetInstanceScript();
@@ -493,7 +494,7 @@ public:
             me->Dismount();
             me->SetSpeed(MOVE_RUN, SPEED_RUN);
         }
-        void EnterCombat(Unit* /*who*/) override
+        void JustEngagedWith(Unit* /*who*/) override
         {
             Talk(SAY_TH_RANDOM_AGGRO);
             if (me->IsMounted())
@@ -564,8 +565,71 @@ enum Taretha
     GOSSIP_ITEM_EPOCH1_MID  = 7849,
     GOSSIP_ITEM_EPOCH1_OID  = 0,                           //Strange wizard?
     GOSSIP_ITEM_EPOCH2_MID  = 7852,
-    GOSSIP_ITEM_EPOCH2_OID  = 0  
+    GOSSIP_ITEM_EPOCH2_OID  = 0                            //We'll get you out, Taretha. Don't worry. I doubt the wizard would wander too far away.
 };
+
+// struct npc_taretha : public EscortAI
+// {
+//     npc_taretha(Creature* creature) : EscortAI(creature)
+//     {
+//         instance = creature->GetInstanceScript();
+//     }
+
+//     InstanceScript* instance;
+
+//     void WaypointReached(uint32 waypointId, uint32 /*pathId*/) override
+//     {
+//         switch (waypointId)
+//         {
+//             case 6:
+//                 Talk(SAY_TA_FREE);
+//                 break;
+//             case 7:
+//                 me->HandleEmoteCommand(EMOTE_ONESHOT_CHEER);
+//                 break;
+//         }
+//     }
+
+//     void Reset() override { }
+//     void JustEngagedWith(Unit* /*who*/) override { }
+
+//     bool OnGossipSelect(Player* player, uint32 /*menuId*/, uint32 gossipListId) override
+//     {
+//         uint32 const action = player->PlayerTalkClass->GetGossipOptionAction(gossipListId);
+//         ClearGossipMenuFor(player);
+
+//         if (action == GOSSIP_ACTION_INFO_DEF + 1)
+//         {
+//             InitGossipMenuFor(player, GOSSIP_ITEM_EPOCH2_MID);
+//             AddGossipItemFor(player, GOSSIP_ITEM_EPOCH2_MID, GOSSIP_ITEM_EPOCH2_OID, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+//             SendGossipMenuFor(player, GOSSIP_ID_EPOCH2, me->GetGUID());
+//         }
+//         if (action == GOSSIP_ACTION_INFO_DEF + 2)
+//         {
+//             CloseGossipMenuFor(player);
+
+//             if (instance->GetGuidData(DATA_EPOCH_HUNTER).IsEmpty())
+//                 me->SummonCreature(ENTRY_EPOCH, 2639.13f, 698.55f, 65.43f, 4.59f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 2min);
+
+//             if (Creature* thrall = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_THRALL)))
+//                 ENSURE_AI(npc_thrall_old_hillsbrad, thrall->AI())->StartWP();
+
+//             me->RemoveNpcFlag(UNIT_NPC_FLAG_GOSSIP);
+//         }
+//         return true;
+//     }
+
+//     bool OnGossipHello(Player* player) override
+//     {
+//         if (instance->GetData(TYPE_THRALL_EVENT) == OH_ESCORT_EPOCH_HUNTER && instance->GetBossState(DATA_EPOCH_HUNTER) != DONE)
+//         {
+//             InitGossipMenuFor(player, GOSSIP_ITEM_EPOCH1_MID);
+//             AddGossipItemFor(player, GOSSIP_ITEM_EPOCH1_MID, GOSSIP_ITEM_EPOCH1_OID, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+//             SendGossipMenuFor(player, GOSSIP_ID_EPOCH1, me->GetGUID());
+//         }
+//         return true;
+//     }
+// };
 
 class npc_taretha : public CreatureScript
 {
@@ -641,7 +705,7 @@ public:
         }
 
         void Reset() override { }
-        void EnterCombat(Unit* /*who*/) override { }
+        void JustEngagedWith(Unit* /*who*/) override { }
 
         void UpdateAI(uint32 diff) override
         {
@@ -657,7 +721,9 @@ public:
 
 void AddSC_old_hillsbrad()
 {
-    new npc_erozion();
+    //new npc_erozion();
+    RegisterOldHillsbradCreatureAI(npc_erozion);
     new npc_thrall_old_hillsbrad();
     new npc_taretha();
+    //RegisterOldHillsbradCreatureAI(npc_taretha);
 }

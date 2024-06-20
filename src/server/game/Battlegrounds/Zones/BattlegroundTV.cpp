@@ -104,7 +104,7 @@ bool BattlegroundTV::HandlePlayerUnderMap(Player* player)
     return true;
 }
 
-void BattlegroundTV::HandleAreaTrigger(Player* Source, uint32 Trigger)
+void BattlegroundTV::HandleAreaTrigger(Player* Source, uint32 Trigger, bool Entered)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -115,6 +115,7 @@ void BattlegroundTV::HandleAreaTrigger(Player* Source, uint32 Trigger)
         case 4537:                                          // buff trigger?
             break;
         default:
+            Battleground::HandleAreaTrigger(Source, Trigger, Entered);
             break;
     }
 }

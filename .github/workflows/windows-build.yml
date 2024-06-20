@@ -2,7 +2,9 @@ name: windows-build
 
 on:
   push:
-    branches: [ master, development ]
+    paths-ignore:
+      - 'sql/**'    
+  pull_request:
     paths-ignore:
       - 'sql/**'
       
@@ -16,9 +18,8 @@ env:
   BUILD_TYPE: Release
   REPO_DIR : ${{github.workspace}}
   BUILD_DIR: ${{github.workspace}}/bin/builddir
-  BOOST_TOOLSET: "msvc14.1"
-  BOOST_VERSION: "1.69.0"
-  BOOST_INSTALL_DIR: "${{github.workspace}}/bin"
+  BOOST_TOOLSET: "msvc"
+  BOOST_VERSION: "1.78.0"
   
 jobs:
   build:
@@ -31,26 +32,19 @@ jobs:
     - uses: FranzDiebold/github-env-vars-action@v2
     - name: Create Build Environment
       run: |
-        echo "BOOST_ROOT=${{env.BOOST_INSTALL_DIR}}/boost/boost-${{env.BOOST_VERSION}}-win32-${{env.BOOST_TOOLSET}}-x86_64" >> $env:GITHUB_ENV
         echo "ARCHIVE_FILENAME=$env:CI_REPOSITORY_NAME-${{matrix.TYPE}}-$env:CI_SHA_SHORT.zip" >> $env:GITHUB_ENV
         cmake -E make_directory ${{ env.BUILD_DIR }}
-    # install dependencies
-    - name: Cache Windows boost
-      uses: actions/cache@v2
-      id: cache-boost
-      with:
-          path: "${{env.BOOST_INSTALL_DIR}}/boost"
-          key: ${{ runner.os }}-${{ hashFiles('.github/workflows/windows.yml') }}
-
-    - if: steps.cache-boost.outputs.cache-hit != 'true'
-      name: Install boost
-      uses: MarkusJx/install-boost@v1.0.1
+ 
+    - name: Install boost
+      uses: MarkusJx/install-boost@v2.4.4
       id: install-boost
       with:
           # REQUIRED: Specify the required boost version
           # A list of supported versions can be found here: 
           # https://github.com/actions/boost-versions/blob/main/versions-manifest.json
           boost_version: ${{env.BOOST_VERSION}}
+          # OPTIONAL: Specify a platform version
+          platform_version: 2019         
           # OPTIONAL: Specify a toolset on windows
           toolset: ${{env.BOOST_TOOLSET}}
           # OPTIONAL: Specify a custon install location
@@ -58,28 +52,25 @@ jobs:
           # NOTE: If a boost version matching all requirements cannot be found,
           # this build step will fail          
     - name: windows dependencies
-      #Sets versions for ACE
-      #env:
-      #  ACE_VERSION: 6.5.11
-      #  ACE_VERSION2: 6_5_11
-
       run: |
         #make
         choco install -y make
         #cmake
         choco install -y cmake
         #openssl
-        choco install -y openssl
+        choco install -y openssl --version=1.1.1.2100
       #git bash shell
       shell: bash
 
     #build and install
     - name: windows build & install
+      env:
+          BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
       run: |
         cd $GITHUB_WORKSPACE
         
         mkdir -p build && cd build
-        cmake .. -DTOOLS=ON -DELUNA=0 -A x64
+        cmake .. -DTOOLS=ON -DELUNA=1 -A x64
         cmake --build . --config RelWithDebInfo --parallel 4
       #git bash shell
       shell: bash
@@ -91,9 +82,9 @@ jobs:
           #data is in Release folder
           cd ${{github.workspace}}/build/bin
           dir
-          copy c:/mysql/lib/libmysql.dll ${{github.workspace}}/build/bin/RelWithDebInfo/libmysql.dll
-          copy "c:/Program Files/OpenSSL-Win64/bin/libssl-1_1-x64.dll" ${{github.workspace}}/build/bin/RelWithDebInfo/libssl-1_1-x64.dll
-          copy "c:/Program Files/OpenSSL-Win64/bin/libcrypto-1_1-x64.dll" ${{github.workspace}}/build/bin/RelWithDebInfo/libcrypto-1_1-x64.dll
+          copy "C:/Program Files/MySQL/MySQL Server 5.7/lib/libmysql.dll" ${{github.workspace}}/build/bin/RelWithDebInfo/libmysql.dll
+          copy "C:/Program Files/OpenSSL/bin/libssl-1_1-x64.dll" ${{github.workspace}}/build/bin/RelWithDebInfo/libssl-1_1-x64.dll
+          copy "c:/Program Files/OpenSSL/bin/libcrypto-1_1-x64.dll" ${{github.workspace}}/build/bin/RelWithDebInfo/libcrypto-1_1-x64.dll
           move ${{github.workspace}}/contrib/lua_scripts ${{github.workspace}}/build/bin/RelWithDebInfo/lua_scripts
           7z a -tzip ${{env.ARCHIVE_FILENAME}} RelWithDebInfo
     - name: Archive this artefact

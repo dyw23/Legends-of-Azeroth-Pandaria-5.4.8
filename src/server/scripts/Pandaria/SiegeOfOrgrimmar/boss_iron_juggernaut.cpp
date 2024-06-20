@@ -173,9 +173,9 @@ class boss_iron_juggernaut : public CreatureScript
                 me->GetMap()->SetWorldState(WORLDSTATE_FIRE_IN_THE_HALL, 0);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
 
                 me->SetReactState(REACT_AGGRESSIVE);
                 me->RemoveAurasDueToSpell(SPELL_MELEE);
@@ -513,7 +513,7 @@ struct npc_crawler_mine : public ScriptedAI
             scheduler
                 .Schedule(Milliseconds(me->GetSplineDuration()), [this](TaskContext context)
             {
-                me->setFaction(35);
+                me->SetFaction(35);
                 me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
                 DoCast(me, SPELL_CRAWLER_MINE_SUMM);
                 DoCast(me, SPELL_DETONATION_SEQ, true);
