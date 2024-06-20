@@ -37,12 +37,11 @@ INSERT INTO `terrain_swap_defaults` (`MapId`, `TerrainSwapMap`, `Comment`) VALUE
 (860, 976, 'Wandering Island - Turtle Healed'),
 (1064, 1120, 'Thunder King Horde Hub'),
 (1064, 1121, 'Thunder Island Alliance Hub'),
--- 
 (654, 638, 'Gilneas default terrain'),
 (654, 655, 'Gilneas - Duskmist Shore broken'),
-(655, 656, 'Gilneas - UnkName2'),
-(648, 659, 'Lost Isles - UnkName'),
-(648, 661, 'Lost Isles - UnkName2');
+(654, 656, 'Gilneas - UnkName2'),
+(648, 661, 'Lost Isles - UnkName'),
+(648, 659, 'Lost Isles - UnkName2');
 
 DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=719;
 DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=975;
@@ -51,6 +50,11 @@ DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=11
 DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=1121;
 DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=1061;
 DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=1062;
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=638;
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=655;
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=656;
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=661;
+DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=29 AND `SourceEntry`=659;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorType`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES 
 (29, 0, 719, 0, 0, 8, 0, 25372, 0, 0, 1, 0, 0, '', ''),
 (29, 0, 975, 0, 0, 8, 0, 29799, 0, 0, 1, 0, 0, '', ''),
@@ -68,7 +72,15 @@ INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry
 (29, 0, 1061, 0, 0, 8, 0, 32108, 0, 0, 0, 0, 0, '', ''),
 (29, 0, 1061, 0, 1, 8, 0, 32109, 0, 0, 0, 0, 0, '', ''),
 (29, 0, 1062, 0, 0, 8, 0, 32108, 0, 0, 0, 0, 0, '', ''),
-(29, 0, 1062, 0, 1, 8, 0, 32109, 0, 0, 0, 0, 0, '', '');
+(29, 0, 1062, 0, 1, 8, 0, 32109, 0, 0, 0, 0, 0, '', ''),
+(29, 0, 638, 0, 0, 8, 0, 14386, 0, 0, 1, 0, 0, '', ''),
+(29, 0, 655, 0, 0, 8, 0, 14386, 0, 0, 0, 0, 0, '', ''),
+(29, 0, 655, 0, 0, 8, 0, 14466, 0, 0, 1, 0, 0, '', ''),
+(29, 0, 656, 0, 0, 8, 0, 14466, 0, 0, 0, 0, 0, '', ''),
+(29, 0, 661, 0, 0, 28, 0, 14245, 0, 0, 0, 0, 0, '', ''),
+(29, 0, 661, 0, 1, 8, 0, 14245, 0, 0, 0, 0, 0, '', ''),
+(29, 0, 661, 0, 1, 8, 0, 24958, 0, 0, 1, 0, 0, '', ''),
+(29, 0, 659, 0, 0, 8, 0, 24958, 0, 0, 0, 0, 0, '', '');
 
 DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=25 AND `SourceGroup`=616 AND `SourceEntry`=1;
 DELETE FROM `conditions` WHERE `SourceTypeOrReferenceId`=25 AND `SourceGroup`=1519 AND `SourceEntry`=6;
