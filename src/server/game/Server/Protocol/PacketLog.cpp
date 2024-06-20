@@ -18,6 +18,7 @@
 #include "PacketLog.h"
 #include "Config.h"
 #include "ByteBuffer.h"
+#include "GameTime.h"
 #include "WorldPacket.h"
 
 #pragma pack(push, 1)
@@ -85,25 +86,33 @@ void PacketLog::Initialize()
 
     std::string logname = sConfigMgr->GetStringDefault("PacketLogFile", "");
     if (!logname.empty())
+    {
         _file = fopen((logsDir + logname).c_str(), "wb");
+
+        LogHeader header;
+        header.Signature[0] = 'P';
+        header.Signature[1] = 'K';
+        header.Signature[2] = 'T';
+        header.FormatVersion = 0x0301;
+        header.SnifferId = 'T';
+        header.Build = 18414;
+        header.Locale[0] = 'e';
+        header.Locale[1] = 'n';
+        header.Locale[2] = 'U';
+        header.Locale[3] = 'S';
+        std::memset(header.SessionKey, 0, sizeof(header.SessionKey));
+        header.SniffStartUnixtime = GameTime::GetGameTime();
+        header.SniffStartTicks = getMSTime();
+        header.OptionalDataSize = 0;
+
+        if (CanLogPacket())
+            fwrite(&header, sizeof(header), 1, _file);
+    }
 }
 
 void PacketLog::LogPacket(WorldPacket const& packet, Direction direction, boost::asio::ip::address const& addr, uint16 port)
 {
     std::lock_guard<std::mutex> lock(_logPacketLock);
-
-    // ByteBuffer data(4+4+4+1+packet.size());
-    // uint32 opcode = direction == CLIENT_TO_SERVER ? const_cast<WorldPacket&>(packet).GetReceivedOpcode() : serverOpcodeTable[packet.GetOpcode()]->OpcodeNumber;
-
-    // data << int32(opcode);
-    // data << int32(packet.size());
-    // data << uint32(time(nullptr));
-    // data << uint8(direction);
-
-    // for (uint32 i = 0; i < packet.size(); i++)
-    //     data << packet[i];
-
-    // fwrite(data.contents(), 1, data.size(), _file);
 
     PacketHeader header;
     header.Direction = direction == CLIENT_TO_SERVER ? 0x47534d43 : 0x47534d53;
@@ -132,5 +141,4 @@ void PacketLog::LogPacket(WorldPacket const& packet, Direction direction, boost:
         fwrite(packet.contents(), 1, packet.size(), _file);
 
     fflush(_file);
-
 }
