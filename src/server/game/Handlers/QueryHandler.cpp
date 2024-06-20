@@ -704,17 +704,16 @@ void WorldSession::HandleQuestNPCQuery(WorldPacket& recvData)
         uint32 questId;
         recvData >> questId;
 
-        /// @todo verify if we should only send completed quests questgivers
-        if (sObjectMgr->GetQuestTemplate(questId) && _player->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
-        {
-            auto creatures = sObjectMgr->GetCreatureQuestInvolvedRelationReverseBounds(questId);
-            for (auto it = creatures.first; it != creatures.second; ++it)
-                quests[questId].push_back(it->second);
+        if (!sObjectMgr->GetQuestTemplate(questId))
+            continue;
 
-            auto gos = sObjectMgr->GetGOQuestInvolvedRelationReverseBounds(questId);
-            for (auto it = gos.first; it != gos.second; ++it)
-                quests[questId].push_back(it->second | 0x80000000); // GO mask
-        }
+        auto creatures = sObjectMgr->GetCreatureQuestInvolvedRelationReverseBounds(questId);
+        for (auto it = creatures.first; it != creatures.second; ++it)
+            quests[questId].push_back(it->second);
+
+        auto gos = sObjectMgr->GetGOQuestInvolvedRelationReverseBounds(questId);
+        for (auto it = gos.first; it != gos.second; ++it)
+            quests[questId].push_back(it->second | 0x80000000); // GO mask
     }
 
     uint32 count;
