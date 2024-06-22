@@ -1,21 +1,21 @@
-DROP TABLE IF EXISTS terrain_phase_info;
-CREATE TABLE terrain_phase_info(  
+DROP TABLE IF EXISTS `terrain_phase_info`;
+CREATE TABLE `terrain_phase_info`(  
   Id INT(10) unsigned NOT NULL,
   TerrainSwapMap INT(10) unsigned NOT NULL,
   Comment VARCHAR(255),
   PRIMARY KEY (Id, TerrainSwapMap)
 );
 
-DROP TABLE IF EXISTS terrain_swap_defaults;
-CREATE TABLE terrain_swap_defaults(  
+DROP TABLE IF EXISTS `terrain_swap_defaults`;
+CREATE TABLE `terrain_swap_defaults`(  
   MapId INT(10) unsigned NOT NULL,
   TerrainSwapMap INT(10) unsigned NOT NULL,
   Comment VARCHAR(255),
   PRIMARY KEY (MapId, TerrainSwapMap)
 );
 
-DROP TABLE IF EXISTS terrain_worldmap;
-CREATE TABLE terrain_worldmap(  
+DROP TABLE IF EXISTS `terrain_worldmap`;
+CREATE TABLE `terrain_worldmap`(  
   TerrainSwapMap INT(10) unsigned NOT NULL,
   WorldMapArea INT(10) unsigned NOT NULL,
   Comment VARCHAR(255),
