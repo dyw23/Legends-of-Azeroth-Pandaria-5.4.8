@@ -36,8 +36,6 @@
 #include "Vehicle.h"
 #include "SpellHistory.h"
 
-bool AFDRoyaleIsSpecialAuraHook(Aura const* aura, Unit const* target);
-
 AuraApplication::AuraApplication(Unit* target, Unit* caster, Aura* aura, uint32 effMask):
 _target(target), _base(aura), _removeMode(AURA_REMOVE_NONE), _slot(MAX_AURAS),
 _flags(AFLAG_NONE), _effectsToApply(effMask), _needClientUpdate(false), _effMask(0)
@@ -1399,9 +1397,6 @@ bool Aura::CanBeSaved() const
 
     if (m_spellInfo->AttributesCu & SPELL_ATTR0_CU_DONT_SAVE_AURA_TO_DB)
         return false;
-
-    //if (AFDRoyaleIsSpecialAuraHook(this, target))
-    //    return false;
 
     // don't save auras removed by proc system
     if (IsUsingCharges() && !GetCharges())

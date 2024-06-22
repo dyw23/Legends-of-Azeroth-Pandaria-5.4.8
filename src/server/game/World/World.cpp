@@ -104,8 +104,6 @@
 #include "HookMgr.h"
 #endif
 
-void AFDRoyaleUpdateHook(uint32 diff);
-
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
 
 TC_GAME_API std::atomic<bool> World::m_stopEvent(false);
@@ -2645,8 +2643,6 @@ void World::Update(uint32 diff)
 
     sLFGMgr->Update(diff);
     RecordTimeDiff("UpdateLFGMgr");
-
-    AFDRoyaleUpdateHook(diff);
 
     // execute callbacks from sql queries that were queued recently
     ProcessQueryCallbacks();
