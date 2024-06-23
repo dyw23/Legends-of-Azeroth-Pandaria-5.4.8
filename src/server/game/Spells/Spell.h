@@ -503,6 +503,7 @@ class TC_GAME_API Spell
         void EffectPlayerChoice(SpellEffIndex effIndex);
         void EffectUpdatePlayerPhase(SpellEffIndex effIndex);
         void EffectUpdateZoneAurasAndPhases(SpellEffIndex effIndex);
+        void EffectSummonPersonalGameObject(SpellEffIndex effIndex);
 
         typedef std::set<Aura*> UsedSpellMods;
 
@@ -908,7 +909,7 @@ class TC_GAME_API Spell
         HitTriggerSpellList m_hitTriggerSpells;
 
         // effect helpers
-        void SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* properties, uint32 numSummons);
+        void SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* properties, uint32 numSummons, bool visibleBySummonerOnly = false);
         TempSummon* SummonTotem(uint32 entry, SummonPropertiesEntry const* properties, uint32 duration, bool visibleBySummonerOnly = false);
         void CalculateJumpSpeeds(uint8 i, float dist, float & speedxy, float & speedz);
 

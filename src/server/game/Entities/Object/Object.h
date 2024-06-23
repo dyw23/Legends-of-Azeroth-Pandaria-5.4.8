@@ -413,7 +413,7 @@ struct MovementInfo
     void OutDebug();
 };
 
-template <class T_VALUES, class T_FLAGS, class FLAG_TYPE, uint8 ARRAY_SIZE>
+template <class T_VALUES, class T_FLAGS, class FLAG_TYPE, size_t ARRAY_SIZE>
 class FlaggedValuesArray32
 {
     public:
@@ -673,8 +673,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void SetZoneScript();
         ZoneScript* GetZoneScript() const { return m_zoneScript; }
 
-        TempSummon* SummonCreature(uint32 id, Position const &pos, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint32 vehId = 0, bool visibleBySummonerOnly = false);
-        TempSummon* SummonCreature(uint32 id, float x, float y, float z, float ang = 0, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, bool visibleBySummonerOnly = false);
+        TempSummon* SummonCreature(uint32 id, Position const &pos, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint32 vehId = 0, uint64 privateObjectOwner = 0);
+        TempSummon* SummonCreature(uint32 id, float x, float y, float z, float ang = 0, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint64 privateObjectOwner = 0);
         GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, G3D::Quat const& rotation, uint32 respawnTime, GOSummonType summonType = GO_SUMMON_TIMED_OR_CORPSE_DESPAWN);
 
         Creature* SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = NULL);
@@ -761,6 +761,12 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         virtual uint16 GetMovementAnimKitId() const { return 0; }
         virtual uint16 GetMeleeAnimKitId() const { return 0; }
 
+        // Watcher
+        bool IsPrivateObject() const { return _privateObjectOwner != 0; }
+        uint64 GetPrivateObjectOwner() const { return _privateObjectOwner; }
+        void SetPrivateObjectOwner(uint64 owner) { _privateObjectOwner = owner; }
+        bool CheckPrivateObjectOwnerVisibility(WorldObject const* seer) const;
+
         void AddToUpdate() override;
         void RemoveFromUpdate() override;
 
@@ -812,6 +818,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         std::set<uint32> _terrainSwaps;
         std::set<uint32> _worldMapSwaps;
 
+        uint64 _privateObjectOwner;
+
         bool m_hasCustomVisibility = false;
         float m_customVisibilityDistance = 0;
         bool m_customVisibilityZoneOnly = false;
@@ -828,9 +836,6 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         uint64 m_explicitSeerGuid;
         TimeTrackerSmall m_stealthVisibilityUpdateTimer;
 };
-
-
-
 
 namespace Trinity
 {

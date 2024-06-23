@@ -2935,6 +2935,7 @@ public:
         return m_group[uint32(slot)].getTarget();
     }
 
+    bool IsInGroup(ObjectGuid groupGuid) const;
     void SetGroup(GroupSlot slot, Group* group, int8 subgroup = -1);
     void SetSubGroup(GroupSlot slot, uint8 subgroup)
     {

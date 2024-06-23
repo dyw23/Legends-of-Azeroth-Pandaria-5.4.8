@@ -590,7 +590,7 @@ public:
         {
             if (!player->GetVehicleBase() && !creature->HasAura(SPELL_TEMP_INVISIBILITY))
             {
-                player->SummonCreature(NPC_STEAMWHEEDLE_BALLOON, creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), creature->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN, 600000, const_cast<SummonPropertiesEntry*>(sSummonPropertiesStore.LookupEntry(67)));
+                player->SummonCreature(NPC_STEAMWHEEDLE_BALLOON, creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), creature->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN, 600000);
                 creature->AddAura(SPELL_TEMP_INVISIBILITY, creature);
                 return true;
             }

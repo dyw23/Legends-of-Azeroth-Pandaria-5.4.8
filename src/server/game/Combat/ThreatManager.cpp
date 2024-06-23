@@ -424,11 +424,11 @@ void ThreatManager::doAddThreat(Unit* victim, float threat)
     // If victim is personnal spawn, redirect all aggro to summoner
     if (TempSummon* tempSummonVictim = victim->ToTempSummon())
     {
-        if (tempSummonVictim->IsVisibleBySummonerOnly())
+        if (tempSummonVictim->IsPrivateObject())
         {
             // Personnal Spawns from same summoner can aggro each other
             if (!GetOwner()->ToTempSummon() ||
-                !GetOwner()->ToTempSummon()->IsVisibleBySummonerOnly() ||
+                !GetOwner()->ToTempSummon()->IsPrivateObject() ||
                 tempSummonVictim->GetSummonerGUID() != GetOwner()->ToTempSummon()->GetSummonerGUID())
             {
                 redirectThreadPct = 100;

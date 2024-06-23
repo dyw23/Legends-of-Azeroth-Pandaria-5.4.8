@@ -114,7 +114,7 @@ struct npc_feelwood_ferli_drizzle : public ScriptedAI
 
     void IsSummonedBy(Unit* summoner) override
     {
-        me->ToTempSummon()->SetVisibleBySummonerOnly(true);
+        me->ToTempSummon()->SetPrivateObjectOwner(summoner->GetGUID());
         ownerGUID = summoner->GetGUID();
         hasDance   = false;
         canAchieve = false;
