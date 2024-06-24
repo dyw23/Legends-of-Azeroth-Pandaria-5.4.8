@@ -7865,6 +7865,12 @@ void Player::UpdateArea(uint32 newArea)
 
     phaseMgr.RemoveUpdateFlag(PHASE_UPDATE_FLAG_AREA_UPDATE);
 
+    AreaFlags const areaRestFlag = (GetTeam() == ALLIANCE) ? AREA_FLAG_ALLIANCE_RESTING : AREA_FLAG_HORDE_RESTING;
+    if (area && area->Flags & areaRestFlag)
+        SetRestFlag(REST_FLAG_IN_FACTION_AREA);
+    else
+        RemoveRestFlag(REST_FLAG_IN_FACTION_AREA);
+
     if (GetGroup())
         SetGroupUpdateFlag(GROUP_UPDATE_FLAG_AREA | GROUP_UPDATE_FLAG_PHASE);
 }

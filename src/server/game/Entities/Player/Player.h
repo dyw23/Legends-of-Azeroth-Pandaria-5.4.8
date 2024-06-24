@@ -801,9 +801,10 @@ class InstanceSave;
 
 enum RestFlag
 {
-    REST_FLAG_NONE = 0,
-    REST_FLAG_IN_TAVERN = 1,
-    REST_FLAG_IN_CITY = 2
+    REST_FLAG_NONE            = 0,
+    REST_FLAG_IN_TAVERN       = 1,
+    REST_FLAG_IN_CITY         = 2,
+    REST_FLAG_IN_FACTION_AREA = 4
 };
 
 enum TeleportToOptions
