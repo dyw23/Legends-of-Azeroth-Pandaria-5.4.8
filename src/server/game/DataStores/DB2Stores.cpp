@@ -94,7 +94,7 @@ inline void LoadDB2(uint32& availableDb2Locales, DB2StoreProblemList& errlist, D
     ++DB2FilesCount;
 
     std::string db2_filename = db2_path + filename;
-    if (storage.Load(db2_filename.c_str(), uint32(sWorld->GetDefaultDbcLocale())))
+    if (storage.Load(db2_filename.c_str(), !sWorld->getBoolConfig(CONFIG_LOAD_LOCALES) ? LOCALE_enUS : sWorld->GetDefaultDbcLocale()))
     {
         for (uint32 i = 0; i < TOTAL_LOCALES; ++i)
         {

@@ -251,6 +251,7 @@ enum WorldBoolConfigs
 #ifdef ELUNA
 	CONFIG_BOOL_ELUNA_ENABLED,
 #endif 
+    CONFIG_LOAD_LOCALES,
     BOOL_CONFIG_VALUE_COUNT
 };
 

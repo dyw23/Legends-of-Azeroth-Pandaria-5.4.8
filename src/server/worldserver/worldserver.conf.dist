@@ -36,6 +36,7 @@
 #    BLACK MARKET SETTINGS
 #    PACKET SPOOF PROTECTION SETTINGS
 #    STARTING GUILD
+#    LOAD SETTINGS
 #
 ###################################################################################################
 mmap.AllowReuseOfPreviousPathSegments = 1
@@ -4589,3 +4590,18 @@ Eluna.TraceBack = false
 Eluna.ScriptPath = "lua_scripts"
 
 ###############################################################################
+
+###################################################################################################
+# LOAD SETTINGS
+#
+# These settings control content loading
+#
+#    Load.Locales
+#        Description: Toggles the loading of Locales.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+Load.Locales = 1
+
+#
+###################################################################################################

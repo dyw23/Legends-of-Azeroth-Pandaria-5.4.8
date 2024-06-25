@@ -343,7 +343,7 @@ void ObjectMgr::LoadCreatureLocales()
 
         CreatureLocale& data = _creatureLocaleStore[id];
         LocaleConstant locale = GetLocaleByName(localeName);
-        if (locale == LOCALE_enUS)
+        if (!sWorld->getBoolConfig(CONFIG_LOAD_LOCALES) || locale == LOCALE_enUS)
             continue;
 
         AddLocaleString(name,       locale, data.Name);
@@ -376,7 +376,7 @@ void ObjectMgr::LoadGossipMenuItemsLocales()
         std::string localeName  = fields[2].GetString();
 
         LocaleConstant locale = GetLocaleByName(localeName);
-        if (locale == LOCALE_enUS)
+        if (!sWorld->getBoolConfig(CONFIG_LOAD_LOCALES) || locale == LOCALE_enUS)
             continue;
 
         GossipMenuItemsLocale& data = _gossipMenuItemsLocaleStore[std::make_pair(menuId, optionId)];
@@ -409,6 +409,8 @@ void ObjectMgr::LoadPointOfInterestLocales()
 
         PointOfInterestLocale& data = _pointOfInterestLocaleStore[id];
         LocaleConstant locale = GetLocaleByName(localeName);
+        if (!sWorld->getBoolConfig(CONFIG_LOAD_LOCALES) || locale == LOCALE_enUS)
+            continue;
 
         AddLocaleString(name, locale, data.IconName); // shoud be data.Name here
     } while (result->NextRow());
@@ -2534,7 +2536,7 @@ void ObjectMgr::LoadItemLocales()
         std::string localeName  = fields[1].GetString();
 
         LocaleConstant locale = GetLocaleByName(localeName);
-        if (locale == LOCALE_enUS)
+        if (!sWorld->getBoolConfig(CONFIG_LOAD_LOCALES) || locale == LOCALE_enUS)
             continue;
 
         ItemLocale& data = _itemLocaleStore[id];
@@ -5276,7 +5278,7 @@ void ObjectMgr::LoadPageTextLocales()
         std::string localeName      = fields[1].GetString();
 
         LocaleConstant locale = GetLocaleByName(localeName);
-        if (locale == LOCALE_enUS)
+        if (!sWorld->getBoolConfig(CONFIG_LOAD_LOCALES) || locale == LOCALE_enUS)
             continue;
 
         PageTextLocale& data = _pageTextLocaleStore[id];
@@ -5545,7 +5547,7 @@ void ObjectMgr::LoadNpcTextLocales()
 
         NpcTextLocale& data     = _npcTextLocaleStore[id];
         LocaleConstant locale   = GetLocaleByName(localeName);
-        if (locale == LOCALE_enUS)
+        if (!sWorld->getBoolConfig(CONFIG_LOAD_LOCALES) || locale == LOCALE_enUS)
             continue;
 
         for (uint8 i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
@@ -6712,7 +6714,7 @@ void ObjectMgr::LoadGameObjectLocales()
         std::string localeName      = fields[1].GetString();
 
         LocaleConstant locale = GetLocaleByName(localeName);
-        if (locale == LOCALE_enUS)
+        if (!sWorld->getBoolConfig(CONFIG_LOAD_LOCALES) || locale == LOCALE_enUS)
             continue;
 
         GameObjectLocale& data = _gameObjectLocaleStore[id];
@@ -9474,7 +9476,7 @@ void ObjectMgr::LoadBroadcastTextLocales()
         }
 
         LocaleConstant locale = GetLocaleByName(localeName);
-        if (locale == LOCALE_enUS)
+        if (!sWorld->getBoolConfig(CONFIG_LOAD_LOCALES) || locale == LOCALE_enUS)
             continue;
 
         AddLocaleString(Text, locale, bct->second.Text);
@@ -10855,7 +10857,7 @@ void ObjectMgr::LoadQuestTemplateLocale()
         std::string localeName          = fields[1].GetString();
 
         LocaleConstant locale = GetLocaleByName(localeName);
-        if (locale == LOCALE_enUS)
+        if (!sWorld->getBoolConfig(CONFIG_LOAD_LOCALES) || locale == LOCALE_enUS)
             continue;
 
         QuestTemplateLocale& data = _questTemplateLocaleStore[id];
@@ -10891,7 +10893,7 @@ void ObjectMgr::LoadQuestObjectivesLocale()
         std::string localeName              = fields[1].GetString();
 
         LocaleConstant locale = GetLocaleByName(localeName);
-        if (locale == LOCALE_enUS)
+        if (!sWorld->getBoolConfig(CONFIG_LOAD_LOCALES) || locale == LOCALE_enUS)
             continue;
 
         QuestObjectivesLocale& data = _questObjectivesLocaleStore[id];
@@ -10920,7 +10922,7 @@ void ObjectMgr::LoadQuestOfferRewardLocale()
         std::string localeName = fields[1].GetString();
 
         LocaleConstant locale = GetLocaleByName(localeName);
-        if (locale == LOCALE_enUS)
+        if (!sWorld->getBoolConfig(CONFIG_LOAD_LOCALES) || locale == LOCALE_enUS)
             continue;
 
         QuestOfferRewardLocale& data = _questOfferRewardLocaleStore[id];
@@ -10948,7 +10950,7 @@ void ObjectMgr::LoadQuestRequestItemsLocale()
         std::string localeName = fields[1].GetString();
 
         LocaleConstant locale = GetLocaleByName(localeName);
-        if (locale == LOCALE_enUS)
+        if (!sWorld->getBoolConfig(CONFIG_LOAD_LOCALES) || locale == LOCALE_enUS)
             continue;
 
         QuestRequestItemsLocale& data = _questRequestItemsLocaleStore[id];

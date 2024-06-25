@@ -205,7 +205,7 @@ void CreatureTextMgr::LoadCreatureTextLocales()
         std::string text         = fields[4].GetString();
 
         LocaleConstant locale    = GetLocaleByName(localeName);
-        if (locale == LOCALE_enUS)
+        if (!sWorld->getBoolConfig(CONFIG_LOAD_LOCALES) || locale == LOCALE_enUS)
             continue;
         
         CreatureTextLocale& data = mLocaleTextMap[CreatureTextId(creatureId, groupId, id)];
