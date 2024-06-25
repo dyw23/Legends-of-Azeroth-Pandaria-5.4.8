@@ -1179,7 +1179,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
                 uint16 slot = player->FindQuestSlot(questId);
                 if (quest && slot < MAX_QUEST_LOG_SIZE && player->GetQuestStatus(questId) == QUEST_STATUS_INCOMPLETE)
                 {
-                    for (const auto& objective : quest->m_questObjectives)
+                    for (const auto& objective : quest->Objectives)
                     {
                         if (objective.Type == QUEST_OBJECTIVE_AREATRIGGER)
                         {

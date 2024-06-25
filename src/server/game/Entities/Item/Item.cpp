@@ -2137,3 +2137,29 @@ void ItemTemplate::CalculateMinMaxDamageScaling(uint32 ilvl, uint32& minDamage, 
         minDamage = floor(((1.f - (StatScalingFactor * 0.5f)) * weaponMinDamageCalc) + 0.5f);
     }
 }
+
+bool ItemTemplate::IsUsableByLootSpecialization(Player const* player, bool alwaysAllowBoundToAccount) const
+{
+    if (Flags & ITEM_PROTO_FLAG_BIND_TO_ACCOUNT && alwaysAllowBoundToAccount)
+        return true;
+
+    // TODO: fall back to GetDefaultSpecId
+    uint32 spec = player->GetLootSpecOrClassSpec();
+
+    ChrSpecializationEntry const* chrSpecialization = sChrSpecializationStore.LookupEntry(spec);
+    if (!chrSpecialization)
+        return false;
+
+    std::size_t levelIndex = 0;
+    if (player->GetLevel() >= 110)
+        levelIndex = 2;
+    else if (player->GetLevel() > 40)
+        levelIndex = 1;
+
+    return Specializations[levelIndex].test(CalculateItemSpecBit(chrSpecialization));
+}
+
+std::size_t ItemTemplate::CalculateItemSpecBit(ChrSpecializationEntry const* spec)
+{
+    return (spec->classId - 1) * MAX_SPECIALIZATIONS + spec->TabPage;
+}

@@ -424,7 +424,7 @@ class npc_wg_quest_giver : public CreatureScript
                             break;
                     }
 
-                    if (quest->IsAutoComplete())
+                    if (quest->IsTurnIn())
                         qm.AddMenuItem(questId, 4);
                     else if (player->GetQuestStatus(questId) == QUEST_STATUS_NONE)
                         qm.AddMenuItem(questId, 2);

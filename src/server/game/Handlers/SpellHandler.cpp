@@ -1755,7 +1755,7 @@ void WorldSession::SendPlayerChoice(uint32 choiceId)
 
         if (quest)
         {
-            data.WriteBit(quest->GetRewardOrRequiredMoney() == 0); // has money
+            data.WriteBit(quest->GetRewOrReqMoney(GetPlayer()) == 0); // has money
             data.WriteBits(pve ? CURRENCIES_COUNT_PVE : CURRENCIES_COUNT_PVP, 25);
             data.WriteBit(true); // unk
 
@@ -1776,7 +1776,7 @@ void WorldSession::SendPlayerChoice(uint32 choiceId)
             {
                 data.WriteBit(true);  // unk
                 data.WriteBit(quest->RewardFactionId[0] == 0); // has faction id
-                data.WriteBit(quest->RewardFactionValueIdOverride[0] == 0); // has faction reputation count
+                data.WriteBit(quest->RewardFactionOverride[0] == 0); // has faction reputation count
             }
 
             data.WriteBits(0, 25); // unk
@@ -1837,7 +1837,7 @@ void WorldSession::SendPlayerChoice(uint32 choiceId)
                 data << uint32(currencry);
                 data << uint32(currencryCount);
             }
-            data << uint64(quest->GetRewardOrRequiredMoney());
+            data << uint64(quest->GetRewOrReqMoney(GetPlayer()));
         }
         data.WriteString(choiceStrings[4][i]);
         data << uint32(pve ? ART_PVE : (horde ? ART_PVP_HORDE : ART_PVP_ALLIANCE));

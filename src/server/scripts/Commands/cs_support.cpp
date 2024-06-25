@@ -2094,7 +2094,7 @@ public:
                     {
                         CharacterDatabase.PQuery("UPDATE character_queststatus SET status = 1 WHERE guid = %u AND quest = %u", GUID_LOPART(guid), quest->GetQuestId());
                         std::string items;
-                        for (auto const& obj : quest->m_questObjectives)
+                        for (auto const& obj : quest->Objectives)
                         {
                             if (obj.Type == QUEST_OBJECTIVE_ITEM)
                             {
@@ -2389,7 +2389,7 @@ public:
             uint32 questId = (*result)[0].GetUInt32();
             uint32 status = (*result)[1].GetUInt32();
             if (auto quest = sObjectMgr->GetQuestTemplate(questId))
-                handler->PSendSysMessage("%s (%u) - status %s.", quest->GetTitle().c_str(), questId, StatusToString(status).c_str());
+                handler->PSendSysMessage("%s (%u) - status %s.", quest->GetLogTitle().c_str(), questId, StatusToString(status).c_str());
             else
                 handler->PSendSysMessage("Error. Quest %u not found.", questId);
         }
@@ -2422,7 +2422,7 @@ public:
         {
             uint32 questId = (*result)[0].GetUInt32();
             if (auto quest = sObjectMgr->GetQuestTemplate(questId))
-                handler->PSendSysMessage("%s (%u).", quest->GetTitle().c_str(), questId);
+                handler->PSendSysMessage("%s (%u).", quest->GetLogTitle().c_str(), questId);
             else
                 handler->PSendSysMessage("Error. Quest %u not found.", questId);
         }

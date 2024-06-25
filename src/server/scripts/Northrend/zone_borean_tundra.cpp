@@ -2088,7 +2088,7 @@ public:
                 Quest const* qInfo = sObjectMgr->GetQuestTemplate(QUEST_YOU_RE_NOT_SO_BIG_NOW);
                 if (qInfo)
                 {
-                    for (const auto& objective : qInfo->m_questObjectives)
+                    for (const auto& objective : qInfo->Objectives)
                     {
                         if (objective.StorageIndex == 0)
                         {

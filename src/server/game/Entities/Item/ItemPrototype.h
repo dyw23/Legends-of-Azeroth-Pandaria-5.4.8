@@ -735,6 +735,8 @@ struct ItemTemplate
     uint32 MinMoneyLoot;
     uint32 MaxMoneyLoot;
     uint32 FlagsCu = 0;
+    std::bitset<MAX_CLASSES * MAX_SPECIALIZATIONS> Specializations[3];  // one set for 1-40 level range and another for 41-109 and one for 110
+    uint32 ItemSpecClassMask;
 
     // helpers
     bool CanChangeEquipStateInCombat() const
@@ -826,6 +828,9 @@ struct ItemTemplate
     uint32 GetRequiredSkillRank() const { return RequiredSkillRank; }    
     ItemBondingType GetBonding() const { return ItemBondingType(Bonding); }
     uint32 GetLockID() const { return LockID; }
+
+    bool IsUsableByLootSpecialization(Player const* player, bool alwaysAllowBoundToAccount) const;
+    static std::size_t CalculateItemSpecBit(ChrSpecializationEntry const* spec);
 };
 
 // Benchmarked: Faster than std::map (insert/find)

@@ -4085,24 +4085,44 @@ void ObjectMgr::LoadQuests()
         delete itr->second;
 
     _questTemplates.clear();
+    _questObjectives.clear();
 
-    mExclusiveQuestGroups.clear();
+    _exclusiveQuestGroups.clear();
 
     QueryResult result = WorldDatabase.Query("SELECT "
-        "Id, Method, Level, MinLevel, MaxLevel, ZoneOrSort, Type, SuggestedPlayers, LimitTime, RequiredClasses, RequiredRaces, RequiredSkillId, RequiredSkillPoints, "
-        "RequiredMinRepFaction, RequiredMaxRepFaction, RequiredMinRepValue, RequiredMaxRepValue, PrevQuestId, NextQuestId, ExclusiveGroup, NextQuestIdChain, RewardXPId, RewardOrRequiredMoney, RewardMoneyMaxLevel, RewardSpell, RewardSpellCast, "
-        "RewardHonor, RewardHonorMultiplier,  RewardMailTemplateId, RewardMailDelay, SourceItemId, SourceSpellId, Flags, Flags2, SpecialFlags, MinimapTargetMark, RewardTitleId, RewardTalents, RewardArenaPoints, "
-        "RewardSkillId, RewardSkillPoints, RewardReputationMask, QuestGiverPortrait, QuestTurnInPortrait, RewardPackageItemId, RewardItemId1, RewardItemId2, RewardItemId3, RewardItemId4, RewardItemCount1, RewardItemCount2, RewardItemCount3, RewardItemCount4, "
-        "RewardChoiceItemId1, RewardChoiceItemId2, RewardChoiceItemId3, RewardChoiceItemId4, RewardChoiceItemId5, RewardChoiceItemId6, RewardChoiceItemCount1, RewardChoiceItemCount2, RewardChoiceItemCount3, RewardChoiceItemCount4, RewardChoiceItemCount5, RewardChoiceItemCount6, "
-        "RewardFactionId1, RewardFactionId2, RewardFactionId3, RewardFactionId4, RewardFactionId5, RewardFactionValueId1, RewardFactionValueId2, RewardFactionValueId3, RewardFactionValueId4, RewardFactionValueId5, "
-        "RewardFactionValueIdOverride1, RewardFactionValueIdOverride2, RewardFactionValueIdOverride3, RewardFactionValueIdOverride4, RewardFactionValueIdOverride5, "
-        "PointMapId, PointX, PointY, PointOption, Title, Objectives, Details, EndText, OfferRewardText, RequestItemsText, CompletedText,"
-        "RequiredSourceItemId1, RequiredSourceItemId2, RequiredSourceItemId3, RequiredSourceItemId4, RequiredSourceItemCount1, RequiredSourceItemCount2, RequiredSourceItemCount3, RequiredSourceItemCount4, "
-        "RewardCurrencyId1, RewardCurrencyId2, RewardCurrencyId3, RewardCurrencyId4, RewardCurrencyCount1, RewardCurrencyCount2, RewardCurrencyCount3, RewardCurrencyCount4, "
-        "QuestGiverTextWindow, QuestGiverTargetName, QuestTurnTextWindow, QuestTurnTargetName, SoundAccept, SoundTurnIn, "
-        "DetailsEmote1, DetailsEmote2, DetailsEmote3, DetailsEmote4, DetailsEmoteDelay1, DetailsEmoteDelay2, DetailsEmoteDelay3, DetailsEmoteDelay4, EmoteOnIncomplete, EmoteOnComplete, "
-        "OfferRewardEmote1, OfferRewardEmote2, OfferRewardEmote3, OfferRewardEmote4, OfferRewardEmoteDelay1, OfferRewardEmoteDelay2, OfferRewardEmoteDelay3, OfferRewardEmoteDelay4, WDBVerified"
-        " FROM quest_template");
+         //0  1          2           3         4               5            6            7                  8                9
+         "ID, QuestType, QuestLevel, MinLevel, QuestPackageID, QuestSortID, QuestInfoID, SuggestedGroupNum, RewardNextQuest, RewardXPDifficulty, "
+         //10          11                12                  13           14           15               16
+         "RewardMoney, RewardBonusMoney, RewardDisplaySpell, RewardSpell, RewardHonor, RewardKillHonor, StartItem, "
+         //17    18
+         "Flags, FlagsEx, "
+         //19          20             21         22                 23           24             25         26
+         "RewardItem1, RewardAmount1, ItemDrop1, ItemDropQuantity1, RewardItem2, RewardAmount2, ItemDrop2, ItemDropQuantity2, "
+         //27          28             29         30                 31           32             33         34
+         "RewardItem3, RewardAmount3, ItemDrop3, ItemDropQuantity3, RewardItem4, RewardAmount4, ItemDrop4, ItemDropQuantity4, "
+         //35                  36                         37                   38
+         "RewardChoiceItemID1, RewardChoiceItemQuantity1, RewardChoiceItemID2, RewardChoiceItemQuantity2, "
+         //39                  40                         41                   42
+         "RewardChoiceItemID3, RewardChoiceItemQuantity3, RewardChoiceItemID4, RewardChoiceItemQuantity4, "
+         //43                  44                         45                   46
+         "RewardChoiceItemID5, RewardChoiceItemQuantity5, RewardChoiceItemID6, RewardChoiceItemQuantity6, "
+         //47           48    49    50           51           52                 53                 54
+         "POIContinent, POIx, POIy, POIPriority, RewardTitle, RewardArenaPoints, RewardSkillLineID, RewardNumSkillUps, "
+         //55            56
+         "PortraitGiver, PortraitTurnIn, "
+         //57               58                   59                      60                61                   62
+         "RewardFactionID1, RewardFactionValue1, RewardFactionOverride1, RewardFactionID2, RewardFactionValue2, RewardFactionOverride2, "
+         //63               64                   65                      66                67                   68
+         "RewardFactionID3, RewardFactionValue3, RewardFactionOverride3, RewardFactionID4, RewardFactionValue4, RewardFactionOverride4, "
+         //69               70                   71                      72
+         "RewardFactionID5, RewardFactionValue5, RewardFactionOverride5, RewardFactionFlags, "
+         //73                74                  75                 76                  77                 78                  79                 80
+         "RewardCurrencyID1, RewardCurrencyQty1, RewardCurrencyID2, RewardCurrencyQty2, RewardCurrencyID3, RewardCurrencyQty3, RewardCurrencyID4, RewardCurrencyQty4, "
+         //81                 82                  83           84           85
+         "AcceptedSoundKitID, CompleteSoundKitID, AreaGroupID, TimeAllowed, AllowableRaces, "
+         //86       87              88                89               90                 91                 92                  93                  94
+         "LogTitle, LogDescription, QuestDescription, AreaDescription, PortraitGiverText, PortraitGiverName, PortraitTurnInText, PortraitTurnInName, QuestCompletionLog "
+         "FROM quest_template");
 
     if (!result)
     {
@@ -4124,60 +4144,60 @@ void ObjectMgr::LoadQuests()
     std::map<uint32, uint32> usedMailTemplates;
 
     // Post processing
-    for (QuestMap::iterator iter = _questTemplates.begin(); iter != _questTemplates.end(); ++iter)
+    for (auto& questPair : _questTemplates)
     {
         // skip post-loading checks for disabled quests
-        if (DisableMgr::IsDisabledFor(DISABLE_TYPE_QUEST, iter->first, NULL))
+        if (DisableMgr::IsDisabledFor(DISABLE_TYPE_QUEST, questPair.first, nullptr))
             continue;
 
-        Quest* qinfo = iter->second;
+        Quest* qinfo = questPair.second;
 
         // additional quest integrity checks (GO, creature_template and item_template must be loaded already)
 
-        if (qinfo->GetQuestMethod() >= 3)
-            TC_LOG_ERROR("sql.sql", "Quest %u has `Method` = %u, expected values are 0, 1 or 2.", qinfo->GetQuestId(), qinfo->GetQuestMethod());
+        if (qinfo->GetQuestType() >= MAX_DB_ALLOWED_QUEST_TYPES)
+            TC_LOG_ERROR("sql.sql", "Quest %u has `Method` = %u, expected values are 0, 1 or 2.", qinfo->GetQuestId(), qinfo->GetQuestType());
 
-        if (qinfo->SpecialFlags & ~QUEST_SPECIAL_FLAGS_DB_ALLOWED)
+        if (qinfo->_specialFlags & ~QUEST_SPECIAL_FLAGS_DB_ALLOWED)
         {
             TC_LOG_ERROR("sql.sql", "Quest %u has `SpecialFlags` = %u > max allowed value. Correct `SpecialFlags` to value <= %u",
-                qinfo->GetQuestId(), qinfo->SpecialFlags, QUEST_SPECIAL_FLAGS_DB_ALLOWED);
-            qinfo->SpecialFlags &= QUEST_SPECIAL_FLAGS_DB_ALLOWED;
+                qinfo->GetQuestId(), qinfo->_specialFlags, QUEST_SPECIAL_FLAGS_DB_ALLOWED);
+            qinfo->_specialFlags &= QUEST_SPECIAL_FLAGS_DB_ALLOWED;
         }
 
-        if (qinfo->Flags & QUEST_FLAGS_DAILY && qinfo->Flags & QUEST_FLAGS_WEEKLY)
+        if (qinfo->_flags & QUEST_FLAGS_DAILY && qinfo->_flags & QUEST_FLAGS_WEEKLY)
         {
             TC_LOG_ERROR("sql.sql", "Weekly Quest %u is marked as daily quest in `Flags`, removed daily flag.", qinfo->GetQuestId());
-            qinfo->Flags &= ~QUEST_FLAGS_DAILY;
+            qinfo->_flags &= ~QUEST_FLAGS_DAILY;
         }
 
-        if (qinfo->Flags & QUEST_FLAGS_DAILY)
+        if (qinfo->_flags & QUEST_FLAGS_DAILY)
         {
-            if (!(qinfo->SpecialFlags & QUEST_SPECIAL_FLAGS_REPEATABLE))
+            if (!(qinfo->_specialFlags & QUEST_SPECIAL_FLAGS_REPEATABLE))
             {
                 TC_LOG_ERROR("sql.sql", "Daily Quest %u not marked as repeatable in `SpecialFlags`, added.", qinfo->GetQuestId());
-                qinfo->SpecialFlags |= QUEST_SPECIAL_FLAGS_REPEATABLE;
+                qinfo->_specialFlags |= QUEST_SPECIAL_FLAGS_REPEATABLE;
             }
         }
 
-        if (qinfo->Flags & QUEST_FLAGS_WEEKLY)
+        if (qinfo->_flags & QUEST_FLAGS_WEEKLY)
         {
-            if (!(qinfo->SpecialFlags & QUEST_SPECIAL_FLAGS_REPEATABLE))
+            if (!(qinfo->_specialFlags & QUEST_SPECIAL_FLAGS_REPEATABLE))
             {
                 TC_LOG_ERROR("sql.sql", "Weekly Quest %u not marked as repeatable in `SpecialFlags`, added.", qinfo->GetQuestId());
-                qinfo->SpecialFlags |= QUEST_SPECIAL_FLAGS_REPEATABLE;
+                qinfo->_specialFlags |= QUEST_SPECIAL_FLAGS_REPEATABLE;
             }
         }
 
-        if (qinfo->SpecialFlags & QUEST_SPECIAL_FLAGS_MONTHLY)
+        if (qinfo->_specialFlags & QUEST_SPECIAL_FLAGS_MONTHLY)
         {
-            if (!(qinfo->SpecialFlags & QUEST_SPECIAL_FLAGS_REPEATABLE))
+            if (!(qinfo->_specialFlags & QUEST_SPECIAL_FLAGS_REPEATABLE))
             {
                 TC_LOG_ERROR("sql.sql", "Monthly quest %u not marked as repeatable in `SpecialFlags`, added.", qinfo->GetQuestId());
-                qinfo->SpecialFlags |= QUEST_SPECIAL_FLAGS_REPEATABLE;
+                qinfo->_specialFlags |= QUEST_SPECIAL_FLAGS_REPEATABLE;
             }
         }
 
-        if (qinfo->Flags & QUEST_FLAGS_TRACKING_EVENT)
+        if (qinfo->_flags & QUEST_FLAGS_TRACKING_EVENT)
         {
             // at auto-reward can be rewarded only RewardChoiceItemId[0]
             for (int j = 1; j < QUEST_REWARD_CHOICES_COUNT; ++j )
@@ -4191,178 +4211,282 @@ void ObjectMgr::LoadQuests()
             }
         }
 
-        if (qinfo->MinLevel == uint32(-1) || qinfo->MinLevel > DEFAULT_MAX_LEVEL)
+        if (qinfo->_minLevel == uint32(-1) || qinfo->_minLevel > DEFAULT_MAX_LEVEL)
         {
-            TC_LOG_ERROR("sql.sql", "Quest %u should be disabled because `MinLevel` = %i", qinfo->GetQuestId(), int32(qinfo->MinLevel));
+            TC_LOG_ERROR("sql.sql", "Quest %u should be disabled because `MinLevel` = %i", qinfo->GetQuestId(), int32(qinfo->_minLevel));
             // no changes needed, sending -1 in SMSG_QUEST_QUERY_RESPONSE is valid
         }
 
         // client quest log visual (area case)
-        if (qinfo->ZoneOrSort > 0)
+        if (qinfo->_questSortID > 0)
         {
-            if (!sAreaTableStore.LookupEntry(qinfo->ZoneOrSort))
+            if (!sAreaTableStore.LookupEntry(qinfo->_questSortID))
             {
-                TC_LOG_ERROR("sql.sql", "Quest %u has `ZoneOrSort` = %u (zone case) but zone with this id does not exist.",
-                    qinfo->GetQuestId(), qinfo->ZoneOrSort);
+                TC_LOG_ERROR("sql.sql", "Quest %u has `QuestSortID` = %u (zone case) but zone with this id does not exist.",
+                    qinfo->GetQuestId(), qinfo->_questSortID);
                 // no changes, quest not dependent from this value but can have problems at client
             }
         }
         // client quest log visual (sort case)
-        if (qinfo->ZoneOrSort < 0)
+        if (qinfo->_questSortID < 0)
         {
-            QuestSortEntry const* qSort = sQuestSortStore.LookupEntry(-int32(qinfo->ZoneOrSort));
+            QuestSortEntry const* qSort = sQuestSortStore.LookupEntry(-int32(qinfo->_questSortID));
             if (!qSort)
             {
-                TC_LOG_ERROR("sql.sql", "Quest %u has `ZoneOrSort` = %i (sort case) but quest sort with this id does not exist.",
-                    qinfo->GetQuestId(), qinfo->ZoneOrSort);
+                TC_LOG_ERROR("sql.sql", "Quest %u has `QuestSortID` = %i (sort case) but quest sort with this id does not exist.",
+                    qinfo->GetQuestId(), qinfo->_questSortID);
                 // no changes, quest not dependent from this value but can have problems at client (note some may be 0, we must allow this so no check)
             }
             //check for proper RequiredSkillId value (skill case)
-            if (uint32 skill_id = SkillByQuestSort(-int32(qinfo->ZoneOrSort)))
+            if (uint32 skill_id = SkillByQuestSort(-int32(qinfo->_questSortID)))
             {
-                if (qinfo->RequiredSkillId != skill_id)
+                if (qinfo->_requiredSkillId != skill_id)
                 {
-                    TC_LOG_ERROR("sql.sql", "Quest %u has `ZoneOrSort` = %i but `RequiredSkillId` does not have a corresponding value (%d).",
-                        qinfo->GetQuestId(), qinfo->ZoneOrSort, skill_id);
+                    TC_LOG_ERROR("sql.sql", "Quest %u has `QuestSortID` = %i but `RequiredSkillId` does not have a corresponding value (%d).",
+                        qinfo->GetQuestId(), qinfo->_questSortID, skill_id);
                     //override, and force proper value here?
                 }
             }
         }
 
         // RequiredClasses, can be 0/CLASSMASK_ALL_PLAYABLE to allow any class
-        if (qinfo->RequiredClasses)
+        if (qinfo->_allowableClasses)
         {
-            if (!(qinfo->RequiredClasses & CLASSMASK_ALL_PLAYABLE))
+            if (!(qinfo->_allowableClasses & CLASSMASK_ALL_PLAYABLE))
             {
-                TC_LOG_ERROR("sql.sql", "Quest %u does not contain any playable classes in `RequiredClasses` (%u), value set to 0 (all classes).", qinfo->GetQuestId(), qinfo->RequiredClasses);
-                    qinfo->RequiredClasses = 0;
+                TC_LOG_ERROR("sql.sql", "Quest %u does not contain any playable classes in `AllowableClasses` (%u), value set to 0 (all classes).", qinfo->GetQuestId(), qinfo->_allowableClasses);
+                    qinfo->_allowableClasses = 0;
             }
         }
         // RequiredRaces, can be 0/RACEMASK_ALL_PLAYABLE to allow any race
-        if (qinfo->RequiredRaces)
+        if (qinfo->_allowableRaces)
         {
-            if (!(qinfo->RequiredRaces & RACEMASK_ALL_PLAYABLE))
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest %u does not contain any playable races in `RequiredRaces` (%u), value set to 0 (all races).", qinfo->GetQuestId(), qinfo->RequiredRaces);
-                    qinfo->RequiredRaces = 0;
-                }
+            if (!(qinfo->_allowableRaces & RACEMASK_ALL_PLAYABLE))
+            {
+                TC_LOG_ERROR("sql.sql", "Quest %u does not contain any playable races in `AllowableRaces` (%u), value set to 0 (all races).", qinfo->GetQuestId(), qinfo->_allowableRaces);
+                qinfo->_allowableRaces = 0;
+            }
         }
         // RequiredSkillId, can be 0
-        if (qinfo->RequiredSkillId)
+        if (qinfo->_requiredSkillId)
         {
-            if (!sSkillLineStore.LookupEntry(qinfo->RequiredSkillId))
+            if (!sSkillLineStore.LookupEntry(qinfo->_requiredSkillId))
             {
                 TC_LOG_ERROR("sql.sql", "Quest %u has `RequiredSkillId` = %u but this skill does not exist",
-                    qinfo->GetQuestId(), qinfo->RequiredSkillId);
+                    qinfo->GetQuestId(), qinfo->_requiredSkillId);
             }
         }
 
-        if (qinfo->RequiredSkillPoints)
+        if (qinfo->_requiredSkillPoints)
         {
-            if (qinfo->RequiredSkillPoints > sWorld->GetConfigMaxSkillValue())
+            if (qinfo->_requiredSkillPoints > sWorld->GetConfigMaxSkillValue())
             {
                 TC_LOG_ERROR("sql.sql", "Quest %u has `RequiredSkillPoints` = %u but max possible skill is %u, quest can't be done.",
-                    qinfo->GetQuestId(), qinfo->RequiredSkillPoints, sWorld->GetConfigMaxSkillValue());
+                    qinfo->GetQuestId(), qinfo->_requiredSkillPoints, sWorld->GetConfigMaxSkillValue());
                 // no changes, quest can't be done for this requirement
             }
         }
         // else Skill quests can have 0 skill level, this is ok
 
-        if (qinfo->RequiredMinRepFaction && !sFactionStore.LookupEntry(qinfo->RequiredMinRepFaction))
+        if (qinfo->_requiredMinRepFaction && !sFactionStore.LookupEntry(qinfo->_requiredMinRepFaction))
         {
             TC_LOG_ERROR("sql.sql", "Quest %u has `RequiredMinRepFaction` = %u but faction template %u does not exist, quest can't be done.",
-                qinfo->GetQuestId(), qinfo->RequiredMinRepFaction, qinfo->RequiredMinRepFaction);
+                qinfo->GetQuestId(), qinfo->_requiredMinRepFaction, qinfo->_requiredMinRepFaction);
             // no changes, quest can't be done for this requirement
         }
 
-        if (qinfo->RequiredMaxRepFaction && !sFactionStore.LookupEntry(qinfo->RequiredMaxRepFaction))
+        if (qinfo->_requiredMaxRepFaction && !sFactionStore.LookupEntry(qinfo->_requiredMaxRepFaction))
         {
             TC_LOG_ERROR("sql.sql", "Quest %u has `RequiredMaxRepFaction` = %u but faction template %u does not exist, quest can't be done.",
-                qinfo->GetQuestId(), qinfo->RequiredMaxRepFaction, qinfo->RequiredMaxRepFaction);
+                qinfo->GetQuestId(), qinfo->_requiredMaxRepFaction, qinfo->_requiredMaxRepFaction);
             // no changes, quest can't be done for this requirement
         }
 
-        if (qinfo->RequiredMinRepValue && qinfo->RequiredMinRepValue > ReputationMgr::Reputation_Cap)
+        if (qinfo->_requiredMinRepValue && qinfo->_requiredMinRepValue > ReputationMgr::Reputation_Cap)
         {
             TC_LOG_ERROR("sql.sql", "Quest %u has `RequiredMinRepValue` = %d but max reputation is %u, quest can't be done.",
-                qinfo->GetQuestId(), qinfo->RequiredMinRepValue, ReputationMgr::Reputation_Cap);
+                qinfo->GetQuestId(), qinfo->_requiredMinRepValue, ReputationMgr::Reputation_Cap);
             // no changes, quest can't be done for this requirement
         }
 
-        if (qinfo->RequiredMinRepValue && qinfo->RequiredMaxRepValue && qinfo->RequiredMaxRepValue <= qinfo->RequiredMinRepValue)
+        if (qinfo->_requiredMinRepValue && qinfo->_requiredMaxRepValue && qinfo->_requiredMaxRepValue <= qinfo->_requiredMinRepValue)
         {
             TC_LOG_ERROR("sql.sql", "Quest %u has `RequiredMaxRepValue` = %d and `RequiredMinRepValue` = %d, quest can't be done.",
-                qinfo->GetQuestId(), qinfo->RequiredMaxRepValue, qinfo->RequiredMinRepValue);
+                qinfo->GetQuestId(), qinfo->_requiredMaxRepValue, qinfo->_requiredMinRepValue);
             // no changes, quest can't be done for this requirement
         }
 
-        if (!qinfo->RequiredMinRepFaction && qinfo->RequiredMinRepValue != 0)
+        if (!qinfo->_requiredMinRepFaction && qinfo->_requiredMinRepValue != 0)
         {
             TC_LOG_ERROR("sql.sql", "Quest %u has `RequiredMinRepValue` = %d but `RequiredMinRepFaction` is 0, value has no effect",
-                qinfo->GetQuestId(), qinfo->RequiredMinRepValue);
+                qinfo->GetQuestId(), qinfo->_requiredMinRepValue);
             // warning
         }
 
-        if (!qinfo->RequiredMaxRepFaction && qinfo->RequiredMaxRepValue != 0)
+        if (!qinfo->_requiredMaxRepFaction && qinfo->_requiredMaxRepValue != 0)
         {
             TC_LOG_ERROR("sql.sql", "Quest %u has `RequiredMaxRepValue` = %d but `RequiredMaxRepFaction` is 0, value has no effect",
-                qinfo->GetQuestId(), qinfo->RequiredMaxRepValue);
+                qinfo->GetQuestId(), qinfo->_requiredMaxRepValue);
             // warning
         }
 
-        if (qinfo->RewardTitleId && !sCharTitlesStore.LookupEntry(qinfo->RewardTitleId))
+        if (qinfo->_rewardTitleId && !sCharTitlesStore.LookupEntry(qinfo->_rewardTitleId))
         {
             TC_LOG_ERROR("sql.sql", "Quest %u has `RewardTitleId` = %u but CharTitle Id %u does not exist, quest can't be rewarded with title.",
-                qinfo->GetQuestId(), qinfo->GetCharTitleId(), qinfo->GetCharTitleId());
-            qinfo->RewardTitleId = 0;
+                qinfo->GetQuestId(), qinfo->_rewardTitleId, qinfo->_rewardTitleId);
+            qinfo->_rewardTitleId = 0;
             // quest can't reward this title
         }
 
-        if (qinfo->SourceItemId)
+        if (qinfo->_sourceItemId)
         {
-            if (!sObjectMgr->GetItemTemplate(qinfo->SourceItemId))
+            if (!sObjectMgr->GetItemTemplate(qinfo->_sourceItemId))
             {
                 TC_LOG_ERROR("sql.sql", "Quest %u has `SourceItemId` = %u but item with entry %u does not exist, quest can't be done.",
-                    qinfo->GetQuestId(), qinfo->SourceItemId, qinfo->SourceItemId);
-                qinfo->SourceItemId = 0;                       // quest can't be done for this requirement
+                    qinfo->GetQuestId(), qinfo->_sourceItemId, qinfo->_sourceItemId);
+                qinfo->_sourceItemId = 0;                       // quest can't be done for this requirement
+            }
+            else if (qinfo->_sourceItemIdCount == 0)
+            {
+                TC_LOG_ERROR("sql.sql", "Quest %u has `StartItem` = %u but `ProvidedItemCount` = 0, set to 1 but need fix in DB.",
+                             qinfo->GetQuestId(), qinfo->_sourceItemId);
+                qinfo->_sourceItemIdCount = 1;                    // update to 1 for allow quest work for backward compatibility with DB
             }
         }
-
-        if (qinfo->SourceSpellid)
+        else if (qinfo->_sourceItemIdCount > 0)
         {
-            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(qinfo->SourceSpellid);
+            TC_LOG_ERROR("sql.sql", "Quest %u has `SourceItemId` = 0 but `SourceItemIdCount` = %u, useless value.",
+                         qinfo->GetQuestId(), qinfo->_sourceItemIdCount);
+            qinfo->_sourceItemIdCount = 0;                          // no quest work changes in fact
+        }
+
+        if (qinfo->_sourceSpellID)
+        {
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(qinfo->_sourceSpellID);
             if (!spellInfo)
             {
                 TC_LOG_ERROR("sql.sql", "Quest %u has `SourceSpellid` = %u but spell %u doesn't exist, quest can't be done.",
-                    qinfo->GetQuestId(), qinfo->SourceSpellid, qinfo->SourceSpellid);
-                qinfo->SourceSpellid = 0;                        // quest can't be done for this requirement
+                    qinfo->GetQuestId(), qinfo->_sourceSpellID, qinfo->_sourceSpellID);
+                qinfo->_sourceSpellID = 0;                        // quest can't be done for this requirement
             }
             else if (!SpellMgr::IsSpellValid(spellInfo))
             {
                 TC_LOG_ERROR("sql.sql", "Quest %u has `SourceSpellid` = %u but spell %u is broken, quest can't be done.",
-                    qinfo->GetQuestId(), qinfo->SourceSpellid, qinfo->SourceSpellid);
-                qinfo->SourceSpellid = 0;                        // quest can't be done for this requirement
+                    qinfo->GetQuestId(), qinfo->_sourceSpellID, qinfo->_sourceSpellID);
+                qinfo->_sourceSpellID = 0;                        // quest can't be done for this requirement
+            }
+        }
+
+        for (auto obj : qinfo->Objectives)
+        {
+            // Store objective for lookup by id
+            _questObjectives[obj.ID] = &obj;
+
+            // Check storage index for objectives which store data
+            if (obj.StorageIndex < 0)
+            {
+                switch (obj.Type)
+                {
+                    case QUEST_OBJECTIVE_MONSTER:
+                    case QUEST_OBJECTIVE_ITEM:
+                    case QUEST_OBJECTIVE_GAMEOBJECT:
+                    case QUEST_OBJECTIVE_TALKTO:
+                    case QUEST_OBJECTIVE_PLAYERKILLS:
+                    case QUEST_OBJECTIVE_AREATRIGGER:
+                    case QUEST_OBJECTIVE_WINPETBATTLEAGAINSTNPC:
+                        TC_LOG_ERROR("sql.sql", "Quest %u objective %u has invalid StorageIndex = %u for objective type %u", qinfo->GetQuestId(), obj.ID, obj.StorageIndex, obj.Type);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            switch (obj.Type)
+            {
+                case QUEST_OBJECTIVE_ITEM:
+                    if (!GetItemTemplate(obj.ObjectID))
+                        TC_LOG_ERROR("sql.sql", "Quest {} objective {} has non existing item entry {}, quest can't be done.",
+                                     qinfo->GetQuestId(), obj.ID, obj.ObjectID);
+                    if (qinfo->HasSpecialFlag(QUEST_SPECIAL_FLAGS_project_DAILY_QUEST))
+                    {
+                        TC_LOG_ERROR("sql.sql", "Quest %u has required item %u but is also marked as QUEST_SPECIAL_FLAGS_project_DAILY_QUEST which is incompatible with DELIVER style quests", qinfo->GetQuestId(), obj.ObjectID);
+                        obj.Amount = 0; // prevent incorrect work of quest
+                    }
+                    break;
+                case QUEST_OBJECTIVE_MONSTER:
+                    if (!GetCreatureTemplate(obj.ObjectID))
+                        TC_LOG_ERROR("sql.sql", "Quest {} objective {} has non existing creature entry {}, quest can't be done.",
+                                     qinfo->GetQuestId(), obj.ID, uint32(obj.ObjectID));
+                    break;
+                case QUEST_OBJECTIVE_GAMEOBJECT:
+                    if (!GetGameObjectTemplate(obj.ObjectID))
+                        TC_LOG_ERROR("sql.sql", "Quest {} objective {} has non existing gameobject entry {}, quest can't be done.",
+                                     qinfo->GetQuestId(), obj.ID, uint32(obj.ObjectID));
+                    break;
+                case QUEST_OBJECTIVE_TALKTO:
+                    if (!GetCreatureTemplate(obj.ObjectID))
+                        TC_LOG_ERROR("sql.sql", "Quest {} objective {} has non existing creature entry {}, quest can't be done.",
+                                     qinfo->GetQuestId(), obj.ID, uint32(obj.ObjectID));
+                    break;
+                case QUEST_OBJECTIVE_MIN_REPUTATION:
+                case QUEST_OBJECTIVE_MAX_REPUTATION:
+                    if (!sFactionStore.LookupEntry(obj.ObjectID))
+                        TC_LOG_ERROR("sql.sql", "Quest {} objective {} has non existing faction id {}", qinfo->GetQuestId(), obj.ID, obj.ObjectID);
+                    break;
+                case QUEST_OBJECTIVE_PLAYERKILLS:
+                    if (obj.Amount <= 0)
+                        TC_LOG_ERROR("sql.sql", "Quest {} objective {} has invalid player kills count {}", qinfo->GetQuestId(), obj.ID, obj.Amount);
+                    break;
+                case QUEST_OBJECTIVE_CURRENCY:
+                    if (!sCurrencyTypesStore.LookupEntry(obj.ObjectID))
+                        TC_LOG_ERROR("sql.sql", "Quest {} objective {} has non existing currency {}", qinfo->GetQuestId(), obj.ID, obj.ObjectID);
+                    if (obj.Amount <= 0)
+                        TC_LOG_ERROR("sql.sql", "Quest {} objective {} has invalid currency amount {}", qinfo->GetQuestId(), obj.ID, obj.Amount);
+                    break;
+                case QUEST_OBJECTIVE_LEARNSPELL:
+                    if (!sSpellMgr->GetSpellInfo(obj.ObjectID))
+                        TC_LOG_ERROR("sql.sql", "Quest {} objective {} has non existing spell id {}", qinfo->GetQuestId(), obj.ID, obj.ObjectID);
+                    break;
+                case QUEST_OBJECTIVE_WINPETBATTLEAGAINSTNPC:
+                    if (obj.ObjectID && !GetCreatureTemplate(obj.ObjectID))
+                        TC_LOG_ERROR("sql.sql", "Quest {} objective {} has non existing creature entry {}, quest can't be done.",
+                                     qinfo->GetQuestId(), obj.ID, uint32(obj.ObjectID));
+                    break;
+                case QUEST_OBJECTIVE_DEFEATBATTLEPET:
+                    if (!sBattlePetSpeciesStore.LookupEntry(obj.ObjectID))
+                        TC_LOG_ERROR("sql.sql", "Quest {} objective {} has non existing battlepet species id {}", qinfo->GetQuestId(), obj.ID, obj.ObjectID);
+                    break;
+                case QUEST_OBJECTIVE_AREATRIGGER:
+                    if (!sAreaTriggerStore.LookupEntry(uint32(obj.ObjectID)) && obj.ObjectID != -1)
+                        TC_LOG_ERROR("sql.sql", "Quest {} objective {} has non existing AreaTrigger.db2 id {}", qinfo->GetQuestId(), obj.ID, obj.ObjectID);
+                    break;
+                case QUEST_OBJECTIVE_MONEY:
+                case QUEST_OBJECTIVE_WINPVPPETBATTLES:
+                    break;
+                default:
+                    TC_LOG_ERROR("sql.sql", "Quest {} objective {} has unhandled type {}", qinfo->GetQuestId(), obj.ID, obj.Type);
+                    break;
             }
         }
 
         for (uint8 j = 0; j < QUEST_ITEM_DROP_COUNT; ++j)
         {
-            uint32 id = qinfo->RequiredSourceItemId[j];
+            uint32 id = qinfo->ItemDrop[j];
             if (id)
             {
                 if (!sObjectMgr->GetItemTemplate(id))
                 {
-                    TC_LOG_ERROR("sql.sql", "Quest %u has `RequiredSourceItemId%d` = %u but item with entry %u does not exist, quest can't be done.",
+                    TC_LOG_ERROR("sql.sql", "Quest %u has `ItemDrop%d` = %u but item with entry %u does not exist, quest can't be done.",
                         qinfo->GetQuestId(), j+1, id, id);
                     // no changes, quest can't be done for this requirement
                 }
             }
             else
             {
-                if (qinfo->RequiredSourceItemCount[j]>0)
+                if (qinfo->ItemDropQuantity[j]>0)
                 {
-                    TC_LOG_ERROR("sql.sql", "Quest %u has `RequiredSourceItemId%d` = 0 but `RequiredSourceItemCount%d` = %u.",
-                        qinfo->GetQuestId(), j+1, j+1, qinfo->RequiredSourceItemCount[j]);
+                    TC_LOG_ERROR("sql.sql", "Quest %u has `ItemDrop%d` = 0 but `ItemDropQuantity%d` = %u.",
+                        qinfo->GetQuestId(), j+1, j+1, qinfo->ItemDropQuantity[j]);
                     // no changes, quest ignore this data
                 }
             }
@@ -4407,17 +4531,17 @@ void ObjectMgr::LoadQuests()
                     qinfo->RewardItemId[j] = 0;                // no changes, quest will not reward this item
                 }
 
-                if (!qinfo->RewardItemIdCount[j])
+                if (!qinfo->RewardItemCount[j])
                 {
-                    TC_LOG_ERROR("sql.sql", "Quest %u has `RewardItemId%d` = %u but `RewardItemIdCount%d` = 0, quest will not reward this item.",
+                    TC_LOG_ERROR("sql.sql", "Quest %u has `RewardItemId%d` = %u but `RewardItemCount%d` = 0, quest will not reward this item.",
                         qinfo->GetQuestId(), j+1, id, j+1);
                     // no changes
                 }
             }
-            else if (qinfo->RewardItemIdCount[j]>0)
+            else if (qinfo->RewardItemCount[j]>0)
             {
-                TC_LOG_ERROR("sql.sql", "Quest %u has `RewardItemId%d` = 0 but `RewardItemIdCount%d` = %u.",
-                    qinfo->GetQuestId(), j+1, j+1, qinfo->RewardItemIdCount[j]);
+                TC_LOG_ERROR("sql.sql", "Quest %u has `RewardItemId%d` = 0 but `RewardItemCount%d` = %u.",
+                    qinfo->GetQuestId(), j+1, j+1, qinfo->RewardItemCount[j]);
                 // no changes, quest ignore this data
             }
         }
@@ -4426,9 +4550,9 @@ void ObjectMgr::LoadQuests()
         {
             if (qinfo->RewardFactionId[j])
             {
-                if (abs(qinfo->RewardFactionValueId[j]) > 9)
+                if (abs(qinfo->RewardFactionValue[j]) > 9)
                 {
-               TC_LOG_ERROR("sql.sql", "Quest %u has RewardFactionValueId%d = %i. That is outside the range of valid values (-9 to 9).", qinfo->GetQuestId(), j+1, qinfo->RewardFactionValueId[j]);
+                    TC_LOG_ERROR("sql.sql", "Quest %u has RewardFactionValueId%d = %i. That is outside the range of valid values (-9 to 9).", qinfo->GetQuestId(), j+1, qinfo->RewardFactionValue[j]);
                 }
                 if (!sFactionStore.LookupEntry(qinfo->RewardFactionId[j]))
                 {
@@ -4437,98 +4561,69 @@ void ObjectMgr::LoadQuests()
                 }
             }
 
-            else if (qinfo->RewardFactionValueIdOverride[j] != 0)
+            else if (qinfo->RewardFactionOverride[j] != 0)
             {
-                TC_LOG_ERROR("sql.sql", "Quest %u has `RewardFactionId%d` = 0 but `RewardFactionValueIdOverride%d` = %i.",
-                    qinfo->GetQuestId(), j+1, j+1, qinfo->RewardFactionValueIdOverride[j]);
+                TC_LOG_ERROR("sql.sql", "Quest %u has `RewardFactionId%d` = 0 but `RewardFactionOverride%d` = %i.",
+                    qinfo->GetQuestId(), j+1, j+1, qinfo->RewardFactionOverride[j]);
                 // no changes, quest ignore this data
             }
         }
 
-        if (qinfo->RewardSpell)
+        if (qinfo->_rewardSpell > 0)
         {
-            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(qinfo->RewardSpell);
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(qinfo->_rewardSpell);
 
             if (!spellInfo)
             {
                 TC_LOG_ERROR("sql.sql", "Quest %u has `RewardSpell` = %u but spell %u does not exist, spell removed as display reward.",
-                    qinfo->GetQuestId(), qinfo->RewardSpell, qinfo->RewardSpell);
-                qinfo->RewardSpell = 0;                        // no spell reward will display for this quest
+                    qinfo->GetQuestId(), qinfo->_rewardSpell, qinfo->_rewardSpell);
+                qinfo->_rewardSpell = 0;                        // no spell reward will display for this quest
             }
 
             else if (!SpellMgr::IsSpellValid(spellInfo))
             {
                 TC_LOG_ERROR("sql.sql", "Quest %u has `RewardSpell` = %u but spell %u is broken, quest will not have a spell reward.",
-                    qinfo->GetQuestId(), qinfo->RewardSpell, qinfo->RewardSpell);
-                qinfo->RewardSpell = 0;                        // no spell reward will display for this quest
+                    qinfo->GetQuestId(), qinfo->_rewardSpell, qinfo->_rewardSpell);
+                qinfo->_rewardSpell = 0;                        // no spell reward will display for this quest
             }
 
-            else if (GetTalentSpellCost(qinfo->RewardSpell))
+            else if (GetTalentSpellCost(qinfo->_rewardSpell))
             {
                 TC_LOG_ERROR("sql.sql", "Quest %u has `RewardSpell` = %u but spell %u is talent, quest will not have a spell reward.",
-                    qinfo->GetQuestId(), qinfo->RewardSpell, qinfo->RewardSpell);
-                qinfo->RewardSpell = 0;                        // no spell reward will display for this quest
+                    qinfo->GetQuestId(), qinfo->_rewardSpell, qinfo->_rewardSpell);
+                qinfo->_rewardSpell = 0;                        // no spell reward will display for this quest
             }
         }
 
-        if (qinfo->RewardSpellCast > 0)
+        if (qinfo->_rewardMailTemplateId)
         {
-            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(qinfo->RewardSpellCast);
-
-            if (!spellInfo)
-            {
-                TC_LOG_ERROR("sql.sql", "Quest %u has `RewardSpellCast` = %u but spell %u does not exist, quest will not have a spell reward.",
-                    qinfo->GetQuestId(), qinfo->RewardSpellCast, qinfo->RewardSpellCast);
-                qinfo->RewardSpellCast = 0;                    // no spell will be casted on player
-            }
-
-            else if (!SpellMgr::IsSpellValid(spellInfo))
-            {
-                TC_LOG_ERROR("sql.sql", "Quest %u has `RewardSpellCast` = %u but spell %u is broken, quest will not have a spell reward.",
-                    qinfo->GetQuestId(), qinfo->RewardSpellCast, qinfo->RewardSpellCast);
-                qinfo->RewardSpellCast = 0;                    // no spell will be casted on player
-            }
-
-            else if (GetTalentSpellCost(qinfo->RewardSpellCast))
-            {
-                TC_LOG_ERROR("sql.sql", "Quest %u has `RewardSpell` = %u but spell %u is talent, quest will not have a spell reward.",
-                    qinfo->GetQuestId(), qinfo->RewardSpellCast, qinfo->RewardSpellCast);
-                qinfo->RewardSpellCast = 0;                    // no spell will be casted on player
-            }
-        }
-
-        if (qinfo->RewardMailTemplateId)
-        {
-            if (!sMailTemplateStore.LookupEntry(qinfo->RewardMailTemplateId))
+            if (!sMailTemplateStore.LookupEntry(qinfo->_rewardMailTemplateId))
             {
                 TC_LOG_ERROR("sql.sql", "Quest %u has `RewardMailTemplateId` = %u but mail template  %u does not exist, quest will not have a mail reward.",
-                    qinfo->GetQuestId(), qinfo->RewardMailTemplateId, qinfo->RewardMailTemplateId);
-                qinfo->RewardMailTemplateId = 0;               // no mail will send to player
-                qinfo->RewardMailDelay = 0;                // no mail will send to player
+                    qinfo->GetQuestId(), qinfo->_rewardMailTemplateId, qinfo->_rewardMailTemplateId);
+                qinfo->_rewardMailTemplateId = 0;               // no mail will send to player
+                qinfo->_rewardMailDelay = 0;                // no mail will send to player
             }
-            else if (usedMailTemplates.find(qinfo->RewardMailTemplateId) != usedMailTemplates.end())
+            else if (usedMailTemplates.find(qinfo->_rewardMailTemplateId) != usedMailTemplates.end())
             {
-                std::map<uint32, uint32>::const_iterator used_mt_itr = usedMailTemplates.find(qinfo->RewardMailTemplateId);
+                std::map<uint32, uint32>::const_iterator used_mt_itr = usedMailTemplates.find(qinfo->_rewardMailTemplateId);
                 TC_LOG_ERROR("sql.sql", "Quest %u has `RewardMailTemplateId` = %u but mail template  %u already used for quest %u, quest will not have a mail reward.",
-                    qinfo->GetQuestId(), qinfo->RewardMailTemplateId, qinfo->RewardMailTemplateId, used_mt_itr->second);
-                qinfo->RewardMailTemplateId = 0;               // no mail will send to player
-                qinfo->RewardMailDelay = 0;                // no mail will send to player
+                    qinfo->GetQuestId(), qinfo->_rewardMailTemplateId, qinfo->_rewardMailTemplateId, used_mt_itr->second);
+                qinfo->_rewardMailTemplateId = 0;               // no mail will send to player
+                qinfo->_rewardMailDelay = 0;                // no mail will send to player
             }
             else
-                usedMailTemplates[qinfo->RewardMailTemplateId] = qinfo->GetQuestId();
+                usedMailTemplates[qinfo->_rewardMailTemplateId] = qinfo->GetQuestId();
         }
 
-        if (qinfo->NextQuestIdChain)
+        if (uint32 nextQuestInChain = qinfo->_nextQuestInChain)
         {
-            QuestMap::iterator qNextItr = _questTemplates.find(qinfo->NextQuestIdChain);
-            if (qNextItr == _questTemplates.end())
+            if (!_questTemplates.count(nextQuestInChain))
             {
-                TC_LOG_ERROR("sql.sql", "Quest %u has `NextQuestIdChain` = %u but quest %u does not exist, quest chain will not work.",
-                    qinfo->GetQuestId(), qinfo->NextQuestIdChain, qinfo->NextQuestIdChain);
-                qinfo->NextQuestIdChain = 0;
+                TC_LOG_ERROR("sql.sql", "Quest %u has `NextQuestInChain` = %u but quest %u does not exist, quest chain will not work.",
+                    qinfo->GetQuestId(), qinfo->_nextQuestInChain, qinfo->_nextQuestInChain);
+                qinfo->_nextQuestInChain = 0;
             }
-            else
-                qNextItr->second->prevChainQuests.push_back(qinfo->GetQuestId());
         }
 
         for (uint8 j = 0; j < QUEST_REWARD_CURRENCY_COUNT; ++j)
@@ -4557,81 +4652,80 @@ void ObjectMgr::LoadQuests()
             }
         }
 
-        if (qinfo->SoundAccept)
+        if (qinfo->_soundAccept)
         {
-            if (!sSoundEntriesStore.LookupEntry(qinfo->SoundAccept))
+            if (!sSoundEntriesStore.LookupEntry(qinfo->_soundAccept))
             {
                 TC_LOG_ERROR("sql.sql", "Quest %u has `SoundAccept` = %u but sound %u does not exist, set to 0.",
-                    qinfo->GetQuestId(), qinfo->SoundAccept, qinfo->SoundAccept);
-                qinfo->SoundAccept = 0;                        // no sound will be played
+                    qinfo->GetQuestId(), qinfo->_soundAccept, qinfo->_soundAccept);
+                qinfo->_soundAccept = 0;                        // no sound will be played
             }
         }
 
-        if (qinfo->SoundTurnIn)
+        if (qinfo->_soundTurnIn)
         {
-            if (!sSoundEntriesStore.LookupEntry(qinfo->SoundTurnIn))
+            if (!sSoundEntriesStore.LookupEntry(qinfo->_soundTurnIn))
             {
                 TC_LOG_ERROR("sql.sql", "Quest %u has `SoundTurnIn` = %u but sound %u does not exist, set to 0.",
-                    qinfo->GetQuestId(), qinfo->SoundTurnIn, qinfo->SoundTurnIn);
-                qinfo->SoundTurnIn = 0;                        // no sound will be played
+                    qinfo->GetQuestId(), qinfo->_soundTurnIn, qinfo->_soundTurnIn);
+                qinfo->_soundTurnIn = 0;                        // no sound will be played
             }
         }
 
-        if (qinfo->RewardSkillId)
+        if (qinfo->_rewardSkillId)
         {
-            if (!sSkillLineStore.LookupEntry(qinfo->RewardSkillId))
+            if (!sSkillLineStore.LookupEntry(qinfo->_rewardSkillId))
             {
                 TC_LOG_ERROR("sql.sql", "Quest %u has `RewardSkillId` = %u but this skill does not exist",
-                    qinfo->GetQuestId(), qinfo->RewardSkillId);
+                    qinfo->GetQuestId(), qinfo->_rewardSkillId);
             }
-            if (!qinfo->RewardSkillPoints)
+            if (!qinfo->_rewardSkillPoints)
             {
                 TC_LOG_ERROR("sql.sql", "Quest %u has `RewardSkillId` = %u but `RewardSkillPoints` is 0",
-                    qinfo->GetQuestId(), qinfo->RewardSkillId);
+                    qinfo->GetQuestId(), qinfo->_rewardSkillId);
             }
         }
 
-        if (qinfo->RewardSkillPoints)
+        if (qinfo->_rewardSkillPoints)
         {
-            if (qinfo->RewardSkillPoints > sWorld->GetConfigMaxSkillValue())
+            if (qinfo->_rewardSkillPoints > sWorld->GetConfigMaxSkillValue())
             {
                 TC_LOG_ERROR("sql.sql", "Quest %u has `RewardSkillPoints` = %u but max possible skill is %u, quest can't be done.",
-                    qinfo->GetQuestId(), qinfo->RewardSkillPoints, sWorld->GetConfigMaxSkillValue());
+                    qinfo->GetQuestId(), qinfo->_rewardSkillPoints, sWorld->GetConfigMaxSkillValue());
                 // no changes, quest can't be done for this requirement
             }
-            if (!qinfo->RewardSkillId)
+            if (!qinfo->_rewardSkillId)
             {
                 TC_LOG_ERROR("sql.sql", "Quest %u has `RewardSkillPoints` = %u but `RewardSkillId` is 0",
-                    qinfo->GetQuestId(), qinfo->RewardSkillPoints);
+                    qinfo->GetQuestId(), qinfo->_rewardSkillPoints);
             }
         }
 
         // fill additional data stores
-        if (qinfo->PrevQuestId)
+        if (uint32 prevQuestId = std::abs(qinfo->_prevQuestID))
         {
-            if (_questTemplates.find(abs(qinfo->GetPrevQuestId())) == _questTemplates.end())
+            auto prevQuestItr = _questTemplates.find(prevQuestId);
+            if (prevQuestItr == _questTemplates.end())
                 TC_LOG_ERROR("sql.sql", "Quest %d has PrevQuestId %i, but no such quest", qinfo->GetQuestId(), qinfo->GetPrevQuestId());
-            else
-                qinfo->prevQuests.push_back(qinfo->PrevQuestId);
+            else if (qinfo->_prevQuestID > 0)
+                qinfo->DependentPreviousQuests.push_back(prevQuestId);
         }
 
-        if (qinfo->NextQuestId)
+        if (uint32 nextQuestId = qinfo->_nextQuestID)
         {
-            QuestMap::iterator qNextItr = _questTemplates.find(abs(qinfo->GetNextQuestId()));
-            if (qNextItr == _questTemplates.end())
+            auto nextQuestItr = _questTemplates.find(nextQuestId);
+            if (nextQuestItr == _questTemplates.end())
                 TC_LOG_ERROR("sql.sql", "Quest %d has NextQuestId %i, but no such quest", qinfo->GetQuestId(), qinfo->GetNextQuestId());
             else
-            {
-                int32 signedQuestId = qinfo->NextQuestId < 0 ? -int32(qinfo->GetQuestId()) : int32(qinfo->GetQuestId());
-                qNextItr->second->prevQuests.push_back(signedQuestId);
-            }
+                nextQuestItr->second->DependentPreviousQuests.push_back(qinfo->GetQuestId());
         }
 
-        if (qinfo->ExclusiveGroup)
-            mExclusiveQuestGroups.insert(std::pair<int32, uint32>(qinfo->ExclusiveGroup, qinfo->GetQuestId()));
+        if (qinfo->_exclusiveGroup)
+            _exclusiveQuestGroups.insert(std::pair<int32, uint32>(qinfo->_exclusiveGroup, qinfo->GetQuestId()));
         else if (qinfo->HasSpecialFlag(QUEST_SPECIAL_FLAGS_project_DAILY_QUEST))
             TC_LOG_ERROR("sql.sql", "Quest %u has no ExclusiveGroup but is marked as QUEST_SPECIAL_FLAGS_project_DAILY_QUEST which must belong to an exclusive group", qinfo->GetQuestId());
-        if (qinfo->LimitTime)
+
+        if (qinfo->_limitTime)
             qinfo->SetSpecialFlag(QUEST_SPECIAL_FLAGS_TIMED);
     }
 
@@ -5732,7 +5826,7 @@ void ObjectMgr::LoadQuestGiverAreaTriggers()
             TC_LOG_ERROR("sql.sql", "Table `areatrigger_queststarter` has record (id: %u) for quest %u, but quest does not have flag QUEST_FLAGS_AUTO_ACCEPT. Trigger or quest flags must be fixed, quest modified to be autoacceptable.", trigger_ID, quest_ID);
 
             // this will prevent quest completing without objective
-            const_cast<Quest*>(quest)->SetFlag(QUEST_FLAGS_AUTO_ACCEPT);
+            const_cast<Quest*>(quest)->_flags |= QUEST_FLAGS_AUTO_ACCEPT;
 
             // continue; - quest modified to required objective and trigger can be allowed.
         }
@@ -10746,7 +10840,7 @@ void ObjectMgr::LoadQuestObjectives()
                 break;
         }
 
-        QuestObjective& obj = quest->m_questObjectives.emplace_back(id, questId, type, index, objectId, amount, flags, description);
+        QuestObjective& obj = quest->Objectives.emplace_back(id, questId, type, index, objectId, amount, flags, description);
 
         // Store objective for lookup by id
         _questObjectives[obj.ID] = &obj;
@@ -10791,7 +10885,7 @@ void ObjectMgr::LoadQuestObjectiveVisualEffects()
             continue;
 
         bool match = false;
-        for (auto questObjective : quest->m_questObjectives)
+        for (auto questObjective : quest->Objectives)
         {
             if (questObjective.ID == objectiveId)
             {

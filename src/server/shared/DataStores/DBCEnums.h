@@ -694,6 +694,14 @@ enum CurrencyTypes
     CURRENCY_TYPE_BLOODY_COIN                     = 789,
 };
 
+enum QuestPackageFilter
+{
+    QUEST_PACKAGE_FILTER_LOOT_SPECIALIZATION    = 0,    // Players can select this quest reward if it matches their selected loot specialization
+    QUEST_PACKAGE_FILTER_CLASS                  = 1,    // Players can select this quest reward if it matches their class
+    QUEST_PACKAGE_FILTER_UNMATCHED              = 2,    // Players can select this quest reward if no class/loot_spec rewards are available
+    QUEST_PACKAGE_FILTER_EVERYONE               = 3     // Players can always select this quest reward
+};
+
 enum ScenarioStepFlags
 {
     SCENARIO_STEP_FLAG_BONUS_OBJECTIVE      = 0x1,

@@ -233,7 +233,7 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo) const
                     // One condition (which is not suitable for race) must be failed all the time.
                     if (auto quest = sObjectMgr->GetQuestTemplate(ConditionValue1))
                     {
-                        if (!quest->GetRequiredRaces() || (quest->GetRequiredRaces() & player->GetRaceMask()))
+                        if (!quest->GetAllowableRaces() || (quest->GetAllowableRaces() & player->GetRaceMask()))
                             condMeets = player->GetQuestRewardStatus(ConditionValue1);
                         else
                             condMeets = NegativeCondition;

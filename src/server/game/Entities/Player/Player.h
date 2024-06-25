@@ -1351,6 +1351,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
     void GiveXP(uint32 xp, Unit* victim, float group_rate = 1.0f);
     void GiveLevel(uint8 level);
+    bool IsMaxLevel() const;
 
     void InitStatsForLevel(bool reapplyMods = false);
     void RemoveSpecializationSpells();
@@ -1667,11 +1668,12 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
     bool CanCompleteQuest(uint32 quest_id);
     bool CanCompleteRepeatableQuest(Quest const* quest);
     bool CanRewardQuest(Quest const* quest, bool msg);
-    bool CanRewardQuest(Quest const* quest, uint32 reward, bool msg);
+    bool CanRewardQuest(Quest const* quest, uint32 rewardId, bool msg);
     void AddQuestAndCheckCompletion(Quest const* quest, Object* questGiver);
     void AddQuest(Quest const* quest, Object* questGiver);
     void CompleteQuest(uint32 quest_id, bool completely = false, bool fromCommand = false);
     void IncompleteQuest(uint32 quest_id);
+    bool CanSelectQuestPackageItem(QuestPackageItemEntry const* questPackageItem) const;
     void RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, bool announce = true);
     void FailQuest(uint32 quest_id);
     bool SatisfyQuestSkill(Quest const* qInfo, bool msg) const;
@@ -1685,8 +1687,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
     bool SatisfyQuestConditions(Quest const* qInfo, bool msg);
     bool SatisfyQuestTimed(Quest const* qInfo, bool msg);
     bool SatisfyQuestExclusiveGroup(Quest const* qInfo, bool msg);
-    bool SatisfyQuestNextChain(Quest const* qInfo, bool msg);
-    bool SatisfyQuestPrevChain(Quest const* qInfo, bool msg);
     bool SatisfyQuestDay(Quest const* qInfo, bool msg);
     bool SatisfyQuestWeek(Quest const* qInfo, bool msg);
     bool SatisfyQuestMonth(Quest const* qInfo, bool msg);

@@ -1414,7 +1414,7 @@ class ObjectMgr
         typedef std::multimap<int32, uint32> ExclusiveQuestGroups;
         typedef std::pair<ExclusiveQuestGroups::const_iterator, ExclusiveQuestGroups::const_iterator> ExclusiveQuestGroupsBounds;
 
-        ExclusiveQuestGroups mExclusiveQuestGroups;
+        ExclusiveQuestGroups _exclusiveQuestGroups;
 
         MailLevelReward const* GetMailLevelReward(uint32 level, uint32 raceMask)
         {

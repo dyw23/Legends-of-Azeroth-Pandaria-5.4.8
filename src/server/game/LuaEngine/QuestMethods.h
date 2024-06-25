@@ -20,7 +20,7 @@ namespace LuaQuest
     int GetPrevQuestId(lua_State* L, Quest* quest);
     int GetNextQuestInChain(lua_State* L, Quest* quest);
     int GetFlags(lua_State* L, Quest* quest);
-    int GetType(lua_State* L, Quest* quest);
+    int GetQuestInfoID(lua_State* L, Quest* quest);
     int HasFlag(lua_State* L, Quest* quest);
     int IsDaily(lua_State* L, Quest* quest);
     int IsRepeatable(lua_State* L, Quest* quest);

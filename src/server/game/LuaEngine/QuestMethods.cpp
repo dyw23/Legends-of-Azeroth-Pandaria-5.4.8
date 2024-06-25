@@ -57,16 +57,16 @@ namespace LuaQuest
         return 1;
     }
 
-    int GetType(lua_State* L, Quest* quest)
+    int GetQuestInfoID(lua_State* L, Quest* quest)
     {
-        sEluna->Push(L, quest->GetType());
+        sEluna->Push(L, quest->GetQuestInfoID());
         return 1;
     }
 
     int HasFlag(lua_State* L, Quest* quest)
     {
         uint32 flag = luaL_checkunsigned(L, 1);
-        sEluna->Push(L, quest->HasFlag(flag));
+        sEluna->Push(L, quest->HasFlag(static_cast<QuestFlags>(flag)));
         return 1;
     }
 

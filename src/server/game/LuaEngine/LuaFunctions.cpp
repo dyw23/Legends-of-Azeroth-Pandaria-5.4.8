@@ -882,7 +882,7 @@ ElunaRegister<Quest> QuestMethods[] =
     {"GetPrevQuestId", &LuaQuest::GetPrevQuestId},          // :GetPrevQuestId() - Returns the quest's previous quest ID
     {"GetNextQuestInChain", &LuaQuest::GetNextQuestInChain},// :GetNexQuestInChain() - Returns the next quest in its chain
     {"GetFlags", &LuaQuest::GetFlags},                      // :GetFlags() - Returns the quest's flags
-    {"GetType", &LuaQuest::GetType},                        // :GetType() - Returns the quest's type
+    {"GetQuestInfoID", &LuaQuest::GetQuestInfoID},          // :GetQuestInfoID() - Returns the quest's type
 
     // Boolean
     {"HasFlag", &LuaQuest::HasFlag},                        // :HasFlag(flag) - Returns true or false if the quest has the specified flag

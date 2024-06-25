@@ -46,6 +46,7 @@ extern DB2Storage<ItemUpgradeEntry> sItemUpgradeStore;
 extern DB2Storage<ItemToMountSpellEntry> sItemItemToMountSpellStore;
 extern DB2Storage<KeyChainEntry> sKeyChainStore;
 extern DB2Storage <MapChallengeModeEntry> sMapChallengeModeStore;
+extern DB2Storage<QuestPackageItemEntry> sQuestPackageItemStore;
 extern DB2Storage <RulesetItemUpgradeEntry> sRulesetItemUpgradeStore;
 extern DB2Storage<SceneScriptEntry> sSceneScriptStore;
 extern DB2Storage<SceneScriptPackageEntry> sSceneScriptPackageStore;
@@ -80,5 +81,7 @@ DB2StorageBase const* GetDB2Storage(uint32 type);
 bool GetQuestRewardItemCountFromPackage(uint32 itemid, uint32 package, uint32& count);
 uint32 GetUpgradeId(uint32 itemId);
 bool IsMountCanBeAllowedForPlayer(uint32 spellId, uint32 raceMask);
+std::vector<QuestPackageItemEntry const*> const* GetQuestPackageItems(uint32 questPackageID);
+std::vector<QuestPackageItemEntry const*> const* GetQuestPackageItemsFallback(uint32 questPackageID);
 
 #endif

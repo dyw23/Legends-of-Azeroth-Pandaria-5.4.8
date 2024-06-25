@@ -697,7 +697,7 @@ public:
                 }
             }
 
-            std::string title = qInfo->GetTitle();
+            std::string title = qInfo->GetLogTitle();
             if (title.empty())
                 continue;
 

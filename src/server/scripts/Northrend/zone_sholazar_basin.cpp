@@ -616,7 +616,7 @@ public:
             if (player->GetQuestStatus(QUEST_TASTE_TEST) != QUEST_STATUS_INCOMPLETE)
                 return;
 
-            for (const auto& objective : quest->m_questObjectives)
+            for (const auto& objective : quest->Objectives)
             {
                 if (objective.ObjectID != me->GetEntry())
                     continue;
