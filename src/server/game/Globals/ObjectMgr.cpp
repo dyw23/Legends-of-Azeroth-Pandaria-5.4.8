@@ -4177,14 +4177,14 @@ void ObjectMgr::LoadQuests()
             }
         }
 
-        if (qinfo->Flags & QUEST_FLAGS_TRACKING)
+        if (qinfo->Flags & QUEST_FLAGS_TRACKING_EVENT)
         {
             // at auto-reward can be rewarded only RewardChoiceItemId[0]
             for (int j = 1; j < QUEST_REWARD_CHOICES_COUNT; ++j )
             {
                 if (uint32 id = qinfo->RewardChoiceItemId[j])
                 {
-                    TC_LOG_ERROR("sql.sql", "Quest %u has `RewardChoiceItemId%d` = %u but item from `RewardChoiceItemId%d` can't be rewarded with quest flag QUEST_FLAGS_TRACKING.",
+                    TC_LOG_ERROR("sql.sql", "Quest %u has `RewardChoiceItemId%d` = %u but item from `RewardChoiceItemId%d` can't be rewarded with quest flag QUEST_FLAGS_TRACKING_EVENT.",
                         qinfo->GetQuestId(), j+1, id, j+1);
                     // no changes, quest ignore this data
                 }
@@ -4345,7 +4345,7 @@ void ObjectMgr::LoadQuests()
             }
         }
 
-        for (uint8 j = 0; j < QUEST_SOURCE_ITEM_IDS_COUNT; ++j)
+        for (uint8 j = 0; j < QUEST_ITEM_DROP_COUNT; ++j)
         {
             uint32 id = qinfo->RequiredSourceItemId[j];
             if (id)
@@ -4395,7 +4395,7 @@ void ObjectMgr::LoadQuests()
             }
         }
 
-        for (uint8 j = 0; j < QUEST_REWARDS_COUNT; ++j)
+        for (uint8 j = 0; j < QUEST_REWARD_ITEM_COUNT; ++j)
         {
             uint32 id = qinfo->RewardItemId[j];
             if (id)
@@ -4422,7 +4422,7 @@ void ObjectMgr::LoadQuests()
             }
         }
 
-        for (uint8 j = 0; j < QUEST_REPUTATIONS_COUNT; ++j)
+        for (uint8 j = 0; j < QUEST_REWARD_REPUTATIONS_COUNT; ++j)
         {
             if (qinfo->RewardFactionId[j])
             {
@@ -5801,8 +5801,8 @@ void ObjectMgr::LoadQuestAreaTriggers()
     for (auto const& pair : _questObjectives)
     {
         QuestObjective const* objective = pair.second;
-        if (objective->Type == QUEST_OBJECTIVE_TYPE_AREATRIGGER)
-            _questAreaTriggerStore[objective->Id].insert(objective->QuestID);
+        if (objective->Type == QUEST_OBJECTIVE_AREATRIGGER)
+            _questAreaTriggerStore[objective->ID].insert(objective->QuestID);
     }
 
     TC_LOG_INFO("server.loading", ">> Loaded %u quest trigger points in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
@@ -10599,7 +10599,7 @@ void ObjectMgr::LoadQuestObjectives()
         if (DisableMgr::IsDisabledFor(DISABLE_TYPE_QUEST, questId, NULL))
             continue;
 
-        if (type >= QUEST_OBJECTIVE_TYPE_END)
+        if (type >= MAX_QUEST_OBJECTIVE_TYPE)
         {
             TC_LOG_ERROR("sql.sql", "Quest Objective %u has invalid type %u! Skipping.", id, type);
             continue;
@@ -10608,9 +10608,9 @@ void ObjectMgr::LoadQuestObjectives()
         Quest* quest = _questTemplates.find(questId)->second;
         switch (type)
         {
-            case QUEST_OBJECTIVE_TYPE_NPC:
-            case QUEST_OBJECTIVE_TYPE_NPC_INTERACT:
-            case QUEST_OBJECTIVE_TYPE_PET_BATTLE_TAMER:
+            case QUEST_OBJECTIVE_MONSTER:
+            case QUEST_OBJECTIVE_TALKTO:
+            case QUEST_OBJECTIVE_WINPETBATTLEAGAINSTNPC:
             {
                 if (!GetCreatureTemplate(objectId))
                 {
@@ -10626,7 +10626,7 @@ void ObjectMgr::LoadQuestObjectives()
 
                 break;
             }
-            case QUEST_OBJECTIVE_TYPE_ITEM:
+            case QUEST_OBJECTIVE_ITEM:
             {
                 if (!GetItemTemplate(objectId))
                 {
@@ -10649,7 +10649,7 @@ void ObjectMgr::LoadQuestObjectives()
 
                 break;
             }
-            case QUEST_OBJECTIVE_TYPE_GO:
+            case QUEST_OBJECTIVE_GAMEOBJECT:
             {
                 if (!GetGameObjectTemplate(objectId))
                 {
@@ -10665,7 +10665,7 @@ void ObjectMgr::LoadQuestObjectives()
 
                 break;
             }
-            case QUEST_OBJECTIVE_TYPE_CURRENCY:
+            case QUEST_OBJECTIVE_CURRENCY:
             {
                 if (!sCurrencyTypesStore.LookupEntry(objectId))
                 {
@@ -10675,7 +10675,7 @@ void ObjectMgr::LoadQuestObjectives()
 
                 break;
             }
-            case QUEST_OBJECTIVE_TYPE_SPELL:
+            case QUEST_OBJECTIVE_LEARNSPELL:
             {
                 SpellInfo const* spell = sSpellMgr->GetSpellInfo(objectId);
                 if (!spell)
@@ -10698,8 +10698,8 @@ void ObjectMgr::LoadQuestObjectives()
 
                 break;
             }
-            case QUEST_OBJECTIVE_TYPE_FACTION_REP:
-            case QUEST_OBJECTIVE_TYPE_FACTION_REP_NEG:
+            case QUEST_OBJECTIVE_MIN_REPUTATION:
+            case QUEST_OBJECTIVE_MAX_REPUTATION:
             {
                 if (!sFactionStore.LookupEntry(objectId))
                 {
@@ -10709,17 +10709,7 @@ void ObjectMgr::LoadQuestObjectives()
 
                 break;
             }
-            case QUEST_OBJECTIVE_TYPE_MONEY:
-            {
-                if (quest->GetQuestObjectiveCountType(type) >= 1)
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest Objective %u is invalid, Quest %u already has the max amount of Quest Objective type %u! Skipping.", id, questId, type);
-                    continue;
-                }
-
-                break;
-            }
-            case QUEST_OBJECTIVE_TYPE_PET_BATTLE_ELITE:
+            case QUEST_OBJECTIVE_DEFEATBATTLEPET:
             {
                 if (!sBattlePetSpeciesStore.HasRecord(objectId))
                 {
@@ -10741,14 +10731,8 @@ void ObjectMgr::LoadQuestObjectives()
 
                 break;
             }
-            case QUEST_OBJECTIVE_TYPE_PET_BATTLE_PVP:
+            case QUEST_OBJECTIVE_WINPVPPETBATTLES:
             {
-                if (quest->GetQuestObjectiveCountType(type) >= 1)
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest Objective %u is invalid, Quest %u already has the max amount of Quest Objective type %u! Skipping.", id, questId, type);
-                    continue;
-                }
-
                 if (amount <= 0)
                 {
                     TC_LOG_ERROR("sql.sql", "Quest Objective %u has invalid Pet Battle PvP win amount %u! Skipping.", id, amount);
@@ -10757,17 +10741,17 @@ void ObjectMgr::LoadQuestObjectives()
 
                 break;
             }
+            case QUEST_OBJECTIVE_MONEY:
             default:
                 break;
         }
 
-        auto obj = new QuestObjective(id, questId, index, type, objectId, amount, flags, description);
+        QuestObjective& obj = quest->m_questObjectives.emplace_back(id, questId, index, type, objectId, amount, flags, description);
 
         // Store objective for lookup by id
-        _questObjectives[obj->Id] = obj;
+        _questObjectives[obj.ID] = &obj;
 
-        quest->m_questObjectives.insert(obj);
-        quest->m_questObjecitveTypeCount[type]++;
+        quest->_usedQuestObjectiveTypes[type] = true;
 
         count++;
     }
@@ -10802,18 +10786,26 @@ void ObjectMgr::LoadQuestObjectiveVisualEffects()
             continue;
         }
 
-        Quest const* quest = GetQuestTemplate(objective->Id);
+        Quest const* quest = GetQuestTemplate(objective->ID);
         if (!quest)
             continue;
 
-        QuestObjective* questObjective = const_cast<QuestObjective*>(quest->GetQuestObjective(objectiveId));
-        if (!questObjective)
+        bool match = false;
+        for (auto questObjective : quest->m_questObjectives)
+        {
+            if (questObjective.ID == objectiveId)
+            {
+                questObjective.VisualEffects.push_back(visualEffect);
+                match = true;
+                break;
+            }
+        }
+
+        if (!match)
         {
             TC_LOG_ERROR("sql.sql", "Visual effect %u has non existant Quest Objective %u for Quest %u! Skipping.", visualEffect, objectiveId, quest->GetQuestId());
             continue;
         }
-
-        questObjective->VisualEffects.push_back(visualEffect);
 
         count++;
     }

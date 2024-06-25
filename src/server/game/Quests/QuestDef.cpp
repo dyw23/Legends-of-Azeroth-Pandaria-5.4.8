@@ -68,10 +68,10 @@ Quest::Quest(Field* questRecord)
     QuestTurnInPortrait = questRecord[43].GetUInt32();
     RewardPackageItemId = questRecord[44].GetUInt32();
 
-    for (int i = 0; i < QUEST_REWARDS_COUNT; ++i)
+    for (int i = 0; i < QUEST_REWARD_ITEM_COUNT; ++i)
         RewardItemId[i] = questRecord[45+i].GetUInt32();
 
-    for (int i = 0; i < QUEST_REWARDS_COUNT; ++i)
+    for (int i = 0; i < QUEST_REWARD_ITEM_COUNT; ++i)
         RewardItemIdCount[i] = questRecord[49+i].GetUInt16();
 
     for (int i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
@@ -80,13 +80,13 @@ Quest::Quest(Field* questRecord)
     for (int i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
         RewardChoiceItemCount[i] = questRecord[59+ i].GetUInt16();
 
-    for (int i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
+    for (int i = 0; i < QUEST_REWARD_REPUTATIONS_COUNT; ++i)
         RewardFactionId[i] = questRecord[65+i].GetUInt16();
 
-    for (int i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
+    for (int i = 0; i < QUEST_REWARD_REPUTATIONS_COUNT; ++i)
         RewardFactionValueId[i] = questRecord[70+i].GetInt32();
 
-    for (int i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
+    for (int i = 0; i < QUEST_REWARD_REPUTATIONS_COUNT; ++i)
         RewardFactionValueIdOverride[i] = questRecord[75+i].GetInt32();
 
     PointMapId = questRecord[80].GetUInt16();
@@ -101,10 +101,10 @@ Quest::Quest(Field* questRecord)
     RequestItemsText = questRecord[89].GetString();
     CompletedText = questRecord[90].GetString();
 
-    for (int i = 0; i < QUEST_SOURCE_ITEM_IDS_COUNT; ++i)
+    for (int i = 0; i < QUEST_ITEM_DROP_COUNT; ++i)
         RequiredSourceItemId[i] = questRecord[91+i].GetUInt32();
 
-    for (int i = 0; i < QUEST_SOURCE_ITEM_IDS_COUNT; ++i)
+    for (int i = 0; i < QUEST_ITEM_DROP_COUNT; ++i)
         RequiredSourceItemCount[i] = questRecord[95+i].GetUInt16();
 
     for (int i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
@@ -144,7 +144,7 @@ Quest::Quest(Field* questRecord)
     _rewChoiceItemsCount = 0;
     _rewCurrencyCount = 0;
 
-    for (int i = 0; i < QUEST_REWARDS_COUNT; ++i)
+    for (int i = 0; i < QUEST_REWARD_ITEM_COUNT; ++i)
         if (RewardItemId[i])
             ++_rewItemsCount;
 
@@ -155,8 +155,6 @@ Quest::Quest(Field* questRecord)
     for (int i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
         if (RewardCurrencyId[i])
             ++_rewCurrencyCount;
-
-    m_questObjecitveTypeCount.assign(QUEST_OBJECTIVE_TYPE_END, 0);
 }
 
 uint32 Quest::XPValue(Player* player) const
@@ -200,7 +198,7 @@ int32 Quest::GetRewardOrRequiredMoney() const
 
 uint32 Quest::GetRewMoneyMaxLevel() const
 {
-    if (HasFlag(QUEST_FLAGS_NO_MONEY_FROM_XP))
+    if (HasFlag(QUEST_FLAGS_NO_MONEY_FOR_XP))
         return 0;
 
     return RewardMoneyMaxLevel;
@@ -213,7 +211,7 @@ bool Quest::IsAutoAccept() const
 
 bool Quest::IsAutoComplete() const
 {
-    return sWorld->getBoolConfig(CONFIG_QUEST_IGNORE_AUTO_COMPLETE) ? false : (Method == 0 || HasFlag(QUEST_FLAGS_AUTOCOMPLETE));
+    return sWorld->getBoolConfig(CONFIG_QUEST_IGNORE_AUTO_COMPLETE) ? false : (Method == 0 || HasFlag(QUEST_FLAGS_AUTO_COMPLETE));
 }
 
 bool Quest::IsRaidQuest(Difficulty difficulty) const
@@ -235,7 +233,7 @@ bool Quest::IsRaidQuest(Difficulty difficulty) const
             break;
     }
 
-    if ((Flags & QUEST_FLAGS_RAID) != 0)
+    if ((Flags & QUEST_FLAGS_RAID_GROUP_OK) != 0)
         return true;
 
     return false;
@@ -287,39 +285,4 @@ uint32 Quest::GetRewChoiceItemCount(uint32 itemId) const
             return RewardChoiceItemCount[i];
 
     return 0;
-}
-
-QuestObjective const* Quest::GetQuestObjective(uint32 objectiveId) const
-{
-    for (QuestObjectiveSet::const_iterator citr = m_questObjectives.begin(); citr != m_questObjectives.end(); citr++)
-        if ((*citr)->Id == objectiveId)
-            return *citr;
-
-    return NULL;
-}
-
-QuestObjective const* Quest::GetQuestObjectiveXIndex(uint8 index) const
-{
-    for (QuestObjectiveSet::const_iterator citr = m_questObjectives.begin(); citr != m_questObjectives.end(); citr++)
-        if ((*citr)->Index == index)
-            return *citr;
-
-    return NULL;
-}
-
-QuestObjective const* Quest::GetQuestObjectiveXObjectId(uint32 objectId) const
-{
-    for (QuestObjectiveSet::const_iterator citr = m_questObjectives.begin(); citr != m_questObjectives.end(); citr++)
-        if ((*citr)->ObjectId == objectId)
-            return *citr;
-
-    return NULL;
-}
-
-uint8 Quest::GetQuestObjectiveCountType(uint8 type) const
-{
-    if (type >= QUEST_OBJECTIVE_TYPE_END)
-        return 0;
-
-    return m_questObjecitveTypeCount[type];
 }

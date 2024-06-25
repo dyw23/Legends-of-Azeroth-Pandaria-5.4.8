@@ -2087,7 +2087,16 @@ public:
             {
                 Quest const* qInfo = sObjectMgr->GetQuestTemplate(QUEST_YOU_RE_NOT_SO_BIG_NOW);
                 if (qInfo)
-                    player->KilledMonsterCredit(qInfo->GetQuestObjectiveXIndex(0)->ObjectId, 0);
+                {
+                    for (const auto& objective : qInfo->m_questObjectives)
+                    {
+                        if (objective.Index == 0)
+                        {
+                            player->KilledMonsterCredit(objective.ObjectId, 0);
+                            break;
+                        }
+                    }
+                }
             }
         }
     };

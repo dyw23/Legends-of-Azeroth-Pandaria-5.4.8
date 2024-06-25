@@ -6999,7 +6999,7 @@ void Player::RewardReputation(Unit* victim, float rate)
 // Calculate how many reputation points player gain with the quest
 void Player::RewardReputation(Quest const* quest)
 {
-    for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
+    for (uint8 i = 0; i < QUEST_REWARD_REPUTATIONS_COUNT; ++i)
     {
         if (!quest->RewardFactionId[i])
             continue;
@@ -15939,7 +15939,7 @@ Quest const* Player::GetNextQuest(uint64 guid, Quest const* quest)
     switch (GUID_HIPART(guid))
     {
         case HIGHGUID_PLAYER:
-            ASSERT(quest->HasFlag(QUEST_FLAGS_AUTO_SUBMIT) || quest->HasFlag(QUEST_FLAGS_AUTOCOMPLETE));
+            ASSERT(quest->HasFlag(QUEST_FLAGS_AUTO_SUBMIT) || quest->HasFlag(QUEST_FLAGS_AUTO_COMPLETE));
             return sObjectMgr->GetQuestTemplate(nextQuestID);
         case HIGHGUID_UNIT:
         case HIGHGUID_PET:
@@ -16039,7 +16039,7 @@ bool Player::CanCompleteQuest(uint32 questId)
             return false;                                   // not allow re-complete quest
 
         // auto complete quest
-        if ((qInfo->IsAutoComplete() || qInfo->GetFlags() & QUEST_FLAGS_AUTOCOMPLETE) && CanTakeQuest(qInfo, false))
+        if ((qInfo->IsAutoComplete() || qInfo->GetFlags() & QUEST_FLAGS_AUTO_COMPLETE) && CanTakeQuest(qInfo, false))
             return true;
 
         QuestStatusMap::iterator itr = m_QuestStatus.find(questId);
@@ -16052,12 +16052,12 @@ bool Player::CanCompleteQuest(uint32 questId)
             if (qInfo->HasSpecialFlag(QUEST_SPECIAL_FLAGS_TIMED) && questStatus.Timer == 0)
                 return false;
 
-            if (!qInfo->GetQuestObjectiveCountType(QUEST_OBJECTIVE_TYPE_AREATRIGGER) && qInfo->HasSpecialFlag(QUEST_SPECIAL_FLAGS_EXPLORATION_OR_EVENT) && !questStatus.Explored)
+            if (qInfo->HasSpecialFlag(QUEST_SPECIAL_FLAGS_EXPLORATION_OR_EVENT) && !questStatus.Explored)
                 return false;
 
-            for (auto&& questObjective : qInfo->m_questObjectives)
+            for (const auto& questObjective : qInfo->m_questObjectives)
             {
-                if (!IsQuestObjectiveComplete(qInfo, *questObjective))
+                if (!IsQuestObjectiveComplete(qInfo, questObjective))
                     return false;
             }
 
@@ -16071,32 +16071,32 @@ bool Player::IsQuestObjectiveComplete(Quest const* quest, QuestObjective const& 
 {
     switch (objective.Type)
     {
-        case QUEST_OBJECTIVE_TYPE_SPELL:
+        case QUEST_OBJECTIVE_LEARNSPELL:
             if (!HasSpell(objective.ObjectId))
                 return false;
             break;
-        case QUEST_OBJECTIVE_TYPE_FACTION_REP:
+        case QUEST_OBJECTIVE_MIN_REPUTATION:
             if (GetReputationMgr().GetReputation(objective.ObjectId) < objective.Amount)
                 return false;
             break;
-        case QUEST_OBJECTIVE_TYPE_FACTION_REP_NEG:
+        case QUEST_OBJECTIVE_MAX_REPUTATION:
             if (GetReputationMgr().GetReputation(objective.ObjectId) > objective.Amount)
                 return false;
             break;
-        case QUEST_OBJECTIVE_TYPE_MONEY:
+        case QUEST_OBJECTIVE_MONEY:
             if (!HasEnoughMoney(uint64(objective.Amount)))
                 return false;
             break;
-        case QUEST_OBJECTIVE_TYPE_AREATRIGGER:
-            if (GetQuestObjectiveCounter(objective.Id) == 0)
+        case QUEST_OBJECTIVE_AREATRIGGER:
+            if (GetQuestObjectiveCounter(objective.ID) == 0)
                 return false;
             break;
-        case QUEST_OBJECTIVE_TYPE_CURRENCY:
+        case QUEST_OBJECTIVE_CURRENCY:
             if (!HasCurrency(objective.ObjectId, objective.Amount))
                 return false;
             break;
         default:
-            if (GetQuestObjectiveCounter(objective.Id) < uint32(objective.Amount))
+            if (GetQuestObjectiveCounter(objective.ID) < uint32(objective.Amount))
                 return false;
     }
 
@@ -16111,14 +16111,14 @@ bool Player::CanCompleteRepeatableQuest(Quest const* quest)
     if (!CanTakeQuest(quest, false))
         return false;
 
-    for (auto&& objective : quest->m_questObjectives)
+    for (const auto& objective : quest->m_questObjectives)
     {
-        if (objective->Type == QUEST_OBJECTIVE_TYPE_ITEM)
-            if (!HasItemCount(objective->ObjectId, objective->Amount))
+        if (objective.Type == QUEST_OBJECTIVE_ITEM)
+            if (!HasItemCount(objective.ObjectId, objective.Amount))
                 return false;
 
-        if (objective->Type == QUEST_OBJECTIVE_TYPE_CURRENCY)
-            if (!HasCurrency(objective->ObjectId, objective->Amount))
+        if (objective.Type == QUEST_OBJECTIVE_CURRENCY)
+            if (!HasCurrency(objective.ObjectId, objective.Amount))
                 return false;
     }
 
@@ -16131,7 +16131,7 @@ bool Player::CanCompleteRepeatableQuest(Quest const* quest)
 bool Player::CanRewardQuest(Quest const* quest, bool msg)
 {
     // not auto complete quest and not completed quest (only cheating case, then ignore without message)
-    if (!quest->IsDFQuest() && !quest->IsAutoComplete() && !(quest->GetFlags() & QUEST_FLAGS_AUTOCOMPLETE) && GetQuestStatus(quest->GetQuestId()) != QUEST_STATUS_COMPLETE)
+    if (!quest->IsDFQuest() && !quest->IsAutoComplete() && !(quest->GetFlags() & QUEST_FLAGS_AUTO_COMPLETE) && GetQuestStatus(quest->GetQuestId()) != QUEST_STATUS_COMPLETE)
         return false;
 
     // daily quest can't be rewarded (25 daily quest already completed)
@@ -16142,33 +16142,32 @@ bool Player::CanRewardQuest(Quest const* quest, bool msg)
     if (GetQuestRewardStatus(quest->GetQuestId()))
         return false;
 
-    for (QuestObjectiveSet::const_iterator citr = quest->m_questObjectives.begin(); citr != quest->m_questObjectives.end(); citr++)
+    for (const auto& questObjective : quest->m_questObjectives)
     {
-        QuestObjective const* questObjective = *citr;
-        switch (questObjective->Type)
+        switch (questObjective.Type)
         {
-            case QUEST_OBJECTIVE_TYPE_ITEM:
+            case QUEST_OBJECTIVE_ITEM:
             {
-                if (GetItemCount(questObjective->ObjectId) < uint32(questObjective->Amount))
+                if (GetItemCount(questObjective.ObjectId) < uint32(questObjective.Amount))
                 {
                     if (msg)
-                        SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL, questObjective->ObjectId);
+                        SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL, questObjective.ObjectId);
 
                     return false;
                 }
 
                 break;
             }
-            case QUEST_OBJECTIVE_TYPE_CURRENCY:
+            case QUEST_OBJECTIVE_CURRENCY:
             {
-                if (!HasCurrency(questObjective->ObjectId, questObjective->Amount))
+                if (!HasCurrency(questObjective.ObjectId, questObjective.Amount))
                     return false;
 
                 break;
             }
-            case QUEST_OBJECTIVE_TYPE_MONEY:
+            case QUEST_OBJECTIVE_MONEY:
             {
-                if (!HasEnoughMoney(uint64(questObjective->Amount)))
+                if (!HasEnoughMoney(uint64(questObjective.Amount)))
                     return false;
 
                 break;
@@ -16283,24 +16282,23 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
     questStatusData.Status = QUEST_STATUS_INCOMPLETE;
     questStatusData.Explored = false;
 
-    for (QuestObjectiveSet::const_iterator citr = quest->m_questObjectives.begin(); citr != quest->m_questObjectives.end(); citr++)
+    for (const auto& questObjective : quest->m_questObjectives)
     {
-        QuestObjective const* questObjective = *citr;
-        if (questObjective->Type == QUEST_OBJECTIVE_TYPE_FACTION_REP || questObjective->Type == QUEST_OBJECTIVE_TYPE_FACTION_REP_NEG)
-            if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(questObjective->ObjectId))
+        if (questObjective.Type == QUEST_OBJECTIVE_MIN_REPUTATION || questObjective.Type == QUEST_OBJECTIVE_MAX_REPUTATION)
+            if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(questObjective.ObjectId))
                 GetReputationMgr().SetVisible(factionEntry);
 
         // not all Quest Objective types need to be tracked, some such as reputation are handled/checked externally
-        if (questObjective->Type == QUEST_OBJECTIVE_TYPE_CURRENCY
-            || questObjective->Type == QUEST_OBJECTIVE_TYPE_SPELL
-            || questObjective->Type == QUEST_OBJECTIVE_TYPE_FACTION_REP
-            || questObjective->Type == QUEST_OBJECTIVE_TYPE_FACTION_REP_NEG
-            || questObjective->Type == QUEST_OBJECTIVE_TYPE_MONEY
-            || questObjective->Type == QUEST_OBJECTIVE_TYPE_AREATRIGGER)
+        if (questObjective.Type == QUEST_OBJECTIVE_CURRENCY ||
+            questObjective.Type == QUEST_OBJECTIVE_LEARNSPELL ||
+            questObjective.Type == QUEST_OBJECTIVE_MIN_REPUTATION ||
+            questObjective.Type == QUEST_OBJECTIVE_MAX_REPUTATION ||
+            questObjective.Type == QUEST_OBJECTIVE_MONEY ||
+            questObjective.Type == QUEST_OBJECTIVE_AREATRIGGER)
             continue;
 
-        m_questObjectiveStatus.emplace(questObjective->Id, uint32(0));
-        m_questObjectiveStatusSave.emplace(questObjective->Id, true);
+        m_questObjectiveStatus.emplace(questObjective.ID, uint32(0));
+        m_questObjectiveStatusSave.emplace(questObjective.ID, true);
     }
 
     GiveQuestSourceItem(quest);
@@ -16371,34 +16369,30 @@ void Player::CompleteQuest(uint32 quest_id, bool completely, bool fromCommand)
         if (!quest)
             return;
 
-        for (QuestObjectiveSet::const_iterator citr = quest->m_questObjectives.begin(); citr != quest->m_questObjectives.end(); citr++)
+        for (const auto& questObjective : quest->m_questObjectives)
         {
-            QuestObjective const* questObjective = *citr;
-            if (!questObjective)
-                continue;
-
-            switch (questObjective->Type)
+            switch (questObjective.Type)
             {
-                case QUEST_OBJECTIVE_TYPE_NPC:
+                case QUEST_OBJECTIVE_MONSTER:
                 {
-                    if (CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(questObjective->ObjectId))
-                        for (uint32 i = 0; i < uint32(questObjective->Amount); i++)
+                    if (CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(questObjective.ObjectId))
+                        for (uint32 i = 0; i < uint32(questObjective.Amount); i++)
                             KilledMonster(creatureInfo, 0);
                     break;
                 }
-                case QUEST_OBJECTIVE_TYPE_GO:
+                case QUEST_OBJECTIVE_GAMEOBJECT:
                 {
-                    if (GameObjectTemplate const* goInfo = sObjectMgr->GetGameObjectTemplate(questObjective->ObjectId))
-                        for (uint32 i = 0; i < uint32(questObjective->Amount); i++)
+                    if (GameObjectTemplate const* goInfo = sObjectMgr->GetGameObjectTemplate(questObjective.ObjectId))
+                        for (uint32 i = 0; i < uint32(questObjective.Amount); i++)
                             KillCreditGO(goInfo->entry, 0);
                     break;
                 }
-                case QUEST_OBJECTIVE_TYPE_ITEM:
+                case QUEST_OBJECTIVE_ITEM:
                 {
                     bool valid = true;
                     if (!fromCommand) // prevent possible exploits for players
                     {
-                        ItemTemplate const* item = sObjectMgr->GetItemTemplate(questObjective->ObjectId);
+                        ItemTemplate const* item = sObjectMgr->GetItemTemplate(questObjective.ObjectId);
                         if (!item)
                             continue;
 
@@ -16412,35 +16406,35 @@ void Player::CompleteQuest(uint32 quest_id, bool completely, bool fromCommand)
                     if (valid)
                     {
                         ItemPosCountVec dest;
-                        uint32 currentCounter = GetItemCount(questObjective->ObjectId, true);
+                        uint32 currentCounter = GetItemCount(questObjective.ObjectId, true);
 
-                        uint8 msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, questObjective->ObjectId, uint32(questObjective->Amount) - currentCounter);
+                        uint8 msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, questObjective.ObjectId, uint32(questObjective.Amount) - currentCounter);
                         if (msg == EQUIP_ERR_OK)
                         {
-                            Item* item = StoreNewItem(dest, questObjective->ObjectId, true);
+                            Item* item = StoreNewItem(dest, questObjective.ObjectId, true);
                             if (item)
                             {
-                                SendNewItem(item, uint32(questObjective->Amount) - currentCounter, true, false);
+                                SendNewItem(item, uint32(questObjective.Amount) - currentCounter, true, false);
                                 sScriptMgr->OnItemPickup(this, item, ItemPickupSourceType::Command, GetGUIDLow());
                             }
                         }
-                        SendQuestUpdateAddCredit(quest, questObjective, ObjectGuid(0), currentCounter, uint32(questObjective->Amount) - currentCounter);
+                        SendQuestUpdateAddCredit(quest, &questObjective, ObjectGuid(0), currentCounter, uint32(questObjective.Amount) - currentCounter);
                     }
                     break;
                 }
-                case QUEST_OBJECTIVE_TYPE_FACTION_REP:
-                case QUEST_OBJECTIVE_TYPE_FACTION_REP_NEG:
+                case QUEST_OBJECTIVE_MIN_REPUTATION:
+                case QUEST_OBJECTIVE_MAX_REPUTATION:
                 {
                     if (fromCommand) // see above
-                        if (GetReputationMgr().GetReputation(questObjective->ObjectId) < questObjective->Amount)
-                            if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(questObjective->ObjectId))
-                                GetReputationMgr().SetReputation(factionEntry, questObjective->Amount);
+                        if (GetReputationMgr().GetReputation(questObjective.ObjectId) < questObjective.Amount)
+                            if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(questObjective.ObjectId))
+                                GetReputationMgr().SetReputation(factionEntry, questObjective.Amount);
                     break;
                 }
-                case QUEST_OBJECTIVE_TYPE_MONEY:
+                case QUEST_OBJECTIVE_MONEY:
                 {
                     if (fromCommand) // see above
-                        ModifyMoney(uint64(questObjective->Amount));
+                        ModifyMoney(uint64(questObjective.Amount));
                     break;
                 }
                 default:
@@ -16459,7 +16453,7 @@ void Player::CompleteQuest(uint32 quest_id, bool completely, bool fromCommand)
 
         if (Quest const* qInfo = sObjectMgr->GetQuestTemplate(quest_id))
         {
-            if (qInfo->HasFlag(QUEST_FLAGS_TRACKING))
+            if (qInfo->HasFlag(QUEST_FLAGS_TRACKING_EVENT))
                 RewardQuest(qInfo, 0, this, false);
             else
                 SendQuestComplete(qInfo);
@@ -16489,27 +16483,26 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
 
     uint32 quest_id = quest->GetQuestId();
 
-    for (QuestObjectiveSet::const_iterator citr = quest->m_questObjectives.begin(); citr != quest->m_questObjectives.end(); citr++)
+    for (auto const& questObjective : quest->m_questObjectives)
     {
-        QuestObjective const* questObjective = *citr;
-        switch (questObjective->Type)
+        switch (questObjective.Type)
         {
-            case QUEST_OBJECTIVE_TYPE_ITEM:
+            case QUEST_OBJECTIVE_ITEM:
             {
-                DestroyItemCount(questObjective->ObjectId, questObjective->Amount, true);
+                DestroyItemCount(questObjective.ObjectId, questObjective.Amount, true);
                 break;
             }
-            case QUEST_OBJECTIVE_TYPE_CURRENCY:
+            case QUEST_OBJECTIVE_CURRENCY:
             {
                 if (GetMap() && GetMap()->GetDifficulty() == SCENARIO_DIFFICULTY_HEROIC) // this cause decrease VP by value that more than int32 data, not required for it.
                     break;
 
-                ModifyCurrency(questObjective->ObjectId, -int32(questObjective->Amount));
+                ModifyCurrency(questObjective.ObjectId, -int32(questObjective.Amount));
                 break;
             }
-            case QUEST_OBJECTIVE_TYPE_MONEY:
+            case QUEST_OBJECTIVE_MONEY:
             {
-                ModifyMoney(-int64(questObjective->Amount));
+                ModifyMoney(-int64(questObjective.Amount));
                 break;
             }
             default:
@@ -16517,7 +16510,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
         }
     }
 
-    for (uint8 i = 0; i < QUEST_SOURCE_ITEM_IDS_COUNT; ++i)
+    for (uint8 i = 0; i < QUEST_ITEM_DROP_COUNT; ++i)
     {
         if (quest->RequiredSourceItemId[i])
         {
@@ -16768,8 +16761,8 @@ bool Player::SatisfyQuestSkill(Quest const* qInfo, bool msg) const
     {
         if (msg)
         {
-            SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
-            TC_LOG_DEBUG("misc", "SatisfyQuestSkill: Sent INVALIDREASON_DONT_HAVE_REQ (questId: %u) because player does not have required skill value.", qInfo->GetQuestId());
+            SendCanTakeQuestResponse(QUEST_ERR_NONE);
+            TC_LOG_DEBUG("misc", "SatisfyQuestSkill: Sent QUEST_ERR_NONE (questId: %u) because player does not have required skill value.", qInfo->GetQuestId());
         }
 
         return false;
@@ -16784,8 +16777,8 @@ bool Player::SatisfyQuestLevel(Quest const* qInfo, bool msg)
     {
         if (msg)
         {
-            SendCanTakeQuestResponse(INVALIDREASON_QUEST_FAILED_LOW_LEVEL);
-            TC_LOG_DEBUG("misc", "SatisfyQuestLevel: Sent INVALIDREASON_QUEST_FAILED_LOW_LEVEL (questId: %u) because player does not have required (min) level.", qInfo->GetQuestId());
+            SendCanTakeQuestResponse(QUEST_ERR_FAILED_LOW_LEVEL);
+            TC_LOG_DEBUG("misc", "SatisfyQuestLevel: Sent QUEST_ERR_FAILED_LOW_LEVEL (questId: %u) because player does not have required (min) level.", qInfo->GetQuestId());
         }
         return false;
     }
@@ -16793,8 +16786,8 @@ bool Player::SatisfyQuestLevel(Quest const* qInfo, bool msg)
     {
         if (msg)
         {
-            SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ); // There doesn't seem to be a specific response for too high player level
-            TC_LOG_DEBUG("misc", "SatisfyQuestLevel: Sent INVALIDREASON_QUEST_FAILED_LOW_LEVEL (questId: %u) because player does not have required (max) level.", qInfo->GetQuestId());
+            SendCanTakeQuestResponse(QUEST_ERR_NONE); // There doesn't seem to be a specific response for too high player level
+            TC_LOG_DEBUG("misc", "SatisfyQuestLevel: Sent QUEST_ERR_FAILED_LOW_LEVEL (questId: %u) because player does not have required (max) level.", qInfo->GetQuestId());
         }
         return false;
     }
@@ -16854,8 +16847,8 @@ bool Player::SatisfyQuestPreviousQuest(Quest const* qInfo, bool msg)
                     {
                         if (msg)
                         {
-                            SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
-                            TC_LOG_DEBUG("misc", "SatisfyQuestPreviousQuest: Sent INVALIDREASON_DONT_HAVE_REQ (questId: %u) because player does not have required quest (1).", qInfo->GetQuestId());
+                            SendCanTakeQuestResponse(QUEST_ERR_NONE);
+                            TC_LOG_DEBUG("misc", "SatisfyQuestPreviousQuest: Sent QUEST_ERR_NONE (questId: %u) because player does not have required quest (1).", qInfo->GetQuestId());
                         }
                         return false;
                     }
@@ -16887,8 +16880,8 @@ bool Player::SatisfyQuestPreviousQuest(Quest const* qInfo, bool msg)
                     {
                         if (msg)
                         {
-                            SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
-                            TC_LOG_DEBUG("misc", "SatisfyQuestPreviousQuest: Sent INVALIDREASON_DONT_HAVE_REQ (questId: %u) because player does not have required quest (2).", qInfo->GetQuestId());
+                            SendCanTakeQuestResponse(QUEST_ERR_NONE);
+                            TC_LOG_DEBUG("misc", "SatisfyQuestPreviousQuest: Sent QUEST_ERR_NONE (questId: %u) because player does not have required quest (2).", qInfo->GetQuestId());
 
                         }
                         return false;
@@ -16903,8 +16896,8 @@ bool Player::SatisfyQuestPreviousQuest(Quest const* qInfo, bool msg)
     // and negative prev. quests in non-active state
     if (msg)
     {
-        SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
-        TC_LOG_DEBUG("misc", "SatisfyQuestPreviousQuest: Sent INVALIDREASON_DONT_HAVE_REQ (questId: %u) because player does not have required quest (3).", qInfo->GetQuestId());
+        SendCanTakeQuestResponse(QUEST_ERR_NONE);
+        TC_LOG_DEBUG("misc", "SatisfyQuestPreviousQuest: Sent QUEST_ERR_NONE (questId: %u) because player does not have required quest (3).", qInfo->GetQuestId());
     }
 
     return false;
@@ -16921,8 +16914,8 @@ bool Player::SatisfyQuestClass(Quest const* qInfo, bool msg) const
     {
         if (msg)
         {
-            SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
-            TC_LOG_DEBUG("misc", "SatisfyQuestClass: Sent INVALIDREASON_DONT_HAVE_REQ (questId: %u) because player does not have required class.", qInfo->GetQuestId());
+            SendCanTakeQuestResponse(QUEST_ERR_NONE);
+            TC_LOG_DEBUG("misc", "SatisfyQuestClass: Sent QUEST_ERR_NONE (questId: %u) because player does not have required class.", qInfo->GetQuestId());
         }
 
         return false;
@@ -16940,8 +16933,8 @@ bool Player::SatisfyQuestRace(Quest const* qInfo, bool msg)
     {
         if (msg)
         {
-            SendCanTakeQuestResponse(INVALIDREASON_QUEST_FAILED_WRONG_RACE);
-            TC_LOG_DEBUG("misc", "SatisfyQuestRace: Sent INVALIDREASON_QUEST_FAILED_WRONG_RACE (questId: %u) because player does not have required race.", qInfo->GetQuestId());
+            SendCanTakeQuestResponse(QUEST_ERR_FAILED_WRONG_RACE);
+            TC_LOG_DEBUG("misc", "SatisfyQuestRace: Sent QUEST_ERR_FAILED_WRONG_RACE (questId: %u) because player does not have required race.", qInfo->GetQuestId());
 
         }
         return false;
@@ -16956,8 +16949,8 @@ bool Player::SatisfyQuestReputation(Quest const* qInfo, bool msg)
     {
         if (msg)
         {
-            SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
-            TC_LOG_DEBUG("misc", "SatisfyQuestReputation: Sent INVALIDREASON_DONT_HAVE_REQ (questId: %u) because player does not have required reputation (min).", qInfo->GetQuestId());
+            SendCanTakeQuestResponse(QUEST_ERR_NONE);
+            TC_LOG_DEBUG("misc", "SatisfyQuestReputation: Sent QUEST_ERR_NONE (questId: %u) because player does not have required reputation (min).", qInfo->GetQuestId());
         }
         return false;
     }
@@ -16967,8 +16960,8 @@ bool Player::SatisfyQuestReputation(Quest const* qInfo, bool msg)
     {
         if (msg)
         {
-            SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
-            TC_LOG_DEBUG("misc", "SatisfyQuestReputation: Sent INVALIDREASON_DONT_HAVE_REQ (questId: %u) because player does not have required reputation (max).", qInfo->GetQuestId());
+            SendCanTakeQuestResponse(QUEST_ERR_NONE);
+            TC_LOG_DEBUG("misc", "SatisfyQuestReputation: Sent QUEST_ERR_NONE (questId: %u) because player does not have required reputation (max).", qInfo->GetQuestId());
         }
         return false;
     }
@@ -16976,18 +16969,17 @@ bool Player::SatisfyQuestReputation(Quest const* qInfo, bool msg)
     // ReputationObjective2 does not seem to be an objective requirement but a requirement
     // to be able to accept the quest
 
-    if (!qInfo->GetQuestObjectiveCountType(QUEST_OBJECTIVE_TYPE_FACTION_REP_NEG))
+    if (!qInfo->HasQuestObjectiveType(QUEST_OBJECTIVE_MAX_REPUTATION))
         return true;
 
-    for (QuestObjectiveSet::const_iterator citr = qInfo->m_questObjectives.begin(); citr != qInfo->m_questObjectives.end(); citr++)
+    for (auto const& questObjective : qInfo->m_questObjectives)
     {
-        QuestObjective const* questObjective = *citr;
-        if (questObjective->Type == QUEST_OBJECTIVE_TYPE_FACTION_REP_NEG && GetReputationMgr().GetReputation(questObjective->ObjectId) >= questObjective->Amount)
+        if (questObjective.Type == QUEST_OBJECTIVE_MAX_REPUTATION && GetReputationMgr().GetReputation(questObjective.ObjectId) >= questObjective.Amount)
         {
             if (msg)
             {
-                SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
-                TC_LOG_DEBUG("misc", "SatisfyQuestReputation: Sent INVALIDREASON_DONT_HAVE_REQ (questId: %u) because player does not have required reputation (ReputationObjective2).", qInfo->GetQuestId());
+                SendCanTakeQuestResponse(QUEST_ERR_NONE);
+                TC_LOG_DEBUG("misc", "SatisfyQuestReputation: Sent QUEST_ERR_NONE (questId: %u) because player does not have required reputation (ReputationObjective2).", qInfo->GetQuestId());
             }
 
             return false;
@@ -17003,8 +16995,8 @@ bool Player::SatisfyQuestStatus(Quest const* qInfo, bool msg)
     {
         if (msg)
         {
-            SendCanTakeQuestResponse(INVALIDREASON_QUEST_ALREADY_ON);
-            TC_LOG_DEBUG("misc", "SatisfyQuestStatus: Sent INVALIDREASON_QUEST_ALREADY_ON (questId: %u) because player quest status is not NONE.", qInfo->GetQuestId());
+            SendCanTakeQuestResponse(QUEST_ERR_ALREADY_ON1);
+            TC_LOG_DEBUG("misc", "SatisfyQuestStatus: Sent QUEST_ERR_ALREADY_ON1 (questId: %u) because player quest status is not NONE.", qInfo->GetQuestId());
         }
         return false;
     }
@@ -17017,8 +17009,8 @@ bool Player::SatisfyQuestConditions(Quest const* qInfo, bool msg)
     {
         if (msg)
         {
-            SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
-            TC_LOG_DEBUG("misc", "SatisfyQuestConditions: Sent INVALIDREASON_DONT_HAVE_REQ (questId: %u) because player does not meet conditions.", qInfo->GetQuestId());
+            SendCanTakeQuestResponse(QUEST_ERR_NONE);
+            TC_LOG_DEBUG("misc", "SatisfyQuestConditions: Sent QUEST_ERR_NONE (questId: %u) because player does not meet conditions.", qInfo->GetQuestId());
         }
         TC_LOG_DEBUG("condition", "Player::SatisfyQuestConditions: conditions not met for quest %u", qInfo->GetQuestId());
         return false;
@@ -17032,8 +17024,8 @@ bool Player::SatisfyQuestTimed(Quest const* qInfo, bool msg)
     {
         if (msg)
         {
-            SendCanTakeQuestResponse(INVALIDREASON_QUEST_ONLY_ONE_TIMED);
-            TC_LOG_DEBUG("misc", "SatisfyQuestTimed: Sent INVALIDREASON_QUEST_ONLY_ONE_TIMED (questId: %u) because player is already on a timed quest.", qInfo->GetQuestId());
+            SendCanTakeQuestResponse(QUEST_ERR_ONLY_ONE_TIMED);
+            TC_LOG_DEBUG("misc", "SatisfyQuestTimed: Sent QUEST_ERR_ONLY_ONE_TIMED (questId: %u) because player is already on a timed quest.", qInfo->GetQuestId());
         }
         return false;
     }
@@ -17062,8 +17054,8 @@ bool Player::SatisfyQuestExclusiveGroup(Quest const* qInfo, bool msg)
         {
             if (msg)
             {
-                SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
-                TC_LOG_DEBUG("misc", "SatisfyQuestExclusiveGroup: Sent INVALIDREASON_DONT_HAVE_REQ (questId: %u) because player already did daily quests in exclusive group.", qInfo->GetQuestId());
+                SendCanTakeQuestResponse(QUEST_ERR_NONE);
+                TC_LOG_DEBUG("misc", "SatisfyQuestExclusiveGroup: Sent QUEST_ERR_NONE (questId: %u) because player already did daily quests in exclusive group.", qInfo->GetQuestId());
             }
 
             return false;
@@ -17074,8 +17066,8 @@ bool Player::SatisfyQuestExclusiveGroup(Quest const* qInfo, bool msg)
         {
             if (msg)
             {
-                SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
-                TC_LOG_DEBUG("misc", "SatisfyQuestExclusiveGroup: Sent INVALIDREASON_DONT_HAVE_REQ (questId: %u) because player already did quest in exclusive group.", qInfo->GetQuestId());
+                SendCanTakeQuestResponse(QUEST_ERR_NONE);
+                TC_LOG_DEBUG("misc", "SatisfyQuestExclusiveGroup: Sent QUEST_ERR_NONE (questId: %u) because player already did quest in exclusive group.", qInfo->GetQuestId());
             }
             return false;
         }
@@ -17097,8 +17089,8 @@ bool Player::SatisfyQuestNextChain(Quest const* qInfo, bool msg)
     {
         if (msg)
         {
-            SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
-            TC_LOG_DEBUG("misc", "SatisfyQuestNextChain: Sent INVALIDREASON_DONT_HAVE_REQ (questId: %u) because player already did or started next quest in chain.", qInfo->GetQuestId());
+            SendCanTakeQuestResponse(QUEST_ERR_NONE);
+            TC_LOG_DEBUG("misc", "SatisfyQuestNextChain: Sent QUEST_ERR_NONE (questId: %u) because player already did or started next quest in chain.", qInfo->GetQuestId());
         }
         return false;
     }
@@ -17124,8 +17116,8 @@ bool Player::SatisfyQuestPrevChain(Quest const* qInfo, bool msg)
         {
             if (msg)
             {
-                SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
-                TC_LOG_DEBUG("misc", "SatisfyQuestNextChain: Sent INVALIDREASON_DONT_HAVE_REQ (questId: %u) because player already did or started next quest in chain.", qInfo->GetQuestId());
+                SendCanTakeQuestResponse(QUEST_ERR_NONE);
+                TC_LOG_DEBUG("misc", "SatisfyQuestNextChain: Sent QUEST_ERR_NONE (questId: %u) because player already did or started next quest in chain.", qInfo->GetQuestId());
             }
             return false;
         }
@@ -17229,7 +17221,7 @@ bool Player::TakeQuestSourceItem(uint32 questId, bool msg)
             bool destroyItem = true;
             if (item && item->StartQuest == questId)
                 for (auto&& objective : quest->m_questObjectives)
-                    if (objective->Type == QUEST_OBJECTIVE_TYPE_ITEM  && srcItemId == objective->ObjectId)
+                    if (objective.Type == QUEST_OBJECTIVE_ITEM && srcItemId == objective.ObjectId)
                         destroyItem = false;
 
             if (destroyItem)
@@ -17318,15 +17310,15 @@ void Player::SetQuestStatus(uint32 quest_id, QuestStatus status, bool update /*=
 
 void Player::RemoveActiveQuest(uint32 quest_id, bool update /*= true*/, bool /*removeFromQuestLog = false*/)
 {
-    QuestStatusMap::iterator itr = m_QuestStatus.find(quest_id);
+    auto itr = m_QuestStatus.find(quest_id);
     if (itr != m_QuestStatus.end())
     {
         if (auto questTemplate = sObjectMgr->GetQuestTemplate(quest_id))
         {
-            for (auto&& it : questTemplate->m_questObjectives)
+            for (auto const& it : questTemplate->m_questObjectives)
             {
-                m_questObjectiveStatus.erase(it->Id);
-                m_questObjectiveStatusSave[it->Id] = false;
+                m_questObjectiveStatus.erase(it.ID);
+                m_questObjectiveStatusSave[it.ID] = false;
             }
         }
 
@@ -17437,7 +17429,7 @@ QuestGiverStatus Player::GetQuestDialogStatus(Object const* questgiver)
         switch (GetQuestStatus(quest_id))
         {
             case QUEST_STATUS_COMPLETE:
-                if (quest->HasFlag2(QUEST_FLAGS2_LEGENDARY_QUEST))
+                if (quest->HasFlag2(QUEST_FLAGS_EX_LEGENDARY))
                     result |= quest->HasFlag(QUEST_FLAGS_HIDE_REWARD_POI) ? QuestGiverStatus::LegendaryRewardCompleteNoPOI : QuestGiverStatus::LegendaryRewardCompletePOI;
                 else
                     result |= quest->HasFlag(QUEST_FLAGS_HIDE_REWARD_POI) ? QuestGiverStatus::RewardCompleteNoPOI : QuestGiverStatus::RewardCompletePOI;
@@ -17475,7 +17467,7 @@ QuestGiverStatus Player::GetQuestDialogStatus(Object const* questgiver)
                 if (SatisfyQuestLevel(quest, false))
                 {
                     bool isTrivial = GetLevel() > (GetQuestLevel(quest) + sWorld->getIntConfig(CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF));
-                    if (quest->HasFlag2(QUEST_FLAGS2_LEGENDARY_QUEST))
+                    if (quest->HasFlag2(QUEST_FLAGS_EX_LEGENDARY))
                         result |= QuestGiverStatus::LegendaryQuest;
                     else if (quest->IsDaily())
                         result |= isTrivial ? QuestGiverStatus::TrivialDailyQuest : QuestGiverStatus::DailyQuest;
@@ -17496,12 +17488,12 @@ void Player::DestroyQuestItems(uint32 questId)
     if (Quest const* quest = sObjectMgr->GetQuestTemplate(questId))
     {
         // Destroy quest items on quest fail or abandon.
-        for (auto&& objective : quest->m_questObjectives)
-            if (objective->Type == QUEST_OBJECTIVE_TYPE_ITEM)
-                DestroyItemCount(objective->ObjectId, objective->Amount, true, true);
+        for (auto const& objective : quest->m_questObjectives)
+            if (objective.Type == QUEST_OBJECTIVE_ITEM)
+                DestroyItemCount(objective.ObjectId, objective.Amount, true, true);
 
         // Destroy items received during the quest.
-        for (uint8 i = 0; i < QUEST_SOURCE_ITEM_IDS_COUNT; ++i)
+        for (uint8 i = 0; i < QUEST_ITEM_DROP_COUNT; ++i)
             if (quest->RequiredSourceItemId[i]  && quest->RequiredSourceItemCount[i] && sObjectMgr->GetItemTemplate(quest->RequiredSourceItemId[i])->Bonding == BIND_QUEST)
                 DestroyItemCount(quest->RequiredSourceItemId[i], quest->RequiredSourceItemCount[i], true, true);
     }
@@ -17514,26 +17506,25 @@ uint16 Player::GetReqKillOrCastCurrentCount(uint32 quest_id, int32 entry)
     if (!qInfo)
         return 0;
 
-    if (qInfo->GetQuestObjectiveCountType(QUEST_OBJECTIVE_TYPE_ITEM))
-        for (QuestObjectiveSet::const_iterator citr = qInfo->m_questObjectives.begin(); citr != qInfo->m_questObjectives.end(); citr++)
-            if ((*citr)->Type == QUEST_OBJECTIVE_TYPE_NPC && (*citr)->ObjectId == entry)
-                return GetQuestObjectiveCounter((*citr)->Id);
+    if (qInfo->HasQuestObjectiveType(QUEST_OBJECTIVE_ITEM))
+        for (auto const& questObjective : qInfo->m_questObjectives)
+            if (questObjective.Type == QUEST_OBJECTIVE_MONSTER && questObjective.ObjectId == entry)
+                return GetQuestObjectiveCounter(questObjective.ID);
 
     return 0;
 }
 
 void Player::AdjustQuestReqItemCount(Quest const* quest, QuestStatusData& questStatusData)
 {
-    if (!quest->GetQuestObjectiveCountType(QUEST_OBJECTIVE_TYPE_ITEM))
+    if (!quest->HasQuestObjectiveType(QUEST_OBJECTIVE_ITEM))
         return;
 
-    for (QuestObjectiveSet::const_iterator citr = quest->m_questObjectives.begin(); citr != quest->m_questObjectives.end(); citr++)
+    for (auto const& questObjective : quest->m_questObjectives)
     {
-        QuestObjective const* questObjective = *citr;
-        if (questObjective->Type == QUEST_OBJECTIVE_TYPE_ITEM)
+        if (questObjective.Type == QUEST_OBJECTIVE_ITEM)
         {
-            m_questObjectiveStatus[questObjective->Id] = std::min(GetItemCount(questObjective->ObjectId, true), uint32(questObjective->Amount));
-            MarkQuestObjectiveToSave(quest->GetQuestId(), questObjective->Id);
+            m_questObjectiveStatus[questObjective.ID] = std::min(GetItemCount(questObjective.ObjectId, true), uint32(questObjective.Amount));
+            MarkQuestObjectiveToSave(quest->GetQuestId(), questObjective.ID);
         }
     }
 }
@@ -17668,24 +17659,23 @@ void Player::ItemAddedQuestCheck(uint32 entry, uint32 count)
         if (!qInfo)
             continue;
 
-        if (!qInfo->GetQuestObjectiveCountType(QUEST_OBJECTIVE_TYPE_ITEM))
+        if (!qInfo->HasQuestObjectiveType(QUEST_OBJECTIVE_ITEM))
             continue;
 
-        for (QuestObjectiveSet::const_iterator citr = qInfo->m_questObjectives.begin(); citr != qInfo->m_questObjectives.end(); citr++)
+        for (auto const& questObjective : qInfo->m_questObjectives)
         {
-            QuestObjective const* questObjective = *citr;
-            if (questObjective->Type == QUEST_OBJECTIVE_TYPE_ITEM && questObjective->ObjectId == entry)
+            if (questObjective.Type == QUEST_OBJECTIVE_ITEM && questObjective.ObjectId == entry)
             {
-                uint32 currentCounter = GetQuestObjectiveCounter(questObjective->Id);
-                uint32 requiredCounter = uint32(questObjective->Amount);
+                uint32 currentCounter = GetQuestObjectiveCounter(questObjective.ID);
+                uint32 requiredCounter = uint32(questObjective.Amount);
 
                 if (currentCounter < requiredCounter)
                 {
                     uint16 addCount = currentCounter + count <= requiredCounter ? count : requiredCounter - currentCounter;
-                    m_questObjectiveStatus[questObjective->Id] += addCount;
-                    MarkQuestObjectiveToSave(questid, questObjective->Id);
+                    m_questObjectiveStatus[questObjective.ID] += addCount;
+                    MarkQuestObjectiveToSave(questid, questObjective.ID);
 
-                    SendQuestUpdateAddCredit(qInfo, questObjective, ObjectGuid(0), currentCounter, addCount);
+                    SendQuestUpdateAddCredit(qInfo, &questObjective, ObjectGuid(0), currentCounter, addCount);
                 }
 
                 if (CanCompleteQuest(questid))
@@ -17713,23 +17703,22 @@ void Player::ItemRemovedQuestCheck(uint32 entry, uint32 count)
         if (!qInfo)
             continue;
 
-        if (!qInfo->GetQuestObjectiveCountType(QUEST_OBJECTIVE_TYPE_ITEM))
+        if (!qInfo->HasQuestObjectiveType(QUEST_OBJECTIVE_ITEM))
             continue;
 
-        for (QuestObjectiveSet::const_iterator citr = qInfo->m_questObjectives.begin(); citr != qInfo->m_questObjectives.end(); citr++)
+        for (auto const& questObjective : qInfo->m_questObjectives)
         {
-            QuestObjective const* questObjective = *citr;
-            if (questObjective->Type == QUEST_OBJECTIVE_TYPE_ITEM && questObjective->ObjectId == entry)
+            if (questObjective.Type == QUEST_OBJECTIVE_ITEM && questObjective.ObjectId == entry)
             {
-                uint32 currentCounter = questStatus.Status != QUEST_STATUS_COMPLETE ? GetQuestObjectiveCounter(questObjective->Id) : GetItemCount(entry, true);
-                uint32 requiredCounter = uint32(questObjective->Amount);
+                uint32 currentCounter = questStatus.Status != QUEST_STATUS_COMPLETE ? GetQuestObjectiveCounter(questObjective.ID) : GetItemCount(entry, true);
+                uint32 requiredCounter = uint32(questObjective.Amount);
 
                 if (currentCounter < requiredCounter)
                 {
                     uint16 remainingItems = currentCounter <= requiredCounter ? count : count + requiredCounter - currentCounter;
 
-                    m_questObjectiveStatus[questObjective->Id] = (currentCounter <= remainingItems) ? 0 : currentCounter - remainingItems;
-                    MarkQuestObjectiveToSave(questid, questObjective->Id);
+                    m_questObjectiveStatus[questObjective.ID] = (currentCounter <= remainingItems) ? 0 : currentCounter - remainingItems;
+                    MarkQuestObjectiveToSave(questid, questObjective.ID);
                     IncompleteQuest(questid);
                 }
 
@@ -17798,29 +17787,28 @@ void Player::KilledMonsterCredit(uint32 entry, uint64 guid /*= 0*/, uint32 count
         if (!qInfo)
             continue;
 
-        if (!qInfo->GetQuestObjectiveCountType(QUEST_OBJECTIVE_TYPE_NPC))
+        if (!qInfo->HasQuestObjectiveType(QUEST_OBJECTIVE_MONSTER))
             continue;
 
         // just if !ingroup || !noraidgroup || raidgroup
         QuestStatusData& questStatus = m_QuestStatus[questId];
         if (questStatus.Status == QUEST_STATUS_INCOMPLETE && (!GetGroup() || !GetGroup()->isRaidGroup() || qInfo->IsAllowedInRaid(GetMap()->GetDifficulty())))
         {
-            for (QuestObjectiveSet::const_iterator citr = qInfo->m_questObjectives.begin(); citr != qInfo->m_questObjectives.end(); citr++)
+            for (auto const& questObjective : qInfo->m_questObjectives)
             {
-                QuestObjective const* questObjective = *citr;
-                if (questObjective->Type == QUEST_OBJECTIVE_TYPE_NPC && questObjective->ObjectId == realEntry)
+                if (questObjective.Type == QUEST_OBJECTIVE_MONSTER && questObjective.ObjectId == realEntry)
                 {
-                    uint32 currentCounter = GetQuestObjectiveCounter(questObjective->Id);
-                    if (currentCounter < uint32(questObjective->Amount))
+                    uint32 currentCounter = GetQuestObjectiveCounter(questObjective.ID);
+                    if (currentCounter < uint32(questObjective.Amount))
                     {
                         uint32 addKillCount = count;
-                        if ((uint32)currentCounter + addKillCount > uint32(questObjective->Amount))
-                            addKillCount = uint32(questObjective->Amount) - currentCounter;
+                        if ((uint32)currentCounter + addKillCount > uint32(questObjective.Amount))
+                            addKillCount = uint32(questObjective.Amount) - currentCounter;
 
-                        m_questObjectiveStatus[questObjective->Id] += addKillCount;
-                        MarkQuestObjectiveToSave(questId, questObjective->Id);
+                        m_questObjectiveStatus[questObjective.ID] += addKillCount;
+                        MarkQuestObjectiveToSave(questId, questObjective.ID);
 
-                        SendQuestUpdateAddCredit(qInfo, questObjective, ObjectGuid(guid), currentCounter, addKillCount);
+                        SendQuestUpdateAddCredit(qInfo, &questObjective, ObjectGuid(guid), currentCounter, addKillCount);
 
                     }
 
@@ -17848,25 +17836,24 @@ void Player::KilledPlayerCredit()
         if (!qInfo)
             continue;
 
-        if (!qInfo->GetQuestObjectiveCountType(QUEST_OBJECTIVE_TYPE_PLAYER))
+        if (!qInfo->HasQuestObjectiveType(QUEST_OBJECTIVE_PLAYERKILLS))
             continue;
 
         // just if !ingroup || !noraidgroup || raidgroup
         QuestStatusData& questStatus = m_QuestStatus[questId];
         if (questStatus.Status == QUEST_STATUS_INCOMPLETE && (!GetGroup() || !GetGroup()->isRaidGroup() || qInfo->IsAllowedInRaid(GetMap()->GetDifficulty())))
         {
-            for (QuestObjectiveSet::const_iterator citr = qInfo->m_questObjectives.begin(); citr != qInfo->m_questObjectives.end(); citr++)
+            for (auto const& questObjective : qInfo->m_questObjectives)
             {
-                QuestObjective const* questObjective = *citr;
-                if (questObjective->Type == QUEST_OBJECTIVE_TYPE_PLAYER)
+                if (questObjective.Type == QUEST_OBJECTIVE_PLAYERKILLS)
                 {
-                    uint32 currentCounter = GetQuestObjectiveCounter(questObjective->Id);
-                    if (currentCounter < uint32(questObjective->Amount))
+                    uint32 currentCounter = GetQuestObjectiveCounter(questObjective.ID);
+                    if (currentCounter < uint32(questObjective.Amount))
                     {
-                        m_questObjectiveStatus[questObjective->ObjectId] = currentCounter + addKillCount;
-                        MarkQuestObjectiveToSave(questId, questObjective->ObjectId);
+                        m_questObjectiveStatus[questObjective.ObjectId] = currentCounter + addKillCount;
+                        MarkQuestObjectiveToSave(questId, questObjective.ObjectId);
 
-                        SendQuestUpdateAddPlayer(qInfo, questObjective, currentCounter, addKillCount);
+                        SendQuestUpdateAddPlayer(qInfo, &questObjective, currentCounter, addKillCount);
                     }
 
                     if (CanCompleteQuest(questId))
@@ -17882,13 +17869,13 @@ void Player::KilledPlayerCredit()
 void Player::KillCreditGO(uint32 entry, uint64 guid)
 {
     // here to not break old scripts, this function should be removed at some point
-    QuestObjectiveSatisfy(entry, 1, QUEST_OBJECTIVE_TYPE_GO, 0);
+    QuestObjectiveSatisfy(entry, 1, QUEST_OBJECTIVE_GAMEOBJECT, 0);
 }
 
 void Player::TalkedToCreature(uint32 entry, uint64 guid)
 {
     // here to not break old scripts, this function should be removed at some point
-    QuestObjectiveSatisfy(entry, 1, QUEST_OBJECTIVE_TYPE_NPC_INTERACT, guid);
+    QuestObjectiveSatisfy(entry, 1, QUEST_OBJECTIVE_TALKTO, guid);
 }
 
 void Player::MoneyChanged(uint32 count)
@@ -17903,25 +17890,24 @@ void Player::MoneyChanged(uint32 count)
         if (!qInfo)
             continue;
 
-        if (!qInfo->GetQuestObjectiveCountType(QUEST_OBJECTIVE_TYPE_MONEY))
+        if (!qInfo->HasQuestObjectiveType(QUEST_OBJECTIVE_MONEY))
             continue;
 
         QuestStatusData& questStatus = m_QuestStatus[questId];
 
-        for (QuestObjectiveSet::const_iterator citr = qInfo->m_questObjectives.begin(); citr != qInfo->m_questObjectives.end(); citr++)
+        for (auto const& questObjective : qInfo->m_questObjectives)
         {
-            QuestObjective const* questObjective = *citr;
-            if (questObjective->Type == QUEST_OBJECTIVE_TYPE_MONEY)
+            if (questObjective.Type == QUEST_OBJECTIVE_MONEY)
             {
                 if (questStatus.Status == QUEST_STATUS_INCOMPLETE)
                 {
-                    if (count >= uint32(questObjective->Amount))
+                    if (count >= uint32(questObjective.Amount))
                         if (CanCompleteQuest(questId))
                             CompleteQuest(questId);
                 }
                 else if (questStatus.Status == QUEST_STATUS_COMPLETE)
                 {
-                    if (count < uint32(questObjective->Amount))
+                    if (count < uint32(questObjective.Amount))
                         IncompleteQuest(questId);
                 }
             }
@@ -17948,34 +17934,34 @@ void Player::ReputationChangedQuestCheck(FactionEntry const* factionEntry)
 
         QuestStatusData& questStatus = m_QuestStatus[questId];
 
-        for (auto&& questObjective : qInfo->m_questObjectives)
+        for (auto const& questObjective : qInfo->m_questObjectives)
         {
             // I'm not sure what this is needed
-            if (questObjective->Type == QUEST_OBJECTIVE_TYPE_FACTION_REP)
+            if (questObjective.Type == QUEST_OBJECTIVE_MIN_REPUTATION)
             {
                 if (questStatus.Status == QUEST_STATUS_INCOMPLETE)
                 {
-                    if (GetReputationMgr().GetReputation(factionEntry) >= questObjective->Amount)
+                    if (GetReputationMgr().GetReputation(factionEntry) >= questObjective.Amount)
                         if (CanCompleteQuest(questId))
                             CompleteQuest(questId);
                 }
                 else if (questStatus.Status == QUEST_STATUS_COMPLETE)
                 {
-                    if (GetReputationMgr().GetReputation(factionEntry) < questObjective->Amount)
+                    if (GetReputationMgr().GetReputation(factionEntry) < questObjective.Amount)
                         IncompleteQuest(questId);
                 }
             }
-            else if (questObjective->Type == QUEST_OBJECTIVE_TYPE_FACTION_REP_NEG)
+            else if (questObjective.Type == QUEST_OBJECTIVE_MAX_REPUTATION)
             {
                 if (questStatus.Status == QUEST_STATUS_INCOMPLETE)
                 {
-                    if (GetReputationMgr().GetReputation(factionEntry) <= questObjective->Amount)
+                    if (GetReputationMgr().GetReputation(factionEntry) <= questObjective.Amount)
                         if (CanCompleteQuest(questId))
                             CompleteQuest(questId);
                 }
                 else if (questStatus.Status == QUEST_STATUS_COMPLETE)
                 {
-                    if (GetReputationMgr().GetReputation(factionEntry) > questObjective->Amount)
+                    if (GetReputationMgr().GetReputation(factionEntry) > questObjective.Amount)
                         IncompleteQuest(questId);
                 }
             }
@@ -18000,26 +17986,24 @@ void Player::QuestObjectiveSatisfy(uint32 objectId, uint32 amount, uint8 type, u
             continue;
 
         if (type)
-            if (!quest->GetQuestObjectiveCountType(type))
+            if (!quest->HasQuestObjectiveType(static_cast<QuestObjectiveType>(type)))
                 continue;
 
-        for (QuestObjectiveSet::const_iterator citr = quest->m_questObjectives.begin(); citr != quest->m_questObjectives.end(); citr++)
+        for (auto const& questObjective : quest->m_questObjectives)
         {
-            QuestObjective const* questObjective = *citr;
-
-            if (questObjective->Type == type && questObjective->ObjectId == objectId)
+            if (questObjective.Type == type && questObjective.ObjectId == objectId)
             {
-                uint32 currentCounter = GetQuestObjectiveCounter(questObjective->Id);
-                uint32 requiredCounter = uint32(questObjective->Amount);
+                uint32 currentCounter = GetQuestObjectiveCounter(questObjective.ID);
+                uint32 requiredCounter = uint32(questObjective.Amount);
 
                 if (currentCounter < requiredCounter)
                 {
                     uint32 addCounter = currentCounter + amount > requiredCounter ? requiredCounter - currentCounter : amount;
 
-                    m_questObjectiveStatus[questObjective->Id] += addCounter;
-                    MarkQuestObjectiveToSave(questId, questObjective->Id);
+                    m_questObjectiveStatus[questObjective.ID] += addCounter;
+                    MarkQuestObjectiveToSave(questId, questObjective.ID);
 
-                    SendQuestUpdateAddCredit(quest, questObjective, ObjectGuid(guid), currentCounter, addCounter);
+                    SendQuestUpdateAddCredit(quest, &questObjective, ObjectGuid(guid), currentCounter, addCounter);
                 }
                 if (CanCompleteQuest(questId))
                     CompleteQuest(questId);
@@ -18056,13 +18040,13 @@ bool Player::HasQuestForItem(uint32 itemId) const
 
             // There should be no mixed ReqItem/ReqSource drop
             // This part for ReqItem drop
-            for (QuestObjectiveSet::const_iterator citr = qInfo->m_questObjectives.begin(); citr != qInfo->m_questObjectives.end(); citr++)
-                if ((*citr)->Type == QUEST_OBJECTIVE_TYPE_ITEM)
-                    if (itemId == (*citr)->ObjectId && GetQuestObjectiveCounter((*citr)->Id) < uint32((*citr)->Amount))
+            for (auto const& questObjective : qInfo->m_questObjectives)
+                if (questObjective.Type == QUEST_OBJECTIVE_ITEM)
+                    if (itemId == questObjective.ObjectId && GetQuestObjectiveCounter(questObjective.ID) < uint32(questObjective.Amount))
                         return true;
 
             // This part - for ReqSource
-            for (uint8 j = 0; j < QUEST_SOURCE_ITEM_IDS_COUNT; ++j)
+            for (uint8 j = 0; j < QUEST_ITEM_DROP_COUNT; ++j)
             {
                 // examined item is a source item
                 if (qInfo->RequiredSourceItemId[j] == itemId)
@@ -20053,7 +20037,7 @@ void Player::_LoadQuestObjectiveStatus(PreparedQueryResult result)
             const QuestObjective* objective = sObjectMgr->GetQuestObjective(objectiveId);
             if (!objective)
             {
-                TC_LOG_ERROR("entities.player", "Player %s (%u) has invalid Quest Objective Id %u in Quest Objective status data! Skipping.", GetName().c_str(), GetGUIDLow(), objectiveId);
+                TC_LOG_ERROR("entities.player", "Player %s (%u) has invalid Quest Objective ID %u in Quest Objective status data! Skipping.", GetName().c_str(), GetGUIDLow(), objectiveId);
                 continue;
             }
 
@@ -20068,9 +20052,15 @@ void Player::_LoadQuestObjectiveStatus(PreparedQueryResult result)
                     continue;
 
                 // Quest existence is checked on Quest Objective load, no issue should arise
-                QuestObjective const* objective = sObjectMgr->GetQuestTemplate(objectiveQuestId)->GetQuestObjective(objectiveId);
-                if (objective != nullptr)
-                    SetQuestSlotCounter(i, objective->Index, amount);
+                Quest const* qInfo = sObjectMgr->GetQuestTemplate(objectiveQuestId);
+                for (const auto& objective : qInfo->m_questObjectives)
+                {
+                    if (objective.ID == objectiveId)
+                    {
+                        SetQuestSlotCounter(i, objective.Index, amount);
+                        break;
+                    }
+                }
                 m_questObjectiveStatus.insert(std::make_pair(objectiveId, amount));
 
                 break;
@@ -26091,12 +26081,12 @@ bool Player::HasQuestForGO(int32 goId) const
             if (GetGroup() && GetGroup()->isRaidGroup() && !qInfo->IsAllowedInRaid(GetMap()->GetDifficulty()))
                 continue;
 
-            if (!qInfo->GetQuestObjectiveCountType(QUEST_OBJECTIVE_TYPE_GO))
+            if (!qInfo->HasQuestObjectiveType(QUEST_OBJECTIVE_GAMEOBJECT))
                 continue;
 
-            for (QuestObjectiveSet::const_iterator citr = qInfo->m_questObjectives.begin(); citr != qInfo->m_questObjectives.end(); citr++)
-                if ((*citr)->Type == QUEST_OBJECTIVE_TYPE_GO)
-                    if (goId == (*citr)->ObjectId && GetQuestObjectiveCounter((*citr)->Id) < uint32((*citr)->Amount))
+            for (auto const& questObjective : qInfo->m_questObjectives)
+                if (questObjective.Type == QUEST_OBJECTIVE_GAMEOBJECT)
+                    if (goId == questObjective.ObjectId && GetQuestObjectiveCounter(questObjective.ID) < uint32(questObjective.Amount))
                         return true;
         }
     }
@@ -31363,10 +31353,10 @@ void Player::ChangeClass(uint32 oldClass, uint32 newClass)
                 }
             }
 
-            for (auto&& it : quest->m_questObjectives)
+            for (auto const& it : quest->m_questObjectives)
             {
-                m_questObjectiveStatus.erase(it->Id);
-                m_questObjectiveStatusSave[it->Id] = false;
+                m_questObjectiveStatus.erase(it.ID);
+                m_questObjectiveStatusSave[it.ID] = false;
             }
 
             m_QuestStatusSave[quest->GetQuestId()] = false;

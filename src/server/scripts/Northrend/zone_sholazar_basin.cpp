@@ -613,16 +613,22 @@ public:
             if (!quest)
                 return;
 
-            QuestStatusMap::const_iterator itr = player->getQuestStatusMap().find(QUEST_TASTE_TEST);
-            if (itr->second.Status != QUEST_STATUS_INCOMPLETE)
+            if (player->GetQuestStatus(QUEST_TASTE_TEST) != QUEST_STATUS_INCOMPLETE)
                 return;
 
-            if (!quest->GetQuestObjectiveXObjectId(me->GetEntry()))
-                return;
+            for (const auto& objective : quest->m_questObjectives)
+            {
+                if (objective.ObjectId != me->GetEntry())
+                    continue;
 
-            player->KilledMonsterCredit(me->GetEntry(), 0);
-            player->Say(SAY_OFFER, LANG_UNIVERSAL);
-            sayStep = 1;
+                if (player->GetQuestObjectiveCounter(objective.ID) != 0)
+                    continue;
+
+                player->KilledMonsterCredit(me->GetEntry(), 0);
+                player->Say(SAY_OFFER, LANG_UNIVERSAL);
+                sayStep = 1;
+                break;
+            }
         }
 
         private:

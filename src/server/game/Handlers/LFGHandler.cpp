@@ -393,7 +393,7 @@ void WorldSession::SendLfgPlayerLockInfo()
 
             if (has_cta_reward && ctaRoleQuest && ctaRoleQuest->GetRewItemsCount() && i == lfg::LFG_ROLE_SHORTAGE_RARE)
             {
-                for (uint8 j = 0; j < QUEST_REWARDS_COUNT; ++j)
+                for (uint8 j = 0; j < QUEST_REWARD_ITEM_COUNT; ++j)
                 {
                     if (!ctaRoleQuest->RewardItemId[j])
                         continue;
@@ -431,7 +431,7 @@ void WorldSession::SendLfgPlayerLockInfo()
 
         if (quest && quest->GetRewItemsCount())
         {
-            for (uint8 i = 0; i < QUEST_REWARDS_COUNT; ++i)
+            for (uint8 i = 0; i < QUEST_REWARD_ITEM_COUNT; ++i)
             {
                 if (!quest->RewardItemId[i])
                     continue;
@@ -936,7 +936,7 @@ void WorldSession::SendLfgPlayerReward(lfg::LfgPlayerRewardData const& rewardDat
             }
         }
 
-        for (uint8 i = 0; i < QUEST_REWARDS_COUNT; ++i)
+        for (uint8 i = 0; i < QUEST_REWARD_ITEM_COUNT; ++i)
         {
             if (uint32 itemId = rewardData.quest->RewardItemId[i])
             {
@@ -953,7 +953,7 @@ void WorldSession::SendLfgPlayerReward(lfg::LfgPlayerRewardData const& rewardDat
     }
     if (rewardData.ctaQuest && CTAitemNum)
     {
-        for (uint8 i = 0; i < QUEST_REWARDS_COUNT; ++i)
+        for (uint8 i = 0; i < QUEST_REWARD_ITEM_COUNT; ++i)
         {
             if (uint32 itemId = rewardData.ctaQuest->RewardItemId[i])
             {

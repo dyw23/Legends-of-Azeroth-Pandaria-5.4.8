@@ -491,20 +491,19 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, 
         AddQuestLevelToTitle(questTitle, quest->GetQuestLevel());
 
     ByteBuffer objData;
-    for (QuestObjectiveSet::const_iterator citr = quest->m_questObjectives.begin(); citr != quest->m_questObjectives.end(); citr++)
+    for (const auto& objective : quest->m_questObjectives)
     {
-        QuestObjective const* objective = *citr;
-        objData << uint8(objective->Type);
-        objData << uint32(objective->Id);
-        objData << int32(objective->Amount);
-        objData << uint32(objective->ObjectId);
+        objData << uint8(objective.Type);
+        objData << uint32(objective.ID);
+        objData << int32(objective.Amount);
+        objData << uint32(objective.ObjectId);
     }
 
-    uint32 rewItemDisplayId[QUEST_REWARDS_COUNT];
+    uint32 rewItemDisplayId[QUEST_REWARD_ITEM_COUNT];
     uint32 rewChoiceItemDisplayId[QUEST_REWARD_CHOICES_COUNT];
 
     std::vector<std::pair<uint32 /*itemId*/, uint32 /*count*/>> rewInfo;
-    for (uint8 i = 0; i < QUEST_REWARDS_COUNT; i++)
+    for (uint8 i = 0; i < QUEST_REWARD_ITEM_COUNT; i++)
     {
         uint32 id = quest->RewardItemId[i];
         uint32 count = quest->RewardItemIdCount[i];
@@ -559,7 +558,7 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, 
     data << uint32(quest->RewardChoiceItemCount[1]);
     data << uint32(rewChoiceItemDisplayId[2]);
 
-    for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; i++)
+    for (uint8 i = 0; i < QUEST_REWARD_REPUTATIONS_COUNT; i++)
     {
         data << uint32(quest->RewardFactionValueId[i]);
         data << uint32(quest->RewardFactionValueIdOverride[i]);
@@ -696,7 +695,7 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     }
 
     std::vector<std::pair<uint32 /*itemId*/, uint32 /*count*/>> rewInfo;
-    for (uint8 i = 0; i < QUEST_REWARDS_COUNT; i++)
+    for (uint8 i = 0; i < QUEST_REWARD_ITEM_COUNT; i++)
     {
         uint32 id = quest->RewardItemId[i];
         uint32 count = quest->RewardItemIdCount[i];
@@ -723,34 +722,32 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     data.WriteBits(questObjectives.size(), 12);
 
     ByteBuffer objData;
-    for (QuestObjectiveSet::const_iterator citr = quest->m_questObjectives.begin(); citr != quest->m_questObjectives.end(); citr++)
+    for (const auto& questObjective : quest->m_questObjectives)
     {
-        QuestObjective const* questObjective = *citr;
-
-        std::string descriptionText = questObjective->Description;
+        std::string descriptionText = questObjective.Description;
         if (localeConstant != LOCALE_enUS)
-            if (QuestObjectivesLocale const* questObjectiveLocale = sObjectMgr->GetQuestObjectivesLocale(questObjective->Id))
-            //if (QuestObjectiveLocale const* questObjectiveLocale = sObjectMgr->GetQuestObjectiveLocale(questObjective->Id))
+            if (QuestObjectivesLocale const* questObjectiveLocale = sObjectMgr->GetQuestObjectivesLocale(questObjective.ID))
+            //if (QuestObjectiveLocale const* questObjectiveLocale = sObjectMgr->GetQuestObjectiveLocale(questObjective->ID))
                 ObjectMgr::GetLocaleString(questObjectiveLocale->Description, localeConstant, descriptionText);
 
         data.WriteBits(descriptionText.size(), 8);
-        data.WriteBits(questObjective->VisualEffects.size(), 22);
+        data.WriteBits(questObjective.VisualEffects.size(), 22);
 
-        objData << int32(questObjective->Amount);
-        objData << uint32(questObjective->Id);
+        objData << int32(questObjective.Amount);
+        objData << uint32(questObjective.ID);
         objData.WriteString(descriptionText);
-        objData << uint32(questObjective->Flags);
-        objData << int8(questObjective->Index);
-        objData << uint8(questObjective->Type);
-        objData << uint32(questObjective->ObjectId);
+        objData << uint32(questObjective.Flags);
+        objData << int8(questObjective.Index);
+        objData << uint8(questObjective.Type);
+        objData << uint32(questObjective.ObjectId);
 
-        for (VisualEffectVec::const_iterator citrEffects = questObjective->VisualEffects.begin(); citrEffects != questObjective->VisualEffects.end(); citrEffects++)
-            objData << uint32(*citrEffects);
+        for (auto citrEffects : questObjective.VisualEffects)
+            objData << uint32(citrEffects);
     }
 
     data.FlushBits();
 
-    bool hiddenReward = quest->HasFlag(QUEST_FLAGS_HIDDEN_REWARDS);
+    bool hiddenReward = quest->HasFlag(QUEST_FLAGS_HIDE_REWARD);
 
     // values need rechecking and zero values need more research
     data.append(objData);
@@ -770,7 +767,7 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     data << float(quest->GetPointY());
     data << uint32(quest->GetSoundTurnIn());
 
-    for (int i = 0; i < QUEST_REPUTATIONS_COUNT; i++)
+    for (int i = 0; i < QUEST_REWARD_REPUTATIONS_COUNT; i++)
     {
         data << uint32(quest->RewardFactionValueIdOverride[i]);             // unknown usage
         data << uint32(quest->RewardFactionValueId[i]);                     // columnid+1 QuestFactionReward.dbc?
@@ -882,8 +879,8 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, uint64 npcGuid, b
         AddQuestLevelToTitle(questTitle, quest->GetQuestLevel());
 
     std::vector<std::pair<uint32 /*itemId*/, uint32 /*count*/>> rewInfo;
-    uint32 rewItemDisplayId[QUEST_REWARDS_COUNT];
-    for (uint8 i = 0; i < QUEST_REWARDS_COUNT; i++)
+    uint32 rewItemDisplayId[QUEST_REWARD_ITEM_COUNT];
+    for (uint8 i = 0; i < QUEST_REWARD_ITEM_COUNT; i++)
     {
         uint32 id = quest->RewardItemId[i];
         uint32 count = quest->RewardItemIdCount[i];
@@ -924,7 +921,7 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, uint64 npcGuid, b
     data << uint32(rewInfo[3].first);
     data << uint32(rewChoiceItemDisplayId[2]);
 
-    for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; i++)
+    for (uint8 i = 0; i < QUEST_REWARD_REPUTATIONS_COUNT; i++)
     {
         data << uint32(quest->RewardFactionId[i]);
         data << uint32(quest->RewardFactionValueId[i]);
@@ -1033,9 +1030,7 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, uint64 npcGuid, 
 {
     // We can always call to RequestItems, but this packet only goes out if there are actually
     // items.  Otherwise, we'll skip straight to the OfferReward
-
-    uint32 itemCounter = quest->GetQuestObjectiveCountType(QUEST_OBJECTIVE_TYPE_ITEM);
-    if (!itemCounter && canComplete)
+    if (!quest->HasQuestObjectiveType(QUEST_OBJECTIVE_ITEM) && canComplete)
     {
         SendQuestGiverOfferReward(quest, npcGuid, true);
         return;
@@ -1057,29 +1052,34 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, uint64 npcGuid, 
     uint32 requiredMoney = 0;
     ByteBuffer currencyData, itemData;
 
-    for (QuestObjectiveSet::const_iterator citr = quest->m_questObjectives.begin(); citr != quest->m_questObjectives.end(); citr++)
+    uint32 currencyCounter = 0;
+    uint32 itemCounter = 0;
+    for (const auto& questObjective : quest->m_questObjectives)
     {
-        QuestObjective const* questObjective = *citr;
-        switch (questObjective->Type)
+        switch (questObjective.Type)
         {
-            case QUEST_OBJECTIVE_TYPE_ITEM:
+            case QUEST_OBJECTIVE_ITEM:
             {
-                ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(questObjective->ObjectId);
+                ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(questObjective.ObjectId);
 
                 itemData << uint32(itemTemplate ? itemTemplate->DisplayInfoID : 0);
-                itemData << uint32(questObjective->ObjectId);
-                itemData << uint32(questObjective->Amount);
+                itemData << uint32(questObjective.ObjectId);
+                itemData << uint32(questObjective.Amount);
+
+                itemCounter++;
                 break;
             }
-            case QUEST_OBJECTIVE_TYPE_CURRENCY:
+            case QUEST_OBJECTIVE_CURRENCY:
             {
-                currencyData << uint32(questObjective->Amount);
-                currencyData << uint32(questObjective->ObjectId);
+                currencyData << uint32(questObjective.Amount);
+                currencyData << uint32(questObjective.ObjectId);
+
+                currencyCounter++;
                 break;
             }
-            case QUEST_OBJECTIVE_TYPE_MONEY:
+            case QUEST_OBJECTIVE_MONEY:
             {
-                requiredMoney = questObjective->Amount;
+                requiredMoney = questObjective.Amount;
                 break;
             }
             default:
@@ -1091,7 +1091,6 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, uint64 npcGuid, 
         AddQuestLevelToTitle(questTitle, quest->GetQuestLevel());
 
     ObjectGuid guid = npcGuid;
-    uint32 currencyCounter = quest->GetQuestObjectiveCountType(QUEST_OBJECTIVE_TYPE_CURRENCY);
 
     uint32 questGiverEntry = 0;
     if (npcGuid)

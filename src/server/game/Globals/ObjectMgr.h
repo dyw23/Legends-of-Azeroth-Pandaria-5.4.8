@@ -506,7 +506,7 @@ struct GossipMenuItemsLocale
 
 typedef std::unordered_map<std::pair<uint32, uint32>, GossipMenuItemsLocale> GossipMenuItemsLocaleContainer;
 typedef std::unordered_map<uint32, PointOfInterestLocale> PointOfInterestLocaleContainer;
-typedef std::unordered_map<uint32, QuestObjectiveLocale> QuestObjectiveLocaleContainer;
+typedef std::unordered_map<uint32, QuestObjectivesLocale> QuestObjectivesLocaleContainer;
 
 typedef std::multimap<uint32, uint32> QuestRelations; // unit/go -> quest
 typedef std::multimap<uint32, uint32> QuestRelationsReverse; // quest -> unit/go
