@@ -822,9 +822,6 @@ void AddSC_event_midsummer_fire_festival();
 void AddSC_event_pilgrims_bounty();
 void AddSC_event_winter_veil();
 
-// Custom Event
-void AddSC_event_afd_royale();
-
 // Pandaria
 // Gate of the Setting Sun
 void AddSC_boss_commander_rimok();
@@ -1875,8 +1872,6 @@ void AddEventScripts()
     AddSC_event_midsummer_fire_festival();
     AddSC_event_pilgrims_bounty();
     AddSC_event_winter_veil();
-
-    AddSC_event_afd_royale();
 #endif
 }
 

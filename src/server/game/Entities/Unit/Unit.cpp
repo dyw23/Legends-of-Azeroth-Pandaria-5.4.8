@@ -71,8 +71,6 @@
 #include "PetBattle.h"
 #include "GameEventMgr.h"
 
-bool AFDRoyaleIsSpecialAuraHook(Aura const* aura, Unit const* target);
-
 float baseMoveSpeed [MAX_MOVE_TYPE] =
 {
     2.5f,                  // MOVE_WALK
@@ -4779,7 +4777,6 @@ void Unit::RemoveArenaAuras()
         if (!(aura->GetSpellInfo()->AttributesEx4 & SPELL_ATTR4_UNK21) // don't remove stances, shadowform, pally/hunter auras
             && !aura->IsPassive()                               // don't remove passive auras
             && !aura->GetSpellInfo()->HasAttribute(SPELL_ATTR0_CU_PERSISTENT)
-            && !AFDRoyaleIsSpecialAuraHook(aura, this)
             && (aurApp->IsPositive() || !(aura->GetSpellInfo()->AttributesEx3 & SPELL_ATTR3_DEATH_PERSISTENT))) // not negative death persistent auras
             RemoveAura(iter);
         else
