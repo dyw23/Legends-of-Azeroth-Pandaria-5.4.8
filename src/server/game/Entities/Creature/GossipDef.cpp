@@ -496,7 +496,7 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, 
         objData << uint8(objective.Type);
         objData << uint32(objective.ID);
         objData << int32(objective.Amount);
-        objData << uint32(objective.ObjectId);
+        objData << uint32(objective.ObjectID);
     }
 
     uint32 rewItemDisplayId[QUEST_REWARD_ITEM_COUNT];
@@ -737,9 +737,9 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
         objData << uint32(questObjective.ID);
         objData.WriteString(descriptionText);
         objData << uint32(questObjective.Flags);
-        objData << int8(questObjective.Index);
+        objData << int8(questObjective.StorageIndex);
         objData << uint8(questObjective.Type);
-        objData << uint32(questObjective.ObjectId);
+        objData << uint32(questObjective.ObjectID);
 
         for (auto citrEffects : questObjective.VisualEffects)
             objData << uint32(citrEffects);
@@ -1060,10 +1060,10 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, uint64 npcGuid, 
         {
             case QUEST_OBJECTIVE_ITEM:
             {
-                ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(questObjective.ObjectId);
+                ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(questObjective.ObjectID);
 
                 itemData << uint32(itemTemplate ? itemTemplate->DisplayInfoID : 0);
-                itemData << uint32(questObjective.ObjectId);
+                itemData << uint32(questObjective.ObjectID);
                 itemData << uint32(questObjective.Amount);
 
                 itemCounter++;
@@ -1072,7 +1072,7 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, uint64 npcGuid, 
             case QUEST_OBJECTIVE_CURRENCY:
             {
                 currencyData << uint32(questObjective.Amount);
-                currencyData << uint32(questObjective.ObjectId);
+                currencyData << uint32(questObjective.ObjectID);
 
                 currencyCounter++;
                 break;

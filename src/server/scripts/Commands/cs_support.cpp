@@ -2098,7 +2098,7 @@ public:
                         {
                             if (obj.Type == QUEST_OBJECTIVE_ITEM)
                             {
-                                items += std::to_string(obj.ObjectId) + " " + std::to_string(obj.Amount) + ",";
+                                items += std::to_string(obj.ObjectID) + " " + std::to_string(obj.Amount) + ",";
                                 continue;
                             }
                             if (obj.Type == QUEST_OBJECTIVE_CURRENCY) // do something with this?

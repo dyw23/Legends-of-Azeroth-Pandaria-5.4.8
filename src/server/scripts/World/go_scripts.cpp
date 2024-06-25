@@ -944,9 +944,9 @@ public:
             /// @todo prisoner should help player for a short period of time
             for (const auto& objective : qInfo->m_questObjectives)
             {
-                if (objective.Index == 0)
+                if (objective.StorageIndex == 0)
                 {
-                    player->KilledMonsterCredit(objective.ObjectId);
+                    player->KilledMonsterCredit(objective.ObjectID);
                     pPrisoner->DisappearAndDie();
                     break;
                 }

@@ -269,14 +269,14 @@ struct QuestOfferRewardLocale
 
 struct QuestObjective
 {
-    QuestObjective(uint32 id, uint32 questID, int8 index, uint8 type, uint32 objectId, int32 amount, uint32 flags, std::string description)
-        : ID(id), QuestID(questID), Index(index), Type(type), ObjectId(objectId), Amount(amount), Flags(flags), Description(description) { }
+    QuestObjective(uint32 id, uint32 questID, uint8 type, int8 storageIndex, uint32 objectId, int32 amount, uint32 flags, std::string description)
+        : ID(id), QuestID(questID), Type(type), StorageIndex(storageIndex), ObjectID(objectId), Amount(amount), Flags(flags), Description(description) { }
 
     uint32 ID;
     uint32 QuestID;
-    int8 Index;
     uint8 Type;
-    uint32 ObjectId;
+    int8 StorageIndex;
+    uint32 ObjectID;
     int32 Amount;
     uint32 Flags;
     std::string Description;

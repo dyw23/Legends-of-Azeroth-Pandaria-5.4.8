@@ -299,7 +299,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(WorldPacket& recvData)
                         {
                             for (auto&& objective : quest->m_questObjectives)
                             {
-                                if (objective.Type == QUEST_OBJECTIVE_ITEM && objective.ObjectId == item->GetEntry())
+                                if (objective.Type == QUEST_OBJECTIVE_ITEM && objective.ObjectID == item->GetEntry())
                                 {
                                     destroyItem = false;
                                     break;

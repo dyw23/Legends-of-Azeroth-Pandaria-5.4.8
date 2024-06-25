@@ -10746,7 +10746,7 @@ void ObjectMgr::LoadQuestObjectives()
                 break;
         }
 
-        QuestObjective& obj = quest->m_questObjectives.emplace_back(id, questId, index, type, objectId, amount, flags, description);
+        QuestObjective& obj = quest->m_questObjectives.emplace_back(id, questId, type, index, objectId, amount, flags, description);
 
         // Store objective for lookup by id
         _questObjectives[obj.ID] = &obj;

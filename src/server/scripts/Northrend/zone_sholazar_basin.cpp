@@ -618,7 +618,7 @@ public:
 
             for (const auto& objective : quest->m_questObjectives)
             {
-                if (objective.ObjectId != me->GetEntry())
+                if (objective.ObjectID != me->GetEntry())
                     continue;
 
                 if (player->GetQuestObjectiveCounter(objective.ID) != 0)
