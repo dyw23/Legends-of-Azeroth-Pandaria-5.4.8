@@ -15577,7 +15577,8 @@ void Player::SendPreparedGossip(WorldObject* source)
 
     if (source->GetTypeId() == TYPEID_UNIT || source->GetTypeId() == TYPEID_GAMEOBJECT)
     {
-        if (PlayerTalkClass->GetGossipMenu().Empty() && !PlayerTalkClass->GetQuestMenu().Empty())
+        // only use quest menu with one quest, otherwise use gossip menu
+        if (PlayerTalkClass->GetGossipMenu().Empty() && PlayerTalkClass->GetQuestMenu().GetMenuItemCount() == 1)
         {
             SendPreparedQuest(source);
             return;
