@@ -26,7 +26,6 @@ Quest::Quest(Field* questRecord)
     _type = questRecord[1].GetUInt8();
     _questLevel = questRecord[2].GetInt16();
     _minLevel = questRecord[3].GetInt16();
-    // TODO: MaxLevel = uint32(questRecord[...].GetInt16());
     _packageID = questRecord[4].GetUInt32();
     _questSortID = questRecord[5].GetInt16();
     _questInfoID = questRecord[6].GetUInt16();
@@ -42,6 +41,10 @@ Quest::Quest(Field* questRecord)
     _sourceItemId = questRecord[16].GetUInt32();
     _flags = questRecord[17].GetUInt32();
     _flagsEx = questRecord[18].GetUInt32();
+
+    _rewItemsCount = 0;
+    _rewChoiceItemsCount = 0;
+    _rewCurrencyCount = 0;
 
     for (uint32 i = 0; i < QUEST_ITEM_DROP_COUNT; ++i)
     {
@@ -109,84 +112,27 @@ Quest::Quest(Field* questRecord)
     _portraitTurnInText = questRecord[92].GetString();
     _portraitTurnInName = questRecord[93].GetString();
     _questCompletionLog = questRecord[94].GetString();
+}
 
-//    RequiredClasses = questRecord[9].GetUInt16();
-//    RequiredMinRepFaction = questRecord[13].GetUInt16();
-//    RequiredMaxRepFaction = questRecord[14].GetUInt16();
-//    RequiredMinRepValue = questRecord[15].GetInt32();
-//    RequiredMaxRepValue = questRecord[16].GetInt32();
-//    RequiredSkillId = questRecord[53].GetUInt16();
-//    RequiredSkillPoints = questRecord[54].GetUInt16();
-//    PrevQuestId = questRecord[17].GetInt32();
-//    NextQuestId = questRecord[18].GetInt32();
-//    ExclusiveGroup = questRecord[19].GetInt32();
-//    RewardMailTemplateId = questRecord[28].GetUInt32();
-//    RewardMailDelay = questRecord[29].GetUInt32();
-//    SourceSpellid = questRecord[31].GetUInt32();
-//    SpecialFlags = questRecord[34].GetUInt32();
-//    RewardTalents = questRecord[37].GetUInt8();
-//    RewardPackageItemId = questRecord[44].GetUInt32();
-//
-//    for (int i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
-//        RewardChoiceItemId[i] = questRecord[53+i].GetUInt32();
-//
-//    for (int i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
-//        RewardChoiceItemCount[i] = questRecord[59+ i].GetUInt16();
-//
-//    for (int i = 0; i < QUEST_REWARD_REPUTATIONS_COUNT; ++i)
-//        RewardFactionId[i] = questRecord[65+i].GetUInt16();
-//
-//    for (int i = 0; i < QUEST_REWARD_REPUTATIONS_COUNT; ++i)
-//        RewardFactionValueId[i] = questRecord[70+i].GetInt32();
-//
-//    for (int i = 0; i < QUEST_REWARD_REPUTATIONS_COUNT; ++i)
-//        RewardFactionValueIdOverride[i] = questRecord[75+i].GetInt32();
-//
-//    OfferRewardText = questRecord[88].GetString();
-//    RequestItemsText = questRecord[89].GetString();
-//
-//    for (int i = 0; i < QUEST_ITEM_DROP_COUNT; ++i)
-//        RequiredSourceItemId[i] = questRecord[91+i].GetUInt32();
-//
-//    for (int i = 0; i < QUEST_ITEM_DROP_COUNT; ++i)
-//        RequiredSourceItemCount[i] = questRecord[95+i].GetUInt16();
-//
-//    for (int i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
-//        RewardCurrencyId[i] = questRecord[99+i].GetUInt16();
-//
-//    for (int i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
-//        RewardCurrencyCount[i] = questRecord[103+i].GetUInt16();
-//
-//
-//    EmoteOnIncomplete = questRecord[121].GetUInt16();
-//    EmoteOnComplete = questRecord[122].GetUInt16();
-//
-//    for (int i = 0; i < QUEST_EMOTE_COUNT; ++i)
-//        OfferRewardEmote[i] = questRecord[123+i].GetInt16();
-//
-//    for (int i = 0; i < QUEST_EMOTE_COUNT; ++i)
-//        OfferRewardEmoteDelay[i] = questRecord[127+i].GetInt32();
-//
-//    int32 WDBVerified = questRecord[131].GetInt32();
-//
-//    if (_specialFlags & QUEST_SPECIAL_FLAGS_AUTO_ACCEPT)
-//        _flags |= QUEST_FLAGS_AUTO_ACCEPT;
-//
-//    _rewItemsCount = 0;
-//    _rewChoiceItemsCount = 0;
-//    _rewCurrencyCount = 0;
-//
-//    for (int i = 0; i < QUEST_REWARD_ITEM_COUNT; ++i)
-//        if (RewardItemId[i])
-//            ++_rewItemsCount;
-//
-//    for (int i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
-//        if (RewardChoiceItemId[i])
-//            ++_rewChoiceItemsCount;
-//
-//    for (int i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
-//        if (RewardCurrencyId[i])
-//            ++_rewCurrencyCount;
+void Quest::LoadRewardDisplaySpell(Field* fields)
+{
+    uint32 spellId = fields[1].GetUInt32();
+    uint32 playerConditionId = fields[2].GetUInt32();
+    uint32 type = fields[3].GetUInt32();
+
+    if (!sSpellMgr->GetSpellInfo(spellId))
+    {
+        TC_LOG_ERROR("sql.sql", "Table `quest_reward_display_spell` has non-existing Spell (%u) set for quest %u. Skipped.", spellId, fields[0].GetUInt32());
+        return;
+    }
+
+    if (type >= AsUnderlyingType(QuestCompleteSpellType::Max))
+    {
+        TC_LOG_ERROR("sql.sql", "Table `quest_reward_display_spell` invalid type value (%u) set for quest %u and spell %u. Set to 0.", type, fields[0].GetUInt32(), spellId);
+        type = AsUnderlyingType(QuestCompleteSpellType::LegacyBehavior);
+    }
+
+    RewardDisplaySpell.emplace_back(spellId, playerConditionId, QuestCompleteSpellType(type));
 }
 
 void Quest::LoadQuestDetails(Field* fields)
@@ -204,6 +150,96 @@ void Quest::LoadQuestDetails(Field* fields)
 
     for (uint32 i = 0; i < QUEST_EMOTE_COUNT; ++i)
         DetailsEmoteDelay[i] = fields[5 + i].GetUInt32();
+}
+
+void Quest::LoadQuestRequestItems(Field* fields)
+{
+    _emoteOnComplete = fields[1].GetUInt16();
+    _emoteOnIncomplete = fields[2].GetUInt16();
+
+    if (!sEmotesStore.LookupEntry(_emoteOnComplete))
+        TC_LOG_ERROR("sql.sql", "Table `quest_request_items` has non-existing EmoteOnComplete (%u) set for quest %u.", _emoteOnComplete, fields[0].GetUInt32());
+
+    if (!sEmotesStore.LookupEntry(_emoteOnIncomplete))
+        TC_LOG_ERROR("sql.sql", "Table `quest_request_items` has non-existing EmoteOnIncomplete (%u) set for quest %u.", _emoteOnIncomplete, fields[0].GetUInt32());
+
+    _requestItemsText = fields[3].GetString();
+}
+
+void Quest::LoadQuestOfferReward(Field* fields)
+{
+    for (uint32 i = 0; i < QUEST_EMOTE_COUNT; ++i)
+    {
+        if (!sEmotesStore.LookupEntry(fields[1 + i].GetUInt16()))
+        {
+            TC_LOG_ERROR("sql.sql", "Table `quest_offer_reward` has non-existing Emote%u (%u) set for quest %u. Skipped.", 1+i, fields[1+i].GetUInt16(), fields[0].GetUInt32());
+            continue;
+        }
+
+        OfferRewardEmote[i] = fields[1 + i].GetInt16();
+    }
+
+    for (uint32 i = 0; i < QUEST_EMOTE_COUNT; ++i)
+        OfferRewardEmoteDelay[i] = fields[5 + i].GetUInt32();
+
+    _offerRewardText = fields[9].GetString();
+}
+
+void Quest::LoadQuestTemplateAddon(Field* fields)
+{
+    _maxLevel = fields[1].GetUInt8();
+    _allowableClasses = fields[2].GetUInt32();
+    _sourceSpellID = fields[3].GetUInt32();
+    _prevQuestID = fields[4].GetInt32();
+    _nextQuestID = fields[5].GetUInt32();
+    _exclusiveGroup = fields[6].GetInt32();
+    _rewardMailTemplateId = fields[7].GetUInt32();
+    _rewardMailDelay = fields[8].GetUInt32();
+    _requiredSkillId = fields[9].GetUInt16();
+    _requiredSkillPoints = fields[10].GetUInt16();
+    _requiredMinRepFaction = fields[11].GetUInt16();
+    _requiredMaxRepFaction = fields[12].GetUInt16();
+    _requiredMinRepValue = fields[13].GetInt32();
+    _requiredMaxRepValue = fields[14].GetInt32();
+    _sourceItemIdCount = fields[15].GetUInt8();
+    _specialFlags = fields[16].GetUInt8();
+    _scriptId = sObjectMgr->GetScriptId(fields[17].GetString());
+
+    if (_specialFlags & QUEST_SPECIAL_FLAGS_AUTO_ACCEPT)
+        _flags |= QUEST_FLAGS_AUTO_ACCEPT;
+}
+
+void Quest::LoadQuestObjective(Field* fields)
+{
+    QuestObjective& obj = Objectives.emplace_back();
+    obj.QuestID = fields[0].GetUInt32();
+    obj.ID = fields[1].GetUInt32();
+    obj.Type = fields[2].GetUInt8();
+    obj.StorageIndex = fields[3].GetInt8();
+    obj.ObjectID = fields[4].GetInt32();
+    obj.Amount = fields[5].GetInt32();
+    obj.Flags = fields[6].GetUInt32();
+    obj.Description = fields[7].GetString();
+
+    _usedQuestObjectiveTypes[obj.Type] = true;
+}
+
+void Quest::LoadQuestObjectiveVisualEffect(Field* fields)
+{
+    uint32 objID = fields[1].GetUInt32();
+
+    for (QuestObjective& obj : Objectives)
+    {
+        if (obj.ID == objID)
+        {
+            uint8 effectIndex = fields[3].GetUInt8();
+            if (effectIndex >= obj.VisualEffects.size())
+                obj.VisualEffects.resize(effectIndex + 1, 0);
+
+            obj.VisualEffects[effectIndex] = fields[4].GetInt32();
+            break;
+        }
+    }
 }
 
 uint32 Quest::XPValue(Player const* player) const

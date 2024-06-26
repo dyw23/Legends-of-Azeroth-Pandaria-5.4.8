@@ -1947,9 +1947,6 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Checking Quest Disables");
     DisableMgr::CheckQuestDisables();                           // must be after loading quests
 
-    TC_LOG_INFO("server.loading", "Loading Quest Objectives...");
-    sObjectMgr->LoadQuestObjectives();
-
     TC_LOG_INFO("server.loading", "Loading Quest Objective Locales...");
     sObjectMgr->LoadQuestObjectivesLocale();
 

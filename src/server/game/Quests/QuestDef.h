@@ -282,16 +282,13 @@ struct QuestOfferRewardLocale
 
 struct QuestObjective
 {
-    QuestObjective(uint32 id, uint32 questID, uint8 type, int8 storageIndex, uint32 objectId, int32 amount, uint32 flags, std::string description)
-        : ID(id), QuestID(questID), Type(type), StorageIndex(storageIndex), ObjectID(objectId), Amount(amount), Flags(flags), Description(description) { }
-
-    uint32 ID;
-    uint32 QuestID;
-    uint8 Type;
-    int8 StorageIndex;
-    uint32 ObjectID;
-    int32 Amount;
-    uint32 Flags;
+    uint32 ID         = 0;
+    uint32 QuestID    = 0;
+    uint8 Type        = 0;
+    int8 StorageIndex = 0;
+    uint32 ObjectID   = 0;
+    int32 Amount      = 0;
+    uint32 Flags      = 0;
     std::string Description;
     std::vector<uint32> VisualEffects;
 };
@@ -317,7 +314,13 @@ class Quest
     public:
         // Loading data. All queries are in ObjectMgr::LoadQuests()
         explicit Quest(Field* questRecord);
+        void LoadRewardDisplaySpell(Field* fields);
         void LoadQuestDetails(Field* fields);
+        void LoadQuestRequestItems(Field* fields);
+        void LoadQuestOfferReward(Field* fields);
+        void LoadQuestTemplateAddon(Field* fields);
+        void LoadQuestObjective(Field* fields);
+        void LoadQuestObjectiveVisualEffect(Field* fields);
 
         uint32 XPValue(Player const* player) const;
 

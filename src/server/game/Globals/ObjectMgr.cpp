@@ -4141,6 +4141,62 @@ void ObjectMgr::LoadQuests()
         _questTemplates[newQuest->GetQuestId()] = newQuest;
     } while (result->NextRow());
 
+    struct QuestLoaderHelper
+    {
+        typedef void(Quest::* QuestLoaderFunction)(Field* fields);
+
+        char const* QueryFields;
+        char const* TableName;
+        char const* QueryExtra;
+        char const* TableDesc;
+        QuestLoaderFunction LoaderFunction;
+    };
+
+    // QuestID needs to be fields[0]
+    QuestLoaderHelper const QuestLoaderHelpers[] =
+    {
+        // 0   1       2       3       4       5            6            7            8
+        { "ID, Emote1, Emote2, Emote3, Emote4, EmoteDelay1, EmoteDelay2, EmoteDelay3, EmoteDelay4",                                                                       "quest_details",        "",                                       "details",             &Quest::LoadQuestDetails       },
+
+        // 0   1                2                  3
+        { "ID, EmoteOnComplete, EmoteOnIncomplete, CompletionText",                                                                                                       "quest_request_items",  "",                                       "request items",       &Quest::LoadQuestRequestItems  },
+
+        // 0   1       2       3       4       5            6            7            8            9
+        { "ID, Emote1, Emote2, Emote3, Emote4, EmoteDelay1, EmoteDelay2, EmoteDelay3, EmoteDelay4, RewardText",                                                           "quest_offer_reward",   "",                                       "reward emotes",       &Quest::LoadQuestOfferReward   },
+
+        // 0   1         2                 3              4            5            6               7                     8
+        { "ID, MaxLevel, AllowableClasses, SourceSpellID, PrevQuestID, NextQuestID, ExclusiveGroup, RewardMailTemplateID, RewardMailDelay,"
+         // 9               10                   11                     12                     13                   14                   15                 16
+         " RequiredSkillID, RequiredSkillPoints, RequiredMinRepFaction, RequiredMaxRepFaction, RequiredMinRepValue, RequiredMaxRepValue, ProvidedItemCount, SpecialFlags,"
+         // 17
+         " ScriptName",                                                                                                                                                    "quest_template_addon", "",                                       "template addons",     &Quest::LoadQuestTemplateAddon },
+
+        // 0           1      2        3         4            5          6         7
+        { "qo.QuestID, qo.ID, qo.Type, qo.Index, qo.ObjectID, qo.Amount, qo.Flags, qo.Description",                                                                        "quest_objective qo",  "ORDER BY qo.Index ASC",                   "quest objectives",    &Quest::LoadQuestObjective     },
+    };
+
+    for (QuestLoaderHelper const& loader : QuestLoaderHelpers)
+    {
+        result = WorldDatabase.PQuery("SELECT %s FROM %s %s", loader.QueryFields, loader.TableName, loader.QueryExtra);
+
+        if (!result)
+            TC_LOG_INFO("server.loading", ">> Loaded 0 quest %s. DB table `%s` is empty.", loader.TableDesc, loader.TableName);
+        else
+        {
+            do
+            {
+                Field* fields = result->Fetch();
+                uint32 questId = fields[0].GetUInt32();
+
+                auto itr = _questTemplates.find(questId);
+                if (itr != _questTemplates.end())
+                    (itr->second->*loader.LoaderFunction)(fields);
+                else
+                    TC_LOG_ERROR("server.loading", "Table `%s` has data for quest %u but such quest does not exist", loader.TableName, questId);
+            } while (result->NextRow());
+        }
+    }
+
     std::map<uint32, uint32> usedMailTemplates;
 
     // Post processing
@@ -10655,203 +10711,6 @@ void ObjectMgr::LoadSceneTemplates()
     } while (templates->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %u scene templates in %u ms.", count, GetMSTimeDiffToNow(oldMSTime));
-}
-
-void ObjectMgr::LoadQuestObjectives()
-{
-    uint32 oldMSTime = getMSTime();
-
-    QueryResult result = WorldDatabase.Query("SELECT `questId`, `id`, `index`, `type`, `objectId`, `amount`, `flags`, `description` FROM `quest_objective` ORDER BY `questId` ASC");
-    if (!result)
-    {
-        TC_LOG_ERROR("server.loading", ">> Loaded 0 Quest Objectives. DB table `quest_objective` is empty.");
-        return;
-    }
-
-    _questObjectives.clear();
-
-    uint32 count = 0;
-    do
-    {
-        Field* fields = result->Fetch();
-
-        uint32 questId          = fields[0].GetUInt32();
-        uint32 id               = fields[1].GetUInt32();
-        int8 index              = fields[2].GetInt8();
-        uint8 type              = fields[3].GetUInt8();
-        uint32 objectId         = fields[4].GetUInt32();
-        int32 amount            = fields[5].GetInt32();
-        uint32 flags            = fields[6].GetUInt32();
-        std::string description = fields[7].GetString();
-
-        if (_questTemplates.find(questId) == _questTemplates.end())
-        {
-            TC_LOG_ERROR("sql.sql", "Quest Objective %u has non existant Quest Id %u! Skipping.", id, questId);
-            continue;
-        }
-
-        if (DisableMgr::IsDisabledFor(DISABLE_TYPE_QUEST, questId, NULL))
-            continue;
-
-        if (type >= MAX_QUEST_OBJECTIVE_TYPE)
-        {
-            TC_LOG_ERROR("sql.sql", "Quest Objective %u has invalid type %u! Skipping.", id, type);
-            continue;
-        }
-
-        Quest* quest = _questTemplates.find(questId)->second;
-        switch (type)
-        {
-            case QUEST_OBJECTIVE_MONSTER:
-            case QUEST_OBJECTIVE_TALKTO:
-            case QUEST_OBJECTIVE_WINPETBATTLEAGAINSTNPC:
-            {
-                if (!GetCreatureTemplate(objectId))
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest Objective %u has non existant Creature Id %u! Skipping.", id, objectId);
-                    continue;
-                }
-
-                if (amount <= 0)
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest Objective %u has valid Creature Id %u but amount %u is invalid! Skipping.", id, objectId, amount);
-                    continue;
-                }
-
-                break;
-            }
-            case QUEST_OBJECTIVE_ITEM:
-            {
-                if (!GetItemTemplate(objectId))
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest Objective %u has non existant Item Id %u! Skipping.", id, objectId);
-                    continue;
-                }
-
-                if (amount <= 0)
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest Objective %u has valid Item Id %u but amount %u is invalid! Skipping.", id, objectId, amount);
-                    continue;
-                }
-
-                auto qinfo = GetQuestTemplate(questId);
-                if (qinfo->HasSpecialFlag(QUEST_SPECIAL_FLAGS_project_DAILY_QUEST))
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest %u has required item %u but is also marked as QUEST_SPECIAL_FLAGS_project_DAILY_QUEST which is incompatible with DELIVER style quests", qinfo->GetQuestId(), objectId);
-                    amount = 0; // prevent incorrect work of quest
-                }
-
-                break;
-            }
-            case QUEST_OBJECTIVE_GAMEOBJECT:
-            {
-                if (!GetGameObjectTemplate(objectId))
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest Objective %u has non existant GameObject Id %u! Skipping.", id, objectId);
-                    continue;
-                }
-
-                if (amount <= 0)
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest Objective %u has valid GameObject Id %u but amount %u is invalid! Skipping.", id, objectId, amount);
-                    continue;
-                }
-
-                break;
-            }
-            case QUEST_OBJECTIVE_CURRENCY:
-            {
-                if (!sCurrencyTypesStore.LookupEntry(objectId))
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest Objective %u has non existant Currency Id %u! Skipping.", id, objectId);
-                    continue;
-                }
-
-                break;
-            }
-            case QUEST_OBJECTIVE_LEARNSPELL:
-            {
-                SpellInfo const* spell = sSpellMgr->GetSpellInfo(objectId);
-                if (!spell)
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest Objective %u has non existant Spell Id %u! Skipping.", id, objectId);
-                    continue;
-                }
-
-                else if (!SpellMgr::IsSpellValid(spell))
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest Objective %u has invalid Spell Id %u! Skipping.", id, objectId);
-                    continue;
-                }
-
-                if (amount <= 0)
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest Objective %u has valid Spell Id %u but amount %u is invalid! Skipping.", id, objectId, amount);
-                    continue;
-                }
-
-                break;
-            }
-            case QUEST_OBJECTIVE_MIN_REPUTATION:
-            case QUEST_OBJECTIVE_MAX_REPUTATION:
-            {
-                if (!sFactionStore.LookupEntry(objectId))
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest Objective %u has non existant Faction Id %u! Skipping.", id, objectId);
-                    continue;
-                }
-
-                break;
-            }
-            case QUEST_OBJECTIVE_DEFEATBATTLEPET:
-            {
-                if (!sBattlePetSpeciesStore.HasRecord(objectId))
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest Objective %u has non existant Battle Pet Species %u! Skipping.", id, objectId);
-                    continue;
-                }
-
-                if (!HasBattlePetSpeciesFlag(objectId, BATTLE_PET_FLAG_ELITE))
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest Objective %u has invalid Battle Pet Species %u, it doesn't have BATTLE_PET_FLAG_ELITE flag! Skipping.", id, objectId);
-                    continue;
-                }
-
-                if (amount <= 0)
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest Objective %u has valid Item Id %u but amount %u is invalid! Skipping.", id, objectId, amount);
-                    continue;
-                }
-
-                break;
-            }
-            case QUEST_OBJECTIVE_WINPVPPETBATTLES:
-            {
-                if (amount <= 0)
-                {
-                    TC_LOG_ERROR("sql.sql", "Quest Objective %u has invalid Pet Battle PvP win amount %u! Skipping.", id, amount);
-                    continue;
-                }
-
-                break;
-            }
-            case QUEST_OBJECTIVE_MONEY:
-            default:
-                break;
-        }
-
-        QuestObjective& obj = quest->Objectives.emplace_back(id, questId, type, index, objectId, amount, flags, description);
-
-        // Store objective for lookup by id
-        _questObjectives[obj.ID] = &obj;
-
-        quest->_usedQuestObjectiveTypes[type] = true;
-
-        count++;
-    }
-    while (result->NextRow());
-
-    TC_LOG_INFO("server.loading", ">> Loaded %u Quest Objectives in %u ms.", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void ObjectMgr::LoadQuestObjectiveVisualEffects()

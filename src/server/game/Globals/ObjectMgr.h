@@ -1155,7 +1155,6 @@ class ObjectMgr
         }
 
         void LoadQuests();
-        void LoadQuestObjectives();
         void LoadQuestObjectiveVisualEffects();
         void LoadQuestStartersAndEnders();
         void LoadGameobjectQuestStarters();
