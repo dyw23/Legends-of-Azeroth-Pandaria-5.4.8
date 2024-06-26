@@ -2144,6 +2144,26 @@ float WorldObject::GetSightRange(const WorldObject* target) const
     return 0.0f;
 }
 
+bool WorldObject::CheckPrivateObjectOwnerVisibility(WorldObject const* seer) const
+{
+    if (!IsPrivateObject())
+        return true;
+
+    // Owner of this private object
+    if (_privateObjectOwner == seer->GetGUID())
+        return true;
+
+    // Another private object of the same owner
+    if (_privateObjectOwner == seer->GetPrivateObjectOwner())
+        return true;
+
+    if (Player const* playerSeer = seer->ToPlayer())
+        if (playerSeer->IsInGroup(_privateObjectOwner))
+            return true;
+
+    return false;
+}
+
 bool WorldObject::CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth, bool distanceCheck) const
 {
     if (this == obj)
@@ -2154,6 +2174,9 @@ bool WorldObject::CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
 
     if (obj->IsAlwaysVisibleFor(this) || CanAlwaysSee(obj))
         return true;
+
+    if (!obj->CheckPrivateObjectOwnerVisibility(this))
+        return false;
 
     bool corpseVisibility = false;
     if (distanceCheck)
@@ -2178,11 +2201,6 @@ bool WorldObject::CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
         if (Player const* player = this->ToPlayer())
         {
             viewpoint = player->m_seer;
-
-            if (Creature const* creature = obj->ToCreature())
-                if (TempSummon const* tempSummon = creature->ToTempSummon())
-                    if (tempSummon->IsVisibleBySummonerOnly() && GetGUID() != tempSummon->GetSummonerGUID())
-                        return false;
 
             // Check Allow visible by entry
             if (auto info = sObjectMgr->GetObjectVisibilityStateData(obj->GetEntry()))
@@ -2672,7 +2690,7 @@ void WorldObject::AddObjectToRemoveList()
     map->AddObjectToRemoveList(this);
 }
 
-TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties /*= NULL*/, uint32 duration /*= 0*/, Unit* summoner /*= NULL*/, uint32 spellId /*= 0*/, uint32 vehId /*= 0*/, bool visibleBySummonerOnly /*= false*/)
+TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties /*= NULL*/, uint32 duration /*= 0*/, Unit* summoner /*= NULL*/, uint32 spellId /*= 0*/, uint32 vehId /*= 0*/, uint64 privateObjectOwner /*= 0*/)
 {
     if (!Trinity::IsValidMapCoord(pos.GetPositionX(), pos.GetPositionY()))
     {
@@ -2785,7 +2803,7 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
 
     summon->InitStats(duration);
 
-    summon->SetVisibleBySummonerOnly(visibleBySummonerOnly);
+    summon->SetPrivateObjectOwner(privateObjectOwner);
 
     AddToMap(summon->ToCreature());
     summon->UpdateCastingSpeed();
@@ -2844,11 +2862,11 @@ void WorldObject::SetZoneScript()
     }
 }
 
-TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempSummonType spwtype, uint32 duration, uint32 vehId, bool visibleBySummonerOnly /*= false*/)
+TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempSummonType spwtype, uint32 duration, uint32 vehId, uint64 privateObjectOwner /*= 0*/)
 {
     if (Map* map = FindMap())
     {
-        if (TempSummon* summon = map->SummonCreature(entry, pos, nullptr, duration, ToUnit(), 0, vehId, visibleBySummonerOnly))
+        if (TempSummon* summon = map->SummonCreature(entry, pos, nullptr, duration, ToUnit(), 0, vehId, privateObjectOwner))
         {
             summon->SetTempSummonType(spwtype);
             return summon;
@@ -2858,7 +2876,7 @@ TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempS
     return NULL;
 }
 
-TempSummon* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang /*= 0*/, TempSummonType spwtype /*= TEMPSUMMON_MANUAL_DESPAWN*/, uint32 despwtime /*= 0*/, bool visibleBySummonerOnly /*= false*/)
+TempSummon* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang /*= 0*/, TempSummonType spwtype /*= TEMPSUMMON_MANUAL_DESPAWN*/, uint32 despwtime /*= 0*/, uint64 privateObjectOwner /*= 0*/)
 {
     if (!x && !y && !z)
     {
@@ -2867,7 +2885,7 @@ TempSummon* WorldObject::SummonCreature(uint32 id, float x, float y, float z, fl
     }
     Position pos;
     pos.Relocate(x, y, z, ang);
-    return SummonCreature(id, pos, spwtype, despwtime, 0, visibleBySummonerOnly);
+    return SummonCreature(id, pos, spwtype, despwtime, 0, privateObjectOwner);
 }
 
 GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float z, float ang, G3D::Quat const& rotation, uint32 respawnTime, GOSummonType summonType)

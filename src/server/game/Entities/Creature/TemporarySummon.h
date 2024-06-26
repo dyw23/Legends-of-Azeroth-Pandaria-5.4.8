@@ -69,9 +69,6 @@ class TC_GAME_API TempSummon : public Creature
         bool IsSummonedByHidden() const { return m_hideSummonedBy; }
         void HideSummonedBy() { m_hideSummonedBy = true; }
 
-        void SetVisibleBySummonerOnly(bool visibleBySummonerOnly) { m_visibleBySummonerOnly = visibleBySummonerOnly; }
-        bool IsVisibleBySummonerOnly() const { return m_visibleBySummonerOnly; }
-
     protected:
         int32  m_slot = -1;
         bool   m_hideSummonedBy = false;
@@ -80,7 +77,6 @@ class TC_GAME_API TempSummon : public Creature
         uint32 m_timer;
         uint32 m_lifetime;
         uint64 m_summonerGUID;
-        bool m_visibleBySummonerOnly;
 };
 
 class TC_GAME_API Minion : public TempSummon

@@ -4468,7 +4468,7 @@ void AchievementGlobalMgr::LoadRewardLocales()
         std::string localeName  = fields[1].GetString();
 
         LocaleConstant locale = GetLocaleByName(localeName);
-        if (locale == LOCALE_enUS)
+        if (!sWorld->getBoolConfig(CONFIG_LOAD_LOCALES) || locale == LOCALE_enUS)
             continue;
 
         if (m_achievementRewards.find(id) == m_achievementRewards.end())

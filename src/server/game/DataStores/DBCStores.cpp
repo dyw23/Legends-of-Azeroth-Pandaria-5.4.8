@@ -326,7 +326,7 @@ inline void LoadDBC(uint32& availableDbcLocales, StoreProblemList& errors, DBCSt
     if (customFormat)
         sql = new SqlDbc(&filename, customFormat, customIndexName, storage.GetFormat());
 
-    if (storage.Load(dbcFilename.c_str(), sql, sWorld->GetDefaultDbcLocale()))
+    if (storage.Load(dbcFilename.c_str(), sql, !sWorld->getBoolConfig(CONFIG_LOAD_LOCALES) ? LOCALE_enUS : sWorld->GetDefaultDbcLocale()))
     {
         for (uint8 i = 0; i < TOTAL_LOCALES; ++i)
         {

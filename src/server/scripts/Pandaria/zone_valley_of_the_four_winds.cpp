@@ -2140,7 +2140,7 @@ struct npc_vfw_unbarreled_pandaren : public customCreatureAI
 
     void IsSummonedBy(Unit* summoner) override
     {
-        me->ToTempSummon()->SetVisibleBySummonerOnly(true);
+        me->ToTempSummon()->SetPrivateObjectOwner(summoner->GetGUID());
         summonerGUID = summoner->GetGUID();
 
         uint32 delay = 2000;

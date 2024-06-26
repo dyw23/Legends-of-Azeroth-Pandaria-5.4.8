@@ -3763,7 +3763,7 @@ struct npc_lorewalker_cho_peering_into_past : public customCreatureAI
 
     void IsSummonedBy(Unit* summoner) override
     {
-        me->ToTempSummon()->SetVisibleBySummonerOnly(true);
+        me->ToTempSummon()->SetPrivateObjectOwner(summoner->GetGUID());
         summonerGUID = summoner->GetGUID();
         delay = 1000;
 
@@ -3956,7 +3956,7 @@ struct npc_prince_anduin_decision : public customCreatureAI
 
     void IsSummonedBy(Unit* summoner) override
     {
-        me->ToTempSummon()->SetVisibleBySummonerOnly(true);
+        me->ToTempSummon()->SetPrivateObjectOwner(summoner->GetGUID());
         summonerGUID = summoner->GetGUID();
         delay = 1000;
 
@@ -4106,7 +4106,7 @@ struct npc_prince_anduin_decision_helpers : public customCreatureAI
 
     void IsSummonedBy(Unit* summoner) override
     {
-        me->ToTempSummon()->SetVisibleBySummonerOnly(true);
+        me->ToTempSummon()->SetPrivateObjectOwner(summoner->GetGUID());
         summonerGUID = summoner->GetGUID();
 
         if (me->GetEntry() == NPC_SULLY || me->GetEntry() == NPC_KAERLEN)

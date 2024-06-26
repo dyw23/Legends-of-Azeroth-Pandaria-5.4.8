@@ -158,7 +158,7 @@ public:
 
     void EraseEntry(uint32 id) { indexTable.asT[id] = nullptr; }
 
-    bool Load(char const* fn, uint32 locale)
+    bool Load(char const* fn, LocaleConstant locale)
     {
         DB2FileLoader db2;
         // Check if load was sucessful, only then continue

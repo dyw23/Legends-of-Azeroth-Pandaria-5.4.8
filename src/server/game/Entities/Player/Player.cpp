@@ -25037,6 +25037,19 @@ void Player::ClearComboPoints()
     m_comboTarget = 0;
 }
 
+bool Player::IsInGroup(ObjectGuid groupGuid) const
+{
+    if (Group const* group = GetGroup())
+        if (group->GetGUID() == groupGuid)
+            return true;
+
+    if (Group const* group = GetOriginalGroup())
+        if (group->GetGUID() == groupGuid)
+            return true;
+
+    return false;
+}
+
 void Player::SetGroup(GroupSlot slot, Group* group, int8 subgroup)
 {
     auto& ref = m_group[uint32(slot)];
