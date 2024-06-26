@@ -260,7 +260,7 @@ uint32 Quest::XPValue(Player const* player) const
         else if (diffFactor > 10)
             diffFactor = 10;
 
-        uint32 xp = diffFactor * xpentry->Exp[_rewardXPDifficulty] / 10;
+        uint32 xp = diffFactor * xpentry->Difficulty[_rewardXPDifficulty] / 10;
         if (xp <= 100)
             xp = 5 * ((xp + 2) / 5);
         else if (xp <= 500)

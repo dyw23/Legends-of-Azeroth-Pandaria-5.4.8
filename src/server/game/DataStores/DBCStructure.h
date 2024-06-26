@@ -1918,13 +1918,13 @@ struct QuestV2Entry
 struct QuestXPEntry
 {
   uint32      id;
-  uint32      Exp[10];
+  uint32      Difficulty[10];
 };
 
 struct QuestFactionRewEntry
 {
   uint32      id;
-  int32       QuestRewFactionValue[10];
+  int32       Difficulty[10];
 };
 
 struct QuestPOIPointEntry

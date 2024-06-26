@@ -7009,6 +7009,10 @@ void Player::RewardReputation(Quest const* quest)
         if (!quest->RewardFactionId[i])
             continue;
 
+        FactionEntry const* factionEntry = sFactionStore.LookupEntry(quest->RewardFactionId[i]);
+        if (!factionEntry)
+            continue;
+
         float rep = 0;
         bool noQuestBonus = false;
 
@@ -7019,11 +7023,11 @@ void Player::RewardReputation(Quest const* quest)
         }
         else
         {
-            uint32 row = ((quest->RewardFactionId[i] < 0) ? 1 : 0) + 1;
+            uint32 row = ((quest->RewardFactionValue[i] < 0) ? 1 : 0) + 1;
             if (QuestFactionRewEntry const* questFactionRewEntry = sQuestFactionRewardStore.LookupEntry(row))
             {
-                uint32 field = quest->RewardFactionId[i];
-                rep = questFactionRewEntry->QuestRewFactionValue[field];
+                uint32 field = abs(quest->RewardFactionValue[i]);
+                rep = questFactionRewEntry->Difficulty[field];
             }
         }
 
@@ -7041,8 +7045,7 @@ void Player::RewardReputation(Quest const* quest)
         else
             rep = CalculateReputationGain(REPUTATION_SOURCE_QUEST, GetQuestLevel(quest), rep, quest->RewardFactionId[i], noQuestBonus);
 
-        if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(quest->RewardFactionId[i]))
-            GetReputationMgr().ModifyReputation(factionEntry, rep);
+        GetReputationMgr().ModifyReputation(factionEntry, rep);
     }
 }
 
