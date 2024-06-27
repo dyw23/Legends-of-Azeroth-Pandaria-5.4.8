@@ -676,6 +676,8 @@ typedef std::vector<PlayerCreateInfoSkill> PlayerCreateInfoSkills;
 
 typedef std::list<uint32> PlayerCreateSkillRaceClassList;
 
+typedef std::vector<uint32> PlayerCreateInfoSpells;
+
 struct PlayerCreateInfoAction
 {
     PlayerCreateInfoAction() : button(0), type(0), action(0)
@@ -705,6 +707,7 @@ struct PlayerInfo
     uint16 displayId_m;
     uint16 displayId_f;
     PlayerCreateInfoItems item;
+    PlayerCreateInfoSpells castSpells;
     //PlayerCreateInfoSkills skills;      // Not skill id - index from SkillRaceClassInfo.dbc 
     PlayerCreateSkillRaceClassList skills;
     PlayerCreateInfoActions action;
