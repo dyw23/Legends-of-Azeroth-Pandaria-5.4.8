@@ -273,6 +273,7 @@ void ScriptMgr::Unload()
     SCR_CLEAR(GameEventScript);
     SCR_CLEAR(UnitScript);
     SCR_CLEAR(SceneScript);
+    SCR_CLEAR(QuestScript);
 
     #undef SCR_CLEAR
 
@@ -1991,6 +1992,24 @@ void ScriptMgr::OnSceneComplete(Player* player, uint32 sceneInstanceID, SceneTem
     tmpscript->OnSceneComplete(player, sceneInstanceID, sceneTemplate);
 }
 
+void ScriptMgr::OnQuestStatusChange(Player* player, Quest const* quest, QuestStatus oldStatus, QuestStatus newStatus)
+{
+    ASSERT(player);
+    ASSERT(quest);
+
+    GET_SCRIPT(QuestScript, quest->GetScriptId(), tmpscript);
+    tmpscript->OnQuestStatusChange(player, quest, oldStatus, newStatus);
+}
+
+void ScriptMgr::OnQuestObjectiveChange(Player* player, Quest const* quest, QuestObjective const* objective, int32 oldAmount, int32 newAmount)
+{
+    ASSERT(player);
+    ASSERT(quest);
+
+    GET_SCRIPT(QuestScript, quest->GetScriptId(), tmpscript);
+    tmpscript->OnQuestObjectiveChange(player, quest, objective, oldAmount, newAmount);
+}
+
 bool ScriptMgr::CanHavePetAI(Creature* creature)
 {
     return creature->GetCharmInfo() != nullptr;
@@ -2168,6 +2187,12 @@ SceneScript::SceneScript(const char* name)
     ScriptRegistry<SceneScript>::Instance()->AddScript(this);
 }
 
+QuestScript::QuestScript(const char* name)
+    : ScriptObject(name)
+{
+    ScriptRegistry<QuestScript>::Instance()->AddScript(this);
+}
+
 GameEventScript::GameEventScript(const char* name)
     : ScriptObject(name)
 {
@@ -2212,6 +2237,7 @@ template class ScriptRegistry<GroupScript>;
 template class ScriptRegistry<GameEventScript>;
 template class ScriptRegistry<UnitScript>;
 template class ScriptRegistry<SceneScript>;
+template class ScriptRegistry<QuestScript>;
 
 // Undefine utility macros.
 #undef GET_SCRIPT_RET

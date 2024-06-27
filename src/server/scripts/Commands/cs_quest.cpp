@@ -127,6 +127,8 @@ public:
             return false;
         }
 
+        QuestStatus oldStatus = player->GetQuestStatus(entry);
+
         // remove all quest entries for 'entry' from quest log
         for (uint8 slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot)
         {
@@ -148,6 +150,8 @@ public:
 
         player->RemoveActiveQuest(entry, false);
         player->RemoveRewardedQuest(entry);
+
+        sScriptMgr->OnQuestStatusChange(player, quest, oldStatus, QUEST_STATUS_NONE);
 
         CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_QUESTSTATUS_REWARDED_BY_QUEST);
         stmt->setUInt32(0, player->GetGUIDLow());

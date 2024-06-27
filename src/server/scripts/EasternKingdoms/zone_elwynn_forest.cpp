@@ -21,6 +21,8 @@
 
 enum ElwynnForest
 {
+    SPELL_FIRE_EXTINGUISHER_AURA            = 80209,
+
     /// Infantries vs. Wolfs
     // Texts
     INFANTRY_HELP_YELL                      = 0,
@@ -1199,6 +1201,21 @@ struct npc_minion_of_hogger : public ScriptedAI
     }
 };
 
+// 26391
+class quest_extinguishing_hope : public QuestScript
+{
+public:
+    quest_extinguishing_hope() : QuestScript("quest_extinguishing_hope") {}
+
+    void OnQuestStatusChange(Player* player, Quest const* /*quest*/, QuestStatus /*oldStatus*/, QuestStatus newStatus) override
+    {
+        if (newStatus == QUEST_STATUS_INCOMPLETE)
+            player->CastSpell(player, SPELL_FIRE_EXTINGUISHER_AURA, true);
+        else if (newStatus == QUEST_STATUS_REWARDED || newStatus == QUEST_STATUS_NONE)
+            player->RemoveAurasDueToSpell(SPELL_FIRE_EXTINGUISHER_AURA);
+    }
+};
+
 void AddSC_elwynn_forest()
 {
 
@@ -1214,4 +1231,5 @@ void AddSC_elwynn_forest()
     new spell_script<spell_summ_varian_alliance_way>("spell_summ_varian_alliance_way");
     new creature_script<npc_hogger>("npc_hogger");
     new creature_script<npc_minion_of_hogger>("npc_minion_of_hogger");
+    new quest_extinguishing_hope();
 }

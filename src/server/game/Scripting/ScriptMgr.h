@@ -28,6 +28,7 @@
 #include "Weather.h"
 #include "ItemPrototype.h"
 #include "WorldStateBuilder.h"
+#include "QuestDef.h"
 
 class AreaTrigger;
 class AuctionHouseObject;
@@ -64,6 +65,7 @@ class WorldSocket;
 class WorldObject;
 
 enum class QuestGiverStatus : uint32;
+enum QuestStatus : uint8;
 
 struct AuctionEntry;
 struct ConditionSourceInfo;
@@ -72,6 +74,7 @@ struct ItemTemplate;
 struct OutdoorPvPData;
 struct SceneTemplate;
 struct GameEventData;
+struct QuestObjective;
 
 #define VISIBLE_RANGE       166.0f                          //MAX visible range (size of grid)
 
@@ -887,6 +890,21 @@ class SceneScript : public ScriptObject
         virtual void OnSceneComplete(Player* /*player*/, uint32 /*sceneInstanceID*/, SceneTemplate const* /*sceneTemplate*/) { }
 };
 
+class QuestScript : public ScriptObject
+{
+    protected:
+
+        QuestScript(const char* name);
+
+    public:
+
+        // Called when a quest status change
+        virtual void OnQuestStatusChange(Player* /*player*/, Quest const* /*quest*/, QuestStatus /*oldStatus*/, QuestStatus /*newStatus*/) { }
+
+        // Called when a quest objective data change
+        virtual void OnQuestObjectiveChange(Player* /*player*/, Quest const* /*quest*/, QuestObjective const* /*objective*/, int32 /*oldAmount*/, int32 /*newAmount*/) { }
+};
+
 class GameEventScript : public ScriptObject
 {
     protected:
@@ -1229,6 +1247,10 @@ class TC_GAME_API ScriptMgr
         void OnSceneTrigger(Player* player, uint32 sceneInstanceID, SceneTemplate const* sceneTemplate, std::string const& triggerName);
         void OnSceneCancel(Player* player, uint32 sceneInstanceID, SceneTemplate const* sceneTemplate);
         void OnSceneComplete(Player* player, uint32 sceneInstanceID, SceneTemplate const* sceneTemplate);
+
+    public: /* QuestScript */
+        void OnQuestStatusChange(Player* player, Quest const* quest, QuestStatus oldStatus, QuestStatus newStatus);
+        void OnQuestObjectiveChange(Player* player, Quest const* quest, QuestObjective const* objective, int32 oldAmount, int32 newAmount);
 
     public:
         static bool CanHavePetAI(Creature* creature);

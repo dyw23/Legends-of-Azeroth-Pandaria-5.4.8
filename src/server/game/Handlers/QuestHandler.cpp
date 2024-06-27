@@ -633,7 +633,10 @@ void WorldSession::HandleQuestLogRemoveQuest(WorldPacket& recvData)
     {
         if (uint32 questId = _player->GetQuestSlotQuestId(slot))
         {
-            if (Quest const* quest = sObjectMgr->GetQuestTemplate(questId))
+            Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+            QuestStatus oldStatus = _player->GetQuestStatus(questId);
+
+            if (quest)
             {
                 if (quest->HasSpecialFlag(QUEST_SPECIAL_FLAGS_TIMED))
                     _player->RemoveTimedQuest(questId);
@@ -650,6 +653,9 @@ void WorldSession::HandleQuestLogRemoveQuest(WorldPacket& recvData)
             _player->RemoveTimedAchievement(CRITERIA_START_TYPE_QUEST, questId);
 
             TC_LOG_INFO("network", "Player %u abandoned quest %u", _player->GetGUIDLow(), questId);
+
+            if (quest)
+                sScriptMgr->OnQuestStatusChange(_player, quest, oldStatus, QUEST_STATUS_NONE);
         }
 
         _player->SetQuestSlot(slot, 0);
