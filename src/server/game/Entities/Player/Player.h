@@ -46,8 +46,8 @@ struct ItemExtendedCostEntry;
 struct TrainerSpell;
 struct VendorItem;
 
-class PlayerAchievementMgr;
-class ReputationMgr;
+class BattlePetMgr;
+class CinematicMgr;
 class Channel;
 class CharacterCreateInfo;
 class Creature;
@@ -57,12 +57,13 @@ class Guild;
 class LootLockoutMap;
 class OutdoorPvP;
 class Pet;
+class PhaseMgr;
 class PlayerMenu;
 class PlayerSocial;
+class PlayerAchievementMgr;
+class ReputationMgr;
 class SpellCastTargets;
 class UpdateMask;
-class PhaseMgr;
-class BattlePetMgr;
 class PlayerAI;
 class SpellHistory;
 class TradeData;
@@ -93,7 +94,7 @@ enum PlayerUnderwaterState
     UNDERWATER_INWATER = 0x01,             // terrain type is water and player is afflicted by it
     UNDERWATER_INLAVA = 0x02,             // terrain type is lava and player is afflicted by it
     UNDERWATER_INSLIME = 0x04,             // terrain type is lava and player is afflicted by it
-    UNDERWARER_INDARKWATER = 0x08,             // terrain type is dark water and player is afflicted by it
+    UNDERWATER_INDARKWATER = 0x08,             // terrain type is dark water and player is afflicted by it
 
     UNDERWATER_EXIST_TIMERS = 0x10
 };
@@ -798,11 +799,12 @@ enum InstanceResetWarningType
 
 class InstanceSave;
 
-enum RestType
+enum RestFlag
 {
-    REST_TYPE_NO = 0,
-    REST_TYPE_IN_TAVERN = 1,
-    REST_TYPE_IN_CITY = 2
+    REST_FLAG_NONE            = 0,
+    REST_FLAG_IN_TAVERN       = 1,
+    REST_FLAG_IN_CITY         = 2,
+    REST_FLAG_IN_FACTION_AREA = 4
 };
 
 enum TeleportToOptions
@@ -913,7 +915,8 @@ enum PlayerDelayedOperations
 
 // Player summoning auto-decline time (in secs)
 #define MAX_PLAYER_SUMMON_DELAY                   (2*MINUTE)
-#define MAX_MONEY_AMOUNT               (UI64LIT(9999999999)) // TODO: Move this restriction to worldserver.conf, default to this value, hardcap at uint64.max
+// Maximum money amount : 2^31 - 1
+TC_GAME_API extern uint64 const MAX_MONEY_AMOUNT;
 
 struct InstancePlayerBind
 {
@@ -1224,9 +1227,10 @@ enum class LootLockoutType
     Max
 };
 
-class Player : public Unit, public GridObject<Player>
+class TC_GAME_API Player : public Unit, public GridObject<Player>
 {
     friend class WorldSession;
+    friend class CinematicMgr;
     friend void Item::AddToUpdateQueueOf(Player* player);
     friend void Item::RemoveFromUpdateQueueOf(Player* player);
     public:
@@ -1262,11 +1266,7 @@ class Player : public Unit, public GridObject<Player>
 
     void SetInWater(bool apply);
 
-    bool IsInWater() const
-    {
-        return m_isInWater;
-    }
-    bool IsUnderWater() const;
+    bool IsInAreaTrigger(const AreaTriggerEntry* areaTrigger) const;
 
     void SendInitialPacketsBeforeAddToMap();
     void SendInitialPacketsAfterAddToMap();
@@ -1351,6 +1351,7 @@ class Player : public Unit, public GridObject<Player>
 
     void GiveXP(uint32 xp, Unit* victim, float group_rate = 1.0f);
     void GiveLevel(uint8 level);
+    bool IsMaxLevel() const;
 
     void InitStatsForLevel(bool reapplyMods = false);
     void RemoveSpecializationSpells();
@@ -1387,48 +1388,15 @@ class Player : public Unit, public GridObject<Player>
 
     void setDeathState(DeathState s);                   // overwrite Unit::setDeathState
 
-    void InnEnter(time_t time, uint32 mapid, float x, float y, float z);
-
-    float GetRestBonus() const
-    {
-        return m_rest_bonus;
-    }
+    float GetRestBonus() const { return m_rest_bonus; }
     void SetRestBonus(float rest_bonus_new);
 
-    RestType GetRestType() const
-    {
-        return rest_type;
-    }
-    void SetRestType(RestType n_r_type)
-    {
-        rest_type = n_r_type;
-    }
+    bool HasRestFlag(RestFlag restFlag) const { return (_restFlagMask & restFlag) != 0; }
+    void SetRestFlag(RestFlag restFlag, uint32 triggerId = 0);
+    void RemoveRestFlag(RestFlag restFlag);
 
-    uint32 GetInnPosMapId() const
-    {
-        return inn_pos_mapid;
-    }
-    float GetInnPosX() const
-    {
-        return inn_pos_x;
-    }
-    float GetInnPosY() const
-    {
-        return inn_pos_y;
-    }
-    float GetInnPosZ() const
-    {
-        return inn_pos_z;
-    }
-
-    time_t GetTimeInnEnter() const
-    {
-        return time_inn_enter;
-    }
-    void UpdateInnerTime(time_t time)
-    {
-        time_inn_enter = time;
-    }
+    uint32 GetXPRestBonus(uint32 xp);
+    uint32 GetInnTriggerId() const { return inn_triggerId; }
 
     Pet* GetPet() const;
     Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 despwtime);
@@ -1641,10 +1609,10 @@ class Player : public Unit, public GridObject<Player>
     float GetReputationPriceDiscount(Creature const* creature) const;
 
     Player* GetTrader() const;
-
     TradeData* GetTradeData() const { return m_trade; }
-    
     void TradeCancel(bool sendback);
+
+    CinematicMgr* GetCinematicMgr() const { return _cinematicMgr; }
 
     void UpdateEnchantTime(uint32 time);
     void UpdateSoulboundTradeItems();
@@ -1691,7 +1659,7 @@ class Player : public Unit, public GridObject<Player>
     }
 
     void PrepareQuestMenu(uint64 guid);
-    void SendPreparedQuest(uint64 guid);
+    void SendPreparedQuest(WorldObject* source);
     bool IsActiveQuest(uint32 quest_id) const;
     Quest const* GetNextQuest(uint64 guid, Quest const* quest);
     bool CanSeeStartQuest(Quest const* quest);
@@ -1700,17 +1668,20 @@ class Player : public Unit, public GridObject<Player>
     bool CanCompleteQuest(uint32 quest_id);
     bool CanCompleteRepeatableQuest(Quest const* quest);
     bool CanRewardQuest(Quest const* quest, bool msg);
-    bool CanRewardQuest(Quest const* quest, uint32 reward, bool msg);
+    bool CanRewardQuest(Quest const* quest, uint32 rewardId, bool msg);
     void AddQuestAndCheckCompletion(Quest const* quest, Object* questGiver);
     void AddQuest(Quest const* quest, Object* questGiver);
     void CompleteQuest(uint32 quest_id, bool completely = false, bool fromCommand = false);
     void IncompleteQuest(uint32 quest_id);
+    bool CanSelectQuestPackageItem(QuestPackageItemEntry const* questPackageItem) const;
     void RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, bool announce = true);
     void FailQuest(uint32 quest_id);
     bool SatisfyQuestSkill(Quest const* qInfo, bool msg) const;
     bool SatisfyQuestLevel(Quest const* qInfo, bool msg);
     bool SatisfyQuestLog(bool msg);
-    bool SatisfyQuestPreviousQuest(Quest const* qInfo, bool msg);
+    bool SatisfyQuestDependentQuests(Quest const* qInfo, bool msg) const;
+    bool SatisfyQuestPreviousQuest(Quest const* qInfo, bool msg) const;
+    bool SatisfyQuestDependentPreviousQuests(Quest const* qInfo, bool msg) const;
     bool SatisfyQuestClass(Quest const* qInfo, bool msg) const;
     bool SatisfyQuestRace(Quest const* qInfo, bool msg);
     bool SatisfyQuestReputation(Quest const* qInfo, bool msg);
@@ -1718,8 +1689,6 @@ class Player : public Unit, public GridObject<Player>
     bool SatisfyQuestConditions(Quest const* qInfo, bool msg);
     bool SatisfyQuestTimed(Quest const* qInfo, bool msg);
     bool SatisfyQuestExclusiveGroup(Quest const* qInfo, bool msg);
-    bool SatisfyQuestNextChain(Quest const* qInfo, bool msg);
-    bool SatisfyQuestPrevChain(Quest const* qInfo, bool msg);
     bool SatisfyQuestDay(Quest const* qInfo, bool msg);
     bool SatisfyQuestWeek(Quest const* qInfo, bool msg);
     bool SatisfyQuestMonth(Quest const* qInfo, bool msg);
@@ -1729,6 +1698,7 @@ class Player : public Unit, public GridObject<Player>
     bool GetQuestRewardStatus(uint32 quest_id) const;
     QuestStatus GetQuestStatus(uint32 quest_id) const;
     void SetQuestStatus(uint32 quest_id, QuestStatus status, bool update = true);
+    QuestGiverStatus GetQuestDialogStatus(Object const* questgiver);
     void RemoveActiveQuest(uint32 quest_id, bool update = true, bool removeFromQuestLog = false);
     void RemoveRewardedQuest(uint32 quest_id, bool update = true);
     void SendQuestUpdate(uint32 questId);
@@ -1897,15 +1867,9 @@ class Player : public Unit, public GridObject<Player>
         m_weaponChangeTimer = time;
     }
 
-    uint64 GetMoney() const
-    {
-        return GetUInt64Value(PLAYER_FIELD_COINAGE);
-    }
+    uint64 GetMoney() const { return GetUInt64Value(PLAYER_FIELD_COINAGE); }
     bool ModifyMoney(int64 amount, bool sendError = true);
-    bool HasEnoughMoney(uint64 amount) const
-    {
-        return (GetMoney() >= amount);
-    }
+    bool HasEnoughMoney(uint64 amount) const { return (GetMoney() >= amount); }
     bool HasEnoughMoney(int64 amount) const;
     void SetMoney(uint64 value);
 
@@ -2178,14 +2142,8 @@ class Player : public Unit, public GridObject<Player>
     }
     void ResurrectUsingRequestData();
 
-    uint8 getCinematic()
-    {
-        return m_cinematic;
-    }
-    void setCinematic(uint8 cine)
-    {
-        m_cinematic = cine;
-    }
+    uint8 getCinematic() const { return m_cinematic; }
+    void setCinematic(uint8 cine) { m_cinematic = cine; }
 
     ActionButton* addActionButton(uint8 button, uint32 action, uint8 type);
     void removeActionButton(uint8 button);
@@ -2214,6 +2172,7 @@ public:
     void UpdatePvP(bool state);
     void UpdateZone(uint32 newZone, uint32 newArea);
     void UpdateArea(uint32 newArea);
+    void SetNeedsZoneUpdate(bool needsUpdate) { m_needsZoneUpdate = needsUpdate; }
 
     void UpdateZoneDependentAuras(uint32 zone_id);    // zones
     void UpdateAreaDependentAuras(uint32 area_id);    // subzones
@@ -2336,7 +2295,6 @@ public:
     void UpdateMaxHealth();
     void UpdateMaxPower(Powers power);
     void UpdateAttackPowerAndDamage(bool ranged = false);
-    void UpdateDamagePhysical(WeaponAttackType attType);
     void ApplySpellPowerBonus(int32 amount, bool apply);
     void UpdateSpellDamageAndHealingBonus();
     void ApplyRatingMod(CombatRating cr, int32 value, bool apply);
@@ -2347,7 +2305,7 @@ public:
     void UpdatePvpPower();
     bool CanUseMastery() const;
 
-    void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& min_damage, float& max_damage);
+    void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& min_damage, float& max_damage, uint8 damageIndex) const override;
 
     inline void RecalculateRating(CombatRating cr)
     {
@@ -2427,13 +2385,9 @@ public:
     void SendResetInstanceFailed(uint32 reason, uint32 MapId);
     void SendResetFailedNotify(uint32 mapid);
 
-    virtual bool UpdatePosition(float x, float y, float z, float orientation, bool teleport = false);
-    bool UpdatePosition(const Position &pos, bool teleport = false)
-    {
-        return UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport);
-    }
-    void UpdateUnderwaterState(Map* m, float x, float y, float z);
-
+    bool UpdatePosition(float x, float y, float z, float orientation, bool teleport = false) override;
+    bool UpdatePosition(const Position &pos, bool teleport = false) override { return UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport); }
+    void ProcessTerrainStatusUpdate(ZLiquidStatus oldLiquidStatus, Optional<LiquidData> const& newLiquidData) override;
     void SendMessageToSet(WorldPacket* data, bool self)
     {
         SendMessageToSetInRange(data, GetVisibilityRange() + 2 * World::Visibility_RelocationLowerLimit, self);
@@ -2787,14 +2741,13 @@ public:
     {
         return GetRestTime() >= 10 * IN_MILLISECONDS;
     }
-    uint32 GetXPRestBonus(uint32 xp);
     uint32 GetRestTime() const
     {
-        return m_restTime;
+        return _restTime;
     }
     void SetRestTime(uint32 v)
     {
-        m_restTime = v;
+        _restTime = v;
     }
 
     /*********************************************************/
@@ -2884,6 +2837,8 @@ public:
 
     template<class T>
     void UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& visibleNow);
+    void UpdatePhasing();
+    void PlayerSendSetPhaseShift(std::set<uint32> const& phaseIds);
 
     uint8 m_forced_speed_changes [MAX_MOVE_TYPE];
 
@@ -2983,6 +2938,7 @@ public:
         return m_group[uint32(slot)].getTarget();
     }
 
+    bool IsInGroup(ObjectGuid groupGuid) const;
     void SetGroup(GroupSlot slot, Group* group, int8 subgroup = -1);
     void SetSubGroup(GroupSlot slot, uint8 subgroup)
     {
@@ -3149,13 +3105,8 @@ public:
 
     bool HasForcedMovement() const { return hasForcedMovement_; }
 
-    bool CanFly() const
-    {
-        return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY);
-    }
-
-    //! Return collision height sent to client
-    float GetCollisionHeight(bool mounted) const;
+    bool CanFly() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY);}
+    bool CanEnterWater() const override { return true; }
 
     std::string GetMapAreaAndZoneString();
     std::string GetCoordsMapAreaAndZoneString();
@@ -3305,8 +3256,6 @@ public:
     void UpdateValorOfTheAncients();
     void UpdatePromotionAuras();
 
-    void UpdateMount();
-
     void ApplyDeserter(bool reset = false);
     uint8 GetDeserterMod() { return deserterMod; }
     time_t GetLastDeserterTime() { return lastDeserterTime; }
@@ -3446,7 +3395,7 @@ protected:
     void SendMirrorTimer(MirrorTimerType Type, uint32 MaxValue, uint32 CurrentValue, int32 Regen);
     void StopMirrorTimer(MirrorTimerType Type);
     void HandleDrowning(uint32 time_diff);
-    int32 getMaxTimer(MirrorTimerType timer);
+    int32 getMaxTimer(MirrorTimerType timer) const;
 
     /*********************************************************/
     /***                  HONOR SYSTEM                     ***/
@@ -3556,8 +3505,6 @@ protected:
     uint32 m_deathTimer;
     time_t m_deathExpireTime;
 
-    uint32 m_restTime;
-
     uint32 m_WeaponProficiency;
     uint32 m_ArmorProficiency;
     bool m_canParry;
@@ -3566,13 +3513,10 @@ protected:
     uint8 m_swingErrorMsg;
 
     ////////////////////Rest System/////////////////////
-    time_t time_inn_enter;
-    uint32 inn_pos_mapid;
-    float  inn_pos_x;
-    float  inn_pos_y;
-    float  inn_pos_z;
+    time_t _restTime;
+    uint32 inn_triggerId;
     float m_rest_bonus;
-    RestType rest_type;
+    uint32 _restFlagMask;
     ////////////////////Rest System/////////////////////
 
     // Social
@@ -3605,6 +3549,8 @@ protected:
 
     uint8 m_grantableLevels;
 
+    bool m_needsZoneUpdate;
+
     CUFProfile* _CUFProfiles [MAX_CUF_PROFILES];
 
     // Archaeology
@@ -3622,6 +3568,8 @@ protected:
     InventoryResult CanStoreItem_InInventorySlots(uint8 slot_begin, uint8 slot_end, ItemPosCountVec& dest, ItemTemplate const* pProto, uint32& count, bool merge, Item* pSrcItem, uint8 skip_bag, uint8 skip_slot) const;
     Item* _StoreItem(uint16 pos, Item* pItem, uint32 count, bool clone, bool update);
     Item* _LoadItem(CharacterDatabaseTransaction trans, uint32 zoneId, uint32 timeDiff, Field* fields);
+
+    CinematicMgr* _cinematicMgr;
 
     std::set<uint32> m_refundableItems;
     void SendRefundInfo(Item* item);

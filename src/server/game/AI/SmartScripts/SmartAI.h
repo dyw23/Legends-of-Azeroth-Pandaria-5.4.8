@@ -28,7 +28,7 @@
 #include "SmartScriptMgr.h"
 #include "GameObjectAI.h"
 
-enum SmartEscortState
+enum SmartEscortState : uint8
 {
     SMART_ESCORT_NONE       = 0x000,                        //nothing in progress
     SMART_ESCORT_ESCORTING  = 0x001,                        //escort is in progress
@@ -36,23 +36,20 @@ enum SmartEscortState
     SMART_ESCORT_PAUSED     = 0x004                         //will not proceed with waypoints before state is removed
 };
 
-enum SmartEscortVars
-{
-    SMART_ESCORT_MAX_PLAYER_DIST        = 50,
-    SMART_MAX_AID_DIST    = SMART_ESCORT_MAX_PLAYER_DIST / 2
-};
+static float constexpr SMART_ESCORT_MAX_PLAYER_DIST = 60.f;
+static float constexpr SMART_MAX_AID_DIST = SMART_ESCORT_MAX_PLAYER_DIST / 2.f;
 
-class SmartAI : public CreatureAI
+class TC_GAME_API SmartAI : public CreatureAI
 {
     public:
         ~SmartAI(){ }
         explicit SmartAI(Creature* c);
 
         //core related
-        static int Permissible(const Creature*);        
+        static int32 Permissible(const Creature*);        
 
         // Start moving to the desired MovePoint
-        void StartPath(bool run = false, uint32 path = 0, bool repeat = false, Unit* invoker = NULL);
+        void StartPath(bool run = false, uint32 pathId = 0, bool repeat = false, Unit* invoker = nullptr, uint32 nodeId = 1);
         bool LoadPath(uint32 entry);
         void PausePath(uint32 delay, bool forced = false);
         void StopPath(uint32 DespawnTime = 0, uint32 quest = 0, bool fail = false);
@@ -83,7 +80,7 @@ class SmartAI : public CreatureAI
         void JustReachedHome() override;
 
         // Called for reaction at enter to combat if not in combat yet (enemy can be NULL)
-        void EnterCombat(Unit* enemy) override;
+        void JustEngagedWith(Unit* enemy) override;
 
         // Called for reaction at stopping attack at no attackers or targets
         void EnterEvadeMode() override;
@@ -267,10 +264,10 @@ class SmartVehicleAI : public SmartAI, private VehicleAIBase
         void OnCharmed(bool apply) override;
 };
 
-class SmartGameObjectAI : public GameObjectAI
+class TC_GAME_API SmartGameObjectAI : public GameObjectAI
 {
     public:
-        SmartGameObjectAI(GameObject* g) : GameObjectAI(g), go(g) { }
+        SmartGameObjectAI(GameObject* go) : GameObjectAI(go), _gossipReturn(false) { }
         ~SmartGameObjectAI() { }
 
         void UpdateAI(uint32 diff) override;
@@ -279,13 +276,13 @@ class SmartGameObjectAI : public GameObjectAI
         SmartScript* GetScript() { return &mScript; }
         static int Permissible(const GameObject* g);
 
-        bool GossipHello(Player* player) override;
+        bool OnGossipHello(Player* player) override;
         bool OnReportUse(Player* player) override;
-        bool GossipSelect(Player* player, uint32 sender, uint32 action) override;
-        bool GossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) override;
-        bool QuestAccept(Player* player, Quest const* quest) override;
-        bool QuestReward(Player* player, Quest const* quest, uint32 opt) override;
-        uint32 GetDialogStatus(Player* /*player*/);
+        bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override;
+        bool OnGossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) override;
+        bool OnQuestAccept(Player* player, Quest const* quest) override;
+        bool OnQuestReward(Player* player, Quest const* quest, uint32 opt) override;
+        Optional<QuestGiverStatus> GetDialogStatus(Player* /*player*/) override;
         void Destroyed(Player* player, uint32 eventId) override;
         void SetData(uint32 id, uint32 value) override;
         void SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker);
@@ -293,8 +290,12 @@ class SmartGameObjectAI : public GameObjectAI
         void OnStateChanged(uint32 state, Unit* unit) override;
         void EventInform(uint32 eventId) override;
 
+        void SetGossipReturn(bool val) { _gossipReturn = val; }
+
     protected:
-        GameObject* const go;
         SmartScript mScript;
+
+        // Gossip
+        bool _gossipReturn;
 };
 #endif

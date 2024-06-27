@@ -393,7 +393,7 @@ void WorldSession::SendLfgPlayerLockInfo()
 
             if (has_cta_reward && ctaRoleQuest && ctaRoleQuest->GetRewItemsCount() && i == lfg::LFG_ROLE_SHORTAGE_RARE)
             {
-                for (uint8 j = 0; j < QUEST_REWARDS_COUNT; ++j)
+                for (uint8 j = 0; j < QUEST_REWARD_ITEM_COUNT; ++j)
                 {
                     if (!ctaRoleQuest->RewardItemId[j])
                         continue;
@@ -401,7 +401,7 @@ void WorldSession::SendLfgPlayerLockInfo()
                     if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(ctaRoleQuest->RewardItemId[j]))
                     {
                         lfgData << uint32(ctaRoleQuest->RewardItemId[j]);
-                        lfgData << uint32(ctaRoleQuest->RewardItemIdCount[j]);
+                        lfgData << uint32(ctaRoleQuest->RewardItemCount[j]);
                         lfgData << uint32(proto->DisplayInfoID);
                     }
                 }
@@ -427,18 +427,18 @@ void WorldSession::SendLfgPlayerLockInfo()
         }
 
         lfgData << uint32(0);
-        lfgData << uint32(quest ? quest->GetRewardOrRequiredMoney() : 0);
+        lfgData << uint32(quest ? quest->GetRewOrReqMoney(GetPlayer()) : 0);
 
         if (quest && quest->GetRewItemsCount())
         {
-            for (uint8 i = 0; i < QUEST_REWARDS_COUNT; ++i)
+            for (uint8 i = 0; i < QUEST_REWARD_ITEM_COUNT; ++i)
             {
                 if (!quest->RewardItemId[i])
                     continue;
 
                 if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(quest->RewardItemId[i]))
                 {
-                    lfgData << uint32(quest->RewardItemIdCount[i]);
+                    lfgData << uint32(quest->RewardItemCount[i]);
                     lfgData << uint32(quest->RewardItemId[i]);
                     lfgData << uint32(proto->DisplayInfoID);
                 }
@@ -916,7 +916,7 @@ void WorldSession::SendLfgPlayerReward(lfg::LfgPlayerRewardData const& rewardDat
 
     ByteBuffer bytereward;
     WorldPacket data(SMSG_LFG_PLAYER_REWARD);
-    data << uint32(rewardData.quest ? rewardData.quest->GetRewardOrRequiredMoney() : 0);
+    data << uint32(rewardData.quest ? rewardData.quest->GetRewOrReqMoney(GetPlayer()) : 0);
     data << uint32(rewardData.rdungeonEntry);                               // Random Dungeon Finished
     data << uint32(rewardData.quest ? rewardData.quest->XPValue(GetPlayer()) : 0);
     data << uint32(rewardData.sdungeonEntry);                               // Dungeon Finished
@@ -936,7 +936,7 @@ void WorldSession::SendLfgPlayerReward(lfg::LfgPlayerRewardData const& rewardDat
             }
         }
 
-        for (uint8 i = 0; i < QUEST_REWARDS_COUNT; ++i)
+        for (uint8 i = 0; i < QUEST_REWARD_ITEM_COUNT; ++i)
         {
             if (uint32 itemId = rewardData.quest->RewardItemId[i])
             {
@@ -947,13 +947,13 @@ void WorldSession::SendLfgPlayerReward(lfg::LfgPlayerRewardData const& rewardDat
                 bytereward << uint32(itemId);
                 bytereward << uint32(0);
                 bytereward << uint32(item ? item->DisplayInfoID : 0);
-                bytereward << uint32(rewardData.quest->RewardItemIdCount[i]);
+                bytereward << uint32(rewardData.quest->RewardItemCount[i]);
             }
         }
     }
     if (rewardData.ctaQuest && CTAitemNum)
     {
-        for (uint8 i = 0; i < QUEST_REWARDS_COUNT; ++i)
+        for (uint8 i = 0; i < QUEST_REWARD_ITEM_COUNT; ++i)
         {
             if (uint32 itemId = rewardData.ctaQuest->RewardItemId[i])
             {
@@ -964,7 +964,7 @@ void WorldSession::SendLfgPlayerReward(lfg::LfgPlayerRewardData const& rewardDat
                 bytereward << uint32(itemId);
                 bytereward << uint32(0);
                 bytereward << uint32(item ? item->DisplayInfoID : 0);
-                bytereward << uint32(rewardData.ctaQuest->RewardItemIdCount[i]);
+                bytereward << uint32(rewardData.ctaQuest->RewardItemCount[i]);
             }
         }
     }

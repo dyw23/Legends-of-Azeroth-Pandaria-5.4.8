@@ -84,7 +84,7 @@ bool Corpse::Create(uint32 guidlow, Player* owner)
     //in other way we will get a crash in Corpse::SaveToDB()
     SetMap(owner->GetMap());
 
-    WorldObject::_Create(guidlow, HIGHGUID_CORPSE, owner->GetPhaseMask());
+    WorldObject::_Create(guidlow, HIGHGUID_CORPSE, owner->GetPhaseMask(), owner->GetPhases());
 
     SetObjectScale(1);
     SetUInt64Value(CORPSE_FIELD_OWNER, owner->GetGUID());

@@ -15,35 +15,38 @@
 * with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Chat.h"
-#include "ScriptMgr.h"
 #include "AccountMgr.h"
+#include "BattlegroundMgr.h"
 #include "CellImpl.h"
+#include "Chat.h"
+#include "Config.h"
+#include "DevTool.h"
+#include "DisableMgr.h"
 #include "GridNotifiers.h"
 #include "Group.h"
+#include "GroupMgr.h"
 #include "InstanceSaveMgr.h"
 #include "Language.h"
 #include "MovementGenerator.h"
 #include "ObjectAccessor.h"
 #include "Opcodes.h"
-#include "SpellAuras.h"
 #include "TargetedMovementGenerator.h"
 #include "WeatherMgr.h"
-#include "ace/INET_Addr.h"
 #include "Player.h"
 #include "Pet.h"
 #include "LFG.h"
-#include "GroupMgr.h"
 #include "MMapFactory.h"
-#include "DevTool.h"
-#include "BattlegroundMgr.h"
 #include "Realm.h"
 #include "ServiceMgr.h"
-#include "Config.h"
+#include "ScriptMgr.h"
 #include "ServiceMgr.h"
+#include "SpellAuras.h"
 #include "SpellHistory.h"
 #include "WordFilterMgr.h"
+#include "World.h"
 #include "IPLocation.h"
+
+
 #include <fstream>
 
 class misc_commandscript : public CommandScript
@@ -404,7 +407,7 @@ public:
 
         uint32 haveMap = Map::ExistMap(mapId, gridX, gridY) ? 1 : 0;
         uint32 haveVMap = Map::ExistVMap(mapId, gridX, gridY) ? 1 : 0;
-        uint32 haveMMap = (MMAP::MMapFactory::IsPathfindingEnabledInMap(mapId) && MMAP::MMapFactory::createOrGetMMapManager()->GetNavMesh(handler->GetSession()->GetPlayer()->GetMapId())) ? 1 : 0;
+        uint32 haveMMap = (sWorld->getBoolConfig(CONFIG_ENABLE_MMAPS) && !DisableMgr::IsDisabledFor(DISABLE_TYPE_MMAP_MAP, mapId, nullptr) && MMAP::MMapFactory::createOrGetMMapManager()->GetNavMesh(handler->GetSession()->GetPlayer()->GetMapId())) ? 1 : 0;
 
         if (haveVMap)
         {
@@ -445,11 +448,33 @@ public:
             zoneX, zoneY, groundZ, floorZ, haveMap, haveVMap, haveMMap);
 
         LiquidData liquidStatus;
-        float collisionHeight = object->GetTypeId() == TYPEID_PLAYER ? object->ToPlayer()->GetCollisionHeight(object->ToPlayer()->IsMounted()) : DEFAULT_UNIT_HEIGHT;
-        ZLiquidStatus status = map->getLiquidStatus(object->GetPositionX(), object->GetPositionY(), object->GetPositionZ(), MAP_ALL_LIQUIDS, &liquidStatus, collisionHeight);
+        float collisionHeight = object->GetTypeId() == TYPEID_PLAYER ? object->ToPlayer()->GetCollisionHeight() : DEFAULT_UNIT_HEIGHT;
+        ZLiquidStatus status = map->GetLiquidStatus(object->GetPhaseMask(), object->GetPositionX(), object->GetPositionY(), object->GetPositionZ(), MAP_ALL_LIQUIDS, &liquidStatus, collisionHeight);
 
         if (status)
             handler->PSendSysMessage(LANG_LIQUID_STATUS, liquidStatus.level, liquidStatus.depth_level, liquidStatus.entry, liquidStatus.type_flags, status);
+
+        if (!object->GetPhases().empty())
+        {
+            std::stringstream ss;
+            for (uint32 swap : object->GetPhases())
+                ss << swap << " ";
+            handler->PSendSysMessage("Target's active phase swaps: %s", ss.str().c_str());
+        }
+        if (!object->GetTerrainSwaps().empty())
+        {
+            std::stringstream ss;
+            for (uint32 swap : object->GetTerrainSwaps())
+                ss << swap << " ";
+            handler->PSendSysMessage("Target's active terrain swaps: %s", ss.str().c_str());
+        }
+        if (!object->GetWorldMapSwaps().empty())
+        {
+            std::stringstream ss;
+            for (uint32 swap : object->GetWorldMapSwaps())
+                ss << swap << " ";
+            handler->PSendSysMessage("Target's active world map area swaps: %s", ss.str().c_str());
+        }
 
         return true;
     }
@@ -1166,7 +1191,7 @@ public:
         uint32 zoneId = player->GetZoneId();
 
         AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(zoneId);
-        if (!areaEntry || areaEntry->zone !=0)
+        if (!areaEntry || areaEntry->ParentAreaID !=0)
         {
             handler->PSendSysMessage(LANG_COMMAND_GRAVEYARDWRONGZONE, graveyardId, zoneId);
             handler->SetSentErrorMessage(true);
@@ -1256,10 +1281,10 @@ public:
         for (uint32 id = 0; id < numRows; ++id)
         {
             AreaTriggerEntry const* at = sAreaTriggerStore.LookupEntry(id);
-            if (!at || at->mapid != from.GetMapId())
+            if (!at || at->ContinentID != from.GetMapId())
                 continue;
 
-            Position pos = { at->x, at->y, at->z };
+            Position pos = { at->Pos.X, at->Pos.Y, at->Pos.Z };
             if (from.GetExactDistSq(&pos) > distance * distance)
                 continue;
 
@@ -1268,13 +1293,13 @@ public:
 
         areatriggers.sort([&from](AreaTriggerEntry const* a, AreaTriggerEntry const* b)
         {
-            Position posA = { a->x, a->y, a->z };
-            Position posB = { b->x, b->y, b->z };
+            Position posA = { a->Pos.X, a->Pos.Y, a->Pos.Z };
+            Position posB = { b->Pos.X, b->Pos.Y, b->Pos.Z };
             return from.GetExactDist2dSq(&posA) < from.GetExactDist2dSq(&posB);
         });
 
         for (auto at : areatriggers)
-            handler->PSendSysMessage("|cFFFFFFFFTrigger %u, x: %.5f, y: %.5f, z: %.5f, radius: %g, box: { %g, %g, %g, %g }", at->id, at->x, at->y, at->z, at->radius, at->box_x, at->box_y, at->box_z, at->box_orientation);
+            handler->PSendSysMessage("|cFFFFFFFFTrigger %u, x: %.5f, y: %.5f, z: %.5f, radius: %g, box: { %g, %g, %g, %g }", at->ID, at->Pos.X, at->Pos.Y, at->Pos.Z, at->Radius, at->BoxLength, at->BoxWidth, at->BoxHeight, at->BoxYaw);
 
         handler->PSendSysMessage("Found near areatriggers (distance %f): %lu", distance, areatriggers.size());
 
@@ -2027,7 +2052,7 @@ public:
         {
             areaName = area->area_name[handler->GetSessionDbcLocale()];
 
-            AreaTableEntry const* zone = sAreaTableStore.LookupEntry(area->zone);
+            AreaTableEntry const* zone = sAreaTableStore.LookupEntry(area->ParentAreaID);
             if (zone)
                 zoneName = zone->area_name[handler->GetSessionDbcLocale()];
         }
@@ -2072,10 +2097,6 @@ public:
             if (totalmail >= 1)
                handler->PSendSysMessage(LANG_PINFO_CHR_MAILS, rmailint, totalmail);
         }
-
-        // Output XXII. LANG_PINFO_CHAR_HWID
-        if (handler->GetSession()->GetSecurity() >= SEC_GAMEMASTER)
-            handler->PSendSysMessage(LANG_PINFO_CHAR_HWID, HWID.c_str());
 
         return true;
     }

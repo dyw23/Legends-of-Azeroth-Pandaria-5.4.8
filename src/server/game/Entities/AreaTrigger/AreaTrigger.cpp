@@ -262,7 +262,7 @@ bool AreaTrigger::CreateAreaTrigger(uint32 guidlow, uint32 triggerEntry, Unit* c
         return false;
     }
 
-    WorldObject::_Create(guidlow, HIGHGUID_AREATRIGGER, caster->GetPhaseMask());
+    WorldObject::_Create(guidlow, HIGHGUID_AREATRIGGER, caster->GetPhaseMask(), caster->GetPhases());
 
     int32 duration = spell->GetDuration();
     if (Player* modOwner = caster->GetSpellModOwner())

@@ -1943,6 +1943,9 @@ bool Battleground::AddObject(uint32 type, uint32 entry, float x, float y, float 
         delete go;
         return false;
     }
+
+    for (auto phase : go->GetPhases())
+        go->SetPhased(phase, false, true);
 /*
     uint32 guid = go->GetGUIDLow();
 
@@ -2081,6 +2084,9 @@ Creature* Battleground::AddCreature(uint32 entry, uint32 type, uint32 teamval, f
     // Force using DB speeds
     creature->SetSpeed(MOVE_WALK,  cinfo->speed_walk);
     creature->SetSpeed(MOVE_RUN,   cinfo->speed_run);
+
+    for (auto phase : creature->GetPhases())
+        creature->SetPhased(phase, false, true);
 
     if (!map->AddToMap(creature))
     {
@@ -2643,7 +2649,7 @@ uint32 Battleground::GetTeamScore(uint32 teamId) const
     return 0;
 }
 
-void Battleground::HandleAreaTrigger(Player* player, uint32 trigger)
+void Battleground::HandleAreaTrigger(Player* player, uint32 trigger, bool /*entered*/)
 {
     TC_LOG_DEBUG("bg.battleground", "Unhandled AreaTrigger %u in Battleground %u. Player coords (x: %f, y: %f, z: %f)",
                    trigger, player->GetMapId(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());

@@ -446,13 +446,14 @@ public:
 
         void DoAction(int32 action) override
         {
+            Position pos;
+            Position _zToLift;
             switch (action)
             {
                 case ACTION_LAND_ENCOUNTER_START:
                     events.CancelEventGroup(1);
                     if (Creature* alexstraszaBunny = me->GetMap()->GetCreature(instance->GetData64(DATA_ALEXSTRASZA_BUNNY_GUID)))
                     {
-                        Position pos;
                         pos.m_positionZ = alexstraszaBunny->GetPositionZ();
                         alexstraszaBunny->GetNearPoint2D(pos.m_positionX, pos.m_positionY, 30.0f, alexstraszaBunny->GetAngle(me));
                         me->GetMotionMaster()->MoveLand(POINT_LAND_P_ONE, pos);
@@ -469,7 +470,6 @@ public:
                     DoCast(me, SPELL_VORTEX_3, true);
                     break;
                 case ACTION_LIFT_IN_AIR:
-                    Position _zToLift;
                     me->GetPosition(&_zToLift);
                     if (_phase == PHASE_ONE)
                     {
@@ -562,7 +562,7 @@ public:
                BossAI::AttackStart(target);
         }
 
-        void EnterCombat(Unit* /*who*/) override
+        void JustEngagedWith(Unit* /*who*/) override
         {
             // We can't call full function here since it includes DoZoneInCombat(),
             // if someone does it will be returned with a warning.
@@ -1483,7 +1483,7 @@ class npc_scion_of_eternity : public CreatureScript
                 _events.ScheduleEvent(EVENT_ARCANE_BARRAGE, urand(14, 29)*IN_MILLISECONDS);
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
             }
 

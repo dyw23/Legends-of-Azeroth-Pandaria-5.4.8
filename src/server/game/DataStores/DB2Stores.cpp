@@ -56,6 +56,7 @@ DB2Storage<SceneScriptPackageEntry> sSceneScriptPackageStore(SceneScriptPackagef
 DB2Storage<SpellReagentsEntry> sSpellReagentsStore(SpellReagentsfmt);
 DB2Storage<VignetteEntry> sVignetteStore(VignetteEntryfmt);
 
+typedef std::unordered_map<uint32, std::pair<std::vector<QuestPackageItemEntry const*>, std::vector<QuestPackageItemEntry const*>>> QuestPackageItemContainer;
 typedef std::list<std::string> DB2StoreProblemList;
 
 typedef std::map<uint32 /*hash*/, DB2StorageBase*> DB2StorageMap;
@@ -72,6 +73,7 @@ struct QuestPackageItem
 static std::multimap<uint32, QuestPackageItem> sQuestPackageItemMap;
 static std::map<uint32, uint32> sItemUpgradeIdMap;
 static std::multimap<uint32, uint32> sMountSpellToItemMap;
+QuestPackageItemContainer _questPackages;
 
 std::map<uint32, uint32> sBattlePetSpellXSpeciesStore;
 
@@ -94,7 +96,7 @@ inline void LoadDB2(uint32& availableDb2Locales, DB2StoreProblemList& errlist, D
     ++DB2FilesCount;
 
     std::string db2_filename = db2_path + filename;
-    if (storage.Load(db2_filename.c_str(), uint32(sWorld->GetDefaultDbcLocale())))
+    if (storage.Load(db2_filename.c_str(), !sWorld->getBoolConfig(CONFIG_LOAD_LOCALES) ? LOCALE_enUS : sWorld->GetDefaultDbcLocale()))
     {
         for (uint32 i = 0; i < TOTAL_LOCALES; ++i)
         {
@@ -218,7 +220,16 @@ void LoadDB2Stores(std::string const& dataPath, uint32& availableDb2Locales)
     for (size_t i = 0; i < sQuestPackageItemStore.GetNumRows(); ++i)
     {
         if (auto entry = sQuestPackageItemStore.LookupEntry(i))
-            sQuestPackageItemMap.insert({ entry->QuestPackageID, { entry->ItemID, entry->Count} });
+            sQuestPackageItemMap.insert({ entry->PackageID, { entry->ItemID, entry->ItemQuantity} });
+    }
+
+    for (QuestPackageItemEntry const* questPackageItem : sQuestPackageItemStore)
+    {
+        if (questPackageItem->DisplayType != QUEST_PACKAGE_FILTER_UNMATCHED)
+            _questPackages[questPackageItem->PackageID].first.push_back(questPackageItem);
+        else
+            _questPackages[questPackageItem->PackageID].second.push_back(questPackageItem);
+
     }
 
     // error checks
@@ -435,4 +446,22 @@ bool IsMountCanBeAllowedForPlayer(uint32 spellId, uint32 raceMask)
         }
     }
     return false;
+}
+
+std::vector<QuestPackageItemEntry const*> const* GetQuestPackageItems(uint32 questPackageID)
+{
+    auto itr = _questPackages.find(questPackageID);
+    if (itr != _questPackages.end())
+        return &itr->second.first;
+
+    return nullptr;
+}
+
+std::vector<QuestPackageItemEntry const*> const* GetQuestPackageItemsFallback(uint32 questPackageID)
+{
+    auto itr = _questPackages.find(questPackageID);
+    if (itr != _questPackages.end())
+        return &itr->second.second;
+
+    return nullptr;
 }

@@ -324,8 +324,8 @@ class boss_algalon_the_observer : public CreatureScript
                 _Reset();
                 me->SetReactState(REACT_PASSIVE);
                 me->SetCanDualWield(true);
-                me->SetBaseWeaponDamage(OFF_ATTACK, MINDAMAGE, me->GetCreatureTemplate()->mindmg);
-                me->SetBaseWeaponDamage(OFF_ATTACK, MAXDAMAGE, me->GetCreatureTemplate()->maxdmg);
+                // me->SetBaseWeaponDamage(OFF_ATTACK, MINDAMAGE, me->GetCreatureTemplate()->mindmg);
+                // me->SetBaseWeaponDamage(OFF_ATTACK, MAXDAMAGE, me->GetCreatureTemplate()->maxdmg);
                 me->UpdateDamagePhysical(OFF_ATTACK);
                 _phaseTwo = false;
                 _fightWon = false;
@@ -415,7 +415,7 @@ class boss_algalon_the_observer : public CreatureScript
                 return type == DATA_HAS_FED_ON_TEARS ? _fedOnTears : 1;
             }
 
-            void EnterCombat(Unit* /*who*/) override
+            void JustEngagedWith(Unit* /*who*/) override
             {
                 if (_fightWon)
                     return;
@@ -428,7 +428,7 @@ class boss_algalon_the_observer : public CreatureScript
                 if (!_firstPull)
                 {
                     Talk(SAY_ALGALON_AGGRO);
-                    _EnterCombat();
+                    _JustEngagedWith();
                     introDelay = 8000;
                     summons.DespawnEntry(NPC_AZEROTH);
                 }
@@ -981,8 +981,8 @@ class npc_black_hole : public CreatureScript
         {
             npc_black_holeAI(Creature* creature) : CreatureAI(creature) { }
 
-            void MoveInLineOfSight(Unit* /*who*/) { }
-            void AttackStart(Unit* /*who*/) { }
+            void MoveInLineOfSight(Unit* /*who*/) override { }
+            void AttackStart(Unit* /*who*/) override { }
             void UpdateAI(uint32 /*diff*/) override { }
 
             void SpellHitTarget(Unit* target, SpellInfo const* spell) override
@@ -1170,26 +1170,26 @@ class go_celestial_planetarium_access : public GameObjectScript
         {
             go_celestial_planetarium_accessAI(GameObject* go) : GameObjectAI(go) { }
 
-            bool GossipHello(Player* player)
+            bool OnGossipHello(Player* player) override
             {
-                if (go->HasFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_IN_USE))
+                if (me->HasFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_IN_USE))
                     return false;
-                if (go->FindNearestCreature(NPC_BRANN_BRONZBEARD_ALG, 50.0f))
+                if (me->FindNearestCreature(NPC_BRANN_BRONZBEARD_ALG, 50.0f))
                     return false;
 
                 // Start Algalon event
-                go->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_IN_USE);
+                me->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_IN_USE);
                 _events.ScheduleEvent(EVENT_DESPAWN_CONSOLE, 5000);
-                if (Creature* brann = go->SummonCreature(NPC_BRANN_BRONZBEARD_ALG, BrannIntroSpawnPos))
+                if (Creature* brann = me->SummonCreature(NPC_BRANN_BRONZBEARD_ALG, BrannIntroSpawnPos))
                     brann->AI()->DoAction(ACTION_START_INTRO);
 
-                if (InstanceScript* instance = go->GetInstanceScript())
+                if (InstanceScript* instance = me->GetInstanceScript())
                 {
                     instance->SetData(DATA_ALGALON_SUMMON_STATE, 1);
-                    if (GameObject* sigil = ObjectAccessor::GetGameObject(*go, instance->GetData64(DATA_SIGILDOOR_01)))
+                    if (GameObject* sigil = ObjectAccessor::GetGameObject(*me, instance->GetData64(DATA_SIGILDOOR_01)))
                         sigil->SetGoState(GO_STATE_ACTIVE);
 
-                    if (GameObject* sigil = ObjectAccessor::GetGameObject(*go, instance->GetData64(DATA_SIGILDOOR_02)))
+                    if (GameObject* sigil = ObjectAccessor::GetGameObject(*me, instance->GetData64(DATA_SIGILDOOR_02)))
                         sigil->SetGoState(GO_STATE_ACTIVE);
                 }
 
@@ -1208,7 +1208,7 @@ class go_celestial_planetarium_access : public GameObjectScript
                     switch (eventId)
                     {
                         case EVENT_DESPAWN_CONSOLE:
-                            go->Delete();
+                            me->Delete();
                             break;
                     }
                 }
@@ -1385,7 +1385,7 @@ class spell_algalon_big_bang : public SpellScriptLoader
         {
             PrepareSpellScript(spell_algalon_big_bang_SpellScript);
 
-            bool Load()
+            bool Load() override
             {
                 _targetCount = 0;
                 return true;

@@ -27,6 +27,7 @@
 
 //#include "SmartScript.h"
 //#include "SmartAI.h"
+typedef uint32 SAIBool;
 
 struct WayPoint
 {
@@ -222,6 +223,7 @@ struct SmartEvent
             uint32 maxDist;
             uint32 cooldownMin;
             uint32 cooldownMax;
+            SAIBool playerOnly;
         } los;
 
         struct
@@ -566,7 +568,7 @@ enum SMART_ACTION
     SMART_ACTION_END                                = 129,
 
     // project
-    SMART_ACTION_project                           = 200,
+    SMART_ACTION_project                            = 200,
     SMART_ACTION_PLAY_SCENE_ID                      = 201,    // sceneId, apply
     SMART_ACTION_PLAY_SCENE_PACKAGE                 = 202,    // scenePackageId, apply
     SMART_ACTION_COMBAT_STOP                        = 203,
@@ -574,7 +576,8 @@ enum SMART_ACTION
     SMART_ACTION_STOP_FOLLOW                        = 205,
     SMART_ACTION_SPELL_VISUAL_KIT                   = 206,
     SMART_ACTION_CAST_RANDOM_SPELL                  = 207,
-    SMART_ACTION_END_project                       = 208,
+    SMART_ACTION_SET_INGAME_PHASE_ID                = 208,    // phaseid, apply
+    SMART_ACTION_END_project                        = 209
 };
 
 struct SmartAction
@@ -1109,6 +1112,12 @@ struct SmartAction
             uint32 spell5;
             uint32 flags;
         } castRandomSpell;
+
+        struct
+        {
+            uint32 id;
+            uint32 apply;
+        } ingamePhaseId;
 
         //! Note for any new future actions
         //! All parameters must have type uint32

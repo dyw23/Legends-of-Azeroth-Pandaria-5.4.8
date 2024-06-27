@@ -103,7 +103,7 @@ bool BattlegroundTTP::HandlePlayerUnderMap(Player* player)
     return true;
 }
 
-void BattlegroundTTP::HandleAreaTrigger(Player* Source, uint32 Trigger)
+void BattlegroundTTP::HandleAreaTrigger(Player* Source, uint32 Trigger, bool Entered)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -114,6 +114,7 @@ void BattlegroundTTP::HandleAreaTrigger(Player* Source, uint32 Trigger)
         case 4537:                                          // buff trigger?
             break;
         default:
+            Battleground::HandleAreaTrigger(Source, Trigger, Entered);
             break;
     }
 }

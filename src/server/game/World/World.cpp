@@ -57,11 +57,13 @@
 #include "OutdoorPvPMgr.h"
 #include "TemporarySummon.h"
 #include "WaypointMovementGenerator.h"
-#include "VMapFactory.h"
+#include "M2Stores.h"
 #include "MMapFactory.h"
 #include "GameEventMgr.h"
-#include "PoolMgr.h"
+#include "GameTime.h"
+#include "GitRevision.h"
 #include "GridNotifiersImpl.h"
+#include "PoolMgr.h"
 #include "CellImpl.h"
 #include "InstanceSaveMgr.h"
 #include "Util.h"
@@ -88,19 +90,19 @@
 #include "BattlePetMgr.h"
 #include "BattlePetSpawnMgr.h"
 #include "PetBattle.h"
-#include "TaskMgr.h"
 #include "DevTool.h"
 #include "AnticheatMgr.h"
 #include "ServiceBoost.h"
 #include "ServiceMgr.h"
 #include "WordFilterMgr.h"
 #include "Realm.h"
+#include "VMapFactory.h"
+#include "VMapManager2.h"
+#include <boost/asio/ip/address.hpp>
 #ifdef ELUNA
 #include "LuaEngine.h"
 #include "HookMgr.h"
 #endif
-
-void AFDRoyaleUpdateHook(uint32 diff);
 
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
 
@@ -264,7 +266,6 @@ void World::AddSession(WorldSession* s)
 void World::AddSession_(WorldSession* s)
 {
     ASSERT(s);
-
     //NOTE - Still there is race condition in WorldSession* being used in the Sockets
 
     ///- kick already loaded player with same account (if any) and remove session
@@ -313,14 +314,11 @@ void World::AddSession_(WorldSession* s)
         return;
     }
 
+    s->InitializeSession();
     s->SendDanceStudioCreateResult();
-    s->SendAuthResponse(AUTH_OK, false);
     s->SendFeatureSystemStatusGlueScreen();
-    s->SendAddonsInfo();
-    s->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
     sBattlePayMgr->SendBattlePayDistributionList(s);
     s->SendDispalyPromotionOpcode();
-    s->SendTutorialsData();
     s->SendTimezoneInformation();
 
     UpdateMaxSessionCounters();
@@ -374,7 +372,7 @@ void World::AddQueuedPlayer(WorldSession* sess)
     m_QueuedPlayer.push_back(sess);
 
     // The 1st SMSG_AUTH_RESPONSE needs to contain other info too.
-    sess->SendAuthResponse(AUTH_WAIT_QUEUE, true, GetQueuePos(sess));
+    sess->SendAuthResponse(AUTH_OK, true, GetQueuePos(sess));
 }
 
 bool World::RemoveQueuedPlayer(WorldSession* sess)
@@ -393,7 +391,7 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
         if (*iter == sess)
         {
             sess->SetInQueue(false);
-            sess->ResetTimeOutTime();
+            sess->ResetTimeOutTime(false);
             iter = m_QueuedPlayer.erase(iter);
             found = true;                                   // removing queued session
             break;
@@ -411,14 +409,10 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
     if ((!m_playerLimit || sessions < m_playerLimit) && !m_QueuedPlayer.empty())
     {
         WorldSession* pop_sess = m_QueuedPlayer.front();
+        pop_sess->InitializeSession();
         pop_sess->SetInQueue(false);
-        pop_sess->ResetTimeOutTime();
-        pop_sess->SendAuthWaitQue(0);
-        pop_sess->SendAddonsInfo();
-
-        pop_sess->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
+        pop_sess->ResetTimeOutTime(false);
         pop_sess->SendAccountDataTimes(GLOBAL_CACHE_MASK);
-        pop_sess->SendTutorialsData();
         pop_sess->SendTimezoneInformation();
 
         m_QueuedPlayer.pop_front();
@@ -543,7 +537,10 @@ void World::LoadConfigSettings(bool reload)
     else
         m_int_configs[CONFIG_PORT_WORLD] = sConfigMgr->GetIntDefault("WorldServerPort", 8085);
 
-    m_int_configs[CONFIG_SOCKET_TIMEOUTTIME] = sConfigMgr->GetIntDefault("SocketTimeOutTime", 900000);
+    // Config values are in "milliseconds" but we handle SocketTimeOut only as "seconds" so divide by 1000
+    m_int_configs[CONFIG_SOCKET_TIMEOUTTIME] = sConfigMgr->GetIntDefault("SocketTimeOutTime", 900000) / 1000;
+    m_int_configs[CONFIG_SOCKET_TIMEOUTTIME_ACTIVE] = sConfigMgr->GetIntDefault("SocketTimeOutTimeActive", 60000) / 1000;
+
     m_int_configs[CONFIG_SESSION_ADD_DELAY] = sConfigMgr->GetIntDefault("SessionAddDelay", 10000);
 
     m_float_configs[CONFIG_GROUP_XP_DISTANCE] = sConfigMgr->GetFloatDefault("MaxGroupXPDistance", 74.0f);
@@ -1237,11 +1234,10 @@ void World::LoadConfigSettings(bool reload)
     }
 
     m_bool_configs[CONFIG_ENABLE_MMAPS] = sConfigMgr->GetBoolDefault("mmap.enablePathFinding", false);
-    m_bool_configs[CONFIG_MMAP_ALLOW_REUSE_OF_PREVIOUS_PATH_SEGMENTS] = sConfigMgr->GetBoolDefault("mmap.AllowReuseOfPreviousPathSegments", true);
 
     TC_LOG_INFO("server.loading", "WORLD: MMap data directory is: %smmaps", m_dataPath.c_str());
 
-    m_bool_configs[CONFIG_VMAP_INDOOR_CHECK] = sConfigMgr->GetBoolDefault("vmap.enableIndoorCheck", 0);
+    m_bool_configs[CONFIG_VMAP_INDOOR_CHECK] = sConfigMgr->GetBoolDefault("vmap.enableIndoorCheck", true);
     bool enableIndoor = sConfigMgr->GetBoolDefault("vmap.enableIndoorCheck", true);
     bool enableLOS = sConfigMgr->GetBoolDefault("vmap.enableLOS", true);
     bool enableHeight = sConfigMgr->GetBoolDefault("vmap.enableHeight", true);
@@ -1299,6 +1295,7 @@ void World::LoadConfigSettings(bool reload)
 
     // Dungeon finder
     m_int_configs[CONFIG_LFG_OPTIONSMASK]               = sConfigMgr->GetIntDefault("DungeonFinder.OptionsMask", 1);
+    m_bool_configs[CONFIG_LFG_SOLO]                     = sConfigMgr->GetBoolDefault("LFGSolo.Enabled", false);
     m_bool_configs[CONFIG_LFG_CASTDESERTER]             = sConfigMgr->GetBoolDefault("DungeonFinder.CastDeserter", false);
     m_bool_configs[CONFIG_LFG_OVERRIDE_ROLES_REQUIRED]  = sConfigMgr->GetBoolDefault("DungeonFinder.OverrideRolesRequired", false);
     m_bool_configs[CONFIG_LFG_MULTIQUEUE_ENABLED]       = sConfigMgr->GetBoolDefault("DungeonFinder.MultiqueueEnabled", false);
@@ -1419,8 +1416,6 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_TRANSPORT_PREFER_SERVER_WORLD_POSITION] = sConfigMgr->GetBoolDefault("Transport.PreferServerWorldPosition", true);
     m_bool_configs[CONFIG_TRANSPORT_LOAD_GRIDS] = sConfigMgr->GetBoolDefault("Transport.LoadGrids", true);
 
-    m_bool_configs[CONFIG_DEBUG_OPCODES] = false;
-
     m_bool_configs[CONFIG_ANTICHEAT_ENABLE] = true;
     m_int_configs[CONFIG_ANTICHEAT_REPORTS_INGAME_NOTIFICATION] = 70;
     m_int_configs[CONFIG_ANTICHEAT_DETECTIONS_ENABLED] = 31;
@@ -1498,6 +1493,8 @@ void World::LoadConfigSettings(bool reload)
 	//eluna
 	m_bool_configs[CONFIG_BOOL_ELUNA_ENABLED] = sConfigMgr->GetBoolDefault("Eluna.Enabled", true);
 #endif    
+    // Loading of Locales
+    m_bool_configs[CONFIG_LOAD_LOCALES] = sConfigMgr->GetBoolDefault("Load.Locales", true);
     // call ScriptMgr if we're reloading the configuration
     if (reload)
     {
@@ -1670,8 +1667,6 @@ void World::LoadRates(bool loading)
     }
 }
 
-extern void LoadGameObjectModelList();
-
 /// Initialize the World
 void World::SetInitialWorldSettings()
 {
@@ -1683,6 +1678,11 @@ void World::SetInitialWorldSettings()
 
     ///- Initialize detour memory management
     dtAllocSetCustom(dtCustomAlloc, dtCustomFree);
+
+    ///- Initialize VMapManager function pointers (to untangle game/collision circular deps)
+    VMAP::VMapManager2* vmmgr2 = VMAP::VMapFactory::createOrGetVMapManager();
+    vmmgr2->GetLiquidFlagsPtr = &GetLiquidFlags;
+    vmmgr2->IsVMAPDisabledForPtr = &DisableMgr::IsVMAPDisabledFor;
 
     ///- Initialize config settings
     LoadConfigSettings();
@@ -1743,8 +1743,21 @@ void World::SetInitialWorldSettings()
     LoadDBCStores(m_dataPath, m_availableDbcLocaleMask);
     LoadDB2Stores(m_dataPath, m_availableDbcLocaleMask);
 
+    // Load cinematic cameras
+    LoadM2Cameras(m_dataPath);
+
     // Load IP Location Database
     sIPLocation->Load();
+
+    std::vector<uint32> mapIds;
+    for (uint32 mapId = 0; mapId < sMapStore.GetNumRows(); mapId++)
+        if (sMapStore.LookupEntry(mapId))
+            mapIds.push_back(mapId);
+
+    vmmgr2->InitializeThreadUnsafe(mapIds);
+
+    MMAP::MMapManager* mmmgr = MMAP::MMapFactory::createOrGetMMapManager();
+    mmmgr->InitializeThreadUnsafe(mapIds);    
 
     TC_LOG_INFO("server.loading", "Loading SpellInfo store...");
     sSpellMgr->LoadSpellInfoStore();
@@ -1759,7 +1772,7 @@ void World::SetInitialWorldSettings()
     sSpellMgr->LoadSpellInfoCustomAttributes();
 
     TC_LOG_INFO("server.loading", "Loading GameObject models...");
-    LoadGameObjectModelList();
+    LoadGameObjectModelList(m_dataPath);
 
     TC_LOG_INFO("server.loading", "Loading Script Names...");
     sObjectMgr->LoadScriptNames();
@@ -1773,21 +1786,26 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading Broadcast texts...");
     sObjectMgr->LoadBroadcastTexts();
-    sObjectMgr->LoadBroadcastTextLocales();
+
+    if (m_bool_configs[CONFIG_LOAD_LOCALES])
+        sObjectMgr->LoadBroadcastTextLocales();
 
     TC_LOG_INFO("server.loading", "Loading Localization strings...");
     uint32 oldMSTime = getMSTime();
-    sObjectMgr->LoadCreatureLocales();
-    sObjectMgr->LoadGameObjectLocales();
-    sObjectMgr->LoadItemLocales();
-    sObjectMgr->LoadQuestTemplateLocale();
-    sObjectMgr->LoadQuestObjectivesLocale();
-    sObjectMgr->LoadQuestOfferRewardLocale();
-    sObjectMgr->LoadQuestRequestItemsLocale();
-    sObjectMgr->LoadNpcTextLocales();
-    sObjectMgr->LoadPageTextLocales();
-    sObjectMgr->LoadGossipMenuItemsLocales();
-    sObjectMgr->LoadPointOfInterestLocales();
+    if (m_bool_configs[CONFIG_LOAD_LOCALES])
+    {
+        sObjectMgr->LoadCreatureLocales();
+        sObjectMgr->LoadGameObjectLocales();
+        sObjectMgr->LoadItemLocales();
+        sObjectMgr->LoadQuestTemplateLocale();
+        sObjectMgr->LoadQuestObjectivesLocale();
+        sObjectMgr->LoadQuestOfferRewardLocale();
+        sObjectMgr->LoadQuestRequestItemsLocale();
+        sObjectMgr->LoadNpcTextLocales();
+        sObjectMgr->LoadPageTextLocales();
+        sObjectMgr->LoadGossipMenuItemsLocales();
+        sObjectMgr->LoadPointOfInterestLocales();
+    }
 
     sObjectMgr->SetDBCLocaleIndex(GetDefaultDbcLocale());        // Get once for all the locale index of DBC language (console/broadcasts)
     TC_LOG_INFO("server.loading", ">> Localization strings loaded in %u ms", GetMSTimeDiffToNow(oldMSTime));
@@ -1936,11 +1954,11 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Checking Quest Disables");
     DisableMgr::CheckQuestDisables();                           // must be after loading quests
 
-    TC_LOG_INFO("server.loading", "Loading Quest Objectives...");
-    sObjectMgr->LoadQuestObjectives();
-
-    TC_LOG_INFO("server.loading", "Loading Quest Objective Locales...");
-    sObjectMgr->LoadQuestObjectivesLocale();
+    if (m_bool_configs[CONFIG_LOAD_LOCALES])
+    {
+        TC_LOG_INFO("server.loading", "Loading Quest Objective Locales...");
+        sObjectMgr->LoadQuestObjectivesLocale();
+    }
 
     TC_LOG_INFO("server.loading", "Loading Quest Objective Visual Effects...");
     sObjectMgr->LoadQuestObjectiveVisualEffects();
@@ -2061,8 +2079,11 @@ void World::SetInitialWorldSettings()
     sAchievementMgr->LoadAchievementCriteriaData();
     TC_LOG_INFO("server.loading", "Loading Achievement Rewards...");
     sAchievementMgr->LoadRewards();
-    TC_LOG_INFO("server.loading", "Loading Achievement Reward Locales...");
-    sAchievementMgr->LoadRewardLocales();
+    if (m_bool_configs[CONFIG_LOAD_LOCALES])
+    {
+        TC_LOG_INFO("server.loading", "Loading Achievement Reward Locales...");
+        sAchievementMgr->LoadRewardLocales();
+    }
     TC_LOG_INFO("server.loading", "Loading Completed Achievements...");
     sAchievementMgr->LoadCompletedAchievements();
 
@@ -2124,6 +2145,18 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Phase definitions...");
     sObjectMgr->LoadPhaseDefinitions();
 
+    TC_LOG_INFO("server.loading", "Loading Terrain Phase definitions...");
+    sObjectMgr->LoadTerrainPhaseInfo();
+
+    TC_LOG_INFO("server.loading", "Loading Terrain Swap Default definitions...");
+    sObjectMgr->LoadTerrainSwapDefaults();
+
+    TC_LOG_INFO("server.loading", "Loading Terrain World Map definitions...");
+    sObjectMgr->LoadTerrainWorldMaps();
+
+    TC_LOG_INFO("server.loading", "Loading Phase Area definitions...");
+    sObjectMgr->LoadAreaPhases();
+
     TC_LOG_INFO("server.loading", "Loading Conditions...");
     sConditionMgr->LoadConditions();
 
@@ -2169,8 +2202,11 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Creature Texts...");
     sCreatureTextMgr->LoadCreatureTexts();
 
-    TC_LOG_INFO("server.loading", "Loading Creature Text Locales...");
-    sCreatureTextMgr->LoadCreatureTextLocales();
+    if (m_bool_configs[CONFIG_LOAD_LOCALES])
+    {
+        TC_LOG_INFO("server.loading", "Loading Creature Text Locales...");
+        sCreatureTextMgr->LoadCreatureTextLocales();
+    }
 
     TC_LOG_INFO("server.loading", "Initializing Scripts...");
     sScriptMgr->Initialize();
@@ -2224,7 +2260,7 @@ void World::SetInitialWorldSettings()
     m_startTime = m_gameTime;
 
     LoginDatabase.PExecute("INSERT INTO uptime (realmid, starttime, uptime, revision) VALUES(%u, %u, 0, '%s')",
-                            realm.Id.Realm, uint32(m_startTime), _FULLVERSION);       // One-time query
+                            realm.Id.Realm, uint32(m_startTime), GitRevision::GetFullVersion());       // One-time query
 
     m_timers[WUPDATE_WEATHERS].SetInterval(1*IN_MILLISECONDS);
     m_timers[WUPDATE_AUCTIONS].SetInterval(MINUTE*IN_MILLISECONDS);
@@ -2556,9 +2592,7 @@ void World::Update(uint32 diff)
 
     /// <li> Handle session updates when the timer has passed
 
-    RecordTimeDiff(NULL);
-    TaskMgr::Default()->Update();
-    RecordTimeDiff("TaskMgr::Update");
+    RecordTimeDiff(nullptr);
     UpdateSessions(diff);
     RecordTimeDiff("UpdateSessions");
 
@@ -2631,8 +2665,6 @@ void World::Update(uint32 diff)
 
     sLFGMgr->Update(diff);
     RecordTimeDiff("UpdateLFGMgr");
-
-    AFDRoyaleUpdateHook(diff);
 
     // execute callbacks from sql queries that were queued recently
     ProcessQueryCallbacks();
@@ -3140,6 +3172,7 @@ void World::OnStartup()
 void World::_UpdateGameTime()
 {
     ///- update the time
+    GameTime::UpdateGameTimers();
     time_t thisTime = time(NULL);
     uint32 elapsed = uint32(thisTime - m_gameTime);
     m_gameTime = thisTime;
@@ -3254,9 +3287,9 @@ void World::SendServerMessage(ServerMessageType type, const char *text, Player* 
 void World::UpdateSessions(uint32 diff)
 {
     ///- Add new sessions
-    WorldSession* sess = NULL;
+    WorldSession* sess = nullptr;
     while (addSessQueue.next(sess))
-        AddSession_ (sess);
+        AddSession_(sess);
 
     ///- Then send an update signal to remaining ones
     for (SessionMap::iterator itr = m_sessions.begin(), next; itr != m_sessions.end(); itr = next)
@@ -3365,8 +3398,6 @@ void World::UpdateRealmCharCount(uint32 accountId)
     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_COUNT);
     stmt->setUInt32(0, accountId);
     _queryProcessor.AddCallback(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&World::_UpdateRealmCharCount, this, std::placeholders::_1)));
-    // PreparedQueryResultFuture result = CharacterDatabase.AsyncQuery(stmt);
-    // m_realmCharCallbacks.insert(result);
 }
 
 void World::_UpdateRealmCharCount(PreparedQueryResult resultCharCount)
@@ -4345,54 +4376,14 @@ float World::getRate(Rates rate, WorldSession* session) const
     return getRate(rate);
 }
 
-void World::SendRaidQueueInfo(Player* player)
-{
-    using namespace lfg;
-
-    std::function<std::string(uint32, uint32, uint32, uint32)> makeText = [](uint32 dungeon, uint32 tanks, uint32 healers, uint32 dps)
-    {
-        return std::to_string(dungeon) + std::string("=") + std::to_string(tanks) + std::string(",") + std::to_string(healers) +
-            std::string(",") + std::to_string(dps) + std::string(";");
-    };
-
-    std::string text;
-    for (auto&& manager : sLFGMgr->GetQueueManagers())
-    {
-        for (auto&& dungeonId : { 416, 417, 527, 528, 529, 530, 526, 610, 611, 612, 613, 716, 717, 724, 725 })
-        {
-            auto& q = manager.second.GetQueue(dungeonId);
-            if (!q.GetBuckets().empty())
-                text += makeText(dungeonId, q.GetTotalPlayers(PLAYER_ROLE_TANK), q.GetTotalPlayers(PLAYER_ROLE_HEALER), q.GetTotalPlayers(PLAYER_ROLE_DAMAGE));
-            else
-                text += makeText(dungeonId, 0, 0, 0);
-        }
-    }
-
-    std::function<void(Player*)> sendInfo = [text](Player* plr)
-    {
-        WorldPacket data;
-        ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER, LANG_ADDON, plr, plr, text, 0, "", DEFAULT_LOCALE, "RaidQueue");
-        plr->GetSession()->SendPacket(&data);
-    };
-
-    if (player)
-        sendInfo(player);
-    else
-    {
-        for (auto&& itr : sWorld->GetAllSessions())
-            if (Player* plr = itr.second->GetPlayer())
-                sendInfo(plr);
-    }
-}
-
-   void World::InitServerAutoRestartTime()
+void World::InitServerAutoRestartTime()
 {
 	time_t serverRestartTime = uint64(sWorld->getWorldState(WS_AUTO_SERVER_RESTART_TIME));
 	if (!serverRestartTime)
-		m_NextServerRestart = time_t(time(NULL));         // game time not yet init
+		m_NextServerRestart = time_t(time(nullptr));         // game time not yet init
 
 	// generate time by config
-	time_t curTime = time(NULL);
+	time_t curTime = time(nullptr);
 	tm localTm;
 	localtime_r(&curTime, &localTm);
 	localTm.tm_hour = getIntConfig(CONFIG_AUTO_SERVER_RESTART_HOUR);

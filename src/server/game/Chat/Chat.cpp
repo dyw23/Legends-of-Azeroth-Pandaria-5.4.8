@@ -346,7 +346,7 @@ bool ChatHandler::ExecuteCommandInTable(std::vector<ChatCommand> const& table, c
                 if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(areaId))
                 {
                     areaName = area->area_name[sObjectMgr->GetDBCLocaleIndex()];
-                    if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(area->zone))
+                    if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(area->ParentAreaID))
                         zoneName = zone->area_name[sObjectMgr->GetDBCLocaleIndex()];
                 }
 
@@ -726,7 +726,7 @@ size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Languag
 
     data.WriteBit(0); // Fake Bit
 
-    // receiverGUIDPos = data.wpos();
+    receiverGUIDPos = data.bitwpos();
 
     data.WriteBit(receiverGUID[7]);
     data.WriteBit(receiverGUID[6]);
@@ -823,7 +823,7 @@ size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Languag
     data.WriteByteSeq(groupGUID[5]);
     data.WriteByteSeq(groupGUID[7]);
 
-    receiverGUIDPos = data.wpos();
+    // receiverGUIDPos = data.bitwpos(); 
 
     data.WriteByteSeq(receiverGUID[2]);
     data.WriteByteSeq(receiverGUID[5]);

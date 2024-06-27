@@ -61,6 +61,7 @@ public:
             { "money",      SEC_GAMEMASTER, false,  &HandleModifyMoneyCommand,      },
             { "mount",      SEC_GAMEMASTER, false,  &HandleModifyMountCommand,      },
             { "phase",      SEC_GAMEMASTER, false,  &HandleModifyPhaseCommand,      },
+            { "phaseid",    SEC_GAMEMASTER, false,  &HandleModifyPhaseIDCommand,    },
             { "rage",       SEC_GAMEMASTER, false,  &HandleModifyRageCommand,       },
             { "reputation", SEC_GAMEMASTER, false,  &HandleModifyRepCommand,        },
             { "runicpower", SEC_GAMEMASTER, false,  &HandleModifyRunicPowerCommand, },
@@ -1247,6 +1248,23 @@ public:
         }
         else
             handler->GetSession()->GetPlayer()->GetPhaseMgr().SetCustomPhase(phasemask);
+
+        return true;
+    }
+
+    //set temporary phaseid for player
+    static bool HandleModifyPhaseIDCommand(ChatHandler* handler, const char* args)
+    {
+        if (!*args)
+            return false;
+
+        uint32 phase = (uint32)atoi((char*)args);
+
+        Unit* target = handler->getSelectedUnit();
+        if (!target)
+            target = handler->GetSession()->GetPlayer();
+
+        target->SetPhased(phase, true, !target->IsPhased(phase));
 
         return true;
     }

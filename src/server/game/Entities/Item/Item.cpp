@@ -1886,12 +1886,12 @@ void Item::AddToUpdate()
         return;
     }
 
-    if (owner->FindMap() != CurrentMap && CurrentMap)
-    {
-        TC_LOG_ERROR("shitlog", "Item::AddToUpdate - invalid map, m_currMap ID %u, CurrentMap ID: %u. Object type: %u, entry: %u, GUID: %u, owner: %u (InWorld: %u).\nStack trace:\n%s",
-            owner->FindMap()->GetId(), CurrentMap->GetId(), uint32(GetTypeId()), GetEntry(), GetGUIDLow(), GUID_LOPART(GetOwnerGUID()), owner->IsInWorld());
-        return;
-    }
+    // if (owner->FindMap() != CurrentMap && CurrentMap)
+    // {
+    //     TC_LOG_ERROR("shitlog", "Item::AddToUpdate - invalid map, m_currMap ID %u, CurrentMap ID: %u. Object type: %u, entry: %u, GUID: %u, owner: %u (InWorld: %u).\nStack trace:\n%s",
+    //         owner->FindMap()->GetId(), CurrentMap->GetId(), uint32(GetTypeId()), GetEntry(), GetGUIDLow(), GUID_LOPART(GetOwnerGUID()), owner->IsInWorld());
+    //     return;
+    // }
 
     owner->FindMap()->AddUpdateObject(this);
     m_objectUpdated = true;
@@ -1914,12 +1914,12 @@ void Item::RemoveFromUpdate()
         return;
     }
 
-    if (owner->FindMap() != CurrentMap && CurrentMap)
-    {
-        TC_LOG_ERROR("shitlog", "Item::RemoveFromUpdate - invalid map, m_currMap ID %u, CurrentMap ID: %u. Object type: %u, entry: %u, GUID: %u, owner: %u (InWorld: %u).\nStack trace:\n",
-            owner->FindMap()->GetId(), CurrentMap->GetId(), uint32(GetTypeId()), GetEntry(), GetGUIDLow(), GUID_LOPART(GetOwnerGUID()), owner->IsInWorld());
-        return;
-    }
+    // if (owner->FindMap() != CurrentMap && CurrentMap)
+    // {
+    //     TC_LOG_ERROR("shitlog", "Item::RemoveFromUpdate - invalid map, m_currMap ID %u, CurrentMap ID: %u. Object type: %u, entry: %u, GUID: %u, owner: %u (InWorld: %u).\nStack trace:\n",
+    //         owner->FindMap()->GetId(), CurrentMap->GetId(), uint32(GetTypeId()), GetEntry(), GetGUIDLow(), GUID_LOPART(GetOwnerGUID()), owner->IsInWorld());
+    //     return;
+    // }
 
     owner->FindMap()->RemoveUpdateObject(this);
     m_objectUpdated = false;
@@ -2136,4 +2136,30 @@ void ItemTemplate::CalculateMinMaxDamageScaling(uint32 ilvl, uint32& minDamage, 
         maxDamage = floor(weaponMaxDamageCalc + 0.5f);
         minDamage = floor(((1.f - (StatScalingFactor * 0.5f)) * weaponMinDamageCalc) + 0.5f);
     }
+}
+
+bool ItemTemplate::IsUsableByLootSpecialization(Player const* player, bool alwaysAllowBoundToAccount) const
+{
+    if (Flags & ITEM_PROTO_FLAG_BIND_TO_ACCOUNT && alwaysAllowBoundToAccount)
+        return true;
+
+    // TODO: fall back to GetDefaultSpecId
+    uint32 spec = player->GetLootSpecOrClassSpec();
+
+    ChrSpecializationEntry const* chrSpecialization = sChrSpecializationStore.LookupEntry(spec);
+    if (!chrSpecialization)
+        return false;
+
+    std::size_t levelIndex = 0;
+    if (player->GetLevel() >= 110)
+        levelIndex = 2;
+    else if (player->GetLevel() > 40)
+        levelIndex = 1;
+
+    return Specializations[levelIndex].test(CalculateItemSpecBit(chrSpecialization));
+}
+
+std::size_t ItemTemplate::CalculateItemSpecBit(ChrSpecializationEntry const* spec)
+{
+    return (spec->classId - 1) * MAX_SPECIALIZATIONS + spec->TabPage;
 }

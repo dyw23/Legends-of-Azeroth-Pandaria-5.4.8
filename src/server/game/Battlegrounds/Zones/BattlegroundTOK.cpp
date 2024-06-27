@@ -247,7 +247,7 @@ void BattlegroundTOK::UpdateTeamScore(Team team)
     UpdateWorldState(worldState, GetTeamScore(team));
 }
 
-void BattlegroundTOK::HandleAreaTrigger(Player* player, uint32 trigger)
+void BattlegroundTOK::HandleAreaTrigger(Player* player, uint32 trigger, bool entered)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -273,7 +273,7 @@ void BattlegroundTOK::HandleAreaTrigger(Player* player, uint32 trigger)
             break;
         }
         default:
-            Battleground::HandleAreaTrigger(player, trigger);
+            Battleground::HandleAreaTrigger(player, trigger, entered);
             break;
     }
 

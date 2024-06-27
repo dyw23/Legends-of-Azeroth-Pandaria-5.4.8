@@ -517,7 +517,7 @@ void WorldSession::HandleSellItemOpcode(WorldPacket& recvData)
         {
             if (pProto->SellPrice > 0)
             {
-                uint32 money = pProto->SellPrice * count;
+                uint64 money = uint64(pProto->SellPrice) * count;
                 if (count < pItem->GetCount())               // need split items
                 {
                     Item* pNewItem = pItem->CloneItem(count, _player);
@@ -827,8 +827,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid, uint32 vendorEntry)
                     continue;
             }
 
-            ConditionList conditions = sConditionMgr->GetConditionsForNpcVendorEvent(vendor->GetEntry(), vendorItem->item);
-            if (!sConditionMgr->IsObjectMeetToConditions(_player, vendor, conditions))
+            if (!sConditionMgr->IsObjectMeetingVendorItemConditions(vendor->GetEntry(), vendorItem->item, _player, vendor))
             {
                 TC_LOG_DEBUG("condition", "SendListInventory: conditions not met for creature entry %u item %u", vendor->GetEntry(), vendorItem->item);
                 continue;

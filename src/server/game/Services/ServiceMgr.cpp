@@ -541,7 +541,7 @@ void ServiceMgr::AddSpecificPlayerData(uint32 guid, uint32 oldRace, uint32 race,
             Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
             if (!quest)
                 continue;
-            if (quest->GetRequiredClasses() && !(quest->GetRequiredClasses() & (1 << (playerClass - 1))))
+            if (quest->GetAllowableClasses() && !(quest->GetAllowableClasses() & (1 << (playerClass - 1))))
                 continue; // Not acceptable by player's class
             if (player && player->GetQuestRewardStatus(questId))
                 continue;

@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -128,8 +128,8 @@ EnumName<UnitFlags> const unitFlags[MAX_UNIT_FLAGS] =
     CREATE_NAMED_ENUM(UNIT_FLAG_PET_IN_COMBAT),
     CREATE_NAMED_ENUM(UNIT_FLAG_PVP),
     CREATE_NAMED_ENUM(UNIT_FLAG_SILENCED),
-    CREATE_NAMED_ENUM(UNIT_FLAG_UNK_14),
-    CREATE_NAMED_ENUM(UNIT_FLAG_UNK_15),
+    CREATE_NAMED_ENUM(UNIT_FLAG_CANNOT_SWIM),
+    CREATE_NAMED_ENUM(UNIT_FLAG_CAN_SWIM),
     CREATE_NAMED_ENUM(UNIT_FLAG_UNK_16),
     CREATE_NAMED_ENUM(UNIT_FLAG_PACIFIED),
     CREATE_NAMED_ENUM(UNIT_FLAG_STUNNED),
@@ -184,6 +184,8 @@ public:
             { "model",           SEC_ADMINISTRATOR,  false,  &HandleNpcSetModelCommand,          },
             { "movetype",        SEC_ADMINISTRATOR,  false,  &HandleNpcSetMoveTypeCommand,       },
             { "phase",           SEC_ADMINISTRATOR,  false,  &HandleNpcSetPhaseCommand,          },
+            { "phaseid",         SEC_ADMINISTRATOR,  false,  &HandleNpcSetPhaseIDCommand,        },
+            { "phasegroup",      SEC_ADMINISTRATOR,  false,  &HandleNpcSetPhaseGroup,            },
             { "wanderdistance",  SEC_ADMINISTRATOR,  false,  &HandleNpcSetWanderDistanceCommand, },
             { "spawntime",       SEC_ADMINISTRATOR,  false,  &HandleNpcSetSpawnTimeCommand,      },
             { "data",            SEC_ADMINISTRATOR,  false,  &HandleNpcSetDataCommand,           },
@@ -262,7 +264,7 @@ public:
             data.displayid = cinfo->GetFirstValidModelId();
             data.dynamicflags = 0;
             data.equipmentId = 0;
-            data.mapid = trans->GetGOInfo()->moTransport.mapID;
+            data.mapId = trans->GetGOInfo()->moTransport.mapID;
             data.movementType = 0;
             data.npcflag = 0;
             data.npcflag2 = 0;
@@ -283,6 +285,9 @@ public:
             delete creature;
             return false;
         }
+
+        for (auto phase : chr->GetPhases())
+            creature->SetPhased(phase, false, true);
 
         creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), chr->GetPhaseMgr().GetPhaseMaskForSpawn());
 
@@ -612,16 +617,14 @@ public:
         // Update in memory..
         if (CreatureTemplate const* cinfo = creature->GetCreatureTemplate())
         {
-            const_cast<CreatureTemplate*>(cinfo)->faction_A = factionId;
-            const_cast<CreatureTemplate*>(cinfo)->faction_H = factionId;
+            const_cast<CreatureTemplate*>(cinfo)->faction = factionId;
         }
 
         // ..and DB
         WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_FACTION);
 
         stmt->setUInt16(0, uint16(factionId));
-        stmt->setUInt16(1, uint16(factionId));
-        stmt->setUInt32(2, creature->GetEntry());
+        stmt->setUInt32(1, creature->GetEntry());
 
         WorldDatabase.Execute(stmt);
 
@@ -758,6 +761,23 @@ public:
         handler->PSendSysMessage(LANG_NPCINFO_LOOT,  cInfo->lootid, cInfo->pickpocketLootId, cInfo->SkinLootId);
         handler->PSendSysMessage(LANG_NPCINFO_DUNGEON_ID, target->GetInstanceId(), target->GetMap()->GetDifficulty());
         handler->PSendSysMessage(LANG_NPCINFO_PHASEMASK, target->GetPhaseMask());
+
+        if (CreatureData const* data = sObjectMgr->GetCreatureData(target->GetDBTableGUIDLow()))
+        {
+            handler->PSendSysMessage(LANG_NPCINFO_PHASES, data->phaseid, data->phaseGroup);
+            if (data->phaseGroup)
+            {
+                std::set<uint32> _phases = target->GetPhases();
+
+                if (!_phases.empty())
+                {
+                    handler->PSendSysMessage(LANG_NPCINFO_PHASE_IDS);
+                    for (uint32 phaseId : _phases)
+                        handler->PSendSysMessage("%u", phaseId);
+                }
+            }
+        }
+
         handler->PSendSysMessage(LANG_NPCINFO_ARMOR, target->GetArmor());
         handler->PSendSysMessage(LANG_NPCINFO_POSITION, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
 
@@ -865,7 +885,7 @@ public:
                     return false;
                 }
 
-                uint32 map_id = data->mapid;
+                uint32 map_id = data->mapId;
 
                 if (handler->GetSession()->GetPlayer()->GetMapId() != map_id)
                 {
@@ -1141,6 +1161,59 @@ public:
 
         if (!creature->IsPet())
             creature->SaveToDB();
+
+        return true;
+    }
+
+    //npc phase handling
+    //change phase of creature
+    static bool HandleNpcSetPhaseGroup(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        uint32 phaseGroupId = (uint32)atoi((char*)args);
+
+        Creature* creature = handler->getSelectedCreature();
+        if (!creature || creature->IsPet())
+        {
+            handler->SendSysMessage(LANG_SELECT_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        creature->ClearPhases();
+
+        for (uint32 id : GetPhasesForGroup(phaseGroupId))
+            creature->SetPhased(id, false, true); // don't send update here for multiple phases, only send it once after adding all phases
+
+        creature->UpdateObjectVisibility();
+
+        creature->SaveToDB();
+
+        return true;
+    }
+
+    //npc phase handling
+    //change phase of creature
+    static bool HandleNpcSetPhaseIDCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        uint32 phase = (uint32)atoi((char*)args);
+
+        Creature* creature = handler->getSelectedCreature();
+        if (!creature || creature->IsPet())
+        {
+            handler->SendSysMessage(LANG_SELECT_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        creature->ClearPhases();
+        creature->SetPhased(phase, true, true);
+        creature->SaveToDB();
 
         return true;
     }
@@ -1491,13 +1564,12 @@ public:
             return false;
 
         Player* chr = handler->GetSession()->GetPlayer();
-        FormationInfo* group_member;
+        FormationInfo group_member;
 
-        group_member                 = new FormationInfo;
-        group_member->follow_angle   = (creature->GetAngle(chr) - chr->GetOrientation()) * 180 / M_PI;
-        group_member->follow_dist    = sqrtf(pow(chr->GetPositionX() - creature->GetPositionX(), int(2))+pow(chr->GetPositionY() - creature->GetPositionY(), int(2)));
-        group_member->leaderGUID     = leaderGUID;
-        group_member->groupAI        = 0;
+        group_member.follow_angle   = (creature->GetAngle(chr) - chr->GetOrientation()) * 180 / M_PI;
+        group_member.follow_dist    = sqrtf(pow(chr->GetPositionX() - creature->GetPositionX(), int(2))+pow(chr->GetPositionY() - creature->GetPositionY(), int(2)));
+        group_member.leaderGUID     = leaderGUID;
+        group_member.groupAI        = 0;
 
         sFormationMgr->CreatureGroupMap[lowguid] = group_member;
         creature->SearchFormation();
@@ -1506,9 +1578,9 @@ public:
 
         stmt->setUInt32(0, leaderGUID);
         stmt->setUInt32(1, lowguid);
-        stmt->setFloat(2, group_member->follow_dist);
-        stmt->setFloat(3, group_member->follow_angle);
-        stmt->setUInt32(4, uint32(group_member->groupAI));
+        stmt->setFloat(2, group_member.follow_dist);
+        stmt->setFloat(3, group_member.follow_angle);
+        stmt->setUInt32(4, uint32(group_member.groupAI));
 
         WorldDatabase.Execute(stmt);
 

@@ -293,11 +293,12 @@ class boss_hoptallus : public CreatureScript
 
         enum Talks
         {
-            TALK_AGGRO,
-            TALK_FURLWIND,
-            TALK_CARROT_BREATH,
-            TALK_DEATH,
-            TALK_SCREECH
+            TALK_AGGRO              = 0, // Oh yeah!
+            TALK_FURLWIND           = 1, // Gonna spins around!
+            TALK_CARROT_BREATH      = 2, // Urp... eats too many carrots...
+            TALK_DEATH              = 3, // You have... turnip... for a head...
+            TALK_SCREECH            = 4, // Hoptallus lets out a loud screech! The virmen are coming!
+            TALK_SLAY               = 5  // You die!
         };
 
         struct boss_hoptallusAI : public BossAI
@@ -438,6 +439,11 @@ class boss_hoptallus : public CreatureScript
                 me->GetMotionMaster()->MovePoint(194, hoptallusHopPos);
             }
 
+            void KilledUnit(Unit* victim) override
+            {
+                Talk(TALK_SLAY);
+            }
+
             void JustDied(Unit* killer) override
             {
                 _JustDied();
@@ -448,9 +454,9 @@ class boss_hoptallus : public CreatureScript
                     nibbler->AI()->DoAction(0);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
-                _EnterCombat();
+                _JustEngagedWith();
 
                 Talk(TALK_AGGRO);
 
@@ -557,7 +563,7 @@ class npc_hammer_bopper : public CreatureScript
                 me->RemoveAurasDueToSpell(SPELL_HAMMER_COSMETIC_1);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 me->GetMotionMaster()->Clear();
                 events.Reset();
@@ -657,7 +663,7 @@ class npc_explosive_hopper : public CreatureScript
                 cosmeticEvents.ScheduleEvent(EVENT_CHECK_POS, 5 * IN_MILLISECONDS);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 me->GetMotionMaster()->Clear();
                 cosmeticEvents.Reset();
@@ -889,7 +895,7 @@ class npc_sb_hopling : public CreatureScript
                 events.ScheduleEvent(EVENT_CHECK_POS, 5 * IN_MILLISECONDS);
             }
 
-            void EnterCombat(Unit* /*who*/) override 
+            void JustEngagedWith(Unit* /*who*/) override 
             {
                 me->GetMotionMaster()->Clear();
                 events.Reset();

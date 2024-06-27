@@ -2094,19 +2094,19 @@ public:
                     {
                         CharacterDatabase.PQuery("UPDATE character_queststatus SET status = 1 WHERE guid = %u AND quest = %u", GUID_LOPART(guid), quest->GetQuestId());
                         std::string items;
-                        for (auto&& obj : quest->m_questObjectives)
+                        for (auto const& obj : quest->Objectives)
                         {
-                            if (obj->Type == QUEST_OBJECTIVE_TYPE_ITEM)
+                            if (obj.Type == QUEST_OBJECTIVE_ITEM)
                             {
-                                items += std::to_string(obj->ObjectId) + " " + std::to_string(obj->Amount) + ",";
+                                items += std::to_string(obj.ObjectID) + " " + std::to_string(obj.Amount) + ",";
                                 continue;
                             }
-                            if (obj->Type == QUEST_OBJECTIVE_TYPE_CURRENCY) // do something with this?
+                            if (obj.Type == QUEST_OBJECTIVE_CURRENCY) // do something with this?
                                 continue;
-                            if (obj->Type == QUEST_OBJECTIVE_TYPE_MONEY) // haha
+                            if (obj.Type == QUEST_OBJECTIVE_MONEY) // haha
                                 continue;
 
-                            CharacterDatabase.PQuery("INSERT INTO character_queststatus_objective (guid, objectiveId, amount) VALUES (%u, %u, %u)", GUID_LOPART(guid), obj->Id, obj->Amount);
+                            CharacterDatabase.PQuery("INSERT INTO character_queststatus_objective (guid, objectiveId, amount) VALUES (%u, %u, %u)", GUID_LOPART(guid), obj.ID, obj.Amount);
                         }
                         items.erase(items.end() - 1); // remove last ","
                         std::string text = " \"Support\" \"Items for quest" + std::to_string(quest->GetQuestId()) + ".\" ";
@@ -2389,7 +2389,7 @@ public:
             uint32 questId = (*result)[0].GetUInt32();
             uint32 status = (*result)[1].GetUInt32();
             if (auto quest = sObjectMgr->GetQuestTemplate(questId))
-                handler->PSendSysMessage("%s (%u) - status %s.", quest->GetTitle().c_str(), questId, StatusToString(status).c_str());
+                handler->PSendSysMessage("%s (%u) - status %s.", quest->GetLogTitle().c_str(), questId, StatusToString(status).c_str());
             else
                 handler->PSendSysMessage("Error. Quest %u not found.", questId);
         }
@@ -2422,7 +2422,7 @@ public:
         {
             uint32 questId = (*result)[0].GetUInt32();
             if (auto quest = sObjectMgr->GetQuestTemplate(questId))
-                handler->PSendSysMessage("%s (%u).", quest->GetTitle().c_str(), questId);
+                handler->PSendSysMessage("%s (%u).", quest->GetLogTitle().c_str(), questId);
             else
                 handler->PSendSysMessage("Error. Quest %u not found.", questId);
         }

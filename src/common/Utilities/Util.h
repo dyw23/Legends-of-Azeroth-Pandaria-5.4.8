@@ -335,6 +335,7 @@ bool consoleToUtf8(const std::string& conStr, std::string& utf8str);
 bool Utf8FitTo(const std::string& str, std::wstring search);
 void utf8printf(FILE* out, const char *str, ...);
 void vutf8printf(FILE* out, const char *str, va_list* ap);
+TC_COMMON_API bool Utf8ToUpperOnlyLatin(std::string& utf8String);
 
 #if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
 TC_COMMON_API bool ReadWinConsole(std::string& str, size_t size = 256);
@@ -342,6 +343,8 @@ TC_COMMON_API bool WriteWinConsole(std::string_view str, bool error = false);
 #endif
 
 TC_COMMON_API Optional<std::size_t> RemoveCRLF(std::string& str);
+
+TC_COMMON_API bool IsIPAddress(char const* ipaddress);
 
 uint32 CreatePIDFile(const std::string& filename);
 

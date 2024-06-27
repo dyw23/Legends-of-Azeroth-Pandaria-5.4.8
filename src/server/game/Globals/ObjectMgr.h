@@ -479,7 +479,7 @@ typedef std::unordered_map<uint32/*(mapid, spawnMode) pair*/, CellObjectGuidsMap
 
 struct TrinityStringLocale
 {
-    StringVector Content;
+    std::vector<std::string> Content;
 };
 
 typedef std::map<uint64, uint64> LinkedRespawnContainer;
@@ -506,7 +506,7 @@ struct GossipMenuItemsLocale
 
 typedef std::unordered_map<std::pair<uint32, uint32>, GossipMenuItemsLocale> GossipMenuItemsLocaleContainer;
 typedef std::unordered_map<uint32, PointOfInterestLocale> PointOfInterestLocaleContainer;
-typedef std::unordered_map<uint32, QuestObjectiveLocale> QuestObjectiveLocaleContainer;
+typedef std::unordered_map<uint32, QuestObjectivesLocale> QuestObjectivesLocaleContainer;
 
 typedef std::multimap<uint32, uint32> QuestRelations; // unit/go -> quest
 typedef std::multimap<uint32, uint32> QuestRelationsReverse; // quest -> unit/go
@@ -594,14 +594,14 @@ struct GossipMenuItems
     uint32              BoxMoney;
     std::string         BoxText;
     uint32              BoxBroadcastTextID;
-    ConditionList       Conditions;
+    ConditionContainer  Conditions;
 };
 
 struct GossipMenus
 {
     uint32              MenuID;
     uint32              TextID;
-    ConditionList   Conditions;
+    ConditionContainer  Conditions;
 };
 
 typedef std::multimap<uint32, GossipMenus> GossipMenusContainer;
@@ -611,32 +611,39 @@ typedef std::multimap<uint32, GossipMenuItems> GossipMenuItemsContainer;
 typedef std::pair<GossipMenuItemsContainer::const_iterator, GossipMenuItemsContainer::const_iterator> GossipMenuItemsMapBounds;
 typedef std::pair<GossipMenuItemsContainer::iterator, GossipMenuItemsContainer::iterator> GossipMenuItemsMapBoundsNonConst;
 
-struct QuestPOIPoint
+struct QuestPOIBlobPoint
 {
-    int32 x;
-    int32 y;
+    int32 X;
+    int32 Y;
 
-    QuestPOIPoint() : x(0), y(0) { }
-    QuestPOIPoint(int32 _x, int32 _y) : x(_x), y(_y) { }
+    QuestPOIBlobPoint() : X(0), Y(0) { }
+    QuestPOIBlobPoint(int32 x, int32 y) : X(x), Y(y) { }
 };
 
-struct QuestPOI
+struct QuestPOIBlobData
 {
-    uint32 Id;
+    uint32 Idx1;
     int32 ObjectiveIndex;
+    uint32 QuestObjectiveId;
     uint32 MapId;
-    uint32 AreaId;
-    uint32 FloorId;
-    uint32 Unk3;
-    uint32 Unk4;
-    std::vector<QuestPOIPoint> points;
+    uint32 WorldMapAreaId;
+    uint32 Floor;
+    uint32 Priority;
+    uint32 Flags;
+    std::vector<QuestPOIBlobPoint> Points;
 
-    QuestPOI() : Id(0), ObjectiveIndex(0), MapId(0), AreaId(0), FloorId(0), Unk3(0), Unk4(0) { }
-    QuestPOI(uint32 id, int32 objIndex, uint32 mapId, uint32 areaId, uint32 floorId, uint32 unk3, uint32 unk4) : Id(id), ObjectiveIndex(objIndex), MapId(mapId), AreaId(areaId), FloorId(floorId), Unk3(unk3), Unk4(unk4) { }
+    QuestPOIBlobData() : Idx1(0), ObjectiveIndex(0), QuestObjectiveId(0), MapId(0), WorldMapAreaId(0), Floor(0), Priority(0), Flags(0) { }
+    QuestPOIBlobData(uint32 idx1, int32 objectiveIndex, uint32 questObjectiveId, uint32 mapId, uint32 worldMapAreaId, uint32 floor, uint32 priority, uint32 flags, std::vector<QuestPOIBlobPoint> points)
+        : Idx1(idx1), ObjectiveIndex(objectiveIndex), QuestObjectiveId(questObjectiveId), MapId(mapId), WorldMapAreaId(worldMapAreaId), Floor(floor), Priority(priority), Flags(flags), Points(std::move(points)) { }
 };
 
-typedef std::vector<QuestPOI> QuestPOIVector;
-typedef std::unordered_map<uint32, QuestPOIVector> QuestPOIContainer;
+struct QuestPOIData
+{
+    uint32 QuestID;
+    std::vector<QuestPOIBlobData> Blobs;
+};
+
+typedef std::unordered_map<uint32, QuestPOIData> QuestPOIContainer;
 
 struct PlayerCreateInfoItem
 {
@@ -775,7 +782,6 @@ struct HotfixInfo
 };
 
 typedef std::vector<HotfixInfo> HotfixData;
-typedef std::map<uint32, uint32> QuestObjectiveLookupMap;
 
 struct ResearchDigsiteInfo
 {
@@ -799,6 +805,16 @@ struct ArchaeologyFindInfo
 
 typedef std::list<ArchaeologyFindInfo> ArchaeologyFindList;
 typedef std::unordered_map<uint32 /*digsiteId*/, ArchaeologyFindList> ArchaeologyFindContainer;
+
+struct PhaseInfoStruct
+{
+    uint32 id;
+    ConditionContainer Conditions;
+};
+
+typedef std::unordered_map<uint32, std::vector<uint32 /*id*/>> TerrainPhaseInfo;
+typedef std::unordered_map<uint32, std::vector<uint32>> TerrainUIPhaseInfo;
+typedef std::unordered_map<uint32, std::vector<PhaseInfoStruct>> PhaseAreaInfo;
 
 struct ResearchProjectRequirements
 {
@@ -958,6 +974,7 @@ class ObjectMgr
         typedef std::unordered_map<uint32, Item*> ItemMap;
 
         typedef std::unordered_map<uint32, Quest*> QuestMap;
+        typedef std::unordered_map<uint32 /*questObjectiveId*/, QuestObjective const*> QuestObjectivesByIdContainer;
 
         typedef std::unordered_map<uint32, AreaTriggerStruct> AreaTriggerContainer;
 
@@ -1038,20 +1055,26 @@ class ObjectMgr
 
         QuestMap const& GetQuestTemplates() const { return _questTemplates; }
 
-        uint32 GetQuestGiverForAreaTrigger(uint32 Trigger_ID) const
+        QuestObjective const* GetQuestObjective(uint32 questObjectiveId) const
         {
-            QuestAreaTriggerContainer::const_iterator itr = _questGiverAreaTriggerStore.find(Trigger_ID);
-            if (itr != _questGiverAreaTriggerStore.end())
-                return itr->second;
-            return 0;
+            auto itr = _questObjectives.find(questObjectiveId);
+            return itr != _questObjectives.end() ? itr->second : nullptr;
         }
 
-        uint32 GetQuestForAreaTrigger(uint32 Trigger_ID) const
+        std::unordered_set<uint32> const* GetQuestGiverForAreaTrigger(uint32 Trigger_ID) const
         {
-            QuestAreaTriggerContainer::const_iterator itr = _questAreaTriggerStore.find(Trigger_ID);
+            auto itr = _questGiverAreaTriggerStore.find(Trigger_ID);
+            if (itr != _questGiverAreaTriggerStore.end())
+                return &itr->second;
+            return nullptr;
+        }
+
+        std::unordered_set<uint32> const* GetQuestsForAreaTrigger(uint32 Trigger_ID) const
+        {
+            auto itr = _questAreaTriggerStore.find(Trigger_ID);
             if (itr != _questAreaTriggerStore.end())
-                return itr->second;
-            return 0;
+                return &itr->second;
+            return nullptr;
         }
 
         bool IsTavernAreaTrigger(uint32 Trigger_ID) const
@@ -1119,13 +1142,7 @@ class ObjectMgr
             return NULL;
         }
 
-        QuestPOIVector const* GetQuestPOIVector(uint32 questId)
-        {
-            QuestPOIContainer::const_iterator itr = _questPOIStore.find(questId);
-            if (itr != _questPOIStore.end())
-                return &itr->second;
-            return NULL;
-        }
+        QuestPOIData const* GetQuestPOIData(uint32 questId);
 
         VehicleAccessoryList const* GetVehicleAccessoryList(Vehicle* veh) const;
 
@@ -1138,7 +1155,6 @@ class ObjectMgr
         }
 
         void LoadQuests();
-        void LoadQuestObjectives();
         void LoadQuestObjectiveVisualEffects();
         void LoadQuestStartersAndEnders();
         void LoadGameobjectQuestStarters();
@@ -1275,10 +1291,44 @@ class ObjectMgr
         void AddSpellToTrainer(uint32 entry, uint32 spell, uint32 spellCost, uint32 reqSkill, uint32 reqSkillValue, uint32 reqLevel);
 
         void LoadPhaseDefinitions();
+        void LoadTerrainPhaseInfo();
+        void LoadTerrainSwapDefaults();
+        void LoadTerrainWorldMaps();
+        void LoadAreaPhases();
         void LoadSpellPhaseInfo();
 
         PhaseDefinitionStore const* GetPhaseDefinitionStore() { return &_PhaseDefinitionStore; }
         SpellPhaseStore const* GetSpellPhaseStore() { return &_SpellPhaseStore; }
+
+        std::vector<uint32> const* GetPhaseTerrainSwaps(uint32 phaseid) const
+        {
+            auto itr = _terrainPhaseInfoStore.find(phaseid);
+            return itr != _terrainPhaseInfoStore.end() ? &itr->second : nullptr;
+        }
+        std::vector<uint32> const* GetDefaultTerrainSwaps(uint32 mapid) const
+        {
+            auto itr = _terrainMapDefaultStore.find(mapid);
+            return itr != _terrainMapDefaultStore.end() ? &itr->second : nullptr;
+        }
+        std::vector<uint32> const* GetTerrainWorldMaps(uint32 terrainId) const
+        {
+            auto itr = _terrainWorldMapStore.find(terrainId);
+            return itr != _terrainWorldMapStore.end() ? &itr->second : nullptr;
+        }
+        std::vector<PhaseInfoStruct> const* GetPhasesForArea(uint32 area) const
+        {
+            auto itr = _areaPhases.find(area);
+            return itr != _areaPhases.end() ? &itr->second : nullptr;
+        }
+        TerrainPhaseInfo const& GetDefaultTerrainSwapStore() const { return _terrainMapDefaultStore; }
+        PhaseAreaInfo const& GetAreaAndZonePhases() const { return _areaPhases; }
+        // condition loading helpers
+        std::vector<PhaseInfoStruct>* GetPhasesForAreaOrZoneForLoading(uint32 areaOrZone)
+        {
+            auto itr = _areaPhases.find(areaOrZone);
+            return itr != _areaPhases.end() ? &itr->second : nullptr;
+        }
+        PhaseAreaInfo& GetAreaAndZonePhasesForLoading() { return _areaPhases; }
 
         void LoadBattlePetBreedData();
         void LoadBattlePetQualityData();
@@ -1363,7 +1413,7 @@ class ObjectMgr
         typedef std::multimap<int32, uint32> ExclusiveQuestGroups;
         typedef std::pair<ExclusiveQuestGroups::const_iterator, ExclusiveQuestGroups::const_iterator> ExclusiveQuestGroupsBounds;
 
-        ExclusiveQuestGroups mExclusiveQuestGroups;
+        ExclusiveQuestGroups _exclusiveQuestGroups;
 
         MailLevelReward const* GetMailLevelReward(uint32 level, uint32 raceMask)
         {
@@ -1595,8 +1645,9 @@ class ObjectMgr
         bool IsVendorItemValid(uint32 vendor_entry, uint32 id, int32 maxcount, uint32 ptime, uint32 ExtendedCost, uint8 type, Player* player = NULL, std::set<uint32>* skip_vendors = NULL, uint32 ORnpcflag = 0) const;
 
         void LoadScriptNames();
-        char const* GetScriptName(uint32 id) const { return id < _scriptNamesStore.size() ? _scriptNamesStore[id].c_str() : ""; }
-        uint32 GetScriptId(char const* name);
+        ScriptNameContainer const& GetAllScriptNames() const;
+        std::string const& GetScriptName(uint32 id) const;        
+        uint32 GetScriptId(std::string const& name);
 
         SpellClickInfoMapBounds GetSpellClickInfoMapBounds(uint32 creature_id) const
         {
@@ -1656,10 +1707,6 @@ class ObjectMgr
         time_t GetHotfixDate(uint32 entry, uint32 type) const;
 
         void LoadMissingKeyChains();
-
-        bool QuestObjectiveExists(uint32 objectiveId) const;
-        uint32 GetQuestObjectiveQuestId(uint32 objectiveId) const;
-        QuestObjective const* GetQuestObjective(uint32 objectiveId) const;
 
         void LoadResearchDigsiteInfo();
         void LoadArchaeologyFindInfo();
@@ -1765,10 +1812,10 @@ class ObjectMgr
         std::atomic<uint32> _HiVignetteGuid{ 1 };
 
         QuestMap _questTemplates;
-        QuestObjectiveLookupMap m_questObjectiveLookup;
+        QuestObjectivesByIdContainer _questObjectives;
 
         typedef std::unordered_map<uint32, GossipText> GossipTextContainer;
-        typedef std::unordered_map<uint32, uint32> QuestAreaTriggerContainer;
+        typedef std::unordered_map<uint32, std::unordered_set<uint32>> QuestAreaTriggerContainer;
         typedef std::set<uint32> TavernAreaTriggerContainer;
         typedef std::set<uint32> GameObjectForQuestContainer;
 
@@ -1820,6 +1867,10 @@ class ObjectMgr
         InstanceTemplateContainer _instanceTemplateStore;
 
         PhaseDefinitionStore _PhaseDefinitionStore;
+        TerrainPhaseInfo _terrainPhaseInfoStore;
+        TerrainPhaseInfo _terrainMapDefaultStore;
+        TerrainUIPhaseInfo _terrainWorldMapStore;
+        PhaseAreaInfo _areaPhases;
         SpellPhaseStore _SpellPhaseStore;
 
         typedef std::set<uint8> BattleBetBreedSet;
@@ -1834,7 +1885,7 @@ class ObjectMgr
 
     private:
         void LoadScripts(ScriptsType type);
-        void LoadQuestRelationsHelper(QuestRelations& map, std::string const& table, bool starter, bool go);
+        void LoadQuestRelationsHelper(QuestRelations& map, QuestRelationsReverse* reversedMap, std::string const& table, bool starter, bool go);
         void PlayerCreateInfoAddItemHelper(uint32 race_, uint32 class_, uint32 itemId, int32 count);
 
         MailLevelRewardContainer _mailLevelRewardStore;

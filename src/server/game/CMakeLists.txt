@@ -1,4 +1,4 @@
-# This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+# This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -48,7 +48,7 @@ file(GLOB_RECURSE sources_Quests Quests/*.cpp Quests/*.h)
 file(GLOB_RECURSE sources_Reputation Reputation/*.cpp Reputation/*.h)
 file(GLOB_RECURSE sources_Scenarios Scenarios/*.cpp Scenarios/*.h)
 file(GLOB_RECURSE sources_Scripting Scripting/*.cpp Scripting/*.h)
-file(GLOB_RECURSE sources_Server Server/*.cpp Server/*.h)
+file(GLOB_RECURSE sources_Server Server/*.cpp Server/*.h Server/Packets/*.h Server/Packets/*.cpp Server/Protocol/*.h Server/Protocol/*.cpp)
 file(GLOB_RECURSE sources_Services Services/*.cpp Services/*.h)
 file(GLOB_RECURSE sources_Skills Skills/*.cpp Skills/*.h)
 file(GLOB_RECURSE sources_Spells Spells/*.cpp Spells/*.h)
@@ -175,42 +175,22 @@ set(game_STAT_SRCS
   ${sources_Cfbg}
 )
 
-include_directories(
+if (ELUNA)
+  file(GLOB_RECURSE sources_LuaEngine LuaEngine/*.cpp LuaEngine/*.h)
+  source_group(LuaEngine FILES ${sources_LuaEngine})
+  set(game_STAT_SRCS
+    ${game_STAT_SRCS}
+    ${sources_LuaEngine}
+  )
+endif()
+
+add_library(game STATIC
+  ${game_STAT_SRCS}
+)
+
+target_include_directories(game
   PUBLIC
     ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/src/common/Utilities    
-  PRIVATE
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Include
-    ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
-    ${CMAKE_SOURCE_DIR}/dep/SFMT
-    ${ACE_INCLUDE_DIR}
-    ${MYSQL_INCLUDE_DIR}
-    ${OPENSSL_INCLUDE_DIR}
-    ${CMAKE_SOURCE_DIR}/src/common
-    ${CMAKE_SOURCE_DIR}/src/common/Asio
-    ${CMAKE_SOURCE_DIR}/src/common/Configuration
-    ${CMAKE_SOURCE_DIR}/src/common/Cryptography
-    ${CMAKE_SOURCE_DIR}/src/common/Cryptography/Authentication
-    ${CMAKE_SOURCE_DIR}/src/common/Debugging
-    ${CMAKE_SOURCE_DIR}/src/common/IPLocation
-    ${CMAKE_SOURCE_DIR}/src/common/Logging
-    ${CMAKE_SOURCE_DIR}/src/common/Threading
-    ${CMAKE_SOURCE_DIR}/src/server/collision
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Management
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Models
-    ${CMAKE_SOURCE_DIR}/src/server/collision/Maps
-    ${CMAKE_SOURCE_DIR}/src/server/database/Database
-    ${CMAKE_SOURCE_DIR}/src/server/shared
-    ${CMAKE_SOURCE_DIR}/src/server/shared/DataStores
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Debugging
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic/LinkedReference
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Packets
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Networking
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Threading
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Realms
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Utilities
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/Accounts
     ${CMAKE_CURRENT_SOURCE_DIR}/Achievements
@@ -267,6 +247,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/Mails
     ${CMAKE_CURRENT_SOURCE_DIR}/Maps
     ${CMAKE_CURRENT_SOURCE_DIR}/Miscellaneous
+    ${CMAKE_CURRENT_SOURCE_DIR}/Motd
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement/Spline
     ${CMAKE_CURRENT_SOURCE_DIR}/Movement/MovementGenerators
@@ -278,8 +259,9 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/Reputation
     ${CMAKE_CURRENT_SOURCE_DIR}/Scenarios
     ${CMAKE_CURRENT_SOURCE_DIR}/Scripting
-    ${CMAKE_CURRENT_SOURCE_DIR}/Server/Protocol
     ${CMAKE_CURRENT_SOURCE_DIR}/Server
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/Packets
+    ${CMAKE_CURRENT_SOURCE_DIR}/Server/Protocol
     ${CMAKE_CURRENT_SOURCE_DIR}/Services
     ${CMAKE_CURRENT_SOURCE_DIR}/Skills
     ${CMAKE_CURRENT_SOURCE_DIR}/Spells
@@ -292,46 +274,36 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/Warden
     ${CMAKE_CURRENT_SOURCE_DIR}/Warden/Modules
     ${CMAKE_CURRENT_SOURCE_DIR}/Weather
-    ${CMAKE_CURRENT_SOURCE_DIR}/World
-    ${CMAKE_SOURCE_DIR}/dep/zlib
-    ${CMAKE_SOURCE_DIR}/dep/fmt/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/World    
+    boost
+    common
+  PRIVATE
+    zlib
+    database
+    shared
+    g3dlite
+    Detour
+    Recast
 )
-
-if (Boost_FOUND)
-  include_directories(
-    PRIVATE
-      ${Boost_INCLUDE_DIRS}
-  )
-endif()
 
 if (ELUNA)
-  file(GLOB_RECURSE sources_LuaEngine LuaEngine/*.cpp LuaEngine/*.h)
-  source_group(LuaEngine FILES ${sources_LuaEngine})
-  set(game_STAT_SRCS
-    ${game_STAT_SRCS}
-    ${sources_LuaEngine}
-    #${lua_STAT_SRCS}
-  )
-  include_directories(
-    PRIVATE
-      ${CMAKE_SOURCE_DIR}/dep/lualib
+  target_include_directories(game
+    PUBLIC
       ${CMAKE_CURRENT_SOURCE_DIR}/LuaEngine
-      ${CMAKE_SOURCE_DIR}/src/server/scripts/PrecompiledHeaders
+    PRIVATE
+      lua
   )
+
 endif()
 
-add_library(game STATIC
-  ${game_STAT_SRCS}
-)
-
 target_link_libraries(game
-  PRIVATE
+  PUBLIC
     Detour
-    zlib
     common
     database
     shared
-    ${ACE_LIBRARY}
+  PRIVATE
+    zlib
 )
 
 if (ELUNA)
@@ -356,8 +328,6 @@ if (ELUNA)
     endif()
   endif()      
 endif()
-
-
 
 add_dependencies(game revision.h)
 

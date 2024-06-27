@@ -208,7 +208,7 @@ class OutdoorPvP : public ZoneScript
         virtual void FillInitialWorldStates(WorldStateBuilder& /*builder*/) { }
 
         // called when a player triggers an areatrigger
-        virtual bool HandleAreaTrigger(Player* player, uint32 trigger);
+        virtual bool HandleAreaTrigger(Player* player, uint32 trigger, bool entered);
 
         // called on custom spell
         virtual bool HandleCustomSpell(Player* player, uint32 spellId, GameObject* go);

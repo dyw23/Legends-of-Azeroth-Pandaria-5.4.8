@@ -4,6 +4,8 @@
 * Please see the included DOCS/LICENSE.TXT for more information
 */
 
+#include "LuaFunctions.h"
+#include "Includes.h"
 #include "LuaEngine.h"
 #include "Define.h"
 #include "GlobalMethods.h"
@@ -191,7 +193,7 @@ ElunaRegister<Unit> UnitMethods[] =
     {"GetCurrentSpell", &LuaUnit::GetCurrentSpell},         // :GetCurrentSpell(type) - Returns the currently casted spell of given type if any
     {"GetCreatureType", &LuaUnit::GetCreatureType},         // :GetCreatureType() - Returns the unit's type
     // {"GetNearbyTarget", &LuaUnit::GetNearbyTarget},      // :GetNearbyTarget([radius[, exclude]]) - Returns nearby target within sight or given radius. Excludes current target and given unit
-    {"GetMountId", &LuaUnit::GetMountId},                   // :GetMountId()
+    {"GetMountDisplayId", &LuaUnit::GetMountDisplayId},     // :GetMountId()
     {"GetDistance", &LuaUnit::GetDistance},                 // :GetDistance(WorldObject or x, y, z){"GetRelativePoint", &LuaUnit::GetRelativePoint},       // :GetRelativePoint(dist, rad) - Returns the X, Y and orientation of a point dist away from unit.
     {"GetOwnerGUID", &LuaUnit::GetOwnerGUID},               // :GetOwnerGUID() - Returns the GUID of the owner
     {"GetOwner", &LuaUnit::GetOwner},                       // :GetOwner() - Returns the owner
@@ -366,7 +368,7 @@ ElunaRegister<Player> PlayerMethods[] =
     {"GetQuestLevel", &LuaPlayer::GetQuestLevel},           // :GetQuestLevel(quest) - Returns quest's level
     {"GetChatTag", &LuaPlayer::GetChatTag},                 // :GetChatTag() - Returns player chat tag ID
     {"GetRestBonus", &LuaPlayer::GetRestBonus},             // :GetRestBonus() - Gets player's rest bonus
-    {"GetRestType", &LuaPlayer::GetRestType},               // :GetRestType() - Returns the player's rest type
+    {"HasRestFlag", &LuaPlayer::HasRestFlag},               // :HasRestFlag() - Returns whether the player has the given rest flag set
     {"GetPhaseMaskForSpawn", &LuaPlayer::GetPhaseMaskForSpawn},                                               // :GetPhaseMaskForSpawn() - Gets the real phasemask for spawning things. Used if the player is in GM mode
     {"GetReqKillOrCastCurrentCount", &LuaPlayer::GetReqKillOrCastCurrentCount},                                        // :GetReqKillOrCastCurrentCount(questId, entry) - Gets the objective (kill or cast) current count done
     {"GetQuestStatus", &LuaPlayer::GetQuestStatus},         // :GetQuestStatus(entry) - Gets the quest's status
@@ -430,7 +432,7 @@ ElunaRegister<Player> PlayerMethods[] =
     {"SetPvPDeath", &LuaPlayer::SetPvPDeath},               // :SetPvPDeath([on]) - Sets PvP death on or off
     {"SetAcceptWhispers", &LuaPlayer::SetAcceptWhispers},   // :SetAcceptWhispers([on]) - Sets whisper accepting death on or off
     {"SetRestBonus", &LuaPlayer::SetRestBonus},             // :SetRestBonus(bonusrate) - Sets new restbonus rate
-    {"SetRestType", &LuaPlayer::SetRestType},               // :SetRestType() - Sets rest type
+    {"SetRestFlag", &LuaPlayer::SetRestFlag},               // :SetRestFlag() - Sets rest flag
     {"SetQuestStatus", &LuaPlayer::SetQuestStatus},         // :SetQuestStatus(entry, status) - Sets the quest's status
     {"SetReputation", &LuaPlayer::SetReputation},           // :SetReputation(faction, value) - Sets the faction reputation for the player
     {"SetFreeTalentPoints", &LuaPlayer::SetFreeTalentPoints}, // :SetFreeTalentPoints(points) - Sets the amount of unused talent points
@@ -577,7 +579,7 @@ ElunaRegister<Player> PlayerMethods[] =
     // {"BindToInstance", &LuaPlayer::BindToInstance},      // :BindToInstance() - Binds the player to the current instance
     {"UnbindInstance", &LuaPlayer::UnbindInstance},         // :UnbindInstance(map, difficulty) - Unbinds the player from an instance
     {"RemoveFromBattlegroundOrBattlefieldRaid", &LuaPlayer::RemoveFromBattlegroundOrBattlefieldRaid},         // :RemoveFromBattlegroundOrBattlefieldRaid() - Removes the player from a battleground or battlefield raid
-    {"ResetAchievements", &LuaPlayer::ResetAchievements},   // :ResetAchievements() - Resets playeräs achievements
+    {"ResetAchievements", &LuaPlayer::ResetAchievements},   // :ResetAchievements() - Resets playerï¿½s achievements
     {"KickPlayer", &LuaPlayer::KickPlayer},                 // :KickPlayer() - Kicks player from server
     {"LogoutPlayer", &LuaPlayer::LogoutPlayer},             // :LogoutPlayer([save]) - Logs the player out and saves if true
     {"SendTrainerList", &LuaPlayer::SendTrainerList},       // :SendTrainerList(WorldObject) - Sends trainer list from object to player
@@ -880,7 +882,7 @@ ElunaRegister<Quest> QuestMethods[] =
     {"GetPrevQuestId", &LuaQuest::GetPrevQuestId},          // :GetPrevQuestId() - Returns the quest's previous quest ID
     {"GetNextQuestInChain", &LuaQuest::GetNextQuestInChain},// :GetNexQuestInChain() - Returns the next quest in its chain
     {"GetFlags", &LuaQuest::GetFlags},                      // :GetFlags() - Returns the quest's flags
-    {"GetType", &LuaQuest::GetType},                        // :GetType() - Returns the quest's type
+    {"GetQuestInfoID", &LuaQuest::GetQuestInfoID},          // :GetQuestInfoID() - Returns the quest's type
 
     // Boolean
     {"HasFlag", &LuaQuest::HasFlag},                        // :HasFlag(flag) - Returns true or false if the quest has the specified flag

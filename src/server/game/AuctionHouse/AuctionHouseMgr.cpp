@@ -310,8 +310,8 @@ void AuctionHouseMgr::SendAuctionCancelledToBidderMail(AuctionEntry* auction, Ch
     if (!bidder)
         bidder_accId = sObjectMgr->GetPlayerAccountIdByGUID(bidder_guid);
 
-    if (bidder)
-        bidder->GetSession()->SendAuctionRemovedNotification(auction->Id, auction->itemEntry, item->GetItemRandomPropertyId());
+    // if (bidder)
+    //     bidder->GetSession()->SendAuctionRemovedNotification(auction->Id, auction->itemEntry, item->GetItemRandomPropertyId());
 
     // bidder exist
     if (bidder || bidder_accId)
@@ -1034,7 +1034,7 @@ bool AuctionEntry::LoadFromDB(Field* fields)
         return false;
     }
 
-    factionTemplateId = auctioneerInfo->faction_A;
+    factionTemplateId = auctioneerInfo->faction;
     auctionHouseEntry = AuctionHouseMgr::GetAuctionHouseEntry(factionTemplateId);
     if (!auctionHouseEntry)
     {
@@ -1160,7 +1160,7 @@ bool AuctionEntry::LoadFromFieldList(Field* fields)
         return false;
     }
 
-    factionTemplateId = auctioneerInfo->faction_A;
+    factionTemplateId = auctioneerInfo->faction;
     auctionHouseEntry = AuctionHouseMgr::GetAuctionHouseEntry(factionTemplateId);
 
     if (!auctionHouseEntry)
@@ -1179,7 +1179,7 @@ std::string AuctionEntry::BuildAuctionMailSubject(MailAuctionAnswers response) c
     return strm.str();
 }
 
-#if COMPILER == COMPILER_MICROSOFT
+#if COMPILER == TRINITY_COMPILER_MICROSOFT
 #define GUID_FORMAT "%16I64X"
 #else
 #define GUID_FORMAT "%16llX"

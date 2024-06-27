@@ -313,10 +313,10 @@ struct MapChallengeModeEntry
 struct QuestPackageItemEntry
 {
     uint32      ID;                                         // 0
-    uint32      QuestPackageID;                             // 1
+    uint32      PackageID;                                  // 1
     uint32      ItemID;                                     // 2
-    uint32      Count;                                      // 3
-    uint32      Unk2;                                       // 4
+    uint32      ItemQuantity;                               // 3
+    uint32      DisplayType;                                // 4
 };
 
 struct RulesetItemUpgradeEntry

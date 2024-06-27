@@ -453,32 +453,32 @@ void ScriptMgr::OnNetworkStop()
     FOREACH_SCRIPT(ServerScript)->OnNetworkStop();
 }
 
-void ScriptMgr::OnSocketOpen(WorldSocket* socket)
+void ScriptMgr::OnSocketOpen(std::shared_ptr<WorldSocket> socket)
 {
     ASSERT(socket);
 
     FOREACH_SCRIPT(ServerScript)->OnSocketOpen(socket);
 }
 
-void ScriptMgr::OnSocketClose(WorldSocket* socket, bool wasNew)
+void ScriptMgr::OnSocketClose(std::shared_ptr<WorldSocket> socket)
 {
     ASSERT(socket);
 
-    FOREACH_SCRIPT(ServerScript)->OnSocketClose(socket, wasNew);
+    FOREACH_SCRIPT(ServerScript)->OnSocketClose(socket);
 }
 
-void ScriptMgr::OnPacketReceive(WorldSocket* socket, WorldPacket packet)
+void ScriptMgr::OnPacketReceive(WorldSession* session, WorldPacket packet)
 {
     ASSERT(socket);
 
-    FOREACH_SCRIPT(ServerScript)->OnPacketReceive(socket, packet);
+    FOREACH_SCRIPT(ServerScript)->OnPacketReceive(session, packet);
 }
 
-void ScriptMgr::OnPacketSend(WorldSocket* socket, WorldPacket packet)
+void ScriptMgr::OnPacketSend(WorldSession* session, WorldPacket packet)
 {
     ASSERT(socket);
 
-    FOREACH_SCRIPT(ServerScript)->OnPacketSend(socket, packet);
+    FOREACH_SCRIPT(ServerScript)->OnPacketSend(session, packet);
 }
 
 void ScriptMgr::OnUnknownPacketReceive(WorldSocket* socket, WorldPacket packet)
@@ -952,20 +952,19 @@ bool ScriptMgr::OnQuestReward(Player* player, Creature* creature, Quest const* q
     return tmpscript->OnQuestReward(player, creature, quest, opt);
 }
 
-uint32 ScriptMgr::GetDialogStatus(Player* player, Creature* creature)
+Optional<QuestGiverStatus> ScriptMgr::GetDialogStatus(Player* player, Creature* creature)
 {
     ASSERT(player);
     ASSERT(creature);
 #ifdef ELUNA
-    if (uint32 dialogid = sHookMgr->GetDialogStatus(player, creature))
+    if (Optional<QuestGiverStatus> status = sHookMgr->GetDialogStatus(player, creature))
     {
         player->PlayerTalkClass->ClearMenus();
-        return dialogid;
+        return *status;
     }
 #endif
 
-    /// @todo 100 is a funny magic number to have hanging around here...
-    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, 100);
+    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, std::nullopt);
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->GetDialogStatus(player, creature);
 }
@@ -1085,20 +1084,19 @@ bool ScriptMgr::OnQuestReward(Player* player, GameObject* go, Quest const* quest
     return tmpscript->OnQuestReward(player, go, quest, opt);
 }
 
-uint32 ScriptMgr::GetDialogStatus(Player* player, GameObject* go)
+Optional<QuestGiverStatus> ScriptMgr::GetDialogStatus(Player* player, GameObject* go)
 {
     ASSERT(player);
     ASSERT(go);
 #ifdef ELUNA
-    if (uint32 dialogid = sHookMgr->GetDialogStatus(player, go))
+    if (Optional<QuestGiverStatus> status = sHookMgr->GetDialogStatus(player, go))
     {
         player->PlayerTalkClass->ClearMenus();
-        return dialogid;
+        return *status;
     }
 #endif
 
-    /// @todo 100 is a funny magic number to have hanging around here...
-    GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, 100);
+    GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, std::nullopt);
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->GetDialogStatus(player, go);
 }
@@ -1165,17 +1163,17 @@ bool ScriptMgr::OnDummyEffect(Unit* caster, uint32 spellId, SpellEffIndex effInd
     return tmpscript->OnDummyEffect(caster, spellId, effIndex, target);
 }
 
-bool ScriptMgr::OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger)
+bool ScriptMgr::OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger, bool entered)
 {
     ASSERT(player);
     ASSERT(trigger);
 #ifdef ELUNA
-    if (sHookMgr->OnAreaTrigger(player, trigger))
+    if (sHookMgr->OnAreaTrigger(player, trigger, entered))
         return true;
 #endif
 
-    GET_SCRIPT_RET(AreaTriggerScript, sObjectMgr->GetAreaTriggerScriptId(trigger->id), tmpscript, false);
-    return tmpscript->OnTrigger(player, trigger);
+    GET_SCRIPT_RET(AreaTriggerScript, sObjectMgr->GetAreaTriggerScriptId(trigger->ID), tmpscript, false);
+    return entered ? tmpscript->OnTrigger(player, trigger) : tmpscript->OnExit(player, trigger);
 }
 
 IAreaTrigger* ScriptMgr::CreateAreaTriggerInterface(uint32 entry)
@@ -1288,7 +1286,7 @@ void ScriptMgr::OnAuctionExpire(AuctionHouseObject* ah, AuctionEntry* entry)
     FOREACH_SCRIPT(AuctionHouseScript)->OnAuctionExpire(ah, entry);
 }
 
-bool ScriptMgr::OnConditionCheck(Condition* condition, ConditionSourceInfo& sourceInfo)
+bool ScriptMgr::OnConditionCheck(const Condition* condition, ConditionSourceInfo& sourceInfo)
 {
     ASSERT(condition);
 #ifdef ELUNA

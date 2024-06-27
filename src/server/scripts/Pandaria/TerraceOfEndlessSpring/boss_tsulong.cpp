@@ -285,12 +285,12 @@ class boss_tsulong : public CreatureScript
                 CreatureAI::MoveInLineOfSight(who);
             }
 
-            void EnterCombat(Unit* who) override
+            void JustEngagedWith(Unit* who) override
             {
                 if (instance && instance->GetData(DATA_TSULONG) == DONE)
                     return;
 
-                _EnterCombat();
+                _JustEngagedWith();
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
 
                 Talk(SAY_AGGRO);
@@ -686,6 +686,7 @@ class boss_tsulong : public CreatureScript
 
                     while (uint32 eventId = events.ExecuteEvent())
                     {
+                        Position pos;
                         switch (eventId)
                         {
                             case EVENT_SWITCH_TO_NIGHT_PHASE:
@@ -698,7 +699,6 @@ class boss_tsulong : public CreatureScript
                                     pSunbeam->DisappearAndDie();
 
                                 Talk(EMOTE_SUNBEAM, me);
-                                Position pos;
                                 me->GetRandomNearPosition(pos, 30.0f);
                                 me->SummonCreature(SUNBEAM_DUMMY_ENTRY, pos);
 

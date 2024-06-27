@@ -198,7 +198,7 @@ public:
     void EventPlayerClickedOnFlag(Player* source, GameObject* targetObj) override;
 
     void RemovePlayer(Player*, uint64, uint32) override;
-    void HandleAreaTrigger(Player* source, uint32 trigger) override;
+    void HandleAreaTrigger(Player* source, uint32 trigger, bool entered) override;
     void HandleKillPlayer(Player* player, Player* killer) override;
     bool SetupBattleground() override;
     WorldSafeLocsEntry const* GetClosestGraveYard(Player* player) override;

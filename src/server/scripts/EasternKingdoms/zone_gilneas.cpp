@@ -530,11 +530,11 @@ Position const KorothPath[][KorothPathLenght] =
     },
 };
 
-const std::string PlayerText[3] =
+const uint32 PlayerText[3] =
 {
-    "It's not safe here. Go to the Allens' basement.",
-    "Join the others inside the basement next door. Hurry!",
-    "Your mother's in the basement next door. Get to her now!",
+    36329,   //"It's not safe here.  Go to the Allens' basement.",
+    36331,   //"Join the others inside the basement next door. Hurry!",
+    36328    //"Your mother's in the basement next door. Get to her now!",
 };
 
 struct npc_gilneas_crow : public ScriptedAI
@@ -748,7 +748,7 @@ struct npc_worgen_runt : public ScriptedAI
         _playerGuid = 0;
     }
 
-    void EnterCombat(Unit* /*who*/) override
+    void JustEngagedWith(Unit* /*who*/) override
     {
         _events.SetPhase(PHASE_COMBAT);
     }
@@ -1017,7 +1017,7 @@ struct npc_josiah_avery_worgen_form : public PassiveAI
         }, 200);
     }
 
-    void SpellHit(Unit* /*caster*/, const SpellInfo* spell)
+    void SpellHit(Unit* /*caster*/, const SpellInfo* spell) override
     {
         if (spell->Id == SPELL_SHOOT_INSTAKILL)
             me->CastSpell(me, SPELL_GET_SHOT);
@@ -1102,7 +1102,7 @@ class npc_lorna_crowley_basement : public CreatureScript
 public:
     npc_lorna_crowley_basement(const char* ScriptName) : CreatureScript(ScriptName) { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest) override
     {
         if (quest->GetQuestId() == QUEST_FROM_THE_SHADOWS)
         {
@@ -1115,7 +1115,7 @@ public:
         return true;
     }
 
-    bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 /*opt*/)
+    bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 /*opt*/) override
     {
         if (quest->GetQuestId() == QUEST_FROM_THE_SHADOWS)
             if (Unit* charm = Unit::GetCreature(*creature, player->GetMinionGUID()))
@@ -1285,7 +1285,7 @@ class npc_king_genn_greymane : public CreatureScript
 public:
     npc_king_genn_greymane() : CreatureScript("npc_king_genn_greymane") { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest) override
     {
         if (quest->GetQuestId() == QUEST_SAVE_KRENNAN_ARANAS)
         {
@@ -1398,7 +1398,7 @@ public:
         bool _aranasSaved;
 
         void AttackStart(Unit* /*who*/) override { }
-        void EnterCombat(Unit* /*who*/) override { }
+        void JustEngagedWith(Unit* /*who*/) override { }
         void EnterEvadeMode() override { }
 
         void Reset() override
@@ -1406,7 +1406,7 @@ public:
             _playerSeated = false;
         }
 
-        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
+        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply) override
         {
             if (who->GetTypeId() == TYPEID_PLAYER)
             {
@@ -1433,7 +1433,7 @@ public:
             }
         }
 
-        void WaypointReached(uint32 i)
+        void WaypointReached(uint32 i) override
         {
             Player* player = GetPlayerForEscort();
 
@@ -1533,7 +1533,7 @@ public:
             }
         }
 
-        void OnCharmed(bool /*apply*/) { }
+        void OnCharmed(bool /*apply*/) override { }
 
         void UpdateAI(uint32 diff) override
         {
@@ -1602,15 +1602,19 @@ class npc_gilneas_children : public CreatureScript
                     events.ScheduleEvent(EVENT_CRY, 1s);
             }
 
-            void SpellHit(Unit* caster, const SpellInfo* spell)
+            void SpellHit(Unit* caster, const SpellInfo* spell) override
             {
                 if (!activated && spell->Id == _spellId)
                 {
                     if (Player* player = caster->ToPlayer())
                     {
                         activated = true;
-                        playerGUID = player->GetGUID();
-                        player->Say(PlayerText[_playerSayId], LANG_UNIVERSAL);
+                        BroadcastText const* bct = sObjectMgr->GetBroadcastText(PlayerText[_playerSayId]);
+                        LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
+                        std::string baseText = "";
+                        if (bct)
+                            baseText = bct->GetText(loc_idx, player->GetGender());
+                            player->Say(baseText, LANG_UNIVERSAL);
                         player->KilledMonsterCredit(me->GetEntry(), 0);
                         me->RemoveFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
                         events.ScheduleEvent(EVENT_TALK_TO_PLAYER, 3s + 500ms);
@@ -1709,7 +1713,7 @@ public:
             }
         }
 
-        void WaypointReached(uint32 point)
+        void WaypointReached(uint32 point) override
         {
             if (point == 1)
                 if (me->IsSummon())
@@ -1933,7 +1937,7 @@ class npc_mountain_horse : public CreatureScript
 public:
     npc_mountain_horse(const char* ScriptName) : CreatureScript(ScriptName) { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(Player* player, Creature* creature) override
     {
         if (player->GetQuestStatus(QUEST_THE_HUNGRY_ETTIN) == QUEST_STATUS_INCOMPLETE)
         {
@@ -1957,7 +1961,7 @@ public:
                 me->GetMotionMaster()->MoveRandom(8.0f);
         }
 
-        void SpellHit(Unit* caster, SpellInfo const* spell)
+        void SpellHit(Unit* caster, SpellInfo const* spell) override
         {
             switch (spell->Id)
             {
@@ -1974,7 +1978,7 @@ public:
             }
         }
 
-        void PassengerBoarded(Unit* /*passenger*/, int8 /*SeatId*/, bool apply)
+        void PassengerBoarded(Unit* /*passenger*/, int8 /*SeatId*/, bool apply) override
         {
             if (!apply)
             {
@@ -1984,7 +1988,7 @@ public:
             }
         }
 
-        void OnCharmed(bool apply) { }
+        void OnCharmed(bool apply) override { }
     };
 
     CreatureAI* GetAI(Creature* creature) const override
@@ -2081,7 +2085,7 @@ class npc_stagecoach_carriage_exodus : public CreatureScript
 public:
     npc_stagecoach_carriage_exodus(const char* ScriptName) : CreatureScript(ScriptName) { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(Player* player, Creature* creature) override
     {
         if (player->GetQuestStatus(QUEST_ENTRY_EXODUS) == QUEST_STATUS_COMPLETE)
         {
@@ -2089,7 +2093,7 @@ public:
                 return true;
 
             if (Creature* harness = player->FindNearestCreature(NPC_STAGECOACH_HARNESS, 30.0f, true))
-                player->SummonCreature(NPC_HARNESS_SUMMONED, harness->GetPositionX(), harness->GetPositionY(), harness->GetPositionZ(), harness->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN, 600000, const_cast<SummonPropertiesEntry*>(sSummonPropertiesStore.LookupEntry(3105)));
+                player->SummonCreature(NPC_HARNESS_SUMMONED, harness->GetPositionX(), harness->GetPositionY(), harness->GetPositionZ(), harness->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN, 600000);
             return true;
         }
 
@@ -2153,15 +2157,15 @@ public:
     {
         npc_stagecoach_harnessAI(Creature* creature) : npc_escortAI(creature) { }
 
-        void OnCharmed(bool apply) { }
+        void OnCharmed(bool apply) override { }
 
-        void IsSummonedBy(Unit* owner)
+        void IsSummonedBy(Unit* owner) override
         {
             DoAction(ACTION_START_WP);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
         }
 
-        void DoAction(int32 action)
+        void DoAction(int32 action) override
         {
             switch (action)
             {
@@ -2288,7 +2292,7 @@ public:
             if (state != GO_JUST_DEACTIVATED)
                 return;
 
-            if (Creature* koroth = go->FindNearestCreature(NPC_KOROTH_THE_HILLBREAKER, 30.0f))
+            if (Creature* koroth = me->FindNearestCreature(NPC_KOROTH_THE_HILLBREAKER, 30.0f))
             {
                 if (koroth->IsAIEnabled)
                 {

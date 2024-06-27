@@ -861,7 +861,10 @@ void InstanceScript::UpdatePhasing()
     Map::PlayerList const& players = instance->GetPlayers();
     for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
         if (Player* player = itr->GetSource())
+        {
             player->GetPhaseMgr().NotifyConditionChanged(phaseUdateData);
+            player->UpdatePhasing();
+        }
 }
 
 void InstanceScript::SendScenarioState(ScenarioData scenarioData, Player* player /*= nullptr*/)
@@ -1519,4 +1522,12 @@ void InstanceScript::UpdateDynamicHealth(uint64 single)
         for (auto&& guid : flexCreatures)
             updateHealth(guid);
     }
+}
+
+bool InstanceHasScript(WorldObject const* obj, char const* scriptName)
+{
+    if (InstanceMap* instance = obj->GetMap()->ToInstanceMap())
+        return instance->GetScriptName() == scriptName;
+
+    return false;
 }

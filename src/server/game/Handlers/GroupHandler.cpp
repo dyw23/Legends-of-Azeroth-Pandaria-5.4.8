@@ -1149,7 +1149,12 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
 
     std::set<uint32> phases;
     if (player)
+    {
         player->GetPhaseMgr().GetActivePhases(phases);
+
+        for (auto itr : player->GetPhases())
+            phases.insert(itr);
+    }
 
     ByteBuffer dataBuffer;
 
