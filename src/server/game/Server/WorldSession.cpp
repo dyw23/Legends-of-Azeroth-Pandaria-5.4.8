@@ -260,7 +260,13 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
 /// Add an incoming packet to the queue
 void WorldSession::QueuePacket(WorldPacket* new_packet)
 {
-    _recvQueue.add(new_packet);
+    // prioritize CMSG_PLAYER_LOGIN
+    // sometimes CMSG_PLAYER_LOGIN arrives after hundreds of packets that require STATUS_LOGGEDIN
+    // if CMSG_PLAYER_LOGIN is not prioritized, login will never complete
+    if (!_player && new_packet->GetOpcode() == CMSG_PLAYER_LOGIN)
+        _recvQueue.push_front(new_packet);
+    else
+        _recvQueue.add(new_packet);
 }
 
 /// Logging helper for unexpected opcodes

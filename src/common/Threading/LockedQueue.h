@@ -56,6 +56,16 @@ public:
         unlock();
     }
 
+    //! Adds an item to front of the queue
+    void push_front(const T& item)
+    {
+        lock();
+
+        _queue.push_front(item);
+
+        unlock();
+    }
+
     //! Adds items back to front of the queue
     template<class Iterator>
     void readd(Iterator begin, Iterator end)
