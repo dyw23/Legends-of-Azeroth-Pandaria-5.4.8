@@ -1379,9 +1379,25 @@ bool Aura::CanBeSaved() const
     if (IsPassive())
         return false;
 
+    if (GetSpellInfo()->IsChanneled())
+        return false;
+
+    // Check if aura is single target, not only spell info
     if (GetCasterGUID() != GetOwner()->GetGUID())
+    {
+        for (SpellEffectInfo const& spellEffectInfo : GetSpellInfo()->GetEffects())
+        {
+            if (!spellEffectInfo.IsEffect())
+                continue;
+
+            if (spellEffectInfo.IsTargetingArea() || spellEffectInfo.IsAreaAuraEffect())
+                return false;
+        }
+
+        // TODO: if (IsSingleTarget() || GetSpellInfo()->IsSingleTarget())
         if (GetSpellInfo()->IsSingleTarget())
             return false;
+    }
 
     // Can't be saved - aura handler relies on calculated amount and changes it
     if (HasEffectType(SPELL_AURA_CONVERT_RUNE))
