@@ -297,19 +297,19 @@ void PlayerMenu::SendPointOfInterest(uint32 poiId) const
         return;
     }
 
-    std::string iconText = poi->icon_name;
+    std::string name = poi->Name;
     LocaleConstant localeConstant = _session->GetSessionDbLocaleIndex();
     if (localeConstant != LOCALE_enUS)
         if (PointOfInterestLocale const* localeData = sObjectMgr->GetPointOfInterestLocale(poiId))
-            ObjectMgr::GetLocaleString(localeData->IconName, localeConstant, iconText);
+            ObjectMgr::GetLocaleString(localeData->Name, localeConstant, name);
 
     WorldPacket data(SMSG_GOSSIP_POI, 4 + 4 + 4 + 4 + 4 + 10);  // guess size
-    data << uint32(poi->flags);
-    data << float(poi->x);
-    data << float(poi->y);
-    data << uint32(poi->icon);
-    data << uint32(poi->data);
-    data << iconText;
+    data << uint32(poi->Flags);
+    data << float(poi->PositionX);
+    data << float(poi->PositionY);
+    data << uint32(poi->Icon);
+    data << uint32(poi->Importance);
+    data << name;
 
     _session->SendPacket(&data);
 }

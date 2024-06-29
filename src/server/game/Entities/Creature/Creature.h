@@ -59,7 +59,7 @@ typedef std::unordered_map<uint16, CreatureBaseStats> CreatureBaseStatsContainer
 
 struct PointOfInterestLocale
 {
-    StringVector IconName;
+    std::vector<std::string> Name;
 };
 
 struct EquipmentInfo
