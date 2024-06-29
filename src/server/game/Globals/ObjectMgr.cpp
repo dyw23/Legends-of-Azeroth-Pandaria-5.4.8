@@ -1331,8 +1331,8 @@ void ObjectMgr::LoadEquipmentTemplates()
 {
     uint32 oldMSTime = getMSTime();
 
-    //                                                 0     1       2           3           4
-    QueryResult result = WorldDatabase.Query("SELECT entry, id, itemEntry1, itemEntry2, itemEntry3 FROM creature_equip_template");
+    //                                               0           1   2        3        4
+    QueryResult result = WorldDatabase.Query("SELECT CreatureID, ID, ItemID1, ItemID2, ItemID3 FROM creature_equip_template");
 
     if (!result)
     {
@@ -1354,6 +1354,11 @@ void ObjectMgr::LoadEquipmentTemplates()
         }
 
         uint8 id = fields[1].GetUInt8();
+        if (!id)
+        {
+            TC_LOG_ERROR("sql.sql", "Creature equipment template with id 0 found for creature %u, skipped.", entry);
+            continue;
+        }
 
         EquipmentInfo& equipmentInfo = _equipmentInfoStore[entry][id];
 
