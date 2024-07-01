@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -381,9 +381,13 @@ uint32 DatabaseWorkerPool<T>::OpenConnections(InternalIndex type, uint8 numConne
             switch (type)
             {
             case IDX_ASYNC:
-                return std::make_unique<T>(_queue.get(), *_connectionInfo);
+            {
+                auto c = std::make_unique<T>(*_connectionInfo, CONNECTION_ASYNC);
+                c->StartDatabaseWorkerThread(_queue.get());
+                return c;
+            }
             case IDX_SYNCH:
-                return std::make_unique<T>(*_connectionInfo);
+                return std::make_unique<T>(*_connectionInfo, CONNECTION_SYNCH);
             default:
                 ABORT();
             }
