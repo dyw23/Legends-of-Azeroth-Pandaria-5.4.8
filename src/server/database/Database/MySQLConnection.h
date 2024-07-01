@@ -18,6 +18,7 @@
 #ifndef _MYSQLCONNECTION_H
 #define _MYSQLCONNECTION_H
 
+#include "AsioHacksFwd.h"
 #include "Define.h"
 #include "DatabaseEnvFwd.h"
 #include <map>
@@ -26,12 +27,7 @@
 #include <string>
 #include <vector>
 
-template <typename T>
-class ProducerConsumerQueue;
-
-class DatabaseWorker;
 class MySQLPreparedStatement;
-class SQLOperation;
 
 enum ConnectionFlags
 {
@@ -82,7 +78,9 @@ class TC_DATABASE_API MySQLConnection
 
         uint32 GetLastError();
 
-        void StartDatabaseWorkerThread(ProducerConsumerQueue<SQLOperation*>* queue);
+        void StartWorkerThread(Trinity::Asio::IoContext* context);
+
+        std::thread::id GetWorkerThreadId() const;
 
     protected:
         /// Tries to acquire lock. If lock is acquired by another thread
@@ -107,7 +105,7 @@ class TC_DATABASE_API MySQLConnection
     private:
         bool _HandleMySQLErrno(uint32 errNo, uint8 attempts = 5);
 
-        std::unique_ptr<DatabaseWorker> m_worker;           //! Core worker task.
+        std::unique_ptr<std::thread> m_workerThread;        //!< Core worker thread.
         MySQLHandle*          m_Mysql;                      //! MySQL Handle.
         MySQLConnectionInfo&  m_connectionInfo;             //! Connection info (used for logging)
         ConnectionFlags       m_connectionFlags;            //! Connection flags (for preparing relevant statements)
