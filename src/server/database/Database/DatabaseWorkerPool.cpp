@@ -430,21 +430,9 @@ uint32 DatabaseWorkerPool<T>::OpenConnections(InternalIndex type, uint8 numConne
     for (uint8 i = 0; i < numConnections; ++i)
     {
         // Create the connection
-        auto connection = [&] {
-            switch (type)
-            {
-            case IDX_ASYNC:
-            {
-                auto c = std::make_unique<T>(*_connectionInfo, CONNECTION_ASYNC);
-                c->StartWorkerThread(_ioContext.get());
-                return c;
-            }
-            case IDX_SYNCH:
-                return std::make_unique<T>(*_connectionInfo, CONNECTION_SYNCH);
-            default:
-                ABORT();
-            }
-        }();
+        constexpr std::array<ConnectionFlags, IDX_SIZE> flags = { { CONNECTION_ASYNC, CONNECTION_SYNCH } };
+
+        std::unique_ptr<T> connection = std::make_unique<T>(*_connectionInfo, flags[type]);
 
         if (uint32 error = connection->Open())
         {
