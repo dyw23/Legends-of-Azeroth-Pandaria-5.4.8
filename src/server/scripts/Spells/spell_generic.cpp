@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -3290,8 +3290,7 @@ class spell_gen_survey : public SpellScriptLoader
                     else // more than 80yd (red)
                         goEntry = GO_SURVEY_TOOL_RED;
 
-                    Position pos;
-                    player->GetNearPosition(pos, 3.0f, M_PI / 4);
+                    Position pos = player->GetNearPosition(3.0f, M_PI / 4);
                     float z = player->GetMap()->GetHeight(pos.m_positionX, pos.m_positionY, pos.m_positionZ + 2.0f);
                     float ang = pos.GetAngle(find->x, find->y);
                     go = player->SummonGameObject(goEntry, pos.m_positionX, pos.m_positionY, z, ang, { }, 30); // TODO: verify despawn time

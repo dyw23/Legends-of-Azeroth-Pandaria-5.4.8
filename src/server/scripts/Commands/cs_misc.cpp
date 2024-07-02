@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1273,9 +1273,8 @@ public:
         float distance = (!*args) ? 10.0f : float((atof(args)));
         std::list<AreaTriggerEntry const*> areatriggers;
 
-        WorldLocation from;
-        handler->GetSession()->GetPlayer()->GetPosition(&from);
-        from.m_mapId = handler->GetSession()->GetPlayer()->GetMapId();
+        Position pos = handler->GetSession()->GetPlayer()->GetPosition();
+        WorldLocation from(handler->GetSession()->GetPlayer()->GetMapId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
 
         uint32 numRows = sAreaTriggerStore.GetNumRows();
         for (uint32 id = 0; id < numRows; ++id)

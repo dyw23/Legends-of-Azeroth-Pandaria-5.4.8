@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1542,9 +1542,9 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
                  targetType.GetTarget() == TARGET_DEST_CASTER_MOVEMENT_DIR);
 
             if (teleport)
-                m_caster->GetBlinkPosition(pos, dist, angle);
+                pos = m_caster->GetBlinkPosition(dist, angle);
             else
-                m_caster->GetFirstCollisionPosition(pos, dist, angle);
+                pos = m_caster->GetFirstCollisionPosition(dist, angle);
 
             dest.Relocate(pos);
             break;

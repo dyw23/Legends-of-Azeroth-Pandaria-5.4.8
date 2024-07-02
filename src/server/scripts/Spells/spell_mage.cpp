@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1882,7 +1882,7 @@ class spell_mage_alter_time_cast : public SpellScript
     {
         health = GetCaster()->GetHealth();
         mana = GetCaster()->GetPower(POWER_MANA);
-        GetCaster()->GetPosition(&pos);
+        pos = GetCaster()->GetWorldLocation();
         pos.m_mapId = GetCaster()->GetMapId();
         for (auto&& it : GetCaster()->GetAppliedAuras())
         {

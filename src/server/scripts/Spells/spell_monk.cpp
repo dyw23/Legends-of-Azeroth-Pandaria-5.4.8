@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -2385,7 +2385,8 @@ class spell_monk_summon_gift_of_the_ox : public SpellScript
         float angle = frand(min, max);
         float dist = frand(1.5f, 2.0f);
 
-        GetCaster()->GetFirstCollisionPosition(dest._position, dist, angle);
+        Position pos = GetCaster()->GetFirstCollisionPosition(dist, angle);
+        dest._position = WorldLocation(GetCaster()->GetMapId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
     }
 
     void Register() override
@@ -4455,7 +4456,8 @@ class spell_monk_summon_energy_sphere : public SpellScript
         float angle = frand(min, max);
         float dist = frand(GetCaster()->GetObjectSize() + 1.5f, GetCaster()->GetObjectSize() + 4.0f);
 
-        GetCaster()->GetFirstCollisionPosition(dest._position, dist, angle);
+        Position pos = GetCaster()->GetFirstCollisionPosition(dist, angle);
+        dest._position = WorldLocation(GetCaster()->GetMapId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
     }
 
     void Register() override
