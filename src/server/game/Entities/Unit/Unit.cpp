@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -18415,7 +18415,7 @@ void Unit::_ExitVehicle(Position const* exitPosition)
 
     Position pos;
     if (!exitPosition)                           // Exit position not specified
-        m_vehicle->GetBase()->GetPosition(&pos);
+        pos = vehicle->GetBase()->GetPosition(); // This should use passenger's current position, leaving it as it is now
     else
         pos = *exitPosition;
 

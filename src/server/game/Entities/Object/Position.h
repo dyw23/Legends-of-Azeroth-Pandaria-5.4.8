@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -27,7 +27,10 @@ class WorldObject;
 
 struct TC_GAME_API Position
 {
-    Position(float x = 0, float y = 0, float z = 0, float o = 0)
+    Position()
+        : m_positionX(0.0f), m_positionY(0.0f), m_positionZ(0.0f), m_orientation(0.0f) { }
+
+    Position(float x, float y, float z = 0.0f, float o = 0.0f)
         : m_positionX(x), m_positionY(y), m_positionZ(z), m_orientation(NormalizeOrientation(o)) { }
 
     struct PositionXYZStreamer
@@ -65,6 +68,7 @@ struct TC_GAME_API Position
     
     void RelocateOffset(Position const &offset);
     void RelocateOffset(float angle, float distance, float offsetZ = 0.0f);
+
     void SetOrientation(float orientation) { m_orientation = NormalizeOrientation(orientation); }
 
     float GetPositionX() const { return m_positionX; }
@@ -78,15 +82,14 @@ struct TC_GAME_API Position
         { x = m_positionX; y = m_positionY; z = m_positionZ; }
     void GetPosition(float &x, float &y, float &z, float &o) const
         { x = m_positionX; y = m_positionY; z = m_positionZ; o = m_orientation; }
-    Position GetPosition() const
-    {
-        return *this;
-    }
-    void GetPosition(Position* pos) const
-    {
-        if (pos)
-            pos->Relocate(m_positionX, m_positionY, m_positionZ, m_orientation);
-    }
+
+    // void GetPosition(Position* pos) const
+    // {
+    //     if (pos)
+    //         pos->Relocate(m_positionX, m_positionY, m_positionZ, m_orientation);
+    // }
+    Position GetPosition() const { return *this; }
+
 
     Position::PositionXYZStreamer PositionXYZStream()
     {
@@ -206,6 +209,9 @@ class WorldLocation : public Position
 
         void WorldRelocate(const WorldLocation &loc)
             { m_mapId = loc.GetMapId(); Relocate(loc); }
+
+        WorldLocation GetWorldLocation() const { return *this; }
+
         uint32 GetMapId() const { return m_mapId; }
 
         uint32 m_mapId;

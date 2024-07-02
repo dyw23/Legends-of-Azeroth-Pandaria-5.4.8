@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -41,6 +41,19 @@ void FleeingMovementGenerator<T>::_setTargetLocation(T* owner)
 
     float x, y, z;
     _getPoint(owner, x, y, z);
+
+    // Add LOS check for target point
+    Position mypos = owner->GetPosition();
+    bool isInLOS = VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(owner->GetMapId(),
+                                                                                mypos.m_positionX,
+                                                                                mypos.m_positionY,
+                                                                                mypos.m_positionZ + 2.0f,
+                                                                                x, y, z + 2.0f);
+    if (!isInLOS)
+    {
+        i_nextCheckTime.Reset(200);
+        return;
+    }
 
     PathGenerator path(owner);
     path.SetPathLengthLimit(30.0f);
