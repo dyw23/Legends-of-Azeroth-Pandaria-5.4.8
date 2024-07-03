@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -969,7 +969,7 @@ class spell_rog_killing_spree_teleport : public SpellScript
         // Immerseus
         if (target->GetEntry() != 71543)
         {
-            target->GetPosition(&pos);
+            pos = target->GetPosition();
             target->MovePositionToFirstCollision(pos, GetSpellInfo()->Effects[EFFECT_0].CalcRadius(GetCaster()), M_PI, 1.5f);
             float newz = 1.5f;
             GetCaster()->UpdateAllowedPositionZ(pos.GetPositionX(), pos.GetPositionY(), pos.m_positionZ, &newz);

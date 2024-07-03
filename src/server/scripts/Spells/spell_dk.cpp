@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -2264,7 +2264,7 @@ struct npc_ebon_gargoyle : ScriptedAI
 
         // Prepare for descend animation
         m_originalSpeedRate = me->GetSpeedRate(MOVE_RUN);
-        me->GetPosition(&m_originalPosition);
+        m_originalPosition = me->GetPosition();
         m_originalPosition.RelocateOffset(M_PI, -10.0f, -10.0f);
         me->SetFlying(true);
         me->SetSpeed(MOVE_RUN, 0.75f, true);
@@ -2378,8 +2378,7 @@ struct npc_ebon_gargoyle : ScriptedAI
         // Fly Away
         me->SetFlying(true);
         me->SetSpeed(MOVE_RUN, 0.75f, true);
-        Position pos;
-        me->GetPosition(&pos);
+        Position pos = me->GetPosition();
         pos.RelocateOffset(0, 20, 40);
         me->GetMotionMaster()->Clear(false);
         me->GetMotionMaster()->MovePoint(POINT_ASCEND, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), false, MOTION_SLOT_CRITICAL);

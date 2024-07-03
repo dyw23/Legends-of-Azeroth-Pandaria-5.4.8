@@ -3207,8 +3207,7 @@ void WorldObject::GetNearPoint2D(float &x, float &y, float distance2d, float abs
 
 void WorldObject::GetNearPoint(WorldObject const* /*searcher*/, float &x, float &y, float &z, float searcher_size, float distance2d, float absAngle) const
 {
-    Position pos;
-    GetPosition(&pos);
+    Position pos = GetPosition();
     const_cast<WorldObject*>(this)->MovePositionToFirstCollision(pos, distance2d + searcher_size, absAngle - m_orientation);
     pos.GetPosition(x, y);
     //GetNearPoint2D(x,y,distance2d+searcher_size,absAngle);
@@ -3250,10 +3249,11 @@ void WorldObject::GetContactPoint(const WorldObject* obj, float &x, float &y, fl
     GetNearPoint(obj, x, y, z, obj->GetObjectSize(), distance2d, GetAngle(obj));
 }
 
-void WorldObject::GetBlinkPosition(Position& pos, float dist, float angle)
+Position WorldObject::GetBlinkPosition(float dist, float angle)
 {
-    GetPosition(&pos);
+    Position pos = GetPosition();
     MovePositionToFirstCollosionBySteps(pos, dist, angle);
+    return pos;
 }
 
 void WorldObject::MovePositionToFirstCollosionBySteps(Position& pos, float dist, float angle, float heightCheckInterval, bool allowInAir)

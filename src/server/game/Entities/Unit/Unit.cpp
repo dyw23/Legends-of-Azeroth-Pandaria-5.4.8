@@ -18415,7 +18415,7 @@ void Unit::_ExitVehicle(Position const* exitPosition)
 
     Position pos;
     if (!exitPosition)                           // Exit position not specified
-        pos = vehicle->GetBase()->GetPosition(); // This should use passenger's current position, leaving it as it is now
+        pos = m_vehicle->GetBase()->GetPosition(); // This should use passenger's current position, leaving it as it is now
     else
         pos = *exitPosition;
 

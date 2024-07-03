@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -299,8 +299,7 @@ class spell_hunt_stampede : public SpellScript
                     {
                         Pet* pet = new Pet{ player };
                         pet->SetTemporary();
-                        Position pos;
-                        target->GetRandomNearPosition(pos, MELEE_RANGE + target->GetCombatReach());
+                        Position pos = target->GetRandomNearPosition(MELEE_RANGE + target->GetCombatReach());
                         if (!pet->LoadPetFromDB(PET_LOAD_BY_ENTRY, oldPet->GetEntry(), &pos))
                         {
                             delete pet;
@@ -320,8 +319,7 @@ class spell_hunt_stampede : public SpellScript
 
                 Pet* pet = new Pet{ player };
                 pet->SetTemporary();
-                Position pos;
-                target->GetRandomNearPosition(pos, MELEE_RANGE + target->GetCombatReach());
+                Position pos = target->GetRandomNearPosition(MELEE_RANGE + target->GetCombatReach());
                 if (!pet->LoadPetFromDB(PET_LOAD_BY_SLOT, i, &pos))
                 {
                     delete pet;

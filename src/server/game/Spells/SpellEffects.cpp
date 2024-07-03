@@ -3021,8 +3021,7 @@ void Spell::EffectTeleUnitsFaceCaster(SpellEffIndex effIndex)
 
     //float fx, fy, fz;
     //m_caster->GetClosePoint(fx, fy, fz, unitTarget->GetObjectSize(), dis);
-    Position pos;
-    m_caster->GetNearPosition(pos, m_caster->GetObjectSize(), m_caster->GetAngle(unitTarget));
+    Position pos = m_caster->GetNearPosition(m_caster->GetObjectSize(), m_caster->GetAngle(unitTarget));
 
     // Earthen Vortex, Morchok, Dragon Soul
     // Prevent dropping into textures
@@ -4525,8 +4524,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                         {
                             if (Creature* square = Trinity::Containers::SelectRandomContainerElement(squares))
                             {
-                                Position pos;
-                                square->GetPosition(&pos);
+                                Position pos = square->GetPosition();
                                 pos.RelocateOffset(frand(0.0f, 2 * M_PI), frand(0.0f, 2.0f));
                                 unitTarget->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), unitTarget->GetOrientation());
                                 unitTarget->CastSpell(unitTarget, 39390, true); // Board Visual
@@ -6482,7 +6480,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
             pos = *destTarget;
         else
             // randomize position for multiple summons
-            m_caster->GetRandomPoint(*destTarget, radius, pos);
+            pos = m_caster->GetRandomPoint(*destTarget, radius);
 
         TempSummon* summon = map->SummonCreature(entry, pos, properties, duration, caster, m_spellInfo->Id, 0, visibleBySummonerOnly);
         if (!summon)
@@ -6826,7 +6824,7 @@ void Spell::EffectBind(SpellEffIndex effIndex)
         homeLoc.WorldRelocate(*destTarget);
     else
     {
-        player->GetPosition(&homeLoc);
+        homeLoc = player->GetWorldLocation();
         homeLoc.m_mapId = player->GetMapId();
     }
 
@@ -6972,9 +6970,9 @@ void Spell::EffectCreateAreaTrigger(SpellEffIndex effIndex)
 
     Position pos;
     if (!m_targets.HasDst())
-        GetCaster()->GetPosition(&pos);
+        pos = GetCaster()->GetPosition();
     else
-        destTarget->GetPosition(&pos);
+        pos = destTarget->GetPosition();
 
     // trigger entry/miscvalue relation is currently unknown, for now use MiscValue as trigger entry
     uint32 triggerEntry = GetSpellInfo()->Effects[effIndex].MiscValue;

@@ -1542,7 +1542,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
                  targetType.GetTarget() == TARGET_DEST_CASTER_MOVEMENT_DIR);
 
             if (teleport)
-                m_caster->GetBlinkPosition(pos, dist, angle);
+                pos = m_caster->GetBlinkPosition(dist, angle);
             else
                 pos = m_caster->GetFirstCollisionPosition(dist, angle);
 

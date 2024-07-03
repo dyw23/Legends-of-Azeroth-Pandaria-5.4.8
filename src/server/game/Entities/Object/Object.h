@@ -533,7 +533,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void GetContactPoint(WorldObject const* obj, float &x, float &y, float &z, float distance2d = CONTACT_DISTANCE) const;
 
         virtual float GetCombatReach() const { return 0.0f; } // overridden (only) in Unit
-        void GetBlinkPosition(Position& pos, float dist, float angle);
+        Position GetBlinkPosition(float dist, float angle);
         void MovePositionToFirstCollosionBySteps(Position& pos, float dist, float angle, float heightCheckInterval = 2.0f, bool allowInAir = false);
 
         float GetObjectSize() const;

@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -2037,8 +2037,7 @@ class spell_q12308_escape_from_silverbrook_summon_worgen : public SpellScriptLoa
                 float dist = GetSpellInfo()->Effects[effIndex].CalcRadius(GetCaster());
                 float angle = (urand(0, 1) ? -1 : 1) * (frand(0.75f, 1.0f) * M_PI);
 
-                Position pos;
-                GetCaster()->GetNearPosition(pos, dist, angle);
+                Position pos = GetCaster()->GetNearPosition(dist, angle);
                 GetHitDest()->Relocate(&pos);
             }
 
