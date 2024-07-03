@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -492,8 +492,7 @@ class boss_freya : public CreatureScript
                         case EVENT_UNSTABLE_ENERGY:
                             for (int8 n = 0; n < 3; n++)
                             {
-                                Position pos;
-                                me->GetRandomNearPosition(pos, 30);
+                                Position pos = me->GetRandomNearPosition(30);
                                 me->SummonCreature(NPC_SUN_BEAM, pos, TEMPSUMMON_TIMED_DESPAWN, 10000);
                             }
                             events.ScheduleEvent(EVENT_UNSTABLE_ENERGY, urand(35000, 45000));
@@ -2197,8 +2196,7 @@ class spell_freya_iron_roots : public SpellScriptLoader
                 PreventHitDefaultEffect(effIndex);
                 uint32 entry = uint32(GetSpellInfo()->Effects[effIndex].MiscValue);
 
-                Position pos;
-                GetCaster()->GetPosition(&pos);
+                Position pos = GetCaster()->GetPosition();
                 // Not good at all, but this prevents having roots in a different position then player
                 if (Creature* Roots = GetCaster()->SummonCreature(entry, pos))
                     GetCaster()->NearTeleportTo(Roots->GetPositionX(), Roots->GetPositionY(), Roots->GetPositionZ(), GetCaster()->GetOrientation());

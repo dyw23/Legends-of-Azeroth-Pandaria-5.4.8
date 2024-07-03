@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -3725,7 +3725,7 @@ protected:
             float origDist = dist;
             do
             {
-                caster->GetPosition(&dest._position);
+                dest._position = caster->GetWorldLocation();
                 dest._position.m_positionZ = 330.0f;
                 dist = frand(30.0f, 30.0f + origDist);
                 caster->MovePositionToFirstCollision(dest._position, dist, angle);
@@ -3734,7 +3734,7 @@ protected:
         }
         else
         {
-            caster->GetPosition(&dest._position);
+            dest._position = caster->GetWorldLocation();
             dest._position.m_positionZ += 1.0f;
             caster->MovePositionToFirstCollision(dest._position, dist, angle);
         }

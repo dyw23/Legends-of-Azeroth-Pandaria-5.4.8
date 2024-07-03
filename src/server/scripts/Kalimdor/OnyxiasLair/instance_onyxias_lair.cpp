@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -79,8 +79,7 @@ public:
             switch (go->GetEntry())
             {
                 case GO_WHELP_SPAWNER:
-                    Position goPos;
-                    go->GetPosition(&goPos);
+                    Position goPos = go->GetPosition();
                     go->SetDisplayId(0); // wrong display ID right now
                     if (Creature* temp = go->SummonCreature(NPC_WHELP, goPos, TEMPSUMMON_CORPSE_DESPAWN))
                     {

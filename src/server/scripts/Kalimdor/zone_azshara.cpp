@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -124,8 +124,7 @@ struct npc_azshara_awol_grunt : public CreatureAI
     private:
         void MoveAway()
         {
-            Position pos;
-            me->GetNearPosition(pos, 15.0f, frand(0.0f, 2 * M_PI));
+            Position pos = me->GetNearPosition(15.0f, frand(0.0f, 2 * M_PI));
             me->GetMotionMaster()->MovePoint(0, pos);
             me->DespawnOrUnsummon(me->GetSplineDuration());
         }

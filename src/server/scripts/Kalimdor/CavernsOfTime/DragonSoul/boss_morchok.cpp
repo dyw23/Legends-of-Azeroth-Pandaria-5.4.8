@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -373,8 +373,7 @@ class boss_morchok: public CreatureScript
 
                             Talk(ANN_CRYSTAL);
                             Talk(SAY_CRYSTAL);
-                            Position pos;
-                            me->GetNearPosition(pos, frand(25.0f, 45.0f), frand(0, 2 * M_PI));
+                            Position pos = me->GetNearPosition(frand(25.0f, 45.0f), frand(0, 2 * M_PI));
                             me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_RESONATING_CRYSTAL, true);
                             events.ScheduleEvent(EVENT_RESONATING_CRYSTAL, urand(12000, 14000));
                             if (bKohcrom && !bFirstCrystal && pKohcrom)
@@ -558,8 +557,7 @@ class npc_morchok_kohcrom: public CreatureScript
                             break;
                         case EVENT_RESONATING_CRYSTAL:
                         {
-                            Position pos;
-                            me->GetNearPosition(pos, frand(25.0f, 45.0f), frand(0, 2 * M_PI));
+                            Position pos = me->GetNearPosition(frand(25.0f, 45.0f), frand(0, 2 * M_PI));
                             me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_RESONATING_CRYSTAL, true);
                             break;
                         }

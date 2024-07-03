@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -545,15 +545,16 @@ class spell_surge : public SpellScriptLoader
                         caster->CastSpell(caster, SPELL_DRENCHED_IN_MOJO, true, NULL, NULL, instance->GetData64(DATA_DRAKKARI_COLOSSUS));
             }
 
-            void TargetSelect(SpellDestination& pos)
+            void TargetSelect(SpellDestination& dest)
             {
                 Unit* caster = GetCaster();
                 if (!caster)
                     return;
 
-                caster->GetPosition(&pos._position);
+                Position pos = caster->GetPosition();
+                dest._position = WorldLocation(caster->GetMapId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
                 for (int32 dist = GetSpellInfo()->Effects[EFFECT_1].CalcRadius(caster); dist > 0; dist -= 5)
-                    caster->MovePositionToFirstCollision(pos._position, 5.0f, 0);
+                    caster->MovePositionToFirstCollision(dest._position, 5.0f, 0);
             }
 
             void Register() override

@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -210,7 +210,7 @@ class npc_akilzon_soaring_eagle : public CreatureScript
             void Reset() override
             {
                 me->SetCanFly(true);
-                me->GetPosition(&homePos);
+                homePos = me->GetPosition();
                 events.Reset();
             }
             

@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -2407,8 +2407,7 @@ class spell_zet_uk_sha_eruption_periodic_summon : public SpellScriptLoader
                     return;
 
                 float dist = (float)aurEff->GetTickNumber() * 6.0f; // radius of damage spell * 2
-                Position pos;
-                caster->GetNearPosition(pos, dist, 0.0f);
+                Position pos = caster->GetNearPosition(dist, 0.0f);
                 if (Creature* summon = caster->SummonCreature(NPC_SHA_ERUPTION_FIRE, pos, TEMPSUMMON_TIMED_DESPAWN, 20000)) // Summon spell target type NYI (138)
                     summon->CastSpell(summon, SPELL_SHA_ERUPTION_DAMAGE, true);
             }
@@ -2463,8 +2462,7 @@ class go_full_crab_pot : public GameObjectScript
                 /*player->CastSpell(player, 89404, true);
                 player->TeleportTo(player->GetMapId(), -9207.99f, -1560.32f, 65.46f, 0.82f);*/
                 player->KilledMonsterCredit(64006);
-                Position pos;
-                go->GetPosition(&pos);
+                Position pos = go->GetPosition();
                 if (auto crabTrap = player->SummonCreature(64009, pos, TEMPSUMMON_TIMED_DESPAWN, 10000))
                 {
                     crabTrap->CastSpell(crabTrap, 124959, true);
@@ -2523,8 +2521,7 @@ class npc_hisek_the_swarmkeeper : public CreatureScript
         {
             if (quest->GetQuestId() == 31441)
             {
-                Position pos;
-                creature->GetPosition(&pos);
+                Position pos = creature->GetPosition();
                 uint64 playerGUID = player->GetGUID();
                 if (auto qgiver = creature->SummonCreature(64705, pos))
                 {

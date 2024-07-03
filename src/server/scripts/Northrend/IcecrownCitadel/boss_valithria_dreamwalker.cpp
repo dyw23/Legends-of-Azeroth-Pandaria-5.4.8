@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1605,8 +1605,7 @@ class spell_dreamwalker_summon_portal_effect : public SpellScriptLoader
                 if (!caster)
                     return;
 
-                Position srcPos;
-                caster->GetPosition(&srcPos);
+                Position srcPos = caster->GetPosition();
 
                 float new_dist = 0.0f, minDistance = 20.0f, maxDistance = 30.0f;
                 if (minDistance > 0.0f && maxDistance > minDistance)
@@ -1614,7 +1613,8 @@ class spell_dreamwalker_summon_portal_effect : public SpellScriptLoader
                 else
                     new_dist = (float)rand_norm() * static_cast<float>(maxDistance);
 
-                caster->GetRandomPoint(srcPos, new_dist, dest._position);
+                Position pos = caster->GetRandomPoint(srcPos, new_dist);
+                dest._position = WorldLocation(GetCaster()->GetMapId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
             }
 
             void Register() override

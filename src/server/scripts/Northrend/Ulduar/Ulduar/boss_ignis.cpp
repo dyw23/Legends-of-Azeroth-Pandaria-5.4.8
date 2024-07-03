@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -280,8 +280,7 @@ class boss_ignis : public CreatureScript
                             break;
                         case EVENT_SCORCH_SPAWN:
                         {
-                            Position pos;
-                            me->GetFirstCollisionPosition(pos, me->GetObjectSize(), 0.0f);
+                            Position pos = me->GetFirstCollisionPosition(me->GetObjectSize(), 0.0f);
                             me->SummonCreature(NPC_GROUND_SCORCH, pos, TEMPSUMMON_TIMED_DESPAWN, 45000);
                             break;
                         }

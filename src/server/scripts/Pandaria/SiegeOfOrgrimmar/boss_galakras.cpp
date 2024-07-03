@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -329,7 +329,7 @@ class boss_galakras : public CreatureScript
                     me->OverrideInhabitType(INHABIT_AIR);
                     me->UpdateMovementFlags();
 
-                    me->GetRandomPoint({ galakrasFlyPoint.GetPositionX(), galakrasFlyPoint.GetPositionY(), galakrasFlyPoint.GetPositionZ(), galakrasFlyPoint.GetOrientation() }, 80.0f, pos);
+                    pos = me->GetRandomPoint({ galakrasFlyPoint.GetPositionX(), galakrasFlyPoint.GetPositionY(), galakrasFlyPoint.GetPositionZ(), galakrasFlyPoint.GetOrientation() }, 80.0f);
                     me->GetMotionMaster()->MovePoint(0, pos.GetPositionX(), pos.GetPositionY(), galakrasFlyPoint.GetPositionZ());
 
                     context.Repeat(Milliseconds(me->GetSplineDuration()));
@@ -365,7 +365,7 @@ class boss_galakras : public CreatureScript
                 scheduler
                     .Schedule(Milliseconds(1000), [this](TaskContext context)
                 {
-                    me->GetRandomPoint({ galakrasFlyPoint.GetPositionX(), galakrasFlyPoint.GetPositionY(), galakrasFlyPoint.GetPositionZ(), galakrasFlyPoint.GetOrientation() }, 80.0f, pos);
+                    pos = me->GetRandomPoint({ galakrasFlyPoint.GetPositionX(), galakrasFlyPoint.GetPositionY(), galakrasFlyPoint.GetPositionZ(), galakrasFlyPoint.GetOrientation() }, 80.0f);
                     me->GetMotionMaster()->MovePoint(0, pos.GetPositionX(), pos.GetPositionY(), galakrasFlyPoint.GetPositionZ());
 
                     context.Repeat(Milliseconds(me->GetSplineDuration()));
@@ -1132,7 +1132,7 @@ struct npc_lieutenant_krugruk : public ScriptedAI
             if (++dragonsCount > 10)
                 return;
 
-            me->GetRandomPoint({ galakrasFlyPoint.GetPositionX(), galakrasFlyPoint.GetPositionY(), galakrasFlyPoint.GetPositionZ(), galakrasFlyPoint.GetOrientation() }, 30.0f, pos);
+            pos = me->GetRandomPoint({ galakrasFlyPoint.GetPositionX(), galakrasFlyPoint.GetPositionY(), galakrasFlyPoint.GetPositionZ(), galakrasFlyPoint.GetOrientation() }, 30.0f);
 
             me->SummonCreature(NPC_GALAKRAS_DRAGONMAW_PROTO_DRAKE, pos.GetPositionX(), pos.GetPositionY(), 81.55f, TEMPSUMMON_MANUAL_DESPAWN);
             context.Repeat(Milliseconds(15000));
@@ -1916,7 +1916,7 @@ struct npc_galakras_dragonmaw_proto_drake : public ScriptedAI
             scheduler
                 .Schedule(Milliseconds(1000), [this](TaskContext context)
             {
-                me->GetRandomPoint({ galakrasFlyPoint.GetPositionX(), galakrasFlyPoint.GetPositionY(), galakrasFlyPoint.GetPositionZ(), galakrasFlyPoint.GetOrientation() }, 30.0f, pos);
+                pos = me->GetRandomPoint({ galakrasFlyPoint.GetPositionX(), galakrasFlyPoint.GetPositionY(), galakrasFlyPoint.GetPositionZ(), galakrasFlyPoint.GetOrientation() }, 30.0f);
                 me->GetMotionMaster()->MovePoint(0, pos.GetPositionX(), pos.GetPositionY(), 81.55f, 0.0f);
                 context.Repeat(Milliseconds(me->GetSplineDuration()));
             });

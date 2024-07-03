@@ -42,19 +42,6 @@ void FleeingMovementGenerator<T>::_setTargetLocation(T* owner)
     float x, y, z;
     _getPoint(owner, x, y, z);
 
-    // Add LOS check for target point
-    Position mypos = owner->GetPosition();
-    bool isInLOS = VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(owner->GetMapId(),
-                                                                                mypos.m_positionX,
-                                                                                mypos.m_positionY,
-                                                                                mypos.m_positionZ + 2.0f,
-                                                                                x, y, z + 2.0f);
-    if (!isInLOS)
-    {
-        i_nextCheckTime.Reset(200);
-        return;
-    }
-
     PathGenerator path(owner);
     path.SetPathLengthLimit(30.0f);
     bool result = path.CalculatePath(x, y, z);

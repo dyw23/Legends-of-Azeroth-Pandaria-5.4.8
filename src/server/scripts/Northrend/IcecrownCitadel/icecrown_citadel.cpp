@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -24,7 +24,7 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "SpellAuraEffects.h"
-#include "../AI/SmartScripts/SmartAI.h"
+#include "SmartAI.h"
 #include "Group.h"
 #include "icecrown_citadel.h"
 #include "PassiveAI.h"
@@ -853,7 +853,10 @@ class spell_frost_giant_stomp : public SpellScriptLoader
             void SelectTarget(SpellDestination& dest)
             {
                 if (Unit* caster = GetCaster())
-                    caster->GetFirstCollisionPosition(dest._position, 2.0f, 0.0f);
+                {
+                    Position pos = caster->GetFirstCollisionPosition(2.0f, 0.0f);
+                    dest._position = WorldLocation(caster->GetMapId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
+                }
             }
 
             void Register() override
@@ -2126,8 +2129,7 @@ class spell_icc_geist_alarm : public SpellScriptLoader
                 Position pos = { 4356.851563f, 3002.722412f, 360.514130f, M_PI / 2 };
                 for (uint32 i = 0; i < 10; ++i)
                 {
-                    Position sumPos;
-                    pos.GetPosition(&sumPos);
+                    Position sumPos = pos.GetPosition();
                     sumPos.RelocateOffset(frand(0, M_PI * 2), frand(0, 10.0f));
                     if (Creature* summon = caster->SummonCreature(NPC_VENGEFUL_FLESHREAPER, sumPos, TEMPSUMMON_DEAD_DESPAWN))
                         summon->AI()->DoAction(i);
@@ -2814,8 +2816,7 @@ class npc_icc_sindragosa_gauntlet_nerubar : public CreatureScript
                 me->SetFacingTo(me->GetAngle(4181.25f, 2484.0f));
                 me->m_Events.Schedule(urand(1, 5000), [this]()
                 {
-                    Position pos;
-                    me->GetPosition(&pos);
+                    Position pos = me->GetPosition();
                     pos.m_positionZ = 211.033f;
                     me->GetMotionMaster()->MoveLand(POINT_GAUNTLET_DESCEND, pos);
 
@@ -2859,8 +2860,7 @@ class npc_icc_sindragosa_gauntlet_nerubar : public CreatureScript
                             if (me->IsInCombat())
                                 return;
 
-                            Position pos;
-                            me->GetPosition(&pos);
+                            Position pos = me->GetPosition();
                             pos.RelocateOffset(0, 30.0f);
                             me->GetMotionMaster()->MovePoint(POINT_GAUNTLET_SURROUND, pos);
                         });

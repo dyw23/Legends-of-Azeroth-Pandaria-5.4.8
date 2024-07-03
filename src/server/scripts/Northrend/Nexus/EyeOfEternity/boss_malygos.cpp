@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -470,7 +470,7 @@ public:
                     DoCast(me, SPELL_VORTEX_3, true);
                     break;
                 case ACTION_LIFT_IN_AIR:
-                    me->GetPosition(&_zToLift);
+                    _zToLift = me->GetPosition();
                     if (_phase == PHASE_ONE)
                     {
                         _zToLift.m_positionZ += 20.0f;
@@ -1633,8 +1633,7 @@ public:
                 me->DespawnOrUnsummon(2050);
                 me->SetOrientation(2.5f);
                 me->SetSpeed(MOVE_FLIGHT, 1.0f, true);
-                Position pos;
-                me->GetPosition(&pos);
+                Position pos = me->GetPosition();
                 pos.m_positionX += 10.0f;
                 pos.m_positionY += 10.0f;
                 pos.m_positionZ += 12.0f;

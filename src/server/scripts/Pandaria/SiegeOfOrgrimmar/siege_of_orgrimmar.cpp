@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1046,7 +1046,7 @@ struct npc_lingering_corruption : public customCreatureAI
         scheduler
             .Schedule(Milliseconds(1000), [this](TaskContext context)
         {
-            me->GetRandomPoint({ me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ(), me->GetHomePosition().GetOrientation() }, 5.5f, pos);
+            pos = me->GetRandomPoint({ me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ(), me->GetHomePosition().GetOrientation() }, 5.5f);
             me->GetMotionMaster()->MovePoint(0, pos);
             context.Repeat(Milliseconds(me->GetSplineDuration()));
         });

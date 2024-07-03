@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -592,7 +592,10 @@ class spell_ulduar_summon_rubble : public SpellScriptLoader
             {
                 // Weird DBC data, setting position manually
                 if (Unit* caster = GetCaster())
-                    caster->GetRandomNearPosition(dest._position, 10.0f);
+                {
+                    Position pos = caster->GetRandomNearPosition(10.0f);
+                    dest._position = WorldLocation(caster->GetMapId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
+                }
             }
 
             void Register() override

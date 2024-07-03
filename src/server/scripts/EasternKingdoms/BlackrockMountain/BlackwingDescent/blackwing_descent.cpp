@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1517,7 +1517,7 @@ class npc_lord_victor_nefarius_heroic : public CreatureScript
                         case EVENT_JUMP_TO:
                             if (Creature* cloud = me->FindNearestCreature(NPC_CHEMICAL_CLOUD, 200.0f))
                             {
-                                me->GetPosition(&homepos);
+                                homepos = me->GetPosition();
                                 me->JumpTo(cloud, 20.0f);
                                 events.ScheduleEvent(EVENT_GRIP_OF_DEATH, 2000);
                             }

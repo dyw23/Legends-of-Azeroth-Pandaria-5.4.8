@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -104,8 +104,7 @@ class npc_nightmare_illusion : public CreatureScript
                 {
                     me->SetTarget(nightmareTarget);
                     DoCast(target, SPELL_WAKING_NIGHTMARE, true);
-                    Position pos;
-                    target->GetPosition(&pos);
+                    Position pos = target->GetPosition();
                     me->GetMotionMaster()->Clear();
                     me->GetMotionMaster()->MovePoint(POINT_NIGHTMARE_TARGET, pos);
                 }
@@ -300,7 +299,7 @@ class boss_hazzarah : public CreatureScript
                         Position pos;
                         do
                         {
-                            player->GetNearPosition(pos, 30, (float)(rand_norm() * 2 * M_PI));
+                            pos = player->GetNearPosition(30, (float)(rand_norm() * 2 * M_PI));
                         }
                         while (player->GetDistance(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ()) < 20);
                         if (TempSummon* summon = me->SummonCreature(52284, pos, TEMPSUMMON_DEAD_DESPAWN))

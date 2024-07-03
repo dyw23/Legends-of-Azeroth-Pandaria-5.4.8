@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -219,8 +219,7 @@ class boss_echo_of_tyrande : public CreatureScript
                         }
 
                         summon->SetOrientation(me->GetAngle(target));
-                        Position pos;
-                        summon->GetNearPosition(pos, 15.0f, 0.0f);
+                        Position pos = summon->GetNearPosition(15.0f, 0.0f);
                         summon->GetMotionMaster()->MovePoint(POINT_MOONLANCE, pos);
                         break;
                     }
@@ -365,8 +364,7 @@ class boss_echo_of_tyrande : public CreatureScript
                         {
                             if (Player* player = me->FindNearestPlayer(500.0f))
                             {
-                                Position pos;
-                                player->GetRandomNearPosition(pos, frand(15.0f, 20.0f));
+                                Position pos = player->GetRandomNearPosition(frand(15.0f, 20.0f));
                                 uint32 entry = NPC_TIME_TWISTED_NIGHTSABER_1;
                                 switch (urand(1, eventphase))
                                 {
@@ -515,13 +513,12 @@ class npc_echo_of_tyrande_moonlance : public CreatureScript
                 {
                     if (me->GetEntry() == NPC_MOONLANCE_1)
                     {
-                        Position pos1_1, pos1_2, pos2_1, pos2_2, pos3_1, pos3_2;
-                        me->GetNearPosition(pos1_1, 3.0f, -(M_PI / 4.0f));
-                        me->GetNearPosition(pos1_2, 30.0f, -(M_PI / 4.0f)); 
-                        me->GetNearPosition(pos2_1, 3.0f, 0.0f); 
-                        me->GetNearPosition(pos2_2, 30.0f, 0.0f); 
-                        me->GetNearPosition(pos3_1, 3.0f, (M_PI / 4.0f)); 
-                        me->GetNearPosition(pos3_2, 30.0f, (M_PI / 4.0f));
+                        Position pos1_1 = me->GetNearPosition(3.0f, -(M_PI / 4.0f));
+                        Position pos1_2 = me->GetNearPosition(30.0f, -(M_PI / 4.0f)); 
+                        Position pos2_1 = me->GetNearPosition(3.0f, 0.0f); 
+                        Position pos2_2 = me->GetNearPosition(30.0f, 0.0f); 
+                        Position pos3_1 = me->GetNearPosition(3.0f, (M_PI / 4.0f)); 
+                        Position pos3_2 = me->GetNearPosition(30.0f, (M_PI / 4.0f));
                         if (Creature* pLance1 = me->SummonCreature(NPC_MOONLANCE_2_1, pos1_1, TEMPSUMMON_TIMED_DESPAWN, 30000))
                             pLance1->GetMotionMaster()->MovePoint(POINT_MOONLANCE, pos1_2);
                         if (Creature* pLance2 = me->SummonCreature(NPC_MOONLANCE_2_2, pos2_1, TEMPSUMMON_TIMED_DESPAWN, 30000))

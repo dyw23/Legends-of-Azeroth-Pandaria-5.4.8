@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -2282,8 +2282,7 @@ class npc_strangulate_vehicle : public CreatureScript
                             {
                                 if (me->GetExactDist(lichKing) > 10.0f)
                                 {
-                                    Position pos;
-                                    lichKing->GetNearPosition(pos, float(rand_norm()) * 5.0f  + 7.5f, lichKing->GetAngle(me));
+                                    Position pos = lichKing->GetNearPosition(float(rand_norm()) * 5.0f  + 7.5f, lichKing->GetAngle(me));
                                     me->GetMotionMaster()->MovePoint(0, pos);
                                 }
                             }
@@ -3857,7 +3856,8 @@ class spell_the_lich_king_summon_spirit_bomb_random : public SpellScriptLoader
                     dist = 28.0f;
 
                 dist *= (float)rand_norm();
-                caster->GetFirstCollisionPosition(dest._position, dist, angle);
+                Position pos = caster->GetFirstCollisionPosition(dist, angle);
+                dest._position = WorldLocation(GetCaster()->GetMapId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
             }
 
             void Register() override

@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -122,7 +122,7 @@ const uint32 CriteriaWorldStates[5]
     5983,
 };
 
-const Position dogPos[2] = 
+const Position dogPos[2] =
 {
     {-153.604f, 198.994f, 46.174f, 3.68f}, // Riplimb
     {-145.179f, 184.976f, 46.168f, 3.34f}  // Rageface
@@ -265,7 +265,7 @@ class boss_shannox : public CreatureScript
 
                 AddSmoulderingAura(me);
             }
-            
+
             void KilledUnit(Unit* /*victim*/) override
             {
                 Talk(SAY_KILL);
@@ -322,7 +322,7 @@ class boss_shannox : public CreatureScript
                 if (!IsHeroic() && !bFrenzy && me->HealthBelowPct(30))
                 {
                     bFrenzy = true;
-                    
+
                     if (Creature* pRiplimb = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_RIPLIMB)))
                         if (pRiplimb->IsAlive())
                             pRiplimb->CastSpell(pRiplimb, SPELL_FRENZIED_DEVOTION, true);
@@ -395,7 +395,7 @@ class boss_shannox : public CreatureScript
                             Position pos;
                             for (uint8 i = 0; i < 60; ++i)
                             {
-                                me->GetNearPosition(pos, 15.0f + i * 0.75f, (M_PI * i) / 10);
+                                pos = me->GetNearPosition(15.0f + i * 0.75f, (M_PI * i) / 10);
                                 pos.m_positionZ = me->GetMap()->GetHeight(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), true, MAX_HEIGHT);
                                 me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_MAGMA_RUPTURE_MISSILE, true);
                             }
@@ -751,7 +751,7 @@ class npc_shannox_rageface : public CreatureScript
                                 {
                                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
                                     {
-                                        
+
                                         me->AddThreat(target, 10000000.0f);
                                         AttackStart(target);
                                     }
@@ -821,12 +821,12 @@ class npc_shannox_spear_of_shannox : public CreatureScript
                         Position pos;
                         for (uint8 i = 0; i < 60; ++i)
                         {
-                            me->GetNearPosition(pos, 15.0f + i * 0.75f, (M_PI * i) / 10);
+                            pos = me->GetNearPosition(15.0f + i * 0.75f, (M_PI * i) / 10);
                             pos.m_positionZ = me->GetMap()->GetHeight(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), true, MAX_HEIGHT);
                             pShannox->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_MAGMA_RUPTURE_MISSILE, true);
                         }
                     }
-                    
+
                     if (Creature* pRiplimb = me->FindNearestCreature(NPC_RIPLIMB, 300.0f))
                     {
                         pRiplimb->AI()->DoAction(ACTION_HURL_SPEAR);
@@ -1045,7 +1045,7 @@ class npc_shannox_crystal_prison : public CreatureScript
                     else
                         dogTimer -= diff;
                 }
-            }            
+            }
         };
 
         CreatureAI* GetAI(Creature* creature) const override
@@ -1105,10 +1105,9 @@ class spell_shannox_crystal_prison_trap : public SpellScriptLoader
                 if (!GetCaster() || !GetTarget())
                     return;
 
-                Position pos;
-                GetTarget()->GetPosition(&pos);
+                Position pos = GetTarget()->GetPosition();
                 if (Creature* pCrystalPrison = GetCaster()->SummonCreature(NPC_CRYSTAL_PRISON, pos))
-                    pCrystalPrison->AI()->SetGUID(GetTarget()->GetGUID(), (GetTarget()->GetTypeId() == TYPEID_PLAYER)? DATA_TRAPPED_PLAYER: DATA_TRAPPED_DOG);   
+                    pCrystalPrison->AI()->SetGUID(GetTarget()->GetGUID(), (GetTarget()->GetTypeId() == TYPEID_PLAYER)? DATA_TRAPPED_PLAYER: DATA_TRAPPED_DOG);
             }
 
             void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -1119,7 +1118,7 @@ class spell_shannox_crystal_prison_trap : public SpellScriptLoader
                 if (GetTarget()->GetEntry() == NPC_RIPLIMB || GetTarget()->GetEntry() == NPC_RAGEFACE)
                     GetTarget()->CastSpell(GetTarget(), SPELL_WARRY, true);
             }
-            
+
             void Register() override
             {
                 OnEffectApply += AuraEffectApplyFn(spell_shannox_crystal_prison_trap_AuraScript::OnApply, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);

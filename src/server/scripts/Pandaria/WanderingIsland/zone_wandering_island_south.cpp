@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -493,8 +493,7 @@ public:
 
                 for (int i = 0; i < 3; ++i)
                 {
-                    Position pos;
-                    me->GetRandomNearPosition(pos, 20.f);
+                    Position pos = me->GetRandomNearPosition(20.f);
                     if (Creature* const summon = me->SummonCreature(NPC_DEEPSCALE_AGGRESSOR, pos, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 120000))
                         if (Player * const player = Unit::GetPlayer(*me, summonerGUID))
                             summon->AI()->AttackStart(player);

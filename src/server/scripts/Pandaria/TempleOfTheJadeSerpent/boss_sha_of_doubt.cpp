@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -628,7 +628,7 @@ class spell_noodles : public SpellScript
             Position pos;
             for (uint8 i = 0; i < 3; i++)
             {
-                caster->GetRandomNearPosition(pos, 15.0f);
+                pos = caster->GetRandomNearPosition(15.0f);
                 caster->CastSpell(pos, 147144);
             }
         }
@@ -652,7 +652,7 @@ class spell_dash_of_spice : public SpellScript
             Position pos;
             for (uint8 i = 0; i < 3; i++)
             {
-                caster->GetRandomNearPosition(pos, 25.0f);
+                pos = caster->GetRandomNearPosition(25.0f);
                 caster->CastSpell(pos, 147146);
             }
         }

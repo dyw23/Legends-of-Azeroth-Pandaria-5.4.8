@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -944,7 +944,7 @@ class instance_dragon_soul : public InstanceMapScript
                 return NULL;
             }
 
-            Position const* GetRandomTwilightAssaulterAssaultPosition(bool horizonal, bool fromEnd, uint8& lane, uint64& targetGUID) override
+            std::optional<Position> GetRandomTwilightAssaulterAssaultPosition(bool horizonal, bool fromEnd, uint8& lane, uint64& targetGUID) override
             {
                 if (horizonal)
                 {
@@ -964,7 +964,7 @@ class instance_dragon_soul : public InstanceMapScript
                         for (uint8 i = 0; i < 7; ++i)
                             twilightAssaultLanesUsedH[i] = 0;
 
-                        return NULL;
+                        return std::nullopt;
                     }
 
                     // Find random unused lane
@@ -978,19 +978,19 @@ class instance_dragon_soul : public InstanceMapScript
                     if (fromEnd)
                         while (twilightAssaultStalkerGuidsH[row][col + 1]) { ++col; } // Find the last one
 
-                    Position* assaultPos = new Position();
+                    Position assaultPos;
                     if (Creature* stalker = instance->GetCreature(targetGUID = twilightAssaultStalkerGuidsH[row][col]))
-                        stalker->GetPosition(assaultPos);
+                        assaultPos = stalker->GetPosition();
 
                     if (fromEnd)
                     {
-                        assaultPos->RelocateOffset({ 0, -10, 10 });
-                        assaultPos->SetOrientation(M_PI/2);
+                        assaultPos.RelocateOffset({ 0, -10, 10 });
+                        assaultPos.SetOrientation(M_PI/2);
                     }
                     else
                     {
-                        assaultPos->RelocateOffset({ 0, 10, 10 });
-                        assaultPos->SetOrientation(M_PI*2 - M_PI/2);
+                        assaultPos.RelocateOffset({ 0, 10, 10 });
+                        assaultPos.SetOrientation(M_PI*2 - M_PI/2);
                     }
 
                     twilightAssaultLanesUsedH[row] = fromEnd ? 2 : 1;
@@ -1014,7 +1014,7 @@ class instance_dragon_soul : public InstanceMapScript
                         for (uint8 i = 0; i < 5; ++i)
                             twilightAssaultLanesUsedV[i] = 0;
 
-                        return NULL;
+                        return std::nullopt;
                     }
 
                     // Find random unused lane
@@ -1028,19 +1028,19 @@ class instance_dragon_soul : public InstanceMapScript
                     if (fromEnd)
                         while (twilightAssaultStalkerGuidsV[col][row + 1]) { ++row; } // Find the last one
 
-                    Position* assaultPos = new Position();
+                    Position assaultPos;
                     if (Creature* stalker = instance->GetCreature(targetGUID = twilightAssaultStalkerGuidsV[col][row]))
-                        stalker->GetPosition(assaultPos);
+                        assaultPos = stalker->GetPosition();
 
                     if (fromEnd)
                     {
-                        assaultPos->RelocateOffset({ -10, 0, 10 });
-                        assaultPos->SetOrientation(0);
+                        assaultPos.RelocateOffset({ -10, 0, 10 });
+                        assaultPos.SetOrientation(0);
                     }
                     else
                     {
-                        assaultPos->RelocateOffset({ 10, 0, 10 });
-                        assaultPos->SetOrientation(M_PI);
+                        assaultPos.RelocateOffset({ 10, 0, 10 });
+                        assaultPos.SetOrientation(M_PI);
                     }
 
                     twilightAssaultLanesUsedV[col] = fromEnd ? 2 : 1;

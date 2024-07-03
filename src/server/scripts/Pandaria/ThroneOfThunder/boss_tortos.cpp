@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -572,8 +572,7 @@ class npc_whirl_turtle : public CreatureScript
                     case EVENT_INIT_MOVE:
                         me->SetSpeed(MOVE_RUN, 8.2f);
                         me->SetWalk(false);
-                        Position pos;
-                        me->GetRandomPoint(tortosCenter, 8.f, pos);
+                        Position pos = me->GetRandomPoint(tortosCenter, 8.f);
                         me->GetMotionMaster()->MovePoint(4, pos);
                         break;
                 }

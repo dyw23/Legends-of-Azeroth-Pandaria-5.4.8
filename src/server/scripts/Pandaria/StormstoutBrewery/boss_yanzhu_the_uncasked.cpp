@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -30,7 +30,7 @@ static const ValuePair yanzhuPairs[3] =
     { NPC_BLOATED_ALEMENTAL, NPC_STOUT_ALEMENTAL    },
 };
 
-static const Position gaoWaypoints[] = 
+static const Position gaoWaypoints[] =
 {
     { 0.f, 0.f, 0.f                    },
     { -703.3f, 1187.5f, 166.7f         },
@@ -72,11 +72,17 @@ static const Position middleBrewPos[] =
     { -706.43f, 1157.70f, 166.22f, 0.25f },
 };
 
-static const Position yanzhuPos[] = { -703.44f, 1162.43f, 166.22f, 0.24f };
-static const Position gaoPotPos[] = { -676.96f, 1193.96f, 166.79f, 1.82f };
+static const Position yanzhuPos[] =
+{
+    { -703.44f, 1162.43f, 166.22f, 0.24f }
+};
+static const Position gaoPotPos[] =
+{
+    { -676.96f, 1193.96f, 166.79f, 1.82f }
+};
 
-static const Position sudsPos[2] = 
-{ 
+static const Position sudsPos[2] =
+{
     { -696.25f, 1138.78f, 166.75f, 1.82f },
     { -663.20f, 1172.84f, 166.74f, 3.38f }
 };
@@ -93,7 +99,7 @@ class AliveCheck
     public:
         AliveCheck(Creature* creature) : _creature(creature) { }
 
-        bool operator()(uint64 guid) 
+        bool operator()(uint64 guid)
         {
             return (GetAffectedCreature(guid) && !GetAffectedCreature(guid)->IsAlive());
         }
@@ -648,7 +654,7 @@ class npc_chen_yanzhu : public CreatureScript
                     if (Creature* gao = ObjectAccessor::GetCreature(*me, instance->GetData64(NPC_UNCLE_GAO)))
                         gao->AI()->DoAction(action);
             }
-            
+
             void InitializeMyself()
             {
                 if (instance)
@@ -895,8 +901,7 @@ class boss_yanzhu : public CreatureScript
                 if (n < 0)
                     return false;
 
-                Position pos;
-                me->GetRandomNearPosition(pos, 20.f);
+                Position pos = me->GetRandomNearPosition(20.f);
                 pos.m_positionZ += frand(1.5f, 3.0f);
 
                 me->SummonCreature(NPC_FIZZY_BUBBLE, pos, TEMPSUMMON_TIMED_DESPAWN, 12 * IN_MILLISECONDS);
@@ -990,8 +995,7 @@ class boss_yanzhu : public CreatureScript
                 if (n < 0)
                     return false;
 
-                Position pos;
-                me->GetRandomNearPosition(pos, frand(5.f, 11.f));
+                Position pos = me->GetRandomNearPosition(frand(5.f, 11.f));
 
                 if (Creature* pAdd = me->SummonCreature(NPC_YEASTY_ALEMENTAL, pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, urand(6000, 14000)))
                 {
@@ -1152,7 +1156,7 @@ class npc_sudsy_alemental : public CreatureScript
 {
     public:
         npc_sudsy_alemental() : CreatureScript("npc_sudsy_alemental") { }
-        
+
         enum Spells
         {
             SPELL_BREW_BOLT   = 115650,
@@ -1807,7 +1811,7 @@ class npc_bubble_shield : public CreatureScript
             {
                 summonerGUID = summoner->GetGUID();
             }
-            
+
             void DamageTaken(Unit* /*attacker*/, uint32& damage) override
             {
                 if (damage >= me->GetHealth())

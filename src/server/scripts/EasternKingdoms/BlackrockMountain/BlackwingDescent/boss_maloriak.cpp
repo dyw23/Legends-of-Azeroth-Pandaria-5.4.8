@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -702,9 +702,8 @@ class npc_magma_jet : public CreatureScript
                     return;
 
                 creOwner = summoner->ToCreature();
-                Position pos;
                 me->SetOrientation(creOwner->GetOrientation());
-                summoner->GetNearPosition(pos, summoner->GetObjectSize() / 2.0f, 0.0f);
+                Position pos = summoner->GetNearPosition(summoner->GetObjectSize() / 2.0f, 0.0f);
                 me->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), me->GetPositionZ(), me->GetOrientation());
                 events.ScheduleEvent(EVENT_MAGMA_JETS_T, 200);
             }
@@ -715,8 +714,7 @@ class npc_magma_jet : public CreatureScript
 
                 if (events.ExecuteEvent() == EVENT_MAGMA_JETS_T)
                 {
-                    Position newPos;
-                    me->GetNearPosition(newPos, 5.5f, 0.0f);
+                    Position newPos = me->GetNearPosition(5.5f, 0.0f);
                     me->NearTeleportTo(newPos.GetPositionX(), newPos.GetPositionY(), me->GetPositionZ(), me->GetOrientation());
                     if (creOwner->GetDistance(me) >= 50.0f) // спавнить разломы на расстоянии до 50 от босса
                         me->DespawnOrUnsummon();
@@ -919,8 +917,7 @@ class spell_maloriak_flash_freeze : public SpellScriptLoader
 
             void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
-                Position pos;
-                aurEff->GetBase()->GetOwner()->GetPosition(&pos);
+                Position pos = aurEff->GetBase()->GetOwner()->GetPosition();
                 if (!GetCaster())
                     return;
                 if (TempSummon* summon = GetCaster()->SummonCreature(NPC_FLASH_FREEZE, pos))

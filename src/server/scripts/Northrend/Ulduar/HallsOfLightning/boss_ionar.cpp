@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -164,8 +164,7 @@ class boss_ionar : public CreatureScript
                 if (lSparkList.empty())
                     return;
 
-                Position pos;
-                me->GetPosition(&pos);
+                Position pos = me->GetPosition();
 
                 for (auto&& guid : lSparkList)
                 {
@@ -371,8 +370,7 @@ class npc_spark_of_ionar : public CreatureScript
                         {
                             if (me->GetDistance(pIonar) > DATA_MAX_SPARK_DISTANCE)
                             {
-                                Position pos;
-                                pIonar->GetPosition(&pos);
+                                Position pos = pIonar->GetPosition();
 
                                 me->SetSpeed(MOVE_RUN, 2.0f);
                                 me->GetMotionMaster()->Clear();

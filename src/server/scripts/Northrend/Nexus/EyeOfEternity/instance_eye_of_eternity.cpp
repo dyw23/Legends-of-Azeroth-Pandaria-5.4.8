@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -108,19 +108,19 @@ public:
                     if (instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL)
                     {
                         irisGUID = go->GetGUID();
-                        go->GetPosition(&focusingIrisPosition);
+                        focusingIrisPosition = go->GetPosition();
                     }
                     break;
                 case GO_FOCUSING_IRIS_25:
                     if (instance->GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
                     {
                         irisGUID = go->GetGUID();
-                        go->GetPosition(&focusingIrisPosition);
+                        focusingIrisPosition = go->GetPosition();
                     }
                     break;
                 case GO_EXIT_PORTAL:
                     exitPortalGUID = go->GetGUID();
-                    go->GetPosition(&exitPortalPosition);
+                    exitPortalPosition = go->GetPosition();
                     break;
                 case GO_HEART_OF_MAGIC_10:
                     if (instance->GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL)

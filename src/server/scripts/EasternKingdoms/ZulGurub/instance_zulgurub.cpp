@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -231,8 +231,7 @@ class instance_zulgurub : public InstanceMapScript
                         {
                             uint32 bossIndex = rand() % CACHE_OF_MADNESS_BOSSES_COUNT;
                             uint32 bossId = CACHE_OF_MADNESS_BOSSES[bossIndex];
-                            Position pos;
-                            summoner->GetPosition(&pos);
+                            Position pos = summoner->GetPosition();
                             summoner->SummonCreature(bossId, pos, TEMPSUMMON_MANUAL_DESPAWN);
                             events.ScheduleEvent(EVENT_CACHE_OF_MADNESS_HIDE_PORTAL, 5 * IN_MILLISECONDS);
                         }

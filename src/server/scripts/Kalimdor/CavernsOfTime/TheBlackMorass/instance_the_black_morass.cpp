@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -268,8 +268,7 @@ public:
 
             TC_LOG_DEBUG("scripts", "Instance The Black Morass: Summoning rift boss entry %u.", entry);
 
-            Position pos;
-            me->GetFirstCollisionPosition(pos, 10.0f, (float)rand_norm() * M_PI * 2);
+            Position pos = me->GetFirstCollisionPosition(10.0f, (float)rand_norm() * M_PI * 2);
 
             if (Creature* summon = me->SummonCreature(entry, pos, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000))
                 return summon;

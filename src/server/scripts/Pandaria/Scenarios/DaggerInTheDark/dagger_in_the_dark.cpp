@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -558,8 +558,7 @@ class npc_dagger_in_dark_voljin : public CreatureScript
                             break;
                         case EVENT_HEALING_WARD:
                         {
-                            Position pos;
-                            me->GetNearPosition(pos, 8.0f, frand(0.0f, 2 * M_PI));
+                            Position pos = me->GetNearPosition(8.0f, frand(0.0f, 2 * M_PI));
                             DoCast(me, SPELL_SUMMON_HEALING_WARD);
                             break;
                         }

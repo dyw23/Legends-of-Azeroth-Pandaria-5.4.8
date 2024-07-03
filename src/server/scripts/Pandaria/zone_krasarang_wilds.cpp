@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -542,8 +542,7 @@ class npc_despondent_warden_of_zhu : public CreatureScript
 
                 if (spell->Id == SPELL_APPLY_MASK && caster->GetTypeId() == TYPEID_PLAYER)
                 {
-                    Position pos;
-                    me->GetPosition(&pos);
+                    Position pos = me->GetPosition();
 
                     if (auto summon = me->SummonCreature(NPC_ENTRY_MANIFESTATION_OF_DESPAIR, pos, TEMPSUMMON_TIMED_DESPAWN, 120 * IN_MILLISECONDS))
                         summon->AI()->AttackStart(caster);

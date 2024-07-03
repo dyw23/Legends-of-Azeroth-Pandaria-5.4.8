@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -2377,8 +2377,7 @@ class npc_madness_of_deathwing_congealing_blood : public CreatureScript
             {
                 if (Creature* target = GetClosestCreatureWithEntry(summoner, NPC_CONGEALING_BLOOD_T, 40))
                 {
-                    Position pos;
-                    target->GetPosition(&pos);
+                    Position pos = target->GetPosition();
                     me->GetMotionMaster()->MovePoint(POINT_CONGEALING_BLOOD_HEAL, pos);
                 }
             }

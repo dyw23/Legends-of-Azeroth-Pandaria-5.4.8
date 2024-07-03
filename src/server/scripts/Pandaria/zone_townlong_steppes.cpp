@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1149,8 +1149,7 @@ class npc_osul_mist_shaman : public CreatureScript
 
                 if (!Torch)
                 {
-                    Position pos;
-                    me->GetRandomNearPosition(pos, 4.5f);
+                    Position pos = me->GetRandomNearPosition(4.5f);
 
                     if (TempSummon* Torch = me->SummonCreature(NPC_MIST_SHAMANS_TORCH, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), urand(0, 2 * M_PI), TEMPSUMMON_MANUAL_DESPAWN))
                         TorchGUID = Torch->GetGUID();

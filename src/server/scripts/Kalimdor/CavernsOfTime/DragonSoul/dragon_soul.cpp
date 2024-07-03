@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1954,27 +1954,24 @@ class npc_dragon_soul_twilight_assaulter : public CreatureScript
                 {
                     events.CancelEvent(EVENT_ASSAULTER_VISUAL);
 
-                    const Position* posPtr;
+                    std::optional<Position> assaultPos;
                     float angle = customPos[5].GetAngle(me);
                     if (angle <= M_PI/4 || angle > M_PI*2 - M_PI/4)
-                        posPtr = accessor->GetRandomTwilightAssaulterAssaultPosition(horizontal = false, false, lane, stalkerGUID); // North
+                        assaultPos = accessor->GetRandomTwilightAssaulterAssaultPosition(horizontal = false, false, lane, stalkerGUID); // North
                     else if (angle <= M_PI/2 + M_PI/4)
-                        posPtr = accessor->GetRandomTwilightAssaulterAssaultPosition(horizontal = true, false, lane, stalkerGUID); // West
+                        assaultPos = accessor->GetRandomTwilightAssaulterAssaultPosition(horizontal = true, false, lane, stalkerGUID); // West
                     else if (angle <= M_PI + M_PI/4)
-                        posPtr = accessor->GetRandomTwilightAssaulterAssaultPosition(horizontal = false, true, lane, stalkerGUID); // South
+                        assaultPos = accessor->GetRandomTwilightAssaulterAssaultPosition(horizontal = false, true, lane, stalkerGUID); // South
                     else
-                        posPtr = accessor->GetRandomTwilightAssaulterAssaultPosition(horizontal = true, true, lane, stalkerGUID); // East
+                        assaultPos = accessor->GetRandomTwilightAssaulterAssaultPosition(horizontal = true, true, lane, stalkerGUID); // East
 
-                    if (!posPtr)
+                    if (assaultPos == std::nullopt)
                         return;
-
-                    assaultPos = Position(*posPtr);
-                    delete posPtr;
 
                     wasActivated = true;
                     wasAssaulting = true;
                     me->GetMotionMaster()->MoveIdle();
-                    me->GetMotionMaster()->MovePoint(POINT_ASSAULTER, assaultPos);
+                    me->GetMotionMaster()->MovePoint(POINT_ASSAULTER, assaultPos.value());
                 }
                 else if (action == ACTION_STOP_ASSAULT)
                 {

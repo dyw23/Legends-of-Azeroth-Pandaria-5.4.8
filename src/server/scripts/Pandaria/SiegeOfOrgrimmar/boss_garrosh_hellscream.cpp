@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -3540,8 +3540,7 @@ class spell_garrosh_faith_missle : public SpellScript
 
     void SelectDest(SpellDestination& dest)
     {
-        Position pos;
-        GetCaster()->GetNearPosition(pos, frand(-GetSpellInfo()->Effects[EFFECT_0].MaxRadiusEntry->RadiusMax, GetSpellInfo()->Effects[EFFECT_0].MaxRadiusEntry->RadiusMax), frand(0.0f, 2 * M_PI));
+        Position pos = GetCaster()->GetNearPosition(frand(-GetSpellInfo()->Effects[EFFECT_0].MaxRadiusEntry->RadiusMax, GetSpellInfo()->Effects[EFFECT_0].MaxRadiusEntry->RadiusMax), frand(0.0f, 2 * M_PI));
         dest._position.Relocate(pos);
     }
 

@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -2598,8 +2598,7 @@ class spell_well_of_eternity_shadow_walk : public SpellScriptLoader
                 target->CastSpell(target, SPELL_SHADOWCLOAK_AGGRO);
                 target->CastSpell(target, SPELL_SHADOW_AMBUSHER_BUFF);
 
-                Position pos;
-                target->GetPosition(&pos);
+                Position pos = target->GetPosition();
                 if (Creature* stalker = target->SummonCreature(NPC_SHADOWCLOAK_STALKER, pos, TEMPSUMMON_MANUAL_DESPAWN))
                     stalker->EnterVehicle(target);
 
@@ -2672,8 +2671,7 @@ class spell_well_of_eternity_shadowcloak_illidan : public SpellScriptLoader
             {
                 Unit* target = GetTarget();
 
-                Position pos;
-                target->GetPosition(&pos);
+                Position pos = target->GetPosition();
                 if (Creature* stalker = target->SummonCreature(NPC_SHADOWCLOAK_ILLIDAN_STALKER, pos, TEMPSUMMON_MANUAL_DESPAWN))
                     stalker->EnterVehicle(target);
             }

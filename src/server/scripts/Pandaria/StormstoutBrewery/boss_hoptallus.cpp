@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -386,8 +386,7 @@ class boss_hoptallus : public CreatureScript
                 {
                     creature->AddAura(SPELL_HOPPER_ANIM_REPLACEMENT, creature);
 
-                    Position pos;
-                    me->GetRandomNearPosition(pos, 10.f);
+                    Position pos = me->GetRandomNearPosition(10.f);
                     creature->GetMotionMaster()->MoveJump(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), 15.f, 15.f, EVENT_JUMP);
 
                     if (creature->AI() && instance->GetBossState(DATA_HOPTALLUS) == SPECIAL) // not send area in combat while pre event
@@ -416,8 +415,7 @@ class boss_hoptallus : public CreatureScript
 
                 if (Creature* creature = me->SummonCreature(hoppers[urand(0, 1)], hopperSpawns[n], TEMPSUMMON_CORPSE_TIMED_DESPAWN, urand(4000, 8000)))
                 {
-                    Position pos;
-                    me->GetRandomNearPosition(pos, 10.f);
+                    Position pos = me->GetRandomNearPosition(10.f);
                     creature->GetMotionMaster()->MoveJump(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), 10.f, 10.f, EVENT_JUMP);
 
                     if (creature->AI() && instance->GetBossState(DATA_HOPTALLUS) == SPECIAL)

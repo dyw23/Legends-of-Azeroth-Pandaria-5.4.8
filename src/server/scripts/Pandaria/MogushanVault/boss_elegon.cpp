@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1056,8 +1056,7 @@ class npc_empyreal_focus : public CreatureScript
                         me->CastSpell(me, SPELL_FOCUS_LIGHT_AREATRIGGER, true);                        
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
 
-                        Position pos;
-                        me->GetPosition(&pos);
+                        Position pos = me->GetPosition();
                         for (int i = 0; i < 6; i++)
                         {
                             if (pos.GetPositionX() - empyrealFocusPosition[i].GetPositionX() <= 4.0f &&
@@ -1411,8 +1410,7 @@ class npc_energy_charge : public CreatureScript
                     {
                         if (Unit* focus = ObjectAccessor::FindUnit(me->GetUInt64Value(UNIT_FIELD_TARGET)))
                         {
-                            Position pos;
-                            focus->GetPosition(&pos);
+                            Position pos = focus->GetPosition();
 
                             me->GetMotionMaster()->MovePoint(POINT_EMPYEREAN_FOCUS, pos);
                         }

@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -591,9 +591,8 @@ class boss_alysrazor : public CreatureScript
                             break;
                         case EVENT_BLAZING_POWER:
                         {
-                            Position pos;
                             int32 offset = (bSpawnCloud ? 8 : -8);
-                            me->GetPosition(&pos);
+                            Position pos = me->GetPosition();
                             pos.m_positionX = pos.m_positionX + offset;
                             pos.m_positionY = pos.m_positionY + offset;
                             //DoCast(me, SPELL_BLAZING_POWER_SUM, true);
@@ -604,9 +603,8 @@ class boss_alysrazor : public CreatureScript
                         }
                         case EVENT_INCINDIARY_CLOUD:
                         {
-                            Position pos;
                             int32 offset = (bSpawnCloud ? 8 : -8);
-                            me->GetPosition(&pos);
+                            Position pos = me->GetPosition();
                             pos.m_positionX = pos.m_positionX + offset;
                             pos.m_positionY = pos.m_positionY + offset;
                             //DoCast(me, SPELL_INCINDIARY_CLOUD_SUM, true);
@@ -893,8 +891,7 @@ class npc_alysrazor_fiery_vortex : public CreatureScript
                                     {
                                         pTornado->CastSpell(pTornado, SPELL_FIERY_TORNADO);
                                         pTornado->ClearUnitState(UNIT_STATE_CASTING);
-                                        Position pos;
-                                        me->GetNearPosition(pos, 5.0f + 12.0f * i, (float(i) * M_PI / 2));
+                                        Position pos = me->GetNearPosition(5.0f + 12.0f * i, (float(i) * M_PI / 2));
                                         pTornado->SetSpeed(MOVE_RUN, 2.0f, true);
                                         pTornado->GetMotionMaster()->MovePoint((bClock ? POINT_TORNADO_1 : POINT_TORNADO_2), pos);
                                         bClock = !bClock;

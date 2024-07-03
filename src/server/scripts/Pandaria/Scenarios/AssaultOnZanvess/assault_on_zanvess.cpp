@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -588,8 +588,7 @@ struct npc_zanvess_scorpid_relocator : public zanvess_klaxxi_typeAI
         scheduler
             .Schedule(Seconds(3), [this](TaskContext context)
         {
-            Position pos;
-            me->GetRandomPoint(spawnPos, 10.0f, pos);
+            Position pos = me->GetRandomPoint(spawnPos, 10.0f);
             me->GetMotionMaster()->MovePoint(0, pos);
 
             context.Repeat(Milliseconds(me->GetSplineDuration()));

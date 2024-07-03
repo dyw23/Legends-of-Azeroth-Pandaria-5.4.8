@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -839,7 +839,7 @@ struct soo_paragon_typeAI : public ScriptedAI
             me->OverrideInhabitType(INHABIT_AIR);
             me->UpdateMovementFlags();
 
-            me->GetRandomPoint({ me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ(), me->GetHomePosition().GetOrientation() }, 20.0f, pos);
+            pos = me->GetRandomPoint({ me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ(), me->GetHomePosition().GetOrientation() }, 20.0f);
             me->GetMotionMaster()->MovePoint(0, pos.GetPositionX(), pos.GetPositionY(), me->GetHomePosition().GetPositionZ());
 
             context.Repeat(Milliseconds(me->GetSplineDuration()));

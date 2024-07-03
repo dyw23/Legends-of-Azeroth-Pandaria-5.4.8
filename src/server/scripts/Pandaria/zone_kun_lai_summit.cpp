@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1117,8 +1117,7 @@ struct npc_ordo_overseer : public ScriptedAI
                 {
                     player->KilledMonsterCredit(slave->GetEntry());
                     slave->AI()->Talk(SAY_FARMSTEAD_SLAVE);
-                    Position pos;
-                    slave->GetRandomNearPosition(pos, 30.f);
+                    Position pos = slave->GetRandomNearPosition(30.f);
                     slave->GetMotionMaster()->MovePoint(1, pos);
                     slave->DespawnOrUnsummon(5 * IN_MILLISECONDS);
                 }

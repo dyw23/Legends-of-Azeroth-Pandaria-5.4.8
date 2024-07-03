@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1185,7 +1185,7 @@ struct npc_granary_vandal : public ScriptedAI
             switch (eventId)
             {
                 case EVENT_THROW_GRAIN:
-                    me->GetRandomNearPosition(pos, 15.0f);
+                    pos = me->GetRandomNearPosition(15.0f);
                     me->CastSpell(pos, SPELL_THROW_GRAIN);
                     events.ScheduleEvent(EVENT_THROW_GRAIN, urand(7, 10) * IN_MILLISECONDS);
                     break;
@@ -2157,8 +2157,7 @@ struct npc_vfw_unbarreled_pandaren : public customCreatureAI
             .Schedule(Milliseconds(delay += 3000), [this](TaskContext context)
         {
             // Move away!
-            Position pos;
-            me->GetNearPosition(pos, 15.0f, frand(0.0f, 2 * M_PI));
+            Position pos = me->GetNearPosition(15.0f, frand(0.0f, 2 * M_PI));
             me->GetMotionMaster()->MovePoint(0, pos);
             me->DespawnOrUnsummon(me->GetSplineDuration());
         });
@@ -2197,8 +2196,7 @@ class spell_vfw_krungko_timer : public AuraScript
         if (Player* owner = GetOwner()->ToPlayer())
         {
             //owner->CastSpell(owner, SPELL_SUMMON_KRUNGKO, true);
-            Position pos;
-            owner->GetNearPosition(pos, frand(40.0f, 45.0f), frand(0.0f, 2 * M_PI));
+            Position pos = owner->GetNearPosition(frand(40.0f, 45.0f), frand(0.0f, 2 * M_PI));
             float z = owner->GetPositionZ();
             owner->UpdateAllowedPositionZ(pos.GetPositionX(), pos.GetPositionY(), z);
             owner->SummonCreature(NPC_KRUNGKO_FINGERLICKER, pos.GetPositionX(), pos.GetPositionY(), z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 300 * IN_MILLISECONDS);

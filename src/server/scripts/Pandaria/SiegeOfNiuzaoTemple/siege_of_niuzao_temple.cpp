@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -367,7 +367,7 @@ class npc_mantid_catapult : public CreatureScript
                             Position pos = attackPos;
                             me->MovePosition(pos, frand(20.0f, 50.0f), (float)rand_norm() * static_cast<float>(2 * M_PI));
                             if (!me->IsWithinDist2d(&pos, 200.0f))
-                                me->GetNearPosition(pos, 199.0f, me->GetAngle(&pos));
+                                pos = me->GetNearPosition(199.0f, me->GetAngle(&pos));
 
                             me->CastSpell(pos, SPELL_FIRE_CATAPULT, false);
 
@@ -439,7 +439,7 @@ class npc_mantid_soldier_catapult : public CreatureScript
                 {
                     //Arrange around the position of the "spoon"
                     Position anchorPos, myPos;
-                    catapult->GetNearPosition(anchorPos, -9.0f, 0.0f);
+                    anchorPos = catapult->GetNearPosition(-9.0f, 0.0f);
                     myPos = anchorPos;
                     me->MovePosition(myPos, INTERACTION_DISTANCE, float(M_PI / 2.0) * (float)counter);
                     myPos.m_orientation = myPos.GetAngle(&anchorPos);
@@ -533,8 +533,7 @@ class npc_niuzao_shado_pan_prisoner : public CreatureScript
                     if (exitTimer <= diff)
                     {
                         exitTimer = 0;
-                        Position pos;
-                        me->GetNearPosition(pos, 3.0f, 0.0f);
+                        Position pos = me->GetNearPosition(3.0f, 0.0f);
                         me->GetMotionMaster()->MovePoint(1, pos);
                     } else exitTimer -= diff;
                 }
@@ -545,8 +544,7 @@ class npc_niuzao_shado_pan_prisoner : public CreatureScript
                     {
                         stealthTimer = 0;
                         DoCast(me, SPELL_STEALTH, true);
-                        Position pos;
-                        me->GetNearPosition(pos, 20.0f, 0.0f);
+                        Position pos = me->GetNearPosition(20.0f, 0.0f);
                         me->GetMotionMaster()->MovePoint(2, pos);
                         me->DespawnOrUnsummon(3000);
                     } else stealthTimer -= diff;

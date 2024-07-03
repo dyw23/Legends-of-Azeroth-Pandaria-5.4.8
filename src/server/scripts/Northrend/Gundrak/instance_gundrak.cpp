@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -587,12 +587,13 @@ class spell_drakkari_frenzy_leap : public SpellScriptLoader
         {
             PrepareSpellScript(spell_drakkari_frenzy_leap_SpellScript);
 
-            void TargetSelect(SpellDestination& pos)
+            void TargetSelect(SpellDestination& dest)
             {
                 if (Unit* caster = GetCaster())
                 {
-                    caster->GetPosition(&pos._position);
-                    pos._position.RelocateOffset(0, 5.0f);
+                    Position pos = caster->GetPosition();
+                    dest._position = WorldLocation(caster->GetMapId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
+                    dest._position.RelocateOffset(0, 5.0f);
                 }
             }
 

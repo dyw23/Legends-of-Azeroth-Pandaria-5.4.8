@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -311,10 +311,10 @@ public:
 
                                 Position pos;
                                 if (Unit* EscapeDummy = me->FindNearestCreature(NPC_ESCAPE_DUMMY, 30))
-                                    EscapeDummy->GetPosition(&pos);
+                                    pos = EscapeDummy->GetPosition();
                                 else
                                 {
-                                    me->GetRandomNearPosition(pos, 20);
+                                    pos = me->GetRandomNearPosition(20);
                                     pos.m_positionZ += 25;
                                 }
 

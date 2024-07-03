@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -545,8 +545,7 @@ class spell_janalai_flame_breath : public SpellScriptLoader
                     return;
 
                 count++;
-                Position pos;
-                GetCaster()->GetNearPosition(pos, 4.0f * count, 0.0f);
+                Position pos = GetCaster()->GetNearPosition(4.0f * count, 0.0f);
                 GetCaster()->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_FLAME_BREATH_1, true);
             }
 

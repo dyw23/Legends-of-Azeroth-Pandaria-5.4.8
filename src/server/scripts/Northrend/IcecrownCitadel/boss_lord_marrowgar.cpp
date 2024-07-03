@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -507,7 +507,7 @@ class npc_coldflame : public CreatureScript
                         //ang = ownerPos->GetAngle(me);
                         ang = Position::NormalizeOrientation(ang);
                         me->SetOrientation(ang);
-                        owner->GetNearPosition(pos, 2.5f, ang - owner->GetOrientation());
+                        pos = owner->GetNearPosition(2.5f, ang - owner->GetOrientation());
                     }
                 }
                 else
@@ -522,7 +522,7 @@ class npc_coldflame : public CreatureScript
 
                     ang = owner->GetAngle(target);
                     me->SetOrientation(ang);
-                    owner->GetNearPosition(pos, owner->GetObjectSize() / 2.0f, ang - owner->GetOrientation());
+                    pos = owner->GetNearPosition(owner->GetObjectSize() / 2.0f, ang - owner->GetOrientation());
                 }
 
                 //me->UpdateGroundPositionZ(pos.GetPositionX(), pos.GetPositionY(), pos.m_positionZ, 10.0f, 50.0f);
@@ -540,8 +540,7 @@ class npc_coldflame : public CreatureScript
 
                 if (_events.ExecuteEvent() == EVENT_COLDFLAME_TRIGGER)
                 {
-                    Position newPos;
-                    me->GetNearPosition(newPos, 5.0f, 0.0f);
+                    Position newPos = me->GetNearPosition(5.0f, 0.0f);
                     //me->UpdateGroundPositionZ(newPos.GetPositionX(), newPos.GetPositionY(), newPos.m_positionZ, 10.0f, 50.0f);
                     me->UpdateGroundPositionZ(newPos.GetPositionX(), newPos.GetPositionY(), newPos.m_positionZ);
                     me->NearTeleportTo(newPos.GetPositionX(), newPos.GetPositionY(), newPos.GetPositionZ(), me->GetOrientation());

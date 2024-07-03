@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -953,8 +953,7 @@ struct npc_dark_shamans_toxic_tornado : public ScriptedAI
 
     void GenerateMovement()
     {
-        Position pos;
-        me->GetRandomPoint(spawnPos, 20.0f, pos);
+        Position pos = me->GetRandomPoint(spawnPos, 20.0f);
         me->GetMotionMaster()->MovePoint(0, pos);
     }
 

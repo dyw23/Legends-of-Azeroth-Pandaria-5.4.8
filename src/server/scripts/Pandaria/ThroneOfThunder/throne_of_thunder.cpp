@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -305,7 +305,7 @@ class npc_zandalari_spearshaper : public CreatureScript
 
                 if (Creature* pSpear = ObjectAccessor::GetCreature(*me, m_triggerGuid))
                 {
-                    pSpear->GetPosition(&pos);
+                    pos = pSpear->GetPosition();
                     me->GetMotionMaster()->Clear(false);
                     me->GetMotionMaster()->MoveJump(pos, 10.f, 20.f, 1948);
 
@@ -2032,8 +2032,7 @@ class npc_lei_shen_tortos : public CreatureScript
                                     {
                                         if (player->IsAlive() && !player->IsGameMaster())
                                         {
-                                            Position playerPos;
-                                            bridgeTrigger->GetRandomNearPosition(playerPos, 16.f);
+                                            Position playerPos = bridgeTrigger->GetRandomNearPosition(16.f);
                                             playerPos.m_positionZ = 154.f;
                         
                                             player->NearTeleportTo(playerPos.GetPositionX(), playerPos.GetPositionY(), playerPos.GetPositionZ(), player->GetAngle(me));
@@ -2581,8 +2580,7 @@ struct npc_roaming_fog : public customCreatureAI
             .SetValidator([this] { return !me->IsInCombat(); })
             .Schedule(Seconds(3), [this](TaskContext context)
         {
-            Position position;
-            me->GetRandomPoint(CenterDurumu, 40.0f, position);
+            Position position = me->GetRandomPoint(CenterDurumu, 40.0f);
             me->GetMotionMaster()->MovePoint(0, position);
 
             context.Repeat(Milliseconds(me->GetSplineDuration()));

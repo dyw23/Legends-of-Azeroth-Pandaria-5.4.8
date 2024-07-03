@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1470,7 +1470,7 @@ class spell_regurgitate : public SpellScript
                 {
                     if (Creature* unusedFeed = caster->SummonCreature(NPC_FEED_POOL, caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ() + 6.0f, 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 12000))
                     {
-                        unusedFeed->GetRandomPoint(jiKunCenter, 40.0f, relocateFeed);
+                        relocateFeed = unusedFeed->GetRandomPoint(jiKunCenter, 40.0f);
                         unusedFeed->GetMotionMaster()->MoveJump(relocateFeed.GetPositionX(), relocateFeed.GetPositionY(), 6.0f, 35.0f, 20.0f, POINT_GREEN_FEED_AIR/*, 10.0f*/);
                     }
                 }
@@ -1493,7 +1493,7 @@ class spell_regurgitate : public SpellScript
                     {
                         if (Creature* Feed = caster->SummonCreature(NPC_FEED_HATCHLINGS, caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ() + 6.0f, 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 12000))
                         {
-                            Feed->GetRandomPoint(nestPos[nestEntry - 1], 5.5f, relocateFeed);
+                            relocateFeed = Feed->GetRandomPoint(nestPos[nestEntry - 1], 5.5f);
                             Feed->GetMotionMaster()->MoveJump(relocateFeed.GetPositionX(), relocateFeed.GetPositionY(), relocateFeed.GetPositionZ() + 1.0f, 15.0f, 50.0f, POINT_FEED_CAME_TO_HATCHLING/*, 10.0f*/);
                         }
                     }
@@ -1504,7 +1504,7 @@ class spell_regurgitate : public SpellScript
                     {
                         if (Creature* unusedFeed = caster->SummonCreature(NPC_FEED_POOL, caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ() + 6.0f, 0.0f, TEMPSUMMON_MANUAL_DESPAWN, 12000))
                         {
-                            unusedFeed->GetRandomPoint(jiKunCenter, 40.0f, relocateFeed);
+                            relocateFeed = unusedFeed->GetRandomPoint(jiKunCenter, 40.0f);
                             unusedFeed->GetMotionMaster()->MoveJump(relocateFeed.GetPositionX(), relocateFeed.GetPositionY(), 6.0f, 35.0f, 20.0f, POINT_GREEN_FEED_AIR/*, 10.0f*/);
                         }
                     }

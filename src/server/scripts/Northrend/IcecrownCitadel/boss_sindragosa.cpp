@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1472,8 +1472,7 @@ class spell_sindragosa_ice_tomb_trap : public SpellScriptLoader
                 if (!unit || !caster)
                     return;
 
-                Position pos;
-                unit->GetPosition(&pos);
+                Position pos = unit->GetPosition();
 
                 if (TempSummon* summon = caster->SummonCreature(NPC_ICE_TOMB, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation()))
                 {
@@ -1889,8 +1888,10 @@ class spell_sindragosa_tail_smash : public SpellScriptLoader
 
             void TargetSelect(SpellDestination& dest)
             {
-                if (Unit* caster = GetCaster())
-                    caster->GetNearPosition(dest._position, 40.0f, M_PI);
+                if (Unit* caster = GetCaster()){
+                    Position pos = caster->GetNearPosition(40.0f, M_PI);
+                    dest._position = WorldLocation(GetCaster()->GetMapId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
+                }
             }
 
             void Register() override

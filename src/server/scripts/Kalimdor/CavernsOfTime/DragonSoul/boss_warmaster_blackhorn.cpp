@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1041,13 +1041,13 @@ class npc_warmaster_blackhorn_twilight_elite_dreadblade_slayer: public CreatureS
                     {
                         case EVENT_BLADE_RUSH:
                         {
-                            me->GetPosition(&startPos);
+                            startPos = me->GetPosition();
                             Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, NonTankTargetSelector(me));
                             if (!target)
                                 target = me->GetVictim();
                             if (target)
                             {
-                                target->GetPosition(&endPos);
+                                endPos = target->GetPosition();
                                 endPos.SetOrientation(0);
                                 if (Unit* rushTarget = me->SummonCreature(NPC_BLADE_RUSH_TARGET, endPos, TEMPSUMMON_TIMED_DESPAWN, 3000))
                                 {
@@ -1959,8 +1959,7 @@ class spell_warmaster_blackhorn_shockwave_aoe : public SpellScriptLoader
 
                 GetCaster()->SetTarget(0);
                 GetCaster()->GetAI()->SetGUID(GetHitUnit()->GetGUID());
-                Position pos;
-                GetCaster()->GetNearPosition(pos, 1, GetCaster()->GetRelativeAngle(GetHitUnit()));
+                Position pos = GetCaster()->GetNearPosition(1, GetCaster()->GetRelativeAngle(GetHitUnit()));
                 GetCaster()->GetMotionMaster()->MovePoint(POINT_SHOCKWAVE, pos);
             }
 

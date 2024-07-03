@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -2136,9 +2136,7 @@ class npc_amber_ridden_mushan : public CreatureScript
 
             void JustEngagedWith(Unit* /*who*/) override
             {
-                Position pos;
-
-                me->GetRandomNearPosition(pos, 4.0f);
+                Position pos = me->GetRandomNearPosition(4.0f);
 
                 for (uint8 i = 0; i < 4; i++)
                 {

@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -134,7 +134,7 @@ class boss_mechano_lord_capacitus : public CreatureScript
                             events.ScheduleEvent(EVENT_POSITIVE_SHIFT, urand(45, 60) * IN_MILLISECONDS);
                             break;
                         case EVENT_SUMMON_NETHER_CHARGE:
-                            me->GetRandomNearPosition(pos, 5.0f);
+                            pos = me->GetRandomNearPosition(5.0f);
                             me->SummonCreature(NPC_NETHER_CHARGE, pos, TEMPSUMMON_TIMED_DESPAWN, 18000);
                             events.ScheduleEvent(EVENT_SUMMON_NETHER_CHARGE, 10 * IN_MILLISECONDS);
                             break;

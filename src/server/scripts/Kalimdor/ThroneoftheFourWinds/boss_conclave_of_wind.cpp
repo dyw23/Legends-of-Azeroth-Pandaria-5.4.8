@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -793,8 +793,7 @@ class boss_rohash : public CreatureScript
                 boss_conclave_of_wind::SpellHitTarget(target, spell);
                 if (spell->Id == SPELL_HURRICANE_DUMMY_ENEMY)
                 {
-                    Position pos;
-                    me->GetPosition(&pos);
+                    Position pos = me->GetPosition();
                     pos.m_positionZ = 250;
                     if (Creature* hurricane = me->SummonCreature(NPC_HURRICANE, pos, TEMPSUMMON_TIMED_DESPAWN, 20000))
                     {
@@ -949,7 +948,7 @@ class npc_ravenous_creeper : public CreatureScript
             void IsSummonedBy(Unit* /*summoner*/) override
             {
                 evading = false;
-                me->GetPosition(&homePos);
+                homePos = me->GetPosition();
                 events.Reset();
                 events.ScheduleEvent(EVENT_TARGET_CHECK, 1000);
                 DoCast(SPELL_BIRTH_1_SEC);

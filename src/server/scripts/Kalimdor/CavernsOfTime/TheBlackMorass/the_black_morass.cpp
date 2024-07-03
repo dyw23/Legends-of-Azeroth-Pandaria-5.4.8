@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -315,8 +315,7 @@ public:
                 return;
             }
 
-            Position pos;
-            me->GetFirstCollisionPosition(pos, 10.0f, (float)rand_norm() * M_PI * 2);
+            Position pos = me->GetFirstCollisionPosition(10.0f, (float)rand_norm() * M_PI * 2);
 
             if (Unit* Summon = DoSummon(creature_entry, pos, 30000, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT))
                 if (Unit* temp = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_MEDIVH) : 0))

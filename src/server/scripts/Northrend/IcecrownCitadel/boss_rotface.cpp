@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -527,7 +527,8 @@ class spell_awaken_plagued_zombies : public SpellScriptLoader
                 float dist = caster->GetExactDist2d(&dest._position);
                 float angle = caster->GetRelativeAngle(&dest._position);
 
-                caster->GetPosition(&dest._position);
+                Position pos = caster->GetPosition();
+                dest._position = WorldLocation(GetCaster()->GetMapId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
                 for (; dist > 0; dist -= 3.0f)
                     caster->MovePositionToFirstCollision(dest._position, 3.0f, angle);
             }

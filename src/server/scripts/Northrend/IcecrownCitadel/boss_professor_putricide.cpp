@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1851,8 +1851,7 @@ class spell_putricide_mutated_transformation : public SpellScriptLoader
                 SummonPropertiesEntry const* properties = sSummonPropertiesStore.LookupEntry(uint32(GetSpellInfo()->Effects[effIndex].MiscValueB));
                 uint32 duration = uint32(GetSpellInfo()->GetDuration());
 
-                Position pos;
-                caster->GetPosition(&pos);
+                Position pos = caster->GetPosition();
                 TempSummon* summon = caster->GetMap()->SummonCreature(entry, pos, properties, duration, caster, GetSpellInfo()->Id);
                 if (!summon || !summon->IsVehicle())
                     return;

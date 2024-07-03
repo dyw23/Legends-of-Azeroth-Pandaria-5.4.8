@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -870,7 +870,7 @@ class boss_durumu : public CreatureScript
                     {
                         Position position = CenterDurumu;
                         while (me->GetDistance(position) <= minDist)
-                            me->GetRandomPoint(CenterDurumu, 60.0f, position);
+                            position = me->GetRandomPoint(CenterDurumu, 60.0f);
                         me->SummonCreature(entry, position);
                     }
                 }
@@ -1272,8 +1272,7 @@ struct npc_durumu_eye : public ScriptedAI
 
     void RandomMove()
     {
-        Position position;
-        me->GetRandomPoint(CenterDurumu, 5.0f, position);
+        Position position = me->GetRandomPoint(CenterDurumu, 5.0f);
 
         if (!me->HasUnitState(UNIT_STATE_CASTING))
             me->GetMotionMaster()->MovePoint(0, position);

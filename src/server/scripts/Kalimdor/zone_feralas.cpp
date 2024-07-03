@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -563,8 +563,7 @@ struct npc_feralas_mountain_giant : public CreatureAI
                 .Schedule(Seconds(3), [this](TaskContext context)
             {
                 // Move away!
-                Position pos;
-                me->GetNearPosition(pos, 10.0f, frand(0.0f, 2 * M_PI));
+                Position pos = me->GetNearPosition(10.0f, frand(0.0f, 2 * M_PI));
                 me->SetWalk(true);
                 me->GetMotionMaster()->MovePoint(0, pos);
                 me->DespawnOrUnsummon(me->GetSplineDuration());

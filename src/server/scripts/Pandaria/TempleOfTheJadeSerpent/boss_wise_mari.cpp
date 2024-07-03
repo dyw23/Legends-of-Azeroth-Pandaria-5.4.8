@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -703,8 +703,7 @@ class CorruptedWatersTargetSelector
             {
                 if (Player* plr = object->ToPlayer())
                 {
-                    Position pos;
-                    plr->GetPosition(&pos);
+                    Position pos = plr->GetPosition();
 
                     if ((plr->GetDistance(roomCenter) < 20.00f && roomCenter.HasInArc(M_PI, &pos)) || (!roomCenter.HasInArc(M_PI, &pos) && plr->GetDistance(roomCenter) < 14.00f))
                     {
