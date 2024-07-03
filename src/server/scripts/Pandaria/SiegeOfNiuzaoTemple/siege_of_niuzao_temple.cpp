@@ -442,7 +442,7 @@ class npc_mantid_soldier_catapult : public CreatureScript
                     anchorPos = catapult->GetNearPosition(-9.0f, 0.0f);
                     myPos = anchorPos;
                     me->MovePosition(myPos, INTERACTION_DISTANCE, float(M_PI / 2.0) * (float)counter);
-                    myPos.m_orientation = myPos.GetAngle(&anchorPos);
+                    myPos.SetOrientation(myPos.GetAngle(&anchorPos));
 
                     me->SetHomePosition(myPos);
                     EnterEvadeMode();

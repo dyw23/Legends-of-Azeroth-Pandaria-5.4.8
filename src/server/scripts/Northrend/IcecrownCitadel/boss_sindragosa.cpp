@@ -1829,8 +1829,8 @@ class FrostBombTargetSelector
             if (object->ToUnit()->HasAura(SPELL_ICE_TOMB_DAMAGE))
                 return true;
 
-            float oldOrientation = _caster->m_orientation;
-            _caster->m_orientation = _caster->GetAngle(object);
+            float oldOrientation = _caster->GetOrientation();
+            _caster->SetOrientation(_caster->GetAngle(object));
 
             float distToTarget = _caster->GetExactDist2dSq(object);
 
@@ -1839,7 +1839,7 @@ class FrostBombTargetSelector
                 if ((*itr)->IsAlive() && distToTarget > _caster->GetExactDist2dSq(*itr) && _caster->HasInArc(0.0f, *itr, 2.0f))
                     result = true;
 
-            _caster->m_orientation = oldOrientation;
+            _caster->SetOrientation(oldOrientation);
 
             return result;
         }

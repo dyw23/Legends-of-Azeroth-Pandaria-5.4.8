@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -902,7 +902,7 @@ bool BfGraveyard::HasNpc(uint64 guid)
 
 Creature* Battlefield::SpawnCreature(uint32 entry, const Position& pos, TeamId team)
 {
-    return SpawnCreature(entry, pos.m_positionX, pos.m_positionY, pos.m_positionZ, pos.m_orientation, team);
+    return SpawnCreature(entry, pos.m_positionX, pos.m_positionY, pos.m_positionZ, pos.GetOrientation(), team);
 }
 
 Creature* Battlefield::SpawnCreature(uint32 entry, float x, float y, float z, float o, TeamId team)

@@ -207,7 +207,7 @@ class npc_uncle_gao : public CreatureScript
                 {
                     encounterStarted = true;
 
-                    me->NearTeleportTo(gaoWaypoints[3].m_positionX, gaoWaypoints[3].m_positionY, gaoWaypoints[3].m_positionZ, gaoWaypoints[3].m_orientation);
+                    me->NearTeleportTo(gaoWaypoints[3].m_positionX, gaoWaypoints[3].m_positionY, gaoWaypoints[3].m_positionZ, gaoWaypoints[3].GetOrientation());
 
                     GetChenAndDoAction(4);
                     return;
@@ -309,10 +309,10 @@ class npc_uncle_gao : public CreatureScript
                     case 3:
                         waypoint++;
                         events.ScheduleEvent(EVENT_OUTRO_7, 3400);
-                        me->SetFacingTo(gaoWaypoints[pointId].m_orientation);
+                        me->SetFacingTo(gaoWaypoints[pointId].GetOrientation());
                         break;
                     case 101:
-                        me->SetFacingTo(gaoPotPos->m_orientation);
+                        me->SetFacingTo(gaoPotPos->GetOrientation());
                         me->HandleEmoteCommand(EMOTE_STATE_USE_STANDING);
                         break;
                 }
@@ -641,7 +641,7 @@ class npc_chen_yanzhu : public CreatureScript
                         events.ScheduleEvent(EVENT_CARE, 2400);
                         break;
                     case 2:
-                        me->SetFacingTo(chenWaypoints[pointId].m_orientation);
+                        me->SetFacingTo(chenWaypoints[pointId].GetOrientation());
                         break;
                 }
 
@@ -661,7 +661,7 @@ class npc_chen_yanzhu : public CreatureScript
                 {
                     if (instance->GetBossState(DATA_YAN_ZHU) == DONE)
                     {
-                        me->NearTeleportTo(chenWaypoints[2].m_positionX, chenWaypoints[2].m_positionY, chenWaypoints[2].m_positionZ, chenWaypoints[2].m_orientation);
+                        me->NearTeleportTo(chenWaypoints[2].m_positionX, chenWaypoints[2].m_positionY, chenWaypoints[2].m_positionZ, chenWaypoints[2].GetOrientation());
                         me->SetVisible(true);
                     }
                 }

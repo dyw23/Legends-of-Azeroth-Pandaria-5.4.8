@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -389,7 +389,8 @@ class npc_gunship_boss : public CreatureScript
                             Position dest = IsAlliance()
                                 ? (instance->GetData(DATA_TEAM_IN_INSTANCE) == ALLIANCE ? Position { 13.51547f, -0.160213f, 20.87252f, 3.106686f } : Position { 1.344813f, -0.077413f, 20.84917f, 3.159046f })
                                 : (instance->GetData(DATA_TEAM_IN_INSTANCE) == HORDE ? Position { 36.40547f, 0.184604f, 36.71532f, 3.106686f } : Position { 36.4055f, 0.184604f, 36.7153f, 3.10669f });
-                            MyTransport()->CalculatePassengerPosition(dest.m_positionX, dest.m_positionY, dest.m_positionZ, &dest.m_orientation);
+                            float m_orientation = dest.GetOrientation();
+                            MyTransport()->CalculatePassengerPosition(dest.m_positionX, dest.m_positionY, dest.m_positionZ, &m_orientation);
                             me->GetMotionMaster()->MovePoint(POINT_UPDATE_STOP, dest);
                             return;
                         }
@@ -1366,7 +1367,10 @@ class npc_korkron_axethrower_rifleman : public CreatureScript
                 if (pointId == POINT_DEFENSE_APPROACH)
                 {
                     if (Transport* transport = me->GetTransport())
-                        transport->CalculatePassengerPosition(finalPosition.m_positionX, finalPosition.m_positionY, finalPosition.m_positionZ, &finalPosition.m_orientation);
+                    {
+                        float m_orientation = finalPosition.GetOrientation();
+                        transport->CalculatePassengerPosition(finalPosition.m_positionX, finalPosition.m_positionY, finalPosition.m_positionZ, &m_orientation);
+                    }
                     me->GetMotionMaster()->MovePoint(POINT_DEFENSE_FINAL, finalPosition);
                 }
                 else if (pointId == POINT_DEFENSE_FINAL)
@@ -1791,7 +1795,10 @@ class npc_mortar_soldier_or_rocketeer : public CreatureScript
                 if (pointId == POINT_DEFENSE_APPROACH)
                 {
                     if (Transport* transport = me->GetTransport())
-                        transport->CalculatePassengerPosition(finalPosition.m_positionX, finalPosition.m_positionY, finalPosition.m_positionZ, &finalPosition.m_orientation);
+                    {
+                        float m_orientation = finalPosition.GetOrientation();
+                        transport->CalculatePassengerPosition(finalPosition.m_positionX, finalPosition.m_positionY, finalPosition.m_positionZ, &m_orientation);
+                    }
                     me->GetMotionMaster()->MovePoint(POINT_DEFENSE_FINAL, finalPosition);
                 }
                 else if (pointId == POINT_DEFENSE_FINAL)

@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -421,7 +421,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
         if (sWorld->getBoolConfig(CONFIG_TRANSPORT_PREFER_SERVER_WORLD_POSITION))
         {
             movementInfo.pos.Relocate(movementInfo.transport.pos);
-            transport->CalculatePassengerPosition(movementInfo.pos.m_positionX, movementInfo.pos.m_positionY, movementInfo.pos.m_positionZ, &movementInfo.pos.m_orientation);
+            float m_orientation = movementInfo.pos.GetOrientation();
+            transport->CalculatePassengerPosition(movementInfo.pos.m_positionX, movementInfo.pos.m_positionY, movementInfo.pos.m_positionZ, &m_orientation);
         }
     }
     mover->UpdatePosition(movementInfo.pos);

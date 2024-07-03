@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -99,14 +99,15 @@ void BattlegroundIC::DoAction(uint32 action, uint64 var)
     player->m_movementInfo.transport.pos.m_positionX = info.GetPositionX();
     player->m_movementInfo.transport.pos.m_positionY = info.GetPositionY();
     player->m_movementInfo.transport.pos.m_positionZ = info.GetPositionZ();
-    player->m_movementInfo.transport.pos.m_orientation = info.GetOrientation();
+    player->m_movementInfo.transport.pos.SetOrientation(info.GetOrientation());
 
     if (Transport* transport = player->GetTransport())
     {
         WorldLocation dest;
         dest.m_mapId = GetMapId();
         dest.Relocate(player->m_movementInfo.transport.pos.GetPosition());
-        transport->CalculatePassengerPosition(dest.m_positionX, dest.m_positionY, dest.m_positionZ, &dest.m_orientation);
+        float m_orientation = dest.GetOrientation();
+        transport->CalculatePassengerPosition(dest.m_positionX, dest.m_positionY, dest.m_positionZ, &m_orientation);
         player->TeleportTo(dest, TELE_TO_NOT_LEAVE_TRANSPORT);
     }
 }

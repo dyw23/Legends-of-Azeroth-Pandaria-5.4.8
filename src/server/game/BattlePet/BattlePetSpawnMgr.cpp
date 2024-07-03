@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -332,7 +332,7 @@ void BattlePetSpawnZoneMgr::SpawnCreature(uint64 guid, BattlePetSpawnTemplate* s
     replacementCreature->m_isTempWorldObject = true;
 
     if (!replacementCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), creature->GetMap(), creature->GetPhaseMask(),
-        speciesEntry->NpcId, 0, 0, creature->m_positionX, creature->m_positionY, creature->m_positionZ, creature->m_orientation))
+        speciesEntry->NpcId, 0, 0, creature->m_positionX, creature->m_positionY, creature->m_positionZ, creature->GetOrientation()))
     {
         // something went wrong, delete newly created creature
         delete replacementCreature;

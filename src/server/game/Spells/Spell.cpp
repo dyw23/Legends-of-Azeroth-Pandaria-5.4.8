@@ -9258,16 +9258,16 @@ WorldObjectSpellConeTargetCheck::WorldObjectSpellConeTargetCheck(float coneAngle
 
 bool WorldObjectSpellConeTargetCheck::operator()(WorldObject* target)
 {
-    float originalOrientation = _caster->m_orientation;
+    float originalOrientation = _caster->GetOrientation();
     if (_coneOffset)
-        _caster->m_orientation += _coneOffset;
+        _caster->SetOrientation(originalOrientation+_coneOffset);
 
     if (_coneAngle < 0)
     {
         if (!_caster->isInBack(target, -_coneAngle))
         {
             if (_coneOffset)
-                _caster->m_orientation = originalOrientation;
+                _caster->SetOrientation(originalOrientation);
             return false;
         }
     }
@@ -9276,7 +9276,7 @@ bool WorldObjectSpellConeTargetCheck::operator()(WorldObject* target)
         if (!_caster->HasInLine(target, _caster->GetObjectSize()))
         {
             if (_coneOffset)
-                _caster->m_orientation = originalOrientation;
+                _caster->SetOrientation(originalOrientation);
             return false;
         }
     }
@@ -9287,13 +9287,13 @@ bool WorldObjectSpellConeTargetCheck::operator()(WorldObject* target)
             if (_caster->GetTypeId() != TYPEID_PLAYER || _caster->GetDistance2d(target) > 3.0f || !_caster->isInFront(target, M_PI))
             {
                 if (_coneOffset)
-                    _caster->m_orientation = originalOrientation;
+                    _caster->SetOrientation(originalOrientation);
                 return false;
             }
         }
     }
     if (_coneOffset)
-        _caster->m_orientation = originalOrientation;
+        _caster->SetOrientation(originalOrientation);
     return WorldObjectSpellAreaTargetCheck::operator ()(target);
 }
 

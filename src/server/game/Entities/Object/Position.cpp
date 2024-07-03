@@ -83,6 +83,20 @@ std::string Position::ToString() const
     return sstr.str();
 }
 
+float Position::NormalizeOrientation(float o)
+{
+    // fmod only supports positive numbers. Thus we have
+    // to emulate negative numbers
+    if (o < 0)
+    {
+        float mod = o *-1;
+        mod = std::fmod(mod, 2.0f * static_cast<float>(M_PI));
+        mod = -mod + 2.0f * static_cast<float>(M_PI);
+        return mod;
+    }
+    return std::fmod(o, 2.0f * static_cast<float>(M_PI));
+}
+
 ByteBuffer& operator>>(ByteBuffer& buf, Position::PositionXYZOStreamer const& streamer)
 {
     float x, y, z, o;

@@ -1833,7 +1833,7 @@ void Position::RelocateOffset(const Position & offset)
 
 void Position::RelocateOffset(float angle, float distance, float offsetZ)
 {
-    angle += m_orientation;
+    angle += GetOrientation();
     m_positionX += cos(angle) * distance;
     m_positionY += sin(angle) * distance;
     m_positionZ += offsetZ;
@@ -1898,7 +1898,7 @@ bool Position::HasInArc(float arc, const Position* obj, float border) const
     arc = NormalizeOrientation(arc);
 
     float angle = GetAngle(obj);
-    angle -= m_orientation;
+    angle -= GetOrientation();
 
     // move angle to range -pi ... +pi
     angle = NormalizeOrientation(angle);
@@ -2087,7 +2087,7 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z, float* grou
 
 bool Position::IsPositionValid() const
 {
-    return Trinity::IsValidMapCoord(m_positionX, m_positionY, m_positionZ, m_orientation);
+    return Trinity::IsValidMapCoord(m_positionX, m_positionY, m_positionZ, GetOrientation());
 }
 
 float WorldObject::GetGridActivationRange() const
@@ -3208,7 +3208,7 @@ void WorldObject::GetNearPoint2D(float &x, float &y, float distance2d, float abs
 void WorldObject::GetNearPoint(WorldObject const* /*searcher*/, float &x, float &y, float &z, float searcher_size, float distance2d, float absAngle) const
 {
     Position pos = GetPosition();
-    const_cast<WorldObject*>(this)->MovePositionToFirstCollision(pos, distance2d + searcher_size, absAngle - m_orientation);
+    const_cast<WorldObject*>(this)->MovePositionToFirstCollision(pos, distance2d + searcher_size, absAngle - GetOrientation());
     pos.GetPosition(x, y);
     //GetNearPoint2D(x,y,distance2d+searcher_size,absAngle);
     z = GetPositionZ();
@@ -3265,7 +3265,7 @@ void WorldObject::MovePositionToFirstCollosionBySteps(Position& pos, float dist,
     Map* map = GetMap();
     float destx, desty, destz;
 
-    angle += m_orientation;
+    angle += GetOrientation();
     pos.GetPosition(destx, desty, destz);
     Position lastGroundPos = pos;
 
@@ -3346,7 +3346,7 @@ void WorldObject::MovePositionToFirstCollosionBySteps(Position& pos, float dist,
         if (!skippingAir)
             destz = NormalizeZforCollision(this, destx, desty, destz);
 
-        pos.Relocate(destx, desty, destz, m_orientation);
+        pos.Relocate(destx, desty, destz, GetOrientation());
     }
 
     // If we've encountered a drop before - restore last grounded position
@@ -3356,7 +3356,7 @@ void WorldObject::MovePositionToFirstCollosionBySteps(Position& pos, float dist,
         Trinity::NormalizeMapCoord(pos.m_positionX);
         Trinity::NormalizeMapCoord(pos.m_positionY);
         UpdateGroundPositionZ(pos.m_positionX, pos.m_positionY, pos.m_positionZ);
-        pos.m_orientation = m_orientation;
+        pos.SetOrientation(GetOrientation());
     }
 }
 

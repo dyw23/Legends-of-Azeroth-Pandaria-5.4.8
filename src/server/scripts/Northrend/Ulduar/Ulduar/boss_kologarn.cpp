@@ -748,7 +748,7 @@ class spell_ulduar_squeezed_lifeless : public SpellScriptLoader
                 pos.m_positionX = 1756.25f + irand(-3, 3);
                 pos.m_positionY = -8.3f + irand(-3, 3);
                 pos.m_positionZ = 448.8f;
-                pos.m_orientation = M_PI;
+                pos.SetOrientation(M_PI);
                 GetHitPlayer()->Relocate(pos);
                 GetHitPlayer()->ExitVehicle();
                 GetHitPlayer()->Relocate(pos);
@@ -803,7 +803,7 @@ class spell_ulduar_stone_grip_absorb : public SpellScriptLoader
                                 pos.m_positionX = 1756.25f + irand(-3, 3);
                                 pos.m_positionY = -8.3f + irand(-3, 3);
                                 pos.m_positionZ = 448.8f;
-                                pos.m_orientation = M_PI;
+                                pos.SetOrientation(M_PI);
                                 pass->Relocate(pos);
                                 pass->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
                             }
@@ -869,7 +869,7 @@ class spell_ulduar_stone_grip : public SpellScriptLoader
                     pos.m_positionX = 1756.25f + irand(-3, 3);
                     pos.m_positionY = -8.3f + irand(-3, 3);
                     pos.m_positionZ = 448.8f;
-                    pos.m_orientation = M_PI;
+                    pos.SetOrientation(M_PI);
                     caster->Relocate(pos);
                     caster->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
                 }
