@@ -1446,21 +1446,25 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
             else
             {
                 TC_LOG_DEBUG("spells", "SPELL: unknown target coordinates for spell ID %u", m_spellInfo->Id);
-                WorldObject* target = m_targets.GetObjectTarget();
-                dest = SpellDestination(target ? *target : *m_caster);
+                if (WorldObject* target = m_targets.GetObjectTarget())
+                    dest = SpellDestination(target ? *target : *m_caster);
             }
             break;
         case TARGET_DEST_CASTER_FISHING:
         {
-             float min_dis = m_spellInfo->GetMinRange(true);
-             float max_dis = m_spellInfo->GetMaxRange(true);
-             float dis = (float)rand_norm() * (max_dis - min_dis) + min_dis;
-             float x, y, z, angle;
-             angle = (float)rand_norm() * static_cast<float>(M_PI * 35.0f / 180.0f) - static_cast<float>(M_PI * 17.5f / 180.0f);
-             m_caster->GetClosePoint(x, y, z, DEFAULT_WORLD_OBJECT_SIZE, dis, angle);
+             float minDist = m_spellInfo->GetMinRange(true);
+             float maxDist = m_spellInfo->GetMaxRange(true);
+             float dist = frand(minDist, maxDist);
+             float x, y, z;
+             float angle = float(rand_norm()) * static_cast<float>(M_PI * 35.0f / 180.0f) - static_cast<float>(M_PI * 17.5f / 180.0f);
+             m_caster->GetClosePoint(x, y, z, DEFAULT_PLAYER_BOUNDING_RADIUS, dist, angle);
 
-             float ground = z;
-             float liquidLevel = m_caster->GetMap()->GetWaterOrGroundLevel(m_caster->GetPhaseMask(), x, y, z, &ground);
+             float ground = m_caster->GetMapHeight(x, y, z);
+             float liquidLevel = VMAP_INVALID_HEIGHT_VALUE;
+             LiquidData liquidData;             
+             if (m_caster->GetMap()->GetLiquidStatus(m_caster->GetPhaseMask(), x, y, z, MAP_ALL_LIQUIDS, &liquidData, m_caster->GetCollisionHeight()))
+                liquidLevel = liquidData.level;
+
              if (liquidLevel <= ground) // When there is no liquid Map::GetWaterOrGroundLevel returns ground level
              {
                  SendCastResult(SPELL_FAILED_NOT_HERE);
@@ -1498,18 +1502,32 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
         }        
         default:
         {
-            float dist;
+            float dist = m_spellInfo->Effects[effIndex].CalcRadius(m_caster);
             float angle = targetType.CalcDirectionAngle();
             float objSize = m_caster->GetObjectSize();
-            if (targetType.GetTarget() == TARGET_DEST_CASTER_SUMMON)
-                dist = PET_FOLLOW_DIST;
-            else
-                dist = m_spellInfo->Effects[effIndex].CalcRadius(m_caster);
 
-            if (dist < objSize)
-                dist = objSize;
-            else if (targetType.GetTarget() == TARGET_DEST_CASTER_RANDOM)
-                dist = objSize + (dist - objSize) * (float)rand_norm();
+            switch (targetType.GetTarget())
+            {
+                case TARGET_DEST_CASTER_SUMMON:
+                    dist = PET_FOLLOW_DIST;
+                    break;
+                case TARGET_DEST_CASTER_RANDOM:
+                    if (dist > objSize)
+                        dist = objSize + (dist - objSize) * float(rand_norm());
+                    break;
+                case TARGET_DEST_CASTER_FRONT_LEFT:
+                case TARGET_DEST_CASTER_BACK_LEFT:
+                case TARGET_DEST_CASTER_FRONT_RIGHT:
+                case TARGET_DEST_CASTER_BACK_RIGHT:
+                {
+                    static float const DefaultTotemDistance = 3.0f;
+                    if (!m_spellInfo->Effects[effIndex].HasRadius())
+                        dist = DefaultTotemDistance;
+                    break;
+                }                   
+                default:
+                    break;
+            }                
 
             if (targetType.GetTarget() == TARGET_DEST_CASTER_MOVEMENT_DIR)
             {
@@ -1535,16 +1553,19 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
                     angle = M_PI;
             }
 
-            Position pos;
-            bool teleport = GetSpellInfo()->Effects[effIndex].Effect == SPELL_EFFECT_LEAP &&
-                (targetType.GetTarget() == TARGET_DEST_CASTER_FRONT_LEAP ||
-                 targetType.GetTarget() == TARGET_DEST_CASTER_FRONT ||
-                 targetType.GetTarget() == TARGET_DEST_CASTER_MOVEMENT_DIR);
+            if (dist < objSize)
+                dist = objSize;
 
-            if (teleport)
-                pos = m_caster->GetBlinkPosition(dist, angle);
-            else
-                pos = m_caster->GetFirstCollisionPosition(dist, angle);
+            Position pos;
+            // bool teleport = GetSpellInfo()->Effects[effIndex].Effect == SPELL_EFFECT_LEAP &&
+            //     (targetType.GetTarget() == TARGET_DEST_CASTER_FRONT_LEAP ||
+            //      targetType.GetTarget() == TARGET_DEST_CASTER_FRONT ||
+            //      targetType.GetTarget() == TARGET_DEST_CASTER_MOVEMENT_DIR);
+
+            // if (teleport)
+            //     pos = m_caster->GetBlinkPosition(dist, angle);
+            // else
+            pos = m_caster->GetFirstCollisionPosition(dist, angle);
 
             dest.Relocate(pos);
             break;

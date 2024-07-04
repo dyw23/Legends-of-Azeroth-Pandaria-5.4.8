@@ -17,6 +17,7 @@
 
 #include "Common.h"
 #include "Corpse.h"
+#include "GameTime.h"
 #include "Player.h"
 #include "UpdateMask.h"
 #include "ObjectAccessor.h"
@@ -34,10 +35,10 @@ Corpse::Corpse(CorpseType type) : WorldObject(type != CORPSE_BONES), m_type(type
 
     m_valuesCount = CORPSE_END;
 
-    m_time = time(NULL);
+    m_time = GameTime::GetGameTime();
 
     lootForBody = false;
-    lootRecipient = NULL;
+    lootRecipient = nullptr;
 }
 
 Corpse::~Corpse() { }

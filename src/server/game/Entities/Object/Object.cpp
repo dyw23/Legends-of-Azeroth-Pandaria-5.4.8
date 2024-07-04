@@ -1514,14 +1514,6 @@ float WorldObject::GetDistanceZ(const WorldObject* obj) const
     return (dist > 0 ? dist : 0);
 }
 
-float WorldObject::GetDistanceZ(Position const* obj) const
-{
-    float dz = fabs(GetPositionZ() - obj->GetPositionZ());
-    float sizefactor = GetObjectSize();
-    float dist = dz - sizefactor;
-    return (dist > 0 ? dist : 0);
-}
-
 bool WorldObject::_IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D, bool incOwnRadius, bool incTargetRadius) const
 {
     float sizefactor = GetObjectSize() + obj->GetObjectSize();
@@ -1619,6 +1611,11 @@ bool WorldObject::IsWithinDist2d(const Position* pos, float dist) const
 bool WorldObject::IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D /*= true*/) const
 {
     return obj && _IsWithinDist(obj, dist2compare, is3D);
+}
+
+bool WorldObject::IsWithinDistInMap(WorldObject const* obj, float dist2compare, bool is3D /*= true*/, bool incOwnRadius /*= true*/, bool incTargetRadius /*= true*/) const
+{
+    return obj && IsInMap(obj) && InSamePhase(obj) && _IsWithinDist(obj, dist2compare, is3D, incOwnRadius, incTargetRadius);
 }
 
 Position WorldObject::GetHitSpherePointFor(Position const& dest) const
@@ -3249,13 +3246,6 @@ void WorldObject::GetContactPoint(const WorldObject* obj, float &x, float &y, fl
     GetNearPoint(obj, x, y, z, obj->GetObjectSize(), distance2d, GetAngle(obj));
 }
 
-Position WorldObject::GetBlinkPosition(float dist, float angle)
-{
-    Position pos = GetPosition();
-    MovePositionToFirstCollosionBySteps(pos, dist, angle);
-    return pos;
-}
-
 void WorldObject::MovePositionToFirstCollosionBySteps(Position& pos, float dist, float angle, float heightCheckInterval, bool allowInAir)
 {
     static float const InitialGroundSnapThreshold = 2.0f;
@@ -3362,7 +3352,7 @@ void WorldObject::MovePositionToFirstCollosionBySteps(Position& pos, float dist,
 
 float WorldObject::GetObjectSize() const
 {
-    return (m_valuesCount > UNIT_FIELD_COMBAT_REACH) ? m_floatValues[UNIT_FIELD_COMBAT_REACH] : DEFAULT_WORLD_OBJECT_SIZE;
+    return (m_valuesCount > UNIT_FIELD_COMBAT_REACH) ? m_floatValues[UNIT_FIELD_COMBAT_REACH] : DEFAULT_PLAYER_BOUNDING_RADIUS;
 }
 
 void WorldObject::MovePosition(Position &pos, float dist, float angle)
@@ -3409,13 +3399,6 @@ void WorldObject::MovePosition(Position &pos, float dist, float angle)
     Trinity::NormalizeMapCoord(pos.m_positionY);
     UpdateGroundPositionZ(pos.m_positionX, pos.m_positionY, pos.m_positionZ);
     pos.SetOrientation(GetOrientation());
-}
-
-Position WorldObject::GetNearPositionAlternate(float dist, float angle)
-{
-    Position pos = GetPositionAlternate();
-    MovePosition(pos, dist, angle);
-    return pos;
 }
 
 void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float angle, float offsetZ)

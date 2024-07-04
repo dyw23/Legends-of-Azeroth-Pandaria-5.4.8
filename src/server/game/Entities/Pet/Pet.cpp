@@ -1769,8 +1769,8 @@ void Pet::SetObjectScale(float scale)
 {
     Unit::SetObjectScale(scale);
 
-    SetFloatValue(UNIT_FIELD_BOUNDING_RADIUS, scale * DEFAULT_WORLD_OBJECT_SIZE);
-    SetFloatValue(UNIT_FIELD_COMBAT_REACH, scale * DEFAULT_COMBAT_REACH);
+    SetFloatValue(UNIT_FIELD_BOUNDING_RADIUS, scale * DEFAULT_PLAYER_BOUNDING_RADIUS);
+    SetFloatValue(UNIT_FIELD_COMBAT_REACH, scale * DEFAULT_PLAYER_COMBAT_REACH);
 }
 
 void Guardian::Regenerate()
