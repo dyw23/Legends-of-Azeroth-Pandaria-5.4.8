@@ -23,6 +23,7 @@
 #include "VMapManager2.h"
 #include "VMapDefinitions.h"
 #include "WorldModel.h"
+#include <utility>
 
 using G3D::Vector3;
 using G3D::Ray;
@@ -30,8 +31,8 @@ using G3D::AABox;
 
 struct GameobjectModelData
 {
-    GameobjectModelData(char const* name_, uint32 nameLength, Vector3 const& lowBound, Vector3 const& highBound, bool isWmo_) :
-        bound(lowBound, highBound), name(name_, nameLength), isWmo(isWmo_) { }
+    GameobjectModelData(std::string name_, const AABox& box, bool isWmo_) :
+        bound(box), name(std::move(name_)), isWmo(isWmo_) { }
 
     AABox bound;
     std::string name;
@@ -71,7 +72,8 @@ void LoadGameObjectModelList(std::string const& dataPath)
             if (feof(model_list_file))  // EOF flag is only set after failed reading attempt
                 break;
 
-        if (fread(&name_length, sizeof(uint32), 1, model_list_file) != 1
+        if (fread(&isWmo, sizeof(uint8), 1, model_list_file) != 1
+            || fread(&name_length, sizeof(uint32), 1, model_list_file) != 1
             || name_length >= sizeof(buff)
             || fread(&buff, sizeof(char), name_length, model_list_file) != name_length
             || fread(&v1, sizeof(Vector3), 1, model_list_file) != 1
@@ -87,7 +89,10 @@ void LoadGameObjectModelList(std::string const& dataPath)
             continue;
         }
 
-        model_list.emplace(std::piecewise_construct, std::forward_as_tuple(displayId), std::forward_as_tuple(&buff[0], name_length, v1, v2, isWmo != 0));
+        model_list.insert
+        (
+            ModelList::value_type(displayId, GameobjectModelData(std::string(buff, name_length), AABox(v1, v2), isWmo))
+        );
     }
 
     fclose(model_list_file);
