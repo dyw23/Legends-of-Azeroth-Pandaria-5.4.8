@@ -191,11 +191,7 @@ enum QuestSpecialFlags
     QUEST_SPECIAL_FLAGS_CAST                 = 0x020,   // Set by 32 in SpecialFlags in DB if the quest requires RequiredOrNpcGo killcredit but NOT kill (a spell cast)
     // room for more custom flags
 
-    // i-core-specific flags, going from the opposite direction
-    QUEST_SPECIAL_FLAGS_project_DAILY_QUEST = 0x01000000,   // Set by 16777216 in SpecialFlags in DB for some very specific quests
-    QUEST_SPECIAL_FLAGS_NO_REPUTATION_RATE   = 0x02000000,   // Set by 33554432 in SpecialFlags in DB if the quest reward should disregard server reputation gain rates
-
-    QUEST_SPECIAL_FLAGS_DB_ALLOWED = QUEST_SPECIAL_FLAGS_REPEATABLE | QUEST_SPECIAL_FLAGS_EXPLORATION_OR_EVENT | QUEST_SPECIAL_FLAGS_AUTO_ACCEPT | QUEST_SPECIAL_FLAGS_DF_QUEST | QUEST_SPECIAL_FLAGS_MONTHLY | QUEST_SPECIAL_FLAGS_CAST | QUEST_SPECIAL_FLAGS_project_DAILY_QUEST | QUEST_SPECIAL_FLAGS_NO_REPUTATION_RATE,
+    QUEST_SPECIAL_FLAGS_DB_ALLOWED = QUEST_SPECIAL_FLAGS_REPEATABLE | QUEST_SPECIAL_FLAGS_EXPLORATION_OR_EVENT | QUEST_SPECIAL_FLAGS_AUTO_ACCEPT | QUEST_SPECIAL_FLAGS_DF_QUEST | QUEST_SPECIAL_FLAGS_MONTHLY | QUEST_SPECIAL_FLAGS_CAST,
 
     //QUEST_SPECIAL_FLAGS_DELIVER              = 0x080,   // Internal flag computed only
     //QUEST_SPECIAL_FLAGS_SPEAKTO              = 0x100,   // Internal flag computed only

@@ -4494,7 +4494,7 @@ void ObjectMgr::LoadQuests()
             }
         }
 
-        for (auto obj : qinfo->Objectives)
+        for (QuestObjective const& obj : qinfo->GetObjectives())
         {
             // Store objective for lookup by id
             _questObjectives[obj.ID] = &obj;
@@ -4524,11 +4524,6 @@ void ObjectMgr::LoadQuests()
                     if (!GetItemTemplate(obj.ObjectID))
                         TC_LOG_ERROR("sql.sql", "Quest %u objective %u has non existing item entry %u, quest can't be done.",
                                      qinfo->GetQuestId(), obj.ID, obj.ObjectID);
-                    if (qinfo->HasSpecialFlag(QUEST_SPECIAL_FLAGS_project_DAILY_QUEST))
-                    {
-                        TC_LOG_ERROR("sql.sql", "Quest %u has required item %u but is also marked as QUEST_SPECIAL_FLAGS_project_DAILY_QUEST which is incompatible with DELIVER style quests", qinfo->GetQuestId(), obj.ObjectID);
-                        obj.Amount = 0; // prevent incorrect work of quest
-                    }
                     break;
                 case QUEST_OBJECTIVE_MONSTER:
                     if (!GetCreatureTemplate(obj.ObjectID))
@@ -4839,8 +4834,6 @@ void ObjectMgr::LoadQuests()
 
         if (qinfo->_exclusiveGroup)
             _exclusiveQuestGroups.insert(std::pair<int32, uint32>(qinfo->_exclusiveGroup, qinfo->GetQuestId()));
-        else if (qinfo->HasSpecialFlag(QUEST_SPECIAL_FLAGS_project_DAILY_QUEST))
-            TC_LOG_ERROR("sql.sql", "Quest %u has no ExclusiveGroup but is marked as QUEST_SPECIAL_FLAGS_project_DAILY_QUEST which must belong to an exclusive group", qinfo->GetQuestId());
 
         if (qinfo->_limitTime)
             qinfo->SetSpecialFlag(QUEST_SPECIAL_FLAGS_TIMED);

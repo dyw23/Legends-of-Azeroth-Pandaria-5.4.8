@@ -245,9 +245,6 @@ void Quest::LoadQuestObjectiveVisualEffect(Field* fields)
 
 uint32 Quest::XPValue(Player const* player) const
 {
-    if (HasSpecialFlag(QUEST_SPECIAL_FLAGS_project_DAILY_QUEST))
-        return 0;
-
     if (player)
     {
         int32 quest_level = (_questLevel == -1 ? player->GetLevel() : _questLevel);
