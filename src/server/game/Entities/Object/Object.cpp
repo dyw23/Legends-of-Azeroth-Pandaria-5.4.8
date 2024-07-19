@@ -16,6 +16,7 @@
 */
 
 #include "Object.h"
+#include "ObjectDefines.h"
 #include "Common.h"
 #include "CinematicMgr.h"
 #include "SharedDefines.h"
@@ -54,9 +55,18 @@
 #include "Chat.h"
 #include "Transport.h"
 #include "VMapManager2.h"
-// #include "timeless_isle.h" remove hack , fix in future
 
 #define STEALTH_VISIBILITY_UPDATE_TIMER 500
+
+constexpr float VisibilityDistances[AsUnderlyingType(VisibilityDistanceType::Max)] =
+{
+    DEFAULT_VISIBILITY_DISTANCE,
+    VISIBILITY_DISTANCE_TINY,
+    VISIBILITY_DISTANCE_SMALL,
+    VISIBILITY_DISTANCE_LARGE,
+    VISIBILITY_DISTANCE_GIGANTIC,
+    MAX_VISIBILITY_DISTANCE
+};
 
 Object::Object()
 {
@@ -1449,6 +1459,23 @@ void WorldObject::setActive(bool on, ActiveFlags flag)
         else if (GetTypeId() == TYPEID_DYNAMICOBJECT)
             map->RemoveFromActive((DynamicObject*)this);
     }
+}
+
+void WorldObject::SetFarVisible(bool on)
+{
+    if (GetTypeId() == TYPEID_PLAYER)
+        return;
+
+    m_isFarVisible = on;
+}
+
+void WorldObject::SetVisibilityDistanceOverride(VisibilityDistanceType type)
+{
+    ASSERT(type < VisibilityDistanceType::Max);
+    if (GetTypeId() == TYPEID_PLAYER)
+        return;
+
+    m_visibilityDistanceOverride = VisibilityDistances[AsUnderlyingType(type)];
 }
 
 void WorldObject::CleanupsBeforeDelete(bool /*finalCleanup*/)

@@ -694,7 +694,7 @@ class npc_meljarak_swarm : public CreatureScript
 
                 if (summoner->GetEntry() == NPC_WIND_LORD_MELJARAK)
                 {
-                    me->SetAnimationTier(UnitAnimationTier::Ground);
+                    me->SetAnimTier(AnimTier::Ground);
                     me->OverrideInhabitType(INHABIT_GROUND);
                     me->UpdateMovementFlags();
                     return;
@@ -804,7 +804,7 @@ class npc_meljarak_swarm : public CreatureScript
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
                         me->SetReactState(REACT_AGGRESSIVE);
                         me->SetCanFly(false);
-                        me->SetAnimationTier(UnitAnimationTier::Ground);
+                        me->SetAnimTier(AnimTier::Ground);
                         me->OverrideInhabitType(INHABIT_GROUND);
                         me->UpdateMovementFlags();
 

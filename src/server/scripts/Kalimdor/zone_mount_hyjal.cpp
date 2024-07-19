@@ -744,7 +744,7 @@ struct npc_hyjal_aronus_ride : public CreatureAI
     {
         targetGUID = summoner->GetGUID();
         me->OverrideInhabitType(INHABIT_AIR);
-        me->SetAnimationTier(UnitAnimationTier::Fly);
+        me->SetAnimTier(AnimTier::Fly);
         me->UpdateMovementFlags();
         me->SetSpeed(MOVE_FLIGHT, 2.5f);
         delay = 0;

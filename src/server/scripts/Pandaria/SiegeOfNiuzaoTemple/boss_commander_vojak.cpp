@@ -1540,7 +1540,7 @@ class npc_sikthik_amberwing : public CreatureScript
                 me->SetSpeed(MOVE_FLIGHT, 5.5f, true);
                 me->SendMovementFlagUpdate();
                 me->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING);
-                me->SetAnimationTier(UnitAnimationTier::Hover);
+                me->SetAnimTier(AnimTier::Hover);
                 me->SetDisableGravity(true);
                 DoCast(me, SPELL_GREEN_WINGS, true);
                 wp = 0;

@@ -167,7 +167,7 @@ class boss_bethtilac : public CreatureScript
 
                 DoCast(me, SPELL_ZERO_POWER, true);
                 me->SetReactState(REACT_PASSIVE);
-                //me->SetAnimationTier(UnitAnimationTier::Fly);
+                //me->SetAnimTier(AnimTier::Fly);
                 //me->SetUInt32Value(UNIT_FIELD_BYTES_2, 1);
                 me->GetMap()->SetWorldState(WORLDSTATE_DEATH_FROM_ABOVE, 1);
                 uiPhase = 0;
@@ -178,7 +178,7 @@ class boss_bethtilac : public CreatureScript
 
                 me->SetCanFly(true);
                 me->SetDisableGravity(true);
-                me->SetAnimationTier(UnitAnimationTier::Hover);
+                me->SetAnimTier(AnimTier::Hover);
 
                 float hx, hy, hz, ho;
                 me->GetHomePosition(hx, hy, hz, ho);
@@ -203,7 +203,7 @@ class boss_bethtilac : public CreatureScript
                     if (pointId == POINT_HIGH)
                     {
                         me->SetFacingTo(highPos.GetOrientation());
-                        me->SetAnimationTier(UnitAnimationTier::Ground);
+                        me->SetAnimTier(AnimTier::Ground);
                         me->RemoveAurasByType(SPELL_AURA_MOD_TAUNT);
                         //me->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
                         //me->SetUInt32Value(UNIT_FIELD_BYTES_2, 0);
@@ -489,7 +489,7 @@ class npc_bethtilac_spiderweb_filament : public CreatureScript
                     {
                         pSpinner->SetCanFly(true);
                         pSpinner->SetDisableGravity(true);
-                        pSpinner->SetAnimationTier(UnitAnimationTier::Hover);
+                        pSpinner->SetAnimTier(AnimTier::Hover);
                         DoCast(pSpinner, SPELL_SPIDERWEB_FILAMENT_ANY, true);
                         //pSpinner->CastSpell(pSpinner, SPELL_CREEPER, true);
                         pSpinner->CastSpell(pSpinner, SPELL_TEMPERAMENT, true);
@@ -606,7 +606,7 @@ class npc_bethtilac_cinderweb_spinner : public CreatureScript
                     me->RemoveAura(SPELL_TEMPERAMENT);
                     me->SetCanFly(false);
                     me->SetDisableGravity(false);
-                    me->SetAnimationTier(UnitAnimationTier::Ground);
+                    me->SetAnimTier(AnimTier::Ground);
                     AttackStart(caster);
                 }
             }
@@ -714,7 +714,7 @@ class npc_bethtilac_cinderweb_drone : public CreatureScript
             {
                 if (type == POINT_MOTION_TYPE && pointId == POINT_HIGH)
                 {
-                    me->SetAnimationTier(UnitAnimationTier::Ground);
+                    me->SetAnimTier(AnimTier::Ground);
                     me->SetReactState(REACT_AGGRESSIVE);
                 }
             }
@@ -738,7 +738,7 @@ class npc_bethtilac_cinderweb_drone : public CreatureScript
                     me->AttackStop();
                     me->SetCanFly(true);
                     me->SetDisableGravity(true);
-                    me->SetAnimationTier(UnitAnimationTier::Hover);
+                    me->SetAnimTier(AnimTier::Hover);
                     me->RemoveAurasDueToSpell(SPELL_ENERGIZE);
                     float z = std::max(110.0f, me->GetMap()->GetHeight(me->GetPositionX(), me->GetPositionY(), MAX_HEIGHT, true, MAX_HEIGHT * 2));
                     me->GetMotionMaster()->Clear();

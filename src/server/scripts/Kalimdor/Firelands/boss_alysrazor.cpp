@@ -1026,7 +1026,7 @@ class npc_alysrazor_blazing_talon_initiate : public CreatureScript
 
             void IsSummonedBy(Unit* /*summoner*/) override
             {
-                me->SetAnimationTier(UnitAnimationTier::Hover);
+                me->SetAnimTier(AnimTier::Hover);
                 me->SetCanFly(true);
                 me->SetDisableGravity(true);
                 me->OverrideInhabitType(INHABIT_AIR);
@@ -1068,7 +1068,7 @@ class npc_alysrazor_blazing_talon_initiate : public CreatureScript
                     me->SetDisableGravity(false);
                     me->OverrideInhabitType(INHABIT_GROUND);
                     me->UpdateMovementFlags();
-                    me->SetAnimationTier(UnitAnimationTier::Ground);
+                    me->SetAnimTier(AnimTier::Ground);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 }
             }
@@ -1198,7 +1198,7 @@ class npc_alysrazor_blazing_talon_clawshaper : public CreatureScript
 
             void IsSummonedBy(Unit* /*summoner*/) override
             {
-                me->SetAnimationTier(UnitAnimationTier::Hover);
+                me->SetAnimTier(AnimTier::Hover);
                 me->SetCanFly(true);
                 me->SetDisableGravity(true);
                 me->OverrideInhabitType(INHABIT_AIR);
@@ -1223,7 +1223,7 @@ class npc_alysrazor_blazing_talon_clawshaper : public CreatureScript
                     me->SetDisableGravity(false);
                     me->OverrideInhabitType(INHABIT_GROUND);
                     me->UpdateMovementFlags();
-                    me->SetAnimationTier(UnitAnimationTier::Ground);
+                    me->SetAnimTier(AnimTier::Ground);
                 }
                 else if (pointId == POINT_CLAWSHAPER_2)
                 {
@@ -1266,7 +1266,7 @@ class npc_alysrazor_blazing_talon_clawshaper : public CreatureScript
                                     me->SetDisableGravity(true);
                                     me->OverrideInhabitType(INHABIT_AIR);
                                     me->UpdateMovementFlags();
-                                    me->SetAnimationTier(UnitAnimationTier::Hover);
+                                    me->SetAnimTier(AnimTier::Hover);
                                     me->GetMotionMaster()->MovePoint(POINT_CLAWSHAPER_2, initiatePos[bLeft ? 0 : 1]);
                                 }
                                 else
@@ -1303,7 +1303,7 @@ class npc_alysrazor_blazing_broodmother : public CreatureScript
 
             void IsSummonedBy(Unit* /*summoner*/) override
             {
-                me->SetAnimationTier(UnitAnimationTier::Hover);
+                me->SetAnimTier(AnimTier::Hover);
                 me->SetCanFly(true);
                 me->SetDisableGravity(true);
                 me->OverrideInhabitType(INHABIT_AIR);

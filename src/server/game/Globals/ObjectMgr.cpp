@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -574,8 +574,8 @@ void ObjectMgr::LoadCreatureTemplateAddons()
 {
     uint32 oldMSTime = getMSTime();
 
-    //                                                 0       1       2      3       4       5         6              7                 8           9
-    QueryResult result = WorldDatabase.Query("SELECT entry, path_id, mount, bytes1, bytes2, emote, ai_anim_kit, movement_anim_kit, melee_anim_kit, auras FROM creature_template_addon");
+    //                                                 0       1       2           3       4          5         6           7        8        9             10                   11        12                          
+    QueryResult result = WorldDatabase.Query("SELECT entry, path_id, mount, StandState, AnimTier, VisFlags, SheathState, PvPFlags, emote, ai_anim_kit, movement_anim_kit, melee_anim_kit, auras FROM creature_template_addon");
 
     if (!result)
     {
@@ -600,14 +600,17 @@ void ObjectMgr::LoadCreatureTemplateAddons()
 
         creatureAddon.path_id           = fields[1].GetUInt32();
         creatureAddon.mount             = fields[2].GetUInt32();
-        creatureAddon.bytes1            = fields[3].GetUInt32();
-        creatureAddon.bytes2            = fields[4].GetUInt32();
-        creatureAddon.emote             = fields[5].GetUInt32();
-        creatureAddon.ai_anim_kit       = fields[6].GetUInt16();
-        creatureAddon.movement_anim_kit = fields[7].GetUInt16();
-        creatureAddon.melee_anim_kit    = fields[8].GetUInt16();
+        creatureAddon.standState        = fields[3].GetUInt8();
+        creatureAddon.animTier          = fields[4].GetUInt8();
+        creatureAddon.visFlags          = fields[5].GetUInt8();
+        creatureAddon.sheathState       = fields[6].GetUInt8();
+        creatureAddon.pvpFlags          = fields[7].GetUInt8();
+        creatureAddon.emote             = fields[8].GetUInt32();
+        creatureAddon.ai_anim_kit       = fields[9].GetUInt16();
+        creatureAddon.movement_anim_kit = fields[10].GetUInt16();
+        creatureAddon.melee_anim_kit    = fields[11].GetUInt16();
 
-        Tokenizer tokens(fields[9].GetString(), ' ');
+        Tokenizer tokens(fields[12].GetString(), ' ');
         uint8 i = 0;
         creatureAddon.auras.resize(tokens.size());
         for (Tokenizer::const_iterator itr = tokens.begin(); itr != tokens.end(); ++itr)
@@ -1112,8 +1115,8 @@ void ObjectMgr::LoadCreatureAddons()
 {
     uint32 oldMSTime = getMSTime();
 
-    //                                                 0       1       2      3       4      5         6               7                8           9
-    QueryResult result = WorldDatabase.Query("SELECT guid, path_id, mount, bytes1, bytes2, emote, ai_anim_kit, movement_anim_kit, melee_anim_kit, auras FROM creature_addon");
+    //                                                 0       1       2        3          4        5           6          7        8         9                      10                11           12            13
+    QueryResult result = WorldDatabase.Query("SELECT guid, path_id, mount, StandState, AnimTier, VisFlags, SheathState, PvPFlags, emote, visibilityDistanceType, ai_anim_kit, movement_anim_kit, melee_anim_kit, auras FROM creature_addon");
 
     if (!result)
     {
@@ -1144,15 +1147,19 @@ void ObjectMgr::LoadCreatureAddons()
             TC_LOG_ERROR("sql.sql", "Creature (GUID %lu) has movement type set to WAYPOINT_MOTION_TYPE but no path assigned", guid);
         }
 
-        creatureAddon.mount             = fields[2].GetUInt32();
-        creatureAddon.bytes1            = fields[3].GetUInt32();
-        creatureAddon.bytes2            = fields[4].GetUInt32();
-        creatureAddon.emote             = fields[5].GetUInt32();
-        creatureAddon.ai_anim_kit       = fields[6].GetUInt16();
-        creatureAddon.movement_anim_kit = fields[7].GetUInt16();
-        creatureAddon.melee_anim_kit    = fields[8].GetUInt16();
+        creatureAddon.mount                     = fields[2].GetUInt32();
+        creatureAddon.standState                = fields[3].GetUInt8();
+        creatureAddon.animTier                  = fields[4].GetUInt8();
+        creatureAddon.visFlags                  = fields[5].GetUInt8();
+        creatureAddon.sheathState               = fields[6].GetUInt8();
+        creatureAddon.pvpFlags                  = fields[7].GetUInt8();
+        creatureAddon.emote                     = fields[8].GetUInt32();
+        creatureAddon.visibilityDistanceType    = VisibilityDistanceType(fields[9].GetUInt8());
+        creatureAddon.ai_anim_kit               = fields[10].GetUInt16();
+        creatureAddon.movement_anim_kit         = fields[11].GetUInt16();
+        creatureAddon.melee_anim_kit            = fields[12].GetUInt16();
 
-        Tokenizer tokens(fields[9].GetString(), ' ');
+        Tokenizer tokens(fields[13].GetString(), ' ');
         uint8 i = 0;
         creatureAddon.auras.resize(tokens.size());
         for (Tokenizer::const_iterator itr = tokens.begin(); itr != tokens.end(); ++itr)

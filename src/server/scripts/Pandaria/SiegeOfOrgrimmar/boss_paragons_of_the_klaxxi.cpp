@@ -835,7 +835,7 @@ struct soo_paragon_typeAI : public ScriptedAI
             .Schedule(Milliseconds(1000), [this](TaskContext context)
         {
             // flight simulate
-            me->SetAnimationTier(UnitAnimationTier::Fly);
+            me->SetAnimTier(AnimTier::Fly);
             me->OverrideInhabitType(INHABIT_AIR);
             me->UpdateMovementFlags();
 

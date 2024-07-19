@@ -739,7 +739,18 @@ void WorldSession::HandleStandStateChangeOpcode(WorldPacket& recvData)
     uint32 animstate;
     recvData >> animstate;
 
-    _player->SetStandState(animstate);
+    switch (animstate)
+    {
+        case UNIT_STAND_STATE_STAND:
+        case UNIT_STAND_STATE_SIT:
+        case UNIT_STAND_STATE_SLEEP:
+        case UNIT_STAND_STATE_KNEEL:
+            break;
+        default:
+            return;
+    }
+
+    _player->SetStandState(UnitStandStateType(animstate));
 }
 
 void WorldSession::HandleContactListOpcode(WorldPacket& recvData)

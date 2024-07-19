@@ -20,6 +20,7 @@
 
 #include "Unit.h"
 #include "UnitDefines.h"
+enum class VisibilityDistanceType : uint8;
 
 enum CreatureFlagsExtra : uint32
 {
@@ -223,5 +224,23 @@ struct CreatureLocale
 };
 
 #pragma pack(pop)
+
+// `creature_addon` table
+struct CreatureAddon
+{
+    uint32 path_id;
+    uint32 mount;
+    uint8 standState;
+    uint8 animTier;
+    uint8 sheathState;
+    uint8 pvpFlags;
+    uint8 visFlags;
+    uint32 emote;
+    uint16 ai_anim_kit;
+    uint16 movement_anim_kit;
+    uint16 melee_anim_kit;
+    std::vector<uint32> auras;
+    VisibilityDistanceType visibilityDistanceType;
+};
 
 #endif // CreatureData_h__

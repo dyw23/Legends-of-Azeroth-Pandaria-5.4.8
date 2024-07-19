@@ -632,7 +632,7 @@ struct quelingBaseAI : public ScriptedAI
                 me->RemoveChanneledCast(targetGUID);
 
                 me->OverrideInhabitType(INHABIT_GROUND);
-                me->SetAnimationTier(UnitAnimationTier::Ground);
+                me->SetAnimTier(AnimTier::Ground);
                 me->UpdateMovementFlags();
 
                 switch (me->GetEntry())
@@ -1021,7 +1021,7 @@ class npc_quetzal : public CreatureScript
                                 me->RemoveChanneledCast(targetGUID);
 
                                 me->OverrideInhabitType(INHABIT_GROUND);
-                                me->SetAnimationTier(UnitAnimationTier::Ground);
+                                me->SetAnimTier(AnimTier::Ground);
                                 me->UpdateMovementFlags();
                             });
 

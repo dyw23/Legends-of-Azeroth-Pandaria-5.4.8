@@ -5101,7 +5101,7 @@ void Player::BuildPlayerRepop()
     StopMirrorTimers();                                     //disable timers(bars)
 
     // set and clear other
-    SetAnimationTier(UnitAnimationTier::Ground);
+    SetAnimTier(AnimTier::Ground);
 }
 
 void Player::ResurrectPlayer(float restore_percent, bool applySickness)
@@ -5116,7 +5116,7 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     // speed change, land walk
 
     // remove death flag + set aura
-    SetAnimationTier(UnitAnimationTier::Ground);
+    SetAnimTier(AnimTier::Ground);
     RemoveFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
     if (GetRace() == RACE_NIGHTELF)
         RemoveAurasDueToSpell(20584);                       // speed bonuses

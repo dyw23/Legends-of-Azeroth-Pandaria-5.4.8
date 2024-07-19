@@ -374,7 +374,7 @@ class boss_chogall : public CreatureScript
                                     {
                                         if (pSummon->GetEntry() != NPC_CORRUPTING_ADHERENT)
                                             continue;
-                                        if (pSummon->getStandState() == UNIT_STAND_STATE_DEAD)
+                                        if (pSummon->GetStandState() == UNIT_STAND_STATE_DEAD)
                                             pSummon->CastSpell(pSummon, SPELL_FESTER_BLOOD_SCRIPT, true);
                                         else
                                             pSummon->CastSpell(pSummon, SPELL_FESTERING_BLOOD, true);

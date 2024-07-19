@@ -2843,7 +2843,7 @@ class npc_icc_sindragosa_gauntlet_nerubar : public CreatureScript
                     me->InterruptSpell(CURRENT_CHANNELED_SPELL);
                     me->SetHomePosition(*me);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
-                    me->SetAnimationTier(UnitAnimationTier::Ground);
+                    me->SetAnimTier(AnimTier::Ground);
 
                     if (IsBroodling())
                     {

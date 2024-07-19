@@ -504,7 +504,7 @@ class npc_darkheart_crafty_the_ambitious : public CreatureScript
             {
                 if (pointId == EVENT_CHARGE)
                 {
-                    me->SetAnimationTier(UnitAnimationTier::Fly);
+                    me->SetAnimTier(AnimTier::Fly);
                     me->OverrideInhabitType(INHABIT_AIR);
                     me->UpdateMovementFlags();
 

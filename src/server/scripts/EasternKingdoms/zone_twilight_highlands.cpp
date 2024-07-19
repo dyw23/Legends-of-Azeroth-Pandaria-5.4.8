@@ -228,7 +228,7 @@ class npc_quest_mullan_gryphon : public CreatureScript
             {
                 me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 
-                me->SetAnimationTier(UnitAnimationTier::Ground);
+                me->SetAnimTier(AnimTier::Ground);
                 me->OverrideInhabitType(INHABIT_GROUND);
                 me->UpdateMovementFlags();
             }
@@ -241,7 +241,7 @@ class npc_quest_mullan_gryphon : public CreatureScript
                     DoCast(me, SPELL_MULLAN_GRYPHON_CREDIT, true);
 
                     // Fly Away
-                    me->SetAnimationTier(UnitAnimationTier::Fly);
+                    me->SetAnimTier(AnimTier::Fly);
                     me->OverrideInhabitType(INHABIT_AIR);
                     me->UpdateMovementFlags();
 

@@ -159,7 +159,7 @@ class boss_iron_juggernaut : public CreatureScript
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_NON_ATTACKABLE);
                 });
 
-                me->SetAnimationTier(UnitAnimationTier::Ground);
+                me->SetAnimTier(AnimTier::Ground);
                 me->SetReactState(REACT_DEFENSIVE);
                 energyGainTick = 0;
                 crawlerCount   = 0;
@@ -399,7 +399,7 @@ class boss_iron_juggernaut : public CreatureScript
                                 targetGUID = target->GetGUID();
 
                             me->PrepareChanneledCast(me->GetOrientation());
-                            me->SetAnimationTier(UnitAnimationTier::Fly); // fly tier for borer to ground.. interesting
+                            me->SetAnimTier(AnimTier::Fly); // fly tier for borer to ground.. interesting
                             DoCast(me, SPELL_SIESMIC_ACTIVITY);
 
                             events.ScheduleEvent(EVENT_SHOCK_PULSE, 18 * IN_MILLISECONDS);
@@ -426,7 +426,7 @@ class boss_iron_juggernaut : public CreatureScript
                             berserkerEvents.CancelEvent(EVENT_CUTTER_LASER);
                             berserkerEvents.CancelEvent(EVENT_MORTAR_BARRAGE);
                             me->RemoveAurasDueToSpell(SPELL_SIESMIC_ACTIVITY);
-                            me->SetAnimationTier(UnitAnimationTier::Ground);
+                            me->SetAnimTier(AnimTier::Ground);
                             me->RemoveChanneledCast(targetGUID);
                             events.ScheduleEvent(EVENT_SCATTER_LASTER, 10 * IN_MILLISECONDS);
                             events.ScheduleEvent(EVENT_MORTAR_STRIKE, 15 * IN_MILLISECONDS);

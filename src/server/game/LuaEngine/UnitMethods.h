@@ -499,7 +499,7 @@ namespace LuaUnit
 
     int GetStandState(lua_State* L, Unit* unit)
     {
-        sEluna->Push(L, unit->getStandState());
+        sEluna->Push(L, unit->GetStandState());
         return 0;
     }
 

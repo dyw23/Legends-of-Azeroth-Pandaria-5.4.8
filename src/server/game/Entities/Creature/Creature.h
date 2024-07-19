@@ -148,20 +148,6 @@ enum ChatType
 #pragma pack(pop)
 #endif
 
-// `creature_addon` table
-struct CreatureAddon
-{
-    uint32 path_id;
-    uint32 mount;
-    uint32 bytes1;
-    uint32 bytes2;
-    uint32 emote;
-    uint16 ai_anim_kit;
-    uint16 movement_anim_kit;
-    uint16 melee_anim_kit;
-    std::vector<uint32> auras;
-};
-
 typedef std::unordered_map<uint32, CreatureAddon> CreatureAddonContainer;
 
 // Vendors
@@ -300,6 +286,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool CanSwim() const override;
         bool CanEnterWater() const override;
         bool CanFly() const override { return GetInhabitType() & INHABIT_AIR; }
+        bool CanHover() const { return true; } // TODO impl
 
         // Used to dynamically change allowed path generator and movement flags behavior during scripts.
         // Can be used to allow ground-only creatures to temporarily fly, restrict flying creatures to the ground etc.

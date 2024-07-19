@@ -349,7 +349,7 @@ class boss_ragnaros_firelands : public CreatureScript
                 memset(bFloor, false, sizeof(bFloor));
                 uiDreadFlameTimer = 40000;
 
-                me->SetAnimationTier(UnitAnimationTier::Fly);
+                me->SetAnimTier(AnimTier::Fly);
                 me->SetFloatValue(UNIT_FIELD_BOUNDING_RADIUS, 50);
                 me->SetFloatValue(UNIT_FIELD_COMBAT_REACH, 50);
                 me->SetReactState(REACT_DEFENSIVE);

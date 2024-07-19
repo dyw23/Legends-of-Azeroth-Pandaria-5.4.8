@@ -581,7 +581,7 @@ struct npc_brawlers_guild_bizmo : public ScriptedAI
         DoCast(me, SPELL_HOVER_ANIM_STATE);
 
         me->OverrideInhabitType(INHABIT_AIR);
-        me->SetAnimationTier(UnitAnimationTier::Hover);
+        me->SetAnimTier(AnimTier::Hover);
         me->UpdateMovementFlags();
 
         // Fly around arena perimetr
@@ -1006,7 +1006,7 @@ struct npc_brawlers_guild_boss_bazzelflange : public ScriptedAI
         DoCast(me, SPELL_HOVER_ANIM_STATE);
 
         me->OverrideInhabitType(INHABIT_AIR);
-        me->SetAnimationTier(UnitAnimationTier::Hover);
+        me->SetAnimTier(AnimTier::Hover);
         me->UpdateMovementFlags();
 
         // Fly around arena perimetr

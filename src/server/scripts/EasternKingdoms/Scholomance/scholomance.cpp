@@ -1009,7 +1009,7 @@ class npc_gandling_at_rattlegore : public CreatureScript
                     case 0:
                         Talk(TALK_7);
                         me->CastSpell(me, SPELL_TELEPORT_VISUAL, false);
-                        me->SetAnimationTier(UnitAnimationTier::Fly);
+                        me->SetAnimTier(AnimTier::Fly);
                         me->OverrideInhabitType(INHABIT_AIR);
                         me->UpdateMovementFlags();
                         me->CastSpell(me, SPELL_SOUL_RIP_VISUAL, false);
@@ -1067,7 +1067,7 @@ class npc_gandling_at_rattlegore : public CreatureScript
                             nonCombatEvents.ScheduleEvent(EVENT_TALK_6, 6000);
                             break;
                         case EVENT_TALK_6:
-                            me->SetAnimationTier(UnitAnimationTier::Ground);
+                            me->SetAnimTier(AnimTier::Ground);
                             me->OverrideInhabitType(INHABIT_GROUND);
                             me->UpdateMovementFlags();
                             me->RemoveAurasDueToSpell(SPELL_SOUL_RIP_VISUAL);
@@ -1081,7 +1081,7 @@ class npc_gandling_at_rattlegore : public CreatureScript
                             if (Unit* TalkingSkull = ObjectAccessor::GetUnit(*me, _instance->GetGuidData(NPC_TALKING_SKULL)))
                                 TalkingSkull->ToCreature()->AI()->Talk(TALK_GANDLING_LEAVE);
 
-                            me->SetAnimationTier(UnitAnimationTier::Ground);
+                            me->SetAnimTier(AnimTier::Ground);
                             me->OverrideInhabitType(INHABIT_GROUND);
                             me->UpdateMovementFlags();
                             me->RemoveAurasDueToSpell(SPELL_SOUL_RIP_VISUAL);

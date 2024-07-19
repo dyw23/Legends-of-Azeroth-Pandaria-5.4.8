@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1456,21 +1456,29 @@ public:
     bool IsInRaidWith(Unit const* unit, bool ignoreCharmer = false) const;
     void GetPartyMembers(std::list<Unit*> &units);
     bool IsContestedGuard() const;
-    bool IsPvP() const
-    {
-        return HasByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 1, UNIT_BYTE2_FLAG_PVP);
-    }
+
+    UnitPVPStateFlags GetPvpFlags() const { return UnitPVPStateFlags(GetByteValue(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PVP_FLAG)); }
+    bool HasPvpFlag(UnitPVPStateFlags flags) const { return HasByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PVP_FLAG, flags); }
+    void SetPvpFlag(UnitPVPStateFlags flags) { SetByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PVP_FLAG, flags); }
+    void RemovePvpFlag(UnitPVPStateFlags flags) { RemoveByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PVP_FLAG, flags); }
+    void ReplaceAllPvpFlags(UnitPVPStateFlags flags) { SetByteValue(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PVP_FLAG, flags); }
+    
+    bool IsPvP() const { return HasPvpFlag(UNIT_BYTE2_FLAG_PVP); }
     void SetPvP(bool state);
+
+    UnitPetFlag GetPetFlags() const { return UnitPetFlag(GetByteValue(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PET_FLAGS)); }
+    bool HasPetFlag(UnitPetFlag flags) const { return HasByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PET_FLAGS, flags); }
+    void SetPetFlag(UnitPetFlag flags) { SetByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PET_FLAGS, flags); }
+    void RemovePetFlag(UnitPetFlag flags) { RemoveByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PET_FLAGS, flags); }
+    void ReplaceAllPetFlags(UnitPetFlag flags) { SetByteValue(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PET_FLAGS, flags); }
+
     uint32 GetCreatureType() const;
     uint32 GetCreatureTypeMask() const;
 
-    uint8 getStandState() const
-    {
-        return GetByteValue(UNIT_FIELD_ANIM_TIER, 0);
-    }
+    UnitStandStateType GetStandState() const { return UnitStandStateType(GetByteValue(UNIT_FIELD_ANIM_TIER, UNIT_BYTES_1_OFFSET_STAND_STATE)); }
     bool IsSitState() const;
     bool IsStandState() const;
-    void SetStandState(uint8 state);
+    void SetStandState(UnitStandStateType state);
 
     void SetStandFlags(uint8 flags)
     {
@@ -1481,8 +1489,12 @@ public:
         RemoveByteFlag(UNIT_FIELD_ANIM_TIER, 2, flags);
     }
 
-    UnitAnimationTier GetAnimationTier() const { return (UnitAnimationTier)GetByteValue(UNIT_FIELD_ANIM_TIER, 3); }
-    void SetAnimationTier(UnitAnimationTier tier) { SetByteValue(UNIT_FIELD_ANIM_TIER, 3, (uint8)tier); }
+    void SetVisFlag(UnitVisFlags flags) { SetByteFlag(UNIT_FIELD_ANIM_TIER, UNIT_BYTES_1_OFFSET_VIS_FLAG, flags); }
+    void RemoveVisFlag(UnitVisFlags flags) { RemoveByteFlag(UNIT_FIELD_ANIM_TIER, UNIT_BYTES_1_OFFSET_VIS_FLAG, flags); }
+    void ReplaceAllVisFlags(UnitVisFlags flags) { SetByteValue(UNIT_FIELD_ANIM_TIER, UNIT_BYTES_1_OFFSET_VIS_FLAG, flags); }
+
+    AnimTier GetAnimTier() const { return AnimTier(GetByteValue(UNIT_FIELD_ANIM_TIER, UNIT_BYTES_1_OFFSET_ANIM_TIER)); }
+    void SetAnimTier(AnimTier animTier);
 
     bool IsMounted() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT); }
     uint32 GetMountDisplayId() const { return GetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID); }

@@ -331,7 +331,7 @@ void MotionMaster::MoveLand(uint32 id, Position const& pos, float speed)
     Mutate(new EffectMovementGenerator(id), MOTION_SLOT_ACTIVE);
     Movement::MoveSplineInit init(_owner);
     init.MoveTo(x, y, z, false);
-    init.SetAnimation(_owner->IsHovering() ? UnitAnimationTier::Hover : UnitAnimationTier::Ground);
+    init.SetAnimation(_owner->IsHovering() ? AnimTier::Hover : AnimTier::Ground);
     if (speed > 0)
         init.SetVelocity(speed);
     init.Launch();
@@ -346,7 +346,7 @@ void MotionMaster::MoveTakeoff(uint32 id, Position const& pos, float speed)
 
     Movement::MoveSplineInit init(_owner);
     init.MoveTo(x, y, z, false);
-    init.SetAnimation(UnitAnimationTier::Fly);
+    init.SetAnimation(AnimTier::Fly);
     init.Launch();
     if (speed > 0)
         init.SetVelocity(speed);

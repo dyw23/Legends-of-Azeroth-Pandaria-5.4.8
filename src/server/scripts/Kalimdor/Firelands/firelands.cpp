@@ -1862,7 +1862,7 @@ class spell_firelands_kneel_to_the_flame : public SpellScriptLoader
                         return true;
 
                     uint32 emote = unit->GetUInt32Value(UNIT_FIELD_NPC_EMOTESTATE);
-                    UnitStandStateType stand = (UnitStandStateType)unit->getStandState();
+                    UnitStandStateType stand = (UnitStandStateType)unit->GetStandState();
                     if (emote == EMOTE_STATE_KNEEL ||
                         emote == EMOTE_STATE_SIT ||
                         emote == EMOTE_STATE_SLEEP ||

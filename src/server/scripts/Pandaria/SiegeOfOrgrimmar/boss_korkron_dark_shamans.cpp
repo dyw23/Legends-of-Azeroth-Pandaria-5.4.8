@@ -983,7 +983,7 @@ struct npc_dark_shamans_falling_ash : public ScriptedAI
         DoCast(me, SPELL_FALLING_ASH_COSMETIC);
         me->GetMotionMaster()->MovePoint(0, fallingPos);
 
-        me->SetAnimationTier(UnitAnimationTier::Hover);
+        me->SetAnimTier(AnimTier::Hover);
 
         scheduler
             .Schedule(Milliseconds(me->GetSplineDuration()), [this](TaskContext context)

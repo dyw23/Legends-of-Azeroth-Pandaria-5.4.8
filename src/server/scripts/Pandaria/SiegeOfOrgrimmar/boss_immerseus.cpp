@@ -211,7 +211,7 @@ class boss_immerseus : public CreatureScript
 
                 me->RemoveFlag(UNIT_FIELD_FLAGS2, UNIT_FLAG2_REGENERATE_POWER);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-                me->SetAnimationTier(UnitAnimationTier::Fly);
+                me->SetAnimTier(AnimTier::Fly);
                 me->SetDisableGravity(true);
                 me->OverrideInhabitType(INHABIT_AIR);
                 me->UpdateMovementFlags();

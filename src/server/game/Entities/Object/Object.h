@@ -677,6 +677,10 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         bool isActiveObject() const { return m_isActive; }
         void setActive(bool on, ActiveFlags flag = ActiveFlags::InCombat);
         ActiveFlags GetActiveFlags() const { return m_activeFlags; }
+        bool IsFarVisible() const { return m_isFarVisible; }
+        void SetFarVisible(bool on);
+        bool IsVisibilityOverridden() const { return m_visibilityDistanceOverride.has_value(); }
+        void SetVisibilityDistanceOverride(VisibilityDistanceType type);        
         void SetWorldObject(bool apply);
         bool IsPermanentWorldObject() const { return m_isWorldObject; }
         bool IsWorldObject() const;
@@ -752,6 +756,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         std::string m_name;
         bool m_isActive;
         ActiveFlags m_activeFlags = ActiveFlags::None;
+        bool m_isFarVisible;
+        Optional<float> m_visibilityDistanceOverride;        
         const bool m_isWorldObject;
         ZoneScript* m_zoneScript;
 
