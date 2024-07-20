@@ -759,6 +759,7 @@ class TC_GAME_API WorldSession
         void HandleAuctionListOwnerItems(WorldPacket& recvData);
         void HandleAuctionPlaceBid(WorldPacket& recvData);
         void HandleAuctionListPendingSales(WorldPacket& recvData);
+        void HandleReplicateItems(WorldPackets::AuctionHouse::AuctionReplicateItems& packet);
 
         void HandleGetMailList(WorldPacket& recvData);
         void HandleSendMail(WorldPacket& recvData);

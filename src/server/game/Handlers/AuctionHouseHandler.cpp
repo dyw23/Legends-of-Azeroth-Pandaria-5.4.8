@@ -1037,3 +1037,27 @@ void WorldSession::HandleAuctionListPendingSales(WorldPacket& recvData)
     }*/
     SendPacket(&data);
 }
+
+void WorldSession::HandleReplicateItems(WorldPackets::AuctionHouse::AuctionReplicateItems& packet)
+{
+    Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(packet.Auctioneer, UNIT_NPC_FLAG_AUCTIONEER);
+    if (!creature)
+    {
+        TC_LOG_DEBUG("network", "WORLD: HandleReplicateItems - %s not found or you can't interact with him.", packet.Auctioneer.ToString().c_str());
+        return;
+    }
+
+    // remove fake death
+    if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
+        GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
+
+    AuctionHouseObject* auctionHouse = sAuctionMgr->GetAuctionsMap(creature->GetFaction());
+
+    WorldPackets::AuctionHouse::AuctionReplicateResponse response;
+
+    auctionHouse->BuildReplicate(response, GetPlayer(), packet.ChangeNumberGlobal, packet.ChangeNumberCursor, packet.ChangeNumberTombstone, packet.Count);
+
+    response.DesiredDelay = sWorld->getIntConfig(CONFIG_AUCTION_SEARCH_DELAY) * 5;
+    response.Result = 0;
+    SendPacket(response.Write());
+}

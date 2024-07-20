@@ -51,6 +51,7 @@ enum OpcodeClient : uint16
     CMSG_AUCTION_LIST_PENDING_SALES                       = 0x02DA,
     CMSG_AUCTION_PLACE_BID                                = 0x03C8,
     CMSG_AUCTION_REMOVE_ITEM                              = 0x0259,
+    CMSG_AUCTION_REPLICATE_ITEMS                          = 0x0743,
     CMSG_AUCTION_SELL_ITEM                                = 0x02EB,
     CMSG_AUTH_CONTINUED_SESSION                           = 0x0F49,
     CMSG_AUTH_SESSION                                     = 0x00B2,

@@ -18,6 +18,7 @@
 #ifndef AllPackets_h__
 #define AllPackets_h__
 
+#include "AuctionHousePackets.h"
 #include "CharacterPackets.h"
 #include "MiscPackets.h"
 #include "QueryPackets.h"

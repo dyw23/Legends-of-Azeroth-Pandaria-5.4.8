@@ -160,6 +160,8 @@ class AuctionHouseObject
         uint32 inventoryType, uint32 itemClass, uint32 itemSubClass, uint32 quality,
         bool getAll, std::vector<int8> const& sortOrder,
         uint32& count, uint32& totalcount, uint32& throttle);
+    void BuildReplicate(WorldPackets::AuctionHouse::AuctionReplicateResponse& auctionReplicateResult, Player* player,
+            uint32 global, uint32 cursor, uint32 tombstone, uint32 count);
 
   private:
     AuctionEntryMap AuctionsMap;
