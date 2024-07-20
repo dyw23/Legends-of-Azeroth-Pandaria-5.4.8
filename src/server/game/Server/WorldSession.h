@@ -607,7 +607,7 @@ class TC_GAME_API WorldSession
 
         void HandleCreatureQueryOpcode(WorldPacket& recvPacket);
 
-        void HandleGameObjectQueryOpcode(WorldPacket& recvPacket);
+        void HandleGameObjectQueryOpcode(WorldPackets::Query::QueryGameObject& packet);
 
         void HandleMoveWorldportAckOpcode(WorldPacket& recvPacket);
         void HandleMoveWorldportAck();
