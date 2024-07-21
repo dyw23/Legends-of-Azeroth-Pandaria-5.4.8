@@ -27,15 +27,12 @@ void WorldPackets::AuctionHouse::AuctionReplicateItems::Read()
 //    _worldPacket >> ChangeNumberTombstone;
 //    _worldPacket >> Count;
 
-    // TODO: the guid mask is probably wrong, and byte 3 is probably wrong
-    // nonetheless, it works with the auctioneers that i can find
-
+    Auctioneer[6] = _worldPacket.ReadBit();
+    Auctioneer[0] = _worldPacket.ReadBit();
     Auctioneer[1] = _worldPacket.ReadBit();
     Auctioneer[5] = _worldPacket.ReadBit();
-    Auctioneer[2] = _worldPacket.ReadBit();
-    Auctioneer[0] = _worldPacket.ReadBit();
     Auctioneer[3] = _worldPacket.ReadBit();
-    Auctioneer[6] = _worldPacket.ReadBit();
+    Auctioneer[2] = _worldPacket.ReadBit();
     Auctioneer[4] = _worldPacket.ReadBit();
     Auctioneer[7] = _worldPacket.ReadBit();
 
@@ -45,6 +42,6 @@ void WorldPackets::AuctionHouse::AuctionReplicateItems::Read()
     _worldPacket.ReadByteSeq(Auctioneer[4]);
     _worldPacket.ReadByteSeq(Auctioneer[1]);
     _worldPacket.ReadByteSeq(Auctioneer[5]);
-    _worldPacket.ReadByteSeq(Auctioneer[2]);
     _worldPacket.ReadByteSeq(Auctioneer[3]);
+    _worldPacket.ReadByteSeq(Auctioneer[2]);
 }

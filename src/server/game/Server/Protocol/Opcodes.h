@@ -993,7 +993,7 @@ enum OpcodeServer : uint16
     SMSG_QUESTUPDATE_ADD_CREDIT                                  = 0x1645,
     SMSG_QUESTUPDATE_ADD_CREDIT_SIMPLE                           = 0x07F5,
     SMSG_QUESTUPDATE_ADD_PVP_KILL                                = 0x0256,
-    SMSG_QUEST_UPDATE_COMPLETE                                    = 0x0776,
+    SMSG_QUEST_UPDATE_COMPLETE                                   = 0x0776,
     SMSG_QUESTUPDATE_FAILED                                      = 0x07DD,
     SMSG_QUESTUPDATE_FAILEDTIMER                                 = 0x06FF,
     SMSG_QUEST_CONFIRM_ACCEPT                                    = 0x13C7,

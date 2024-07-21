@@ -36,7 +36,7 @@ namespace WorldPackets
                 uint8 Slot = 0;
             };
 
-            Item::ItemInstance Item;
+            //Item::ItemInstance Item;
             int32 Count = 0;
             int32 Charges = 0;
             std::vector<AuctionItemEnchant> Enchantments;
@@ -74,7 +74,8 @@ namespace WorldPackets
         class AuctionReplicateResponse final : public ServerPacket
         {
         public:
-            AuctionReplicateResponse() : ServerPacket(SMSG_AUCTION_REPLICATE_RESPONSE, 165) { }
+            // TODO: fix opcode
+            AuctionReplicateResponse() : ServerPacket(SMSG_AUCTION_HELLO, 165) { }
 
             WorldPacket const* Write() override;
 
