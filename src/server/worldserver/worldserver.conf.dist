@@ -39,6 +39,8 @@
 #    LOAD SETTINGS
 #
 ###################################################################################################
+Battleground.PremadeGroupWaitForMatch = 1800000
+Battleground.PrematureFinishTimer = 300000
 mmap.AllowReuseOfPreviousPathSegments = 1
 AuthServer.Process =
 AuthServer.Command =
