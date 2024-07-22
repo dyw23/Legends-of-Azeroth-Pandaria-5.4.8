@@ -292,7 +292,7 @@ class TouchYshaarjAI : public PlayerAI
                     if (me->GetMap()->IsHeroic())
                         amount += 150;
 
-                    me->ApplyStatPctModifier(UNIT_MOD_HEALTH, TOTAL_PCT, float(amount));
+                    me->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_PCT, float(amount), true);
                     if (me->IsAlive())
                         me->SetHealth(std::max(uint32(me->GetMaxHealth() * percent / 100.f), uint32(1)));
                 }
@@ -320,7 +320,7 @@ class TouchYshaarjAI : public PlayerAI
                     float percent = me->GetHealthPct();
                     uint32 currentHealth = me->GetHealth();
 
-                    me->ApplyStatPctModifier(UNIT_MOD_HEALTH, TOTAL_PCT, float(amount));
+                    me->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_PCT, float(amount), false);
 
                     // Set Current health depend of improved health of Y`shaarj
                     if (me->IsAlive())

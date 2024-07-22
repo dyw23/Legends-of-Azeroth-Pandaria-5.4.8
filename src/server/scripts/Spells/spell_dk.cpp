@@ -1699,7 +1699,7 @@ class spell_dk_threat_of_tassarian : public AuraScript
 
     void HandleProc(ProcEventInfo& eventInfo)
     {
-        if (!eventInfo.GetSpellInfo() || !GetUnitOwner()->haveOffhandWeapon())
+        if (!eventInfo.GetSpellInfo() || !GetUnitOwner()->HasOffhandWeapon())
             return;
 
         uint32 spell;
