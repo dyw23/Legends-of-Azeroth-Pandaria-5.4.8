@@ -1633,22 +1633,22 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
     data << uint8(0);                                               // rank
 
     data.WriteBit(playerGuid[2]);
-data.WriteBit(playerGuid[1]);
-data.WriteBit(playerGuid[6]);
-data.WriteBit(playerGuid[4]);
-data.WriteBit(playerGuid[5]);
-data.WriteBit(playerGuid[3]);
-data.WriteBit(playerGuid[7]);
-data.WriteBit(playerGuid[0]);
+    data.WriteBit(playerGuid[1]);
+    data.WriteBit(playerGuid[6]);
+    data.WriteBit(playerGuid[4]);
+    data.WriteBit(playerGuid[5]);
+    data.WriteBit(playerGuid[3]);
+    data.WriteBit(playerGuid[7]);
+    data.WriteBit(playerGuid[0]);
     data.FlushBits();
     data.WriteByteSeq(playerGuid[1]);
-data.WriteByteSeq(playerGuid[3]);
-data.WriteByteSeq(playerGuid[6]);
-data.WriteByteSeq(playerGuid[7]);
-data.WriteByteSeq(playerGuid[2]);
-data.WriteByteSeq(playerGuid[4]);
-data.WriteByteSeq(playerGuid[5]);
-data.WriteByteSeq(playerGuid[0]);
+    data.WriteByteSeq(playerGuid[3]);
+    data.WriteByteSeq(playerGuid[6]);
+    data.WriteByteSeq(playerGuid[7]);
+    data.WriteByteSeq(playerGuid[2]);
+    data.WriteByteSeq(playerGuid[4]);
+    data.WriteByteSeq(playerGuid[5]);
+    data.WriteByteSeq(playerGuid[0]);
 
     SendPacket(&data);
 }
@@ -2745,13 +2745,13 @@ void WorldSession::HandleInspectRatedBGStatsOpcode(WorldPacket& recvData)
     WorldPacket data(SMSG_INSPECT_RATED_BG_STATS);
 
     data.WriteBit(playerGuid[4]);
-data.WriteBit(playerGuid[2]);
-data.WriteBit(playerGuid[3]);
-data.WriteBit(playerGuid[6]);
-data.WriteBit(playerGuid[0]);
-data.WriteBit(playerGuid[5]);
-data.WriteBit(playerGuid[7]);
-data.WriteBit(playerGuid[1]);
+    data.WriteBit(playerGuid[2]);
+    data.WriteBit(playerGuid[3]);
+    data.WriteBit(playerGuid[6]);
+    data.WriteBit(playerGuid[0]);
+    data.WriteBit(playerGuid[5]);
+    data.WriteBit(playerGuid[7]);
+    data.WriteBit(playerGuid[1]);
 
     size_t pos = data.bitwpos();
     data.WriteBits(numSlots, 3);
@@ -2776,13 +2776,13 @@ data.WriteBit(playerGuid[1]);
         numSlots++;
     }
     data.WriteByteSeq(playerGuid[1]);
-data.WriteByteSeq(playerGuid[7]);
-data.WriteByteSeq(playerGuid[3]);
-data.WriteByteSeq(playerGuid[2]);
-data.WriteByteSeq(playerGuid[0]);
-data.WriteByteSeq(playerGuid[5]);
-data.WriteByteSeq(playerGuid[6]);
-data.WriteByteSeq(playerGuid[4]);
+    data.WriteByteSeq(playerGuid[7]);
+    data.WriteByteSeq(playerGuid[3]);
+    data.WriteByteSeq(playerGuid[2]);
+    data.WriteByteSeq(playerGuid[0]);
+    data.WriteByteSeq(playerGuid[5]);
+    data.WriteByteSeq(playerGuid[6]);
+    data.WriteByteSeq(playerGuid[4]);
 
     data.PutBits(pos, numSlots, 3);
 
@@ -2837,32 +2837,32 @@ void WorldSession::HandleShowTradeSkill(WorldPacket& recvData)
     data.WriteBits(1, 22);
     data.WriteBits(1, 22);
     data.WriteBit(guid[5]);
-data.WriteBit(guid[6]);
-data.WriteBit(guid[0]);
-data.WriteBit(guid[2]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[2]);
     data.WriteBits(1, 22);
     data.WriteBit(guid[4]);
-data.WriteBit(guid[1]);
-data.WriteBit(guid[3]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[3]);
     auto pos = data.bitwpos();
     data.WriteBits(1, 22);
     data.WriteBit(guid[7]);
 
-        data << uint32(val);
+    data << uint32(val);
 
     data.WriteByteSeq(guid[3]);
 
-        data << uint32(skillId);
+    data << uint32(skillId);
 
     data.WriteByteSeq(guid[0]);
-data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[1]);
 
-        data << uint32(player->GetMaxSkillValue(skillId));
+    data << uint32(player->GetMaxSkillValue(skillId));
 
     data.WriteByteSeq(guid[6]);
-data.WriteByteSeq(guid[7]);
-data.WriteByteSeq(guid[5]);
-data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[4]);
 
     uint32 count = 0;
     for (auto&& it : player->GetSpellMap())

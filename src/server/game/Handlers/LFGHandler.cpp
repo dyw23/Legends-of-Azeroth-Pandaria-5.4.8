@@ -533,14 +533,16 @@ void WorldSession::SendLfgPartyLockInfo()
 
         data.WriteBit(hasPlayerInfo);
         if (hasPlayerInfo)
+        {
             data.WriteBit(pguid[3]);
-data.WriteBit(pguid[6]);
-data.WriteBit(pguid[0]);
-data.WriteBit(pguid[5]);
-data.WriteBit(pguid[2]);
-data.WriteBit(pguid[7]);
-data.WriteBit(pguid[4]);
-data.WriteBit(pguid[1]);
+            data.WriteBit(pguid[6]);
+            data.WriteBit(pguid[0]);
+            data.WriteBit(pguid[5]);
+            data.WriteBit(pguid[2]);
+            data.WriteBit(pguid[7]);
+            data.WriteBit(pguid[4]);
+            data.WriteBit(pguid[1]);
+        }
 
         lfg::LfgLockMap lockMap = sLFGMgr->GetLockedDungeons(pguid);
 
@@ -554,14 +556,16 @@ data.WriteBit(pguid[1]);
             bytes << uint32(it->second.lockStatus);              // Lock status
         }
         if (hasPlayerInfo)
+        {
             bytes.WriteByteSeq(pguid[3]);
-bytes.WriteByteSeq(pguid[6]);
-bytes.WriteByteSeq(pguid[0]);
-bytes.WriteByteSeq(pguid[5]);
-bytes.WriteByteSeq(pguid[2]);
-bytes.WriteByteSeq(pguid[7]);
-bytes.WriteByteSeq(pguid[4]);
-bytes.WriteByteSeq(pguid[1]);
+            bytes.WriteByteSeq(pguid[6]);
+            bytes.WriteByteSeq(pguid[0]);
+            bytes.WriteByteSeq(pguid[5]);
+            bytes.WriteByteSeq(pguid[2]);
+            bytes.WriteByteSeq(pguid[7]);
+            bytes.WriteByteSeq(pguid[4]);
+            bytes.WriteByteSeq(pguid[1]);
+        }
 
         count++;
     }
@@ -702,26 +706,26 @@ void WorldSession::SendLfgRoleChosen(ObjectGuid guid, uint8 roles)
     ObjectGuid pGuid = guid;
     WorldPacket data(SMSG_LFG_ROLE_CHOSEN, 8 + 1 + 4);
     data.WriteBit(pGuid[6]);
-data.WriteBit(pGuid[2]);
-data.WriteBit(pGuid[1]);
-data.WriteBit(pGuid[7]);
-data.WriteBit(pGuid[0]);              // Guid Bits
-    data.WriteBit(roles > 0);                              // Ready
+    data.WriteBit(pGuid[2]);
+    data.WriteBit(pGuid[1]);
+    data.WriteBit(pGuid[7]);
+    data.WriteBit(pGuid[0]);              // Guid Bits
+    data.WriteBit(roles > 0);             // Ready
     data.WriteBit(pGuid[3]);
-data.WriteBit(pGuid[5]);
-data.WriteBit(pGuid[4]);                    // Guid Bits
+    data.WriteBit(pGuid[5]);
+    data.WriteBit(pGuid[4]);              // Guid Bits
 
     data.FlushBits();
 
     data.WriteByteSeq(pGuid[0]);
-data.WriteByteSeq(pGuid[3]);
-data.WriteByteSeq(pGuid[6]);                   // Guid Bytes
-    data << uint32(roles);                                 // Roles
+    data.WriteByteSeq(pGuid[3]);
+    data.WriteByteSeq(pGuid[6]);           // Guid Bytes
+    data << uint32(roles);                 // Roles
     data.WriteByteSeq(pGuid[5]);
-data.WriteByteSeq(pGuid[1]);
-data.WriteByteSeq(pGuid[4]);
-data.WriteByteSeq(pGuid[2]);
-data.WriteByteSeq(pGuid[7]);             // Guid Bytes
+    data.WriteByteSeq(pGuid[1]);
+    data.WriteByteSeq(pGuid[4]);
+    data.WriteByteSeq(pGuid[2]);
+    data.WriteByteSeq(pGuid[7]);           // Guid Bytes
     SendPacket(&data);
 }
 
@@ -749,26 +753,26 @@ void WorldSession::SendLfgRoleCheckUpdate(lfg::LfgRoleCheck const& roleCheck)
         ObjectGuid guid = roleCheck.leader;
         uint8 roles = roleCheck.roles.find(guid)->second;
         Player* player = ObjectAccessor::FindPlayer(guid);
-        data.WriteBit(roles > 0);                                // Ready
+        data.WriteBit(roles > 0);     // Ready
         data.WriteBit(guid[3]);
-data.WriteBit(guid[0]);
-data.WriteBit(guid[5]);
-data.WriteBit(guid[2]);
-data.WriteBit(guid[7]);
-data.WriteBit(guid[1]);
-data.WriteBit(guid[4]);
-data.WriteBit(guid[6]);        // Guid Bits
+        data.WriteBit(guid[0]);
+        data.WriteBit(guid[5]);
+        data.WriteBit(guid[2]);
+        data.WriteBit(guid[7]);
+        data.WriteBit(guid[1]);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guid[6]);        // Guid Bits
 
         groupData << uint8(player ? player->GetLevel() : 0);     // Level
         groupData.WriteByteSeq(guid[3]);
-groupData.WriteByteSeq(guid[6]);                    // Guid Bytes
+        groupData.WriteByteSeq(guid[6]);                    // Guid Bytes
         groupData << uint32(roles);                              // Roles
         groupData.WriteByteSeq(guid[2]);
-groupData.WriteByteSeq(guid[4]);
-groupData.WriteByteSeq(guid[0]);
-groupData.WriteByteSeq(guid[1]);
-groupData.WriteByteSeq(guid[5]);
-groupData.WriteByteSeq(guid[7]);        // Guid Bytes
+        groupData.WriteByteSeq(guid[4]);
+        groupData.WriteByteSeq(guid[0]);
+        groupData.WriteByteSeq(guid[1]);
+        groupData.WriteByteSeq(guid[5]);
+        groupData.WriteByteSeq(guid[7]);        // Guid Bytes
 
         for (lfg::LfgRolesMap::const_iterator it = roleCheck.roles.begin(); it != roleCheck.roles.end(); ++it)
         {
@@ -781,36 +785,36 @@ groupData.WriteByteSeq(guid[7]);        // Guid Bytes
 
             data.WriteBit(roles > 0);                            // Ready
             data.WriteBit(guid[3]);
-data.WriteBit(guid[0]);
-data.WriteBit(guid[5]);
-data.WriteBit(guid[2]);
-data.WriteBit(guid[7]);
-data.WriteBit(guid[1]);
-data.WriteBit(guid[4]);
-data.WriteBit(guid[6]);    // Guid Bits
+            data.WriteBit(guid[0]);
+            data.WriteBit(guid[5]);
+            data.WriteBit(guid[2]);
+            data.WriteBit(guid[7]);
+            data.WriteBit(guid[1]);
+            data.WriteBit(guid[4]);
+            data.WriteBit(guid[6]);    // Guid Bits
 
             groupData << uint8(player ? player->GetLevel() : 0); // Level
             groupData.WriteByteSeq(guid[3]);
-groupData.WriteByteSeq(guid[6]);                // Guid Bytes
+            groupData.WriteByteSeq(guid[6]);                // Guid Bytes
             groupData << uint32(roles);                          // Roles
             groupData.WriteByteSeq(guid[2]);
-groupData.WriteByteSeq(guid[4]);
-groupData.WriteByteSeq(guid[0]);
-groupData.WriteByteSeq(guid[1]);
-groupData.WriteByteSeq(guid[5]);
-groupData.WriteByteSeq(guid[7]);    // Guid Bytes
+            groupData.WriteByteSeq(guid[4]);
+            groupData.WriteByteSeq(guid[0]);
+            groupData.WriteByteSeq(guid[1]);
+            groupData.WriteByteSeq(guid[5]);
+            groupData.WriteByteSeq(guid[7]);    // Guid Bytes
         }
     }
 
     data.WriteBit(randomDungeonGuid[3]);
-data.WriteBit(randomDungeonGuid[5]);
+    data.WriteBit(randomDungeonGuid[5]);
     data.WriteBits(dungeons.size(), 22);                         // Number of dungeons
     data.WriteBit(randomDungeonGuid[0]);
-data.WriteBit(randomDungeonGuid[7]);
-data.WriteBit(randomDungeonGuid[6]);
-data.WriteBit(randomDungeonGuid[1]);
-data.WriteBit(randomDungeonGuid[4]);
-data.WriteBit(randomDungeonGuid[2]);
+    data.WriteBit(randomDungeonGuid[7]);
+    data.WriteBit(randomDungeonGuid[6]);
+    data.WriteBit(randomDungeonGuid[1]);
+    data.WriteBit(randomDungeonGuid[4]);
+    data.WriteBit(randomDungeonGuid[2]);
     data.WriteBit(roleCheck.state == lfg::LFG_ROLECHECK_INITIALITING);
 
     data.FlushBits();
@@ -818,12 +822,12 @@ data.WriteBit(randomDungeonGuid[2]);
     data.WriteByteSeq(randomDungeonGuid[0]);
     data.append(groupData);
     data.WriteByteSeq(randomDungeonGuid[1]);
-data.WriteByteSeq(randomDungeonGuid[7]);
-data.WriteByteSeq(randomDungeonGuid[6]);
-data.WriteByteSeq(randomDungeonGuid[4]);
-data.WriteByteSeq(randomDungeonGuid[3]);
-data.WriteByteSeq(randomDungeonGuid[2]);
-data.WriteByteSeq(randomDungeonGuid[5]);
+    data.WriteByteSeq(randomDungeonGuid[7]);
+    data.WriteByteSeq(randomDungeonGuid[6]);
+    data.WriteByteSeq(randomDungeonGuid[4]);
+    data.WriteByteSeq(randomDungeonGuid[3]);
+    data.WriteByteSeq(randomDungeonGuid[2]);
+    data.WriteByteSeq(randomDungeonGuid[5]);
 
     if (!dungeons.empty())
         for (lfg::LfgDungeonSet::iterator it = dungeons.begin(); it != dungeons.end(); ++it)
@@ -1078,24 +1082,24 @@ void WorldSession::SendLfgBootProposalUpdate(lfg::LfgPlayerBoot const& boot)
         data.WriteBits(boot.reason.size(), 8);
     data.WriteBit(boot.inProgress);                                 // Vote in progress
     data.WriteBit(pguid[1]);
-data.WriteBit(pguid[7]);
-data.WriteBit(pguid[5]);
-data.WriteBit(pguid[2]);
-data.WriteBit(pguid[0]);
-data.WriteBit(pguid[4]);
+    data.WriteBit(pguid[7]);
+    data.WriteBit(pguid[5]);
+    data.WriteBit(pguid[2]);
+    data.WriteBit(pguid[0]);
+    data.WriteBit(pguid[4]);
 
     data.FlushBits();
     
     data.WriteByteSeq(pguid[2]);
-data.WriteByteSeq(pguid[4]);
-data.WriteByteSeq(pguid[3]);
-data.WriteByteSeq(pguid[6]);
+    data.WriteByteSeq(pguid[4]);
+    data.WriteByteSeq(pguid[3]);
+    data.WriteByteSeq(pguid[6]);
     data << uint32(sLFGMgr->GetBootVotesNeeded(gguid));             // Needed Votes
     data << uint32(secsleft);                                       // Time Left
     if (!boot.reason.empty())
         data.WriteString(boot.reason);
     data.WriteByteSeq(pguid[5]);
-data.WriteByteSeq(pguid[0]);
+    data.WriteByteSeq(pguid[0]);
     data << uint32(agreeNum);                                       // Agree Count
     data.WriteByteSeq(pguid[7]);
     data << uint32(votesNum);                                       // Total Votes

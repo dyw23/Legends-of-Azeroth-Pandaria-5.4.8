@@ -1372,26 +1372,30 @@ void WorldSession::SendRenameResult(uint8 result, ObjectGuid guid, std::string n
         data.WriteBits(nameSize, 6);
     data.WriteBit(hasGuid);
     if (hasGuid)
+    {
         data.WriteBit(guid[6]);
-data.WriteBit(guid[3]);
-data.WriteBit(guid[4]);
-data.WriteBit(guid[2]);
-data.WriteBit(guid[0]);
-data.WriteBit(guid[1]);
-data.WriteBit(guid[7]);
-data.WriteBit(guid[5]);
+        data.WriteBit(guid[3]);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guid[2]);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guid[1]);
+        data.WriteBit(guid[7]);
+        data.WriteBit(guid[5]);
+    }
 
     data.FlushBits();
 
     if (hasGuid)
+    {
         data.WriteByteSeq(guid[5]);
-data.WriteByteSeq(guid[0]);
-data.WriteByteSeq(guid[4]);
-data.WriteByteSeq(guid[2]);
-data.WriteByteSeq(guid[1]);
-data.WriteByteSeq(guid[3]);
-data.WriteByteSeq(guid[6]);
-data.WriteByteSeq(guid[7]);
+        data.WriteByteSeq(guid[0]);
+        data.WriteByteSeq(guid[4]);
+        data.WriteByteSeq(guid[2]);
+        data.WriteByteSeq(guid[1]);
+        data.WriteByteSeq(guid[3]);
+        data.WriteByteSeq(guid[6]);
+        data.WriteByteSeq(guid[7]);
+    }
     if (nameSize)
         data.WriteString(name);
 

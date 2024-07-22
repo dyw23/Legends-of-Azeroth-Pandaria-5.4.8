@@ -1122,26 +1122,28 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     if (hasDestLocation)
+    {
         transportDstGUID[2] = recvPacket.ReadBit();
-transportDstGUID[0] = recvPacket.ReadBit();
-transportDstGUID[1] = recvPacket.ReadBit();
-transportDstGUID[4] = recvPacket.ReadBit();
-transportDstGUID[5] = recvPacket.ReadBit();
-transportDstGUID[6] = recvPacket.ReadBit();
-transportDstGUID[3] = recvPacket.ReadBit();
-transportDstGUID[7] = recvPacket.ReadBit();
+        transportDstGUID[0] = recvPacket.ReadBit();
+        transportDstGUID[1] = recvPacket.ReadBit();
+        transportDstGUID[4] = recvPacket.ReadBit();
+        transportDstGUID[5] = recvPacket.ReadBit();
+        transportDstGUID[6] = recvPacket.ReadBit();
+        transportDstGUID[3] = recvPacket.ReadBit();
+        transportDstGUID[7] = recvPacket.ReadBit();
+    }
 
     if (hasCastFlags)
         castFlags = recvPacket.ReadBits(5);                // Cast Flags
 
     itemGUID[2] = recvPacket.ReadBit();
-itemGUID[4] = recvPacket.ReadBit();
-itemGUID[7] = recvPacket.ReadBit();
-itemGUID[0] = recvPacket.ReadBit();
-itemGUID[6] = recvPacket.ReadBit();
-itemGUID[1] = recvPacket.ReadBit();
-itemGUID[5] = recvPacket.ReadBit();
-itemGUID[3] = recvPacket.ReadBit();
+    itemGUID[4] = recvPacket.ReadBit();
+    itemGUID[7] = recvPacket.ReadBit();
+    itemGUID[0] = recvPacket.ReadBit();
+    itemGUID[6] = recvPacket.ReadBit();
+    itemGUID[1] = recvPacket.ReadBit();
+    itemGUID[5] = recvPacket.ReadBit();
+    itemGUID[3] = recvPacket.ReadBit();
 
     if (hasTargetMask)
         targetFlags = recvPacket.ReadBits(20);             // Target Flags
