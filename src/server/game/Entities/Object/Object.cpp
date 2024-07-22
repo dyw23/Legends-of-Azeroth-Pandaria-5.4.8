@@ -17,7 +17,6 @@
 
 #include "Object.h"
 #include "Common.h"
-#include "CinematicMgr.h"
 #include "SharedDefines.h"
 #include "WorldPacket.h"
 #include "Opcodes.h"
@@ -2108,7 +2107,7 @@ float WorldObject::GetGridActivationRange() const
 {
     if (isActiveObject())
     {
-        if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->GetCinematicMgr()->IsOnCinematic())
+        if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->IsInCinematic())
             return std::max(DEFAULT_VISIBILITY_INSTANCE, GetMap()->GetVisibilityRange());
 
         return GetMap()->GetVisibilityRange();
@@ -2138,14 +2137,12 @@ float WorldObject::GetSightRange(const WorldObject* target) const
         {
             if (target && target->HasCustomVisibility())
                 return target->GetCustomVisibilityDistance();
-            /*if (target && target->isActiveObject() && !target->ToPlayer())
-                return MAX_VISIBILITY_DISTANCE;*/
+            else if (ToPlayer()->IsInCinematic())
+                return DEFAULT_VISIBILITY_INSTANCE;
             else if (GetMapId() == 967 && GetAreaId() == 5893) // Dragon Soul - Maelstorm
                 return 500.0f;
             else if (GetMapId() == 754) // Throne of the Four Winds
                 return MAX_VISIBILITY_DISTANCE;
-            else if (ToPlayer()->GetCinematicMgr()->IsOnCinematic())
-                return DEFAULT_VISIBILITY_INSTANCE;            
             else
                 return GetMap()->GetVisibilityRange();
         }
@@ -2153,6 +2150,11 @@ float WorldObject::GetSightRange(const WorldObject* target) const
             return ToCreature()->m_SightDistance;
         else
             return SIGHT_RANGE_UNIT;
+    }
+
+    if (ToDynObject() && isActiveObject())
+    {
+        return GetMap()->GetVisibilityRange();
     }
 
     return 0.0f;

@@ -152,7 +152,7 @@ void CreateDir(std::filesystem::path const& path)
 bool FileExists(TCHAR const* fileName)
 {
     int fp = _open(fileName, OPEN_FLAGS);
-    if(fp != -1)
+    if (fp != -1)
     {
         _close(fp);
         return true;
@@ -168,7 +168,7 @@ void Usage(char const* prg)
         "%s -[var] [value]\n"\
         "-i set input path\n"\
         "-o set output path\n"\
-        "-e extract only MAP(1)/DBC(2) - standard: both(3)\n"\
+        "-e extract only MAP(1)/DBC(2)/Camera(4) - standard: all(7)\n"\
         "-f height stored as int (less map size but lost some accuracy) 1 by default\n"\
         "-b target build (default %u)\n"\
         "Example: %s -f 0 -i \"c:\\games\\game\"", prg, CONF_TargetBuild, prg);
@@ -212,7 +212,7 @@ void HandleArgs(int argc, char* arg[])
                 if (c + 1 < argc)                            // all ok
                 {
                     CONF_extract = atoi(arg[c++ + 1]);
-                    if (!(CONF_extract > 0 && CONF_extract < 4))
+                    if (!(CONF_extract > 0 && CONF_extract < 8))
                         Usage(arg[0]);
                 }
                 else
@@ -1166,9 +1166,8 @@ void ExtractCameraFiles(int locale, bool basicLocale)
     for (std::string thisFile : camerafiles)
     {
         std::string filename = path;
-        std::string camerasFolder = "Cameras\\";
         HANDLE dbcFile = NULL;
-        filename += (thisFile.c_str() + camerasFolder.length());
+        filename += (thisFile.c_str() + strlen("Cameras\\"));
 
         if (FileExists(filename.c_str()))
             continue;

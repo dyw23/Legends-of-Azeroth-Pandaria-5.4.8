@@ -29,7 +29,6 @@
 #include "ChannelMgr.h"
 #include "CharacterDatabaseCleaner.h"
 #include "Chat.h"
-#include "CinematicMgr.h"
 #include "Common.h"
 #include "ConditionMgr.h"
 #include "CreatureAI.h"
@@ -394,6 +393,10 @@ Player::Player(WorldSession* session) : Unit(true), phaseMgr(this), hasForcedMov
     _activeCheats = CHEAT_NONE;
     _maxPersonalArenaRate = 0;
 
+    cinematicSequence = nullptr;
+    inCinematic = false;
+    cinematicClientStartTime = 0;
+
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
     memset(_CUFProfiles, 0, MAX_CUF_PROFILES * sizeof(CUFProfile*));
 
@@ -405,8 +408,6 @@ Player::Player(WorldSession* session) : Unit(true), phaseMgr(this), hasForcedMov
     m_achievementMgr.reset(new PlayerAchievementMgr(this));
     m_reputationMgr = new ReputationMgr(this);
     m_battlePetMgr = new BattlePetMgr(this);
-
-    _cinematicMgr = new CinematicMgr(this);
 
     transcendence_spirit = nullptr;
 
@@ -443,7 +444,6 @@ Player::~Player()
     delete m_runes;
     delete m_reputationMgr;
     delete m_battlePetMgr;
-    delete _cinematicMgr;
 
     for (uint8 i = 0; i < VOID_STORAGE_MAX_SLOT; ++i)
         delete _voidStorageItems[i];
@@ -1150,6 +1150,27 @@ void Player::Update(uint32 p_time)
 
     GetSpellHistory()->UpdateCharges();
 
+    if (inCinematic && cinematicSequence)
+    {
+        bool l_StartedAtClient = getMSTime() > cinematicClientStartTime;
+        uint32 l_Time = getMSTime() - cinematicClientStartTime;
+
+        if (l_StartedAtClient)
+        {
+            if (l_Time > cinematicSequence->Duration)
+                StopCinematic();
+            else if (l_StartedAtClient)
+            {
+                Position l_NewPosition;
+                cinematicSequence->GetPositionAtTime(l_Time, &l_NewPosition.m_positionX, &l_NewPosition.m_positionY, &l_NewPosition.m_positionZ);
+
+                Unit::UpdatePosition(l_NewPosition.m_positionX, l_NewPosition.m_positionY, l_NewPosition.m_positionZ, 0, true);
+                UpdateObjectVisibility();
+                SetFall(false);
+            }
+        }
+    }
+
     // undelivered mail
     if (m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
     {
@@ -1158,14 +1179,6 @@ void Player::Update(uint32 p_time)
 
         // It will be recalculate at mailbox open (for unReadMails important non-0 until mailbox open, it also will be recalculated)
         m_nextMailDelivereTime = 0;
-    }
-
-    // Update cinematic location, if 500ms have passed and we're doing a cinematic now.
-    _cinematicMgr->m_cinematicDiff += p_time;
-    if (_cinematicMgr->m_cinematicCamera && _cinematicMgr->m_activeCinematicCameraId && GetMSTimeDiffToNow(_cinematicMgr->m_lastCinematicCheck) > CINEMATIC_UPDATEDIFF)
-    {
-        _cinematicMgr->m_lastCinematicCheck = GameTime::GetGameTimeMS();
-        _cinematicMgr->UpdateCinematicLocation(p_time);
     }
 
     // If this is set during update SetSpellModTakingSpell call is missing somewhere in the code
@@ -6774,11 +6787,50 @@ void Player::SendDirectMessage(WorldPacket const* data) const
     m_session->SendPacket(data);
 }
 
+void Player::StopCinematic()
+{
+    if (cinematicSequence && IsInWorld())
+    {
+        cinematicSequence = NULL;
+        inCinematic = false;
+        cinematicClientStartTime = 0;
+
+        Unit::UpdatePosition(cinematicStartX, cinematicStartY, cinematicStartZ, cinematicStartO, true);
+
+        getHostileRefManager().setOnlineOfflineState(true);
+
+        SetFall(true);
+
+        RemoveAura(60190);
+    }
+}
+
 void Player::SendCinematicStart(uint32 CinematicSequenceId)
 {
     WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
     data << uint32(CinematicSequenceId);
     SendDirectMessage(&data);
+
+    StopCinematic();
+
+    cinematicSequence = const_cast<CinematicSequence*>(sCinematicSequenceMgr->GetSequence(CinematicSequenceId));
+
+    if (cinematicSequence)
+    {
+        cinematicClientStartTime = (getMSTime() - GetSession()->GetLatency()) + 1500;
+        inCinematic = true;
+
+        cinematicStartX = m_positionX;
+        cinematicStartY = m_positionY;
+        cinematicStartZ = m_positionZ;
+        cinematicStartO = GetOrientation();
+
+        getHostileRefManager().setOnlineOfflineState(false);
+
+        SetFall(false);
+
+        AddAura(60190, this);
+    }
 }
 
 void Player::SendMovieStart(uint32 MovieId)

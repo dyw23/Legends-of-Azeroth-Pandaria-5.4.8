@@ -823,19 +823,20 @@ struct ChrSpecializationEntry
 
 struct CinematicCameraEntry
 {
-    uint32 ID;                                              // 0
-    char const* Model;                                      // 1 Model filename (translate .mdx to .m2)
-    uint32 SoundID;                                         // 2 Sound ID (voiceover for cinematic)
-    DBCPosition3D Origin;                                   // 3-5 Position in map used for basis for M2 co-ordinates
-    float OriginFacing;                                     // 6 Orientation in map used for basis for M2 co-ordinates
+    uint32      id;                                         // 0 index
+    DbcStr      filename;                                   // 1
+    uint32      soundid;                                    // 2 in SoundEntries.dbc or 0
+    float       EndPosX;                                    // 3
+    float       EndPosY;                                    // 4
+    float       EndPosZ;                                    // 5
+    float       GlobalRotation;                             // 6
 };
 
 struct CinematicSequencesEntry
 {
     uint32      Id;                                         // 0 index
     //uint32      unk1;                                     // 1 always 0
-    uint32      Camera[8];                                  // 2 id in CinematicCamera.dbc
-                                                            // 3-9 always 0
+    uint32      cinematicCamera;                            // 2 id in CinematicCamera.dbc
 };
 
 struct CreatureDisplayInfoEntry

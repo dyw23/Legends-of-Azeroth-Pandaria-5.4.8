@@ -27,7 +27,6 @@
 #include "CellImpl.h"
 #include "CharacterPackets.h"
 #include "Chat.h"
-#include "CinematicMgr.h"
 #include "Common.h"
 #include "CreatureAI.h"
 #include "DatabaseEnv.h"
@@ -1418,14 +1417,12 @@ void WorldSession::HandleCompleteCinematic(WorldPacket& /*recvData*/)
 {
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_COMPLETE_CINEMATIC");
     // If player has sight bound to visual waypoint NPC we should remove it
-    GetPlayer()->GetCinematicMgr()->EndCinematic();    
+    GetPlayer()->StopCinematic();
 }
 
 void WorldSession::HandleNextCinematicCamera(WorldPacket& /*recvData*/)
 {
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_NEXT_CINEMATIC_CAMERA");
-    // Sent by client when cinematic actually begun. So we begin the server side process
-    GetPlayer()->GetCinematicMgr()->BeginCinematic();    
 }
 
 void WorldSession::HandleCompleteMovie(WorldPacket& /*recvData*/)

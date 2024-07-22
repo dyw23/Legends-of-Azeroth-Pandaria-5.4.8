@@ -57,7 +57,6 @@
 #include "OutdoorPvPMgr.h"
 #include "TemporarySummon.h"
 #include "WaypointMovementGenerator.h"
-#include "M2Stores.h"
 #include "MMapFactory.h"
 #include "GameEventMgr.h"
 #include "GameTime.h"
@@ -99,6 +98,7 @@
 #include "Realm.h"
 #include "VMapFactory.h"
 #include "VMapManager2.h"
+#include "CinematicPathMgr.h"
 #include <boost/asio/ip/address.hpp>
 #ifdef ELUNA
 #include "LuaEngine.h"
@@ -1752,9 +1752,6 @@ void World::SetInitialWorldSettings()
     LoadDBCStores(m_dataPath, m_availableDbcLocaleMask);
     LoadDB2Stores(m_dataPath, m_availableDbcLocaleMask);
 
-    // Load cinematic cameras
-    LoadM2Cameras(m_dataPath);
-
     // Load IP Location Database
     sIPLocation->Load();
 
@@ -2259,6 +2256,9 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading Broken Quests data...");
     sObjectMgr->LoadBrokenQuests();
+
+    TC_LOG_INFO("server.loading", "Loading Cinematic path ...");
+    sCinematicSequenceMgr->Load();
 
     TC_LOG_INFO("server.loading", "Loading object visibility state data...");
     sObjectMgr->LoadObjectVisibilityState();
