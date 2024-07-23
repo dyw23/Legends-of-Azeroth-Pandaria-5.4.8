@@ -1814,25 +1814,22 @@ void WorldSession::HandleRealmSplitOpcode(WorldPacket& recvData)
     //TC_LOG_DEBUG("response sent %u", unk);
 }
 
-void WorldSession::HandleFarSightOpcode(WorldPacket& recvData)
+void WorldSession::HandleFarSightOpcode(WorldPackets::Misc::FarSight& packet)
 {
     TC_LOG_DEBUG("network", "WORLD: CMSG_FAR_SIGHT");
 
-    bool remove;
-    recvData >> remove;
-
-    if (remove)
-    {
-        TC_LOG_DEBUG("network", "Player %s set vision to self", _player->GetGUID().ToString().c_str());
-        _player->SetSeer(_player);
-    }
-    else
+    if (packet.Enable)
     {
         TC_LOG_DEBUG("network", "Added FarSight %s to player %s", _player->GetGuidValue(PLAYER_FIELD_FARSIGHT_OBJECT).ToString().c_str(), _player->GetGUID().ToString().c_str());
         if (WorldObject* target = _player->GetViewpoint())
             _player->SetSeer(target);
         else
             TC_LOG_ERROR("network", "Player %s %s requests non-existing seer %s", _player->GetName().c_str(), _player->GetGUID().ToString().c_str(), _player->GetGuidValue(PLAYER_FIELD_FARSIGHT_OBJECT).ToString().c_str());
+    }
+    else
+    {
+        TC_LOG_DEBUG("network", "Player %s set vision to self", _player->GetGUID().ToString().c_str());
+        _player->SetSeer(_player);
     }
 
     GetPlayer()->UpdateVisibilityForPlayer();

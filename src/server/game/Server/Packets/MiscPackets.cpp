@@ -35,3 +35,8 @@ WorldPacket const* WorldPackets::Misc::StopMirrorTimer::Write()
 
     return &_worldPacket;
 }
+
+void WorldPackets::Misc::FarSight::Read()
+{
+    Enable = _worldPacket.ReadBit();
+}
