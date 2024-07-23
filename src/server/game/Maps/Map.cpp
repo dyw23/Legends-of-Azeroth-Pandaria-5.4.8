@@ -439,11 +439,11 @@ void Map::EnsureGridCreated_i(const GridCoord &p)
 }
 
 //Load NGrid and make it active
-void Map::EnsureGridLoadedForActiveObject(const Cell &cell, WorldObject* object)
+void Map::EnsureGridLoadedForActiveObject(Cell const& cell, WorldObject const* object)
 {
     EnsureGridLoaded(cell);
     NGridType *grid = getNGrid(cell.GridX(), cell.GridY());
-    ASSERT(grid != NULL);
+    ASSERT(grid != nullptr);
 
     // refresh grid state & timer
     if (grid->GetGridState() != GRID_STATE_ACTIVE)
@@ -480,6 +480,11 @@ bool Map::EnsureGridLoaded(const Cell &cell)
 void Map::LoadGrid(float x, float y)
 {
     EnsureGridLoaded(Cell(x, y));
+}
+
+void Map::LoadGridForActiveObject(float x, float y, WorldObject const* object)
+{
+    EnsureGridLoadedForActiveObject(Cell(x, y), object);
 }
 
 bool Map::AddPlayerToMap(Player* player)
@@ -713,6 +718,15 @@ void Map::Update(const uint32 t_diff)
         player->Update(t_diff);
 
         VisitNearbyCellsOf(player, grid_object_update, world_object_update);
+
+        // If player is using far sight, visit that object too
+        if (WorldObject* viewPoint = player->GetViewpoint())
+        {
+            if (Creature* viewCreature = viewPoint->ToCreature())
+                VisitNearbyCellsOf(viewCreature, grid_object_update, world_object_update);
+            else if (DynamicObject* viewObject = viewPoint->ToDynObject())
+                VisitNearbyCellsOf(viewObject, grid_object_update, world_object_update);
+        }
     }
 
     // non-player active objects, increasing iterator in the loop in case of object removal

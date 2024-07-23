@@ -1425,7 +1425,7 @@ void WorldSession::HandleNextCinematicCamera(WorldPacket& /*recvData*/)
 {
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_NEXT_CINEMATIC_CAMERA");
     // Sent by client when cinematic actually begun. So we begin the server side process
-    GetPlayer()->GetCinematicMgr()->BeginCinematic();    
+    GetPlayer()->GetCinematicMgr()->NextCinematicCamera();
 }
 
 void WorldSession::HandleCompleteMovie(WorldPacket& /*recvData*/)
@@ -1818,21 +1818,21 @@ void WorldSession::HandleFarSightOpcode(WorldPacket& recvData)
 {
     TC_LOG_DEBUG("network", "WORLD: CMSG_FAR_SIGHT");
 
-    bool apply;
-    recvData >> apply;
+    bool remove;
+    recvData >> remove;
 
-    if (apply)
+    if (remove)
     {
-        TC_LOG_DEBUG("network", "Added FarSight " UI64FMTD " to player %u", _player->GetUInt64Value(PLAYER_FIELD_FARSIGHT_OBJECT), _player->GetGUID().GetCounter());
-        if (WorldObject* target = _player->GetViewpoint())
-            _player->SetSeer(target);
-        else
-            TC_LOG_ERROR("network", "Player %s (GUID: %u) requests non-existing seer " UI64FMTD, _player->GetName().c_str(), _player->GetGUID().GetCounter(), _player->GetUInt64Value(PLAYER_FIELD_FARSIGHT_OBJECT));
+        TC_LOG_DEBUG("network", "Player %s set vision to self", _player->GetGUID().ToString().c_str());
+        _player->SetSeer(_player);
     }
     else
     {
-        TC_LOG_DEBUG("network", "Player %u set vision to self", _player->GetGUID().GetCounter());
-        _player->SetSeer(_player);
+        TC_LOG_DEBUG("network", "Added FarSight %s to player %s", _player->GetGuidValue(PLAYER_FIELD_FARSIGHT_OBJECT).ToString().c_str(), _player->GetGUID().ToString().c_str());
+        if (WorldObject* target = _player->GetViewpoint())
+            _player->SetSeer(target);
+        else
+            TC_LOG_ERROR("network", "Player %s %s requests non-existing seer %s", _player->GetName().c_str(), _player->GetGUID().ToString().c_str(), _player->GetGuidValue(PLAYER_FIELD_FARSIGHT_OBJECT).ToString().c_str());
     }
 
     GetPlayer()->UpdateVisibilityForPlayer();
