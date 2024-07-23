@@ -186,7 +186,7 @@ void LoadM2Cameras(std::string const& dataPath)
     for (CinematicCameraEntry const* dbcentry : sCinematicCameraStore)
     {
         std::string filenameWork = dataPath;
-        filenameWork.append(dbcentry->Model[0]);
+        filenameWork.append(dbcentry->Model);
 
         // Replace slashes (always to forward slash, because boost!)
         std::replace(filenameWork.begin(), filenameWork.end(), '\\', '/');
