@@ -295,8 +295,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
 
         void TriggeringLinkedGameObject(uint32 trapEntry, Unit* target);
 
-        bool IsNeverVisible() const override;
-
+        bool IsNeverVisibleFor(WorldObject const* seer, bool allowServersideObjects = false) const override;
         bool IsAlwaysVisibleFor(WorldObject const* seer) const;
         bool IsInvisibleDueToDespawn() const;
 

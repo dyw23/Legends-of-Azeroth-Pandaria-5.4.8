@@ -2825,7 +2825,7 @@ public:
     {
         return u == this || m_clientGUIDs.find(u->GetGUID()) != m_clientGUIDs.end();
     }
-    bool IsNeverVisible() const;
+    bool IsNeverVisibleFor(WorldObject const* seer, bool allowServersideObjects = false) const override;
 
     bool IsVisibleGloballyFor(Player const* player) const;
 
