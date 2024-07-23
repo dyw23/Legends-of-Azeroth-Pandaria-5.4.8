@@ -26769,7 +26769,7 @@ void Player::ResurrectUsingRequestData()
     SpawnCorpseBones();
 }
 
-void Player::SetClientControl(Unit* target, uint8 allowMove)
+void Player::SetClientControl(Unit* target, bool allowMove)
 {
     // a player can never client control nothing
     ASSERT(target);
@@ -26797,20 +26797,12 @@ void Player::SetClientControl(Unit* target, uint8 allowMove)
     data.WriteByteSeq(guid[0]);
     GetSession()->SendPacket(&data);
 
-    WorldObject* viewpoint = GetViewpoint();
-    if (!viewpoint)
-        viewpoint = this;
-    if (target != viewpoint)
-    {
-        if (viewpoint != this)
-            SetViewpoint(viewpoint, false);
-        if (target != this)
-            SetViewpoint(target, true);
-    }
+    if (this != target)
+        SetViewpoint(target, allowMove);
 
-    if (target == this && allowMove == 1)
+    if (allowMove)
         SetMover(this);
-    if (!allowMove)
+    else
         m_clientMoverGuid = 0;
 }
 
