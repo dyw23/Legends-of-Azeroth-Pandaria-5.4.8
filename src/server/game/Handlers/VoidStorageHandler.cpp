@@ -589,21 +589,21 @@ void WorldSession::HandleVoidSwapItem(WorldPacket& recvData)
     data.FlushBits();
 
     data.WriteByteSeq(itemIdDest[3]);
-data.WriteByteSeq(itemIdDest[7]);
-data.WriteByteSeq(itemIdDest[2]);
-data.WriteByteSeq(itemIdDest[5]);
-data.WriteByteSeq(itemIdDest[0]);
-data.WriteByteSeq(itemIdDest[1]);
-data.WriteByteSeq(itemIdDest[4]);
-data.WriteByteSeq(itemIdDest[6]);
+    data.WriteByteSeq(itemIdDest[7]);
+    data.WriteByteSeq(itemIdDest[2]);
+    data.WriteByteSeq(itemIdDest[5]);
+    data.WriteByteSeq(itemIdDest[0]);
+    data.WriteByteSeq(itemIdDest[1]);
+    data.WriteByteSeq(itemIdDest[4]);
+    data.WriteByteSeq(itemIdDest[6]);
     data.WriteByteSeq(itemId[0]);
-data.WriteByteSeq(itemId[2]);
-data.WriteByteSeq(itemId[7]);
-data.WriteByteSeq(itemId[5]);
-data.WriteByteSeq(itemId[6]);
-data.WriteByteSeq(itemId[4]);
-data.WriteByteSeq(itemId[3]);
-data.WriteByteSeq(itemId[1]);
+    data.WriteByteSeq(itemId[2]);
+    data.WriteByteSeq(itemId[7]);
+    data.WriteByteSeq(itemId[5]);
+    data.WriteByteSeq(itemId[6]);
+    data.WriteByteSeq(itemId[4]);
+    data.WriteByteSeq(itemId[3]);
+    data.WriteByteSeq(itemId[1]);
 
     if (usedDestSlot)
         data << uint32(oldSlot);

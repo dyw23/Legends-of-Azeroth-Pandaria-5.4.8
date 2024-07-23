@@ -589,11 +589,11 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
 
     ObjectGuid targetGuid;
     targetGuid[0] = recvData.ReadBit();
-targetGuid[2] = recvData.ReadBit();
-targetGuid[4] = recvData.ReadBit();
-targetGuid[1] = recvData.ReadBit();
-targetGuid[7] = recvData.ReadBit();
-targetGuid[6] = recvData.ReadBit();
+    targetGuid[2] = recvData.ReadBit();
+    targetGuid[4] = recvData.ReadBit();
+    targetGuid[1] = recvData.ReadBit();
+    targetGuid[7] = recvData.ReadBit();
+    targetGuid[6] = recvData.ReadBit();
     uint32 size = recvData.ReadBits(23);
 
     std::vector<ObjectGuid> lootViews;
@@ -603,16 +603,16 @@ targetGuid[6] = recvData.ReadBit();
         lootViews.emplace_back();
         auto& g = lootViews.back();
         g[6] = recvData.ReadBit();
-g[1] = recvData.ReadBit();
-g[7] = recvData.ReadBit();
-g[0] = recvData.ReadBit();
-g[3] = recvData.ReadBit();
-g[4] = recvData.ReadBit();
-g[5] = recvData.ReadBit();
-g[2] = recvData.ReadBit();
+        g[1] = recvData.ReadBit();
+        g[7] = recvData.ReadBit();
+        g[0] = recvData.ReadBit();
+        g[3] = recvData.ReadBit();
+        g[4] = recvData.ReadBit();
+        g[5] = recvData.ReadBit();
+        g[2] = recvData.ReadBit();
     }
     targetGuid[3] = recvData.ReadBit();
-targetGuid[5] = recvData.ReadBit();
+    targetGuid[5] = recvData.ReadBit();
     for (auto&& g : lootViews)
     {
         uint8 slot;

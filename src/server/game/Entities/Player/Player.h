@@ -2298,6 +2298,7 @@ public:
     void UpdateMaxHealth();
     void UpdateMaxPower(Powers power);
     void UpdateAttackPowerAndDamage(bool ranged = false);
+    void UpdateDamagePhysical(WeaponAttackType attType);
     void ApplySpellPowerBonus(int32 amount, bool apply);
     void UpdateSpellDamageAndHealingBonus();
     void ApplyRatingMod(CombatRating cr, int32 value, bool apply);
@@ -2308,7 +2309,7 @@ public:
     void UpdatePvpPower();
     bool CanUseMastery() const;
 
-    void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& min_damage, float& max_damage, uint8 damageIndex) const override;
+    void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& min_damage, float& max_damage);
 
     inline void RecalculateRating(CombatRating cr)
     {
@@ -2773,7 +2774,7 @@ public:
 
     bool IsKnowHowFlyIn(uint32 mapid, uint32 zone) const;
 
-    void SetClientControl(Unit* target, uint8 allowMove);
+    void SetClientControl(Unit* target, bool allowMove);
 
     void SetMover(Unit* target);
 
@@ -2824,7 +2825,7 @@ public:
     {
         return u == this || m_clientGUIDs.find(u->GetGUID()) != m_clientGUIDs.end();
     }
-    bool IsNeverVisible() const;
+    bool IsNeverVisibleFor(WorldObject const* seer, bool allowServersideObjects = false) const override;
 
     bool IsVisibleGloballyFor(Player const* player) const;
 

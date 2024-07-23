@@ -263,7 +263,7 @@ void LoadDB2Stores(std::string const& dataPath, uint32& availableDb2Locales)
         exit(1);
     }
 
-    TC_LOG_INFO("misc", ">> Initialized %d DB2 data stores.", DB2FilesCount);
+    TC_LOG_INFO("server.loading", ">> Initialized %d DB2 data stores.", DB2FilesCount);
 }
 
 DB2StorageBase const* GetDB2Storage(uint32 type)

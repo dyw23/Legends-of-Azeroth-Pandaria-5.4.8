@@ -19,6 +19,7 @@
 #include "Language.h"
 #include "DatabaseEnv.h"
 #include "WorldPacket.h"
+#include "QueryPackets.h"
 #include "WorldSession.h"
 #include "Opcodes.h"
 #include "Log.h"
@@ -376,91 +377,53 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket& recvData)
 }
 
 /// Only _static_ data is sent in this packet !!!
-void WorldSession::HandleGameObjectQueryOpcode(WorldPacket& recvData)
+void WorldSession::HandleGameObjectQueryOpcode(WorldPackets::Query::QueryGameObject& packet)
 {
-    uint32 entry;
-    ObjectGuid guid;
+    WorldPackets::Query::QueryGameObjectResponse response;
 
-    recvData >> entry;
+    response.GameObjectID = packet.GameObjectID;
 
-    guid[5] = recvData.ReadBit();
-    guid[3] = recvData.ReadBit();
-    guid[6] = recvData.ReadBit();
-    guid[2] = recvData.ReadBit();
-    guid[7] = recvData.ReadBit();
-    guid[1] = recvData.ReadBit();
-    guid[0] = recvData.ReadBit();
-    guid[4] = recvData.ReadBit();
-
-    recvData.ReadByteSeq(guid[1]);
-    recvData.ReadByteSeq(guid[5]);
-    recvData.ReadByteSeq(guid[3]);
-    recvData.ReadByteSeq(guid[4]);
-    recvData.ReadByteSeq(guid[6]);
-    recvData.ReadByteSeq(guid[2]);
-    recvData.ReadByteSeq(guid[7]);
-    recvData.ReadByteSeq(guid[0]);
-
-    const GameObjectTemplate* info = sObjectMgr->GetGameObjectTemplate(entry);
-
-    WorldPacket data (SMSG_GAMEOBJECT_QUERY_RESPONSE, 150);
-    data.WriteBit(info != NULL);
-    data << uint32(entry);
-
-    size_t pos = data.wpos();
-    data << uint32(0);
-
-    if (info)
+    if (GameObjectTemplate const* gameObjectInfo = sObjectMgr->GetGameObjectTemplate(packet.GameObjectID))
     {
-        std::string Name;
-        std::string IconName;
-        std::string CastBarCaption;
+        TC_LOG_DEBUG("network", "WORLD: CMSG_GAMEOBJECT_QUERY '%s' - Entry: %u. ", gameObjectInfo->name.c_str(), gameObjectInfo->entry);
 
-        Name = info->name;
-        IconName = info->IconName;
-        CastBarCaption = info->castBarCaption;
+        response.Allow = true;
+        WorldPackets::Query::GameObjectStats& stats = response.Stats;
 
-        int loc_idx = GetSessionDbLocaleIndex();
-        if (loc_idx >= 0)
-        {
-            if (GameObjectLocale const* gl = sObjectMgr->GetGameObjectLocale(entry))
+        stats.Type = gameObjectInfo->type;
+        stats.DisplayID = gameObjectInfo->displayId;
+
+        stats.Name[0] = gameObjectInfo->name;
+        stats.IconName = gameObjectInfo->IconName;
+        stats.CastBarCaption = gameObjectInfo->castBarCaption;
+        stats.UnkString = gameObjectInfo->unk1;
+
+        LocaleConstant localeConstant = GetSessionDbLocaleIndex();
+        if (localeConstant >= LOCALE_enUS)
+            if (GameObjectLocale const* gameObjectLocale = sObjectMgr->GetGameObjectLocale(packet.GameObjectID))
             {
-                ObjectMgr::GetLocaleStringOld(gl->Name, loc_idx, Name);
-                ObjectMgr::GetLocaleStringOld(gl->CastBarCaption, loc_idx, CastBarCaption);
+                ObjectMgr::GetLocaleString(gameObjectLocale->Name, localeConstant, stats.Name[0]);
+                ObjectMgr::GetLocaleString(gameObjectLocale->CastBarCaption, localeConstant, stats.CastBarCaption);
             }
-        }
 
-        TC_LOG_DEBUG("network", "WORLD: CMSG_GAMEOBJECT_QUERY '%s' - Entry: %u. ", info->name.c_str(), entry);
+        stats.Size = gameObjectInfo->size;
 
-        data << uint32(info->type);
-        data << uint32(info->displayId);
-        data << Name;
-        data << uint8(0) << uint8(0) << uint8(0);           // name2, name3, name4
-        data << IconName;                                   // 2.0.3, string. Icon name to use instead of default icon for go's (ex: "Attack" makes sword)
-        data << CastBarCaption;                             // 2.0.3, string. Text will appear in Cast Bar when using GO (ex: "Collecting")
-        data << info->unk1;                                 // 2.0.3, string
+        for (uint32 item : gameObjectInfo->questItems)
+            stats.QuestItems.push_back(item);
 
-        data.append(info->raw.data, MAX_GAMEOBJECT_DATA);
-        data << float(info->size);                          // go size
+        memcpy(stats.Data.data(), gameObjectInfo->raw.data, MAX_GAMEOBJECT_DATA * sizeof(uint32));
+        stats.UnkInt32 = gameObjectInfo->unkInt32;
 
-        data << uint8(MAX_GAMEOBJECT_QUEST_ITEMS);
-
-        for (uint32 i = 0; i < MAX_GAMEOBJECT_QUEST_ITEMS; ++i)
-            data << uint32(info->questItems[i]);            // itemId[6], quest drop
-
-        data << int32(info->unkInt32);                      // 4.x, unknown
-
-        data.put(pos, uint32(data.wpos() - (pos + 4)));
         TC_LOG_DEBUG("network", "WORLD: Sent SMSG_GAMEOBJECT_QUERY_RESPONSE");
     }
     else
     {
-        TC_LOG_DEBUG("network", "WORLD: CMSG_GAMEOBJECT_QUERY - Missing gameobject info for (GUID: %u, ENTRY: %u)",
-            guid.GetCounter(), entry);
+        TC_LOG_DEBUG("network", "WORLD: CMSG_GAMEOBJECT_QUERY - Missing gameobject info for (%s, ENTRY: %u)",
+                     packet.Guid.ToString().c_str(), packet.GameObjectID);
         TC_LOG_DEBUG("network", "WORLD: Sent SMSG_GAMEOBJECT_QUERY_RESPONSE");
     }
 
-    SendPacket(&data);
+    SendPacket(response.Write());
 }
 
 void WorldSession::HandleCorpseQueryOpcode(WorldPacket& /*recvData*/)

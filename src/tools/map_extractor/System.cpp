@@ -24,6 +24,9 @@
 #include <list>
 #include <cstdlib>
 #include <vector>
+#include <algorithm>
+#include <cctype>
+#include <string>
 
 #ifdef _WIN32
 #include "direct.h"
@@ -1178,6 +1181,9 @@ void ExtractCameraFiles(int locale, bool basicLocale)
             printf("Unable to open file %s in the archive\n", thisFile.c_str());
             continue;
         }
+
+        // dbc has mixed case names, standardize on lower case
+        std::transform(filename.begin(), filename.end(), filename.begin(), ::tolower);
 
         if (ExtractFile(dbcFile, filename.c_str()))
             ++count;

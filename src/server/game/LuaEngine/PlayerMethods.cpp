@@ -348,8 +348,10 @@ namespace LuaPlayer
 
     int IsNeverVisible(lua_State* L, Player* player)
     {
-        sEluna->Push(L, player->IsNeverVisible());
-        return 1;
+        return 0;
+        // TODO: fix this
+        // sEluna->Push(L, player->IsNeverVisible());
+        // return 1;
     }
 
     int CanFlyInZone(lua_State* L, Player* player)

@@ -53,6 +53,15 @@ namespace WorldPackets
             uint32 Timer = 0;
         };
 
+        class FarSight final : public ClientPacket
+        {
+        public:
+            FarSight(WorldPacket&& packet) : ClientPacket(CMSG_FAR_SIGHT, std::move(packet)) { }
+
+            void Read() override;
+
+            bool Enable = false;
+        };
     }
 }
 
