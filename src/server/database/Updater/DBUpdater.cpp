@@ -379,8 +379,6 @@ void DBUpdater<T>::ApplyFile(DatabaseWorkerPool<T>& pool, std::string const& hos
 
     if (ssl == "ssl")
         args.emplace_back("--ssl");
-    else
-        args.emplace_back("--ssl=0");
 
 #endif
 
