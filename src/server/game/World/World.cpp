@@ -1,5 +1,5 @@
 /*
-* This file is part of the Legends of Azeroth MOP Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1478,6 +1478,7 @@ void World::LoadConfigSettings(bool reload)
     m_int_configs[CONFIG_DELETING_ITEM_MAX_QUALITY] = sConfigMgr->GetIntDefault("DeletingItem.MaxQuality", ITEM_QUALITY_LEGENDARY);
 
     m_int_configs[CONFIG_CREATURE_PICKPOCKET_REFILL] = sConfigMgr->GetIntDefault("Creature.PickPocketRefillDelay", 10 * MINUTE);
+    m_int_configs[CONFIG_CREATURE_STOP_FOR_PLAYER] = sConfigMgr->GetIntDefault("Creature.MovingStopTimeForPlayer", 3 * MINUTE * IN_MILLISECONDS);
 
     m_bool_configs[CONFIG_AUCTIONHOUSE_ALLOW_SORTING]        = sConfigMgr->GetBoolDefault("AuctionHouse.AllowSorting", true);
     m_bool_configs[CONFIG_AUCTIONHOUSE_FORCE_MAIN_THREAD]    = sConfigMgr->GetBoolDefault("AuctionHouse.ForceMainThread", false);
@@ -1938,6 +1939,9 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading Creature Addon Data...");
     sObjectMgr->LoadCreatureAddons();                            // must be after LoadCreatureTemplates() and LoadCreatures()
+
+    TC_LOG_INFO("server.loading", "Loading Creature Movement Overrides...");
+    sObjectMgr->LoadCreatureMovementOverrides();                 // must be after LoadCreatures()
 
     TC_LOG_INFO("server.loading", "Loading Gameobject Data...");
     sObjectMgr->LoadGameobjects();

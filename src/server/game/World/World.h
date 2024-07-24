@@ -1,5 +1,5 @@
 /*
-* This file is part of the Legends of Azeroth MOP Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -598,6 +598,7 @@ enum WorldIntConfigs
     CONFIG_DELETING_ITEM_MIN_QUALITY,
     CONFIG_DELETING_ITEM_MAX_QUALITY,
     CONFIG_CREATURE_PICKPOCKET_REFILL,
+    CONFIG_CREATURE_STOP_FOR_PLAYER,
     CONFIG_AHBOT_UPDATE_INTERVAL,
     CONFIG_AUCTIONHOUSE_MIN_DIFF_FOR_LOG,
     CONFIG_AUCTIONHOUSE_MIN_DIFF_FOR_THROTTLE,

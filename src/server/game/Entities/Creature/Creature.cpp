@@ -56,6 +56,30 @@
 #include "Transport.h"
 #include "Define.h"
 
+CreatureMovementData::CreatureMovementData() : Ground(CreatureGroundMovementType::Run), Flight(CreatureFlightMovementType::None), Swim(true), Rooted(false), Chase(CreatureChaseMovementType::Run),
+Random(CreatureRandomMovementType::Walk), InteractionPauseTimer(sWorld->getIntConfig(CONFIG_CREATURE_STOP_FOR_PLAYER)) { }
+
+std::string CreatureMovementData::ToString() const
+{
+    char const* const GroundStates[] = { "None", "Run", "Hover" };
+    char const* const FlightStates[] = { "None", "DisableGravity", "CanFly" };
+    char const* const ChaseStates[]  = { "Run", "CanWalk", "AlwaysWalk" };
+    char const* const RandomStates[] = { "Walk", "CanRun", "AlwaysRun" };
+
+    std::ostringstream str;
+    str << std::boolalpha
+        << "Ground: " << GroundStates[AsUnderlyingType(Ground)]
+        << ", Swim: " << Swim
+        << ", Flight: " << FlightStates[AsUnderlyingType(Flight)]
+        << ", Chase: " << ChaseStates[AsUnderlyingType(Chase)]
+        << ", Random: " << RandomStates[AsUnderlyingType(Random)];
+    if (Rooted)
+        str << ", Rooted";
+    str << ", InteractionPauseTimer: " << InteractionPauseTimer;
+
+    return str.str();
+}
+
 TrainerSpell const* TrainerSpellData::Find(uint32 spell_id) const
 {
     TrainerSpellMap::const_iterator itr = spellList.find(spell_id);
@@ -147,7 +171,7 @@ Creature::Creature(bool isWorldObject): Unit(isWorldObject), MapObject(),
 lootForPickPocketed(false), lootForBody(false), m_groupLootTimer(0), lootingGroupLowGUID(0),
 m_PlayerDamageReq(0), m_lootRecipient(), m_lootRecipientGroup(0), m_corpseRemoveTime(0), m_respawnTime(0),
 m_respawnDelay(300), m_corpseDelay(60), m_wanderDistance(0.0f), m_WalkMode(0.0f), m_reactState(REACT_AGGRESSIVE),
-m_defaultMovementType(IDLE_MOTION_TYPE), m_DBTableGuid(0), m_equipmentId(0), m_originalEquipmentId(0), m_AlreadyCallAssistance(false),
+m_defaultMovementType(IDLE_MOTION_TYPE), m_spawnId(0), m_equipmentId(0), m_originalEquipmentId(0), m_AlreadyCallAssistance(false),
 m_AlreadySearchedAssistance(false), m_regenHealth(true), m_AI_locked(false), m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),
 m_creatureInfo(nullptr), m_creatureData(nullptr), m_path_id(0), m_formation(NULL), m_respawnDelayMax(0), dynamicHealthPlayersCount(0)
 {
@@ -186,8 +210,8 @@ void Creature::AddToWorld()
     if (!IsInWorld())
     {
         GetMap()->GetObjectsStore().Insert<Creature>(GetGUID(), this);
-        if (m_DBTableGuid) // m_spawnId
-            GetMap()->GetCreatureBySpawnIdStore().insert(std::make_pair(m_DBTableGuid, this));
+        if (m_spawnId)
+            GetMap()->GetCreatureBySpawnIdStore().insert(std::make_pair(m_spawnId, this));
 
         Unit::AddToWorld();
         SearchFormation();
@@ -216,8 +240,8 @@ void Creature::RemoveFromWorld()
 
         Unit::RemoveFromWorld();
 
-        if (m_DBTableGuid) // m_spawnId
-            Trinity::Containers::MultimapErasePair(GetMap()->GetCreatureBySpawnIdStore(), m_DBTableGuid, this);
+        if (m_spawnId)
+            Trinity::Containers::MultimapErasePair(GetMap()->GetCreatureBySpawnIdStore(), m_spawnId, this);
 
         GetMap()->GetObjectsStore().Remove<Creature>(GetGUID());
     }
@@ -527,7 +551,7 @@ void Creature::Update(uint32 diff)
                 if (!allowed)                                               // Will be rechecked on next Update call
                     break;
 
-                ObjectGuid dbtableHighGuid = ObjectGuid(HighGuid::Unit, GetEntry(), m_DBTableGuid);
+                ObjectGuid dbtableHighGuid = ObjectGuid(HighGuid::Unit, GetEntry(), m_spawnId);
                 time_t linkedRespawntime = GetMap()->GetLinkedRespawnTime(dbtableHighGuid);
                 if (!linkedRespawntime)             // Can respawn
                 {
@@ -988,7 +1012,7 @@ void Creature::SaveToDB()
 {
     // this should only be used when the creature has already been loaded
     // preferably after adding to map, because mapid may not be valid otherwise
-    CreatureData const* data = sObjectMgr->GetCreatureData(m_DBTableGuid);
+    CreatureData const* data = sObjectMgr->GetCreatureData(m_spawnId);
     if (!data)
     {
         TC_LOG_ERROR("entities.unit", "Creature::SaveToDB failed, cannot get creature data!");
@@ -1002,13 +1026,13 @@ void Creature::SaveToDB()
 void Creature::SaveToDB(uint32 mapid, uint16 spawnMask, uint32 phaseMask)
 {
     // update in loaded data
-    if (!m_DBTableGuid)
+    if (!m_spawnId)
     {
         QueryResult result = WorldDatabase.Query("SELECT MAX(guid) + 1 FROM creature");
         ASSERT(result);
-        m_DBTableGuid = (*result)[0].GetUInt32();
+        m_spawnId = (*result)[0].GetUInt32();
     }
-    CreatureData& data = sObjectMgr->NewOrExistCreatureData(m_DBTableGuid);
+    CreatureData& data = sObjectMgr->NewOrExistCreatureData(m_spawnId);
 
     uint32 displayId = GetNativeDisplayId();
     uint32 npcflag = GetUInt32Value(UNIT_FIELD_NPC_FLAGS);
@@ -1084,13 +1108,13 @@ void Creature::SaveToDB(uint32 mapid, uint16 spawnMask, uint32 phaseMask)
     WorldDatabaseTransaction trans = WorldDatabase.BeginTransaction();
 
     WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_CREATURE);
-    stmt->setUInt32(0, m_DBTableGuid);
+    stmt->setUInt32(0, m_spawnId);
     trans->Append(stmt);
 
     uint8 index = 0;
 
     stmt = WorldDatabase.GetPreparedStatement(WORLD_INS_CREATURE);
-    stmt->setUInt32(index++, m_DBTableGuid);
+    stmt->setUInt32(index++, m_spawnId);
     stmt->setUInt32(index++, GetEntry());
     stmt->setUInt16(index++, uint16(mapid));
     stmt->setUInt16(index++, spawnMask);
@@ -1347,7 +1371,7 @@ bool Creature::LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap)
         if (!map->CheckGameEventSpawn(data->gameEventId))
             return false;
 
-    m_DBTableGuid = guid;
+    m_spawnId = guid;
     if (map->GetInstanceId() == 0)
     {
         if (map->GetCreature(ObjectGuid(HighGuid::Unit, data->id, guid)))
@@ -1372,7 +1396,7 @@ bool Creature::LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap)
 
     m_deathState = ALIVE;
 
-    m_respawnTime  = GetMap()->GetCreatureRespawnTime(m_DBTableGuid);
+    m_respawnTime  = GetMap()->GetCreatureRespawnTime(m_spawnId);
     if (m_respawnTime)                          // respawn on Update
     {
         m_deathState = DEAD;
@@ -1455,11 +1479,11 @@ bool Creature::hasInvolvedQuest(uint32 quest_id) const
 
 void Creature::DeleteFromDB()
 {
-    CreatureData const* data = sObjectMgr->GetCreatureData(m_DBTableGuid);
+    CreatureData const* data = sObjectMgr->GetCreatureData(m_spawnId);
     if (!data)
         return;
 
-    if (!m_DBTableGuid)
+    if (!m_spawnId)
     {
         TC_LOG_ERROR("entities.unit", "Trying to delete not saved creature! LowGUID: %u, Entry: %u", GetGUID().GetCounter(), GetEntry());
         return;
@@ -1472,32 +1496,32 @@ void Creature::DeleteFromDB()
        {
            // despawn all active creatures, and remove their respawns
            std::vector<Creature*> toUnload;
-           for (auto const& pair : Trinity::Containers::MapEqualRange(map->GetCreatureBySpawnIdStore(), m_DBTableGuid))
+           for (auto const& pair : Trinity::Containers::MapEqualRange(map->GetCreatureBySpawnIdStore(), m_spawnId))
                toUnload.push_back(pair.second);
            for (Creature* creature : toUnload)
                map->AddObjectToRemoveList(creature);
-           map->RemoveCreatureRespawnTime(m_DBTableGuid);
+           map->RemoveCreatureRespawnTime(m_spawnId);
        }
     );
 
-    sObjectMgr->DeleteCreatureData(m_DBTableGuid);
+    sObjectMgr->DeleteCreatureData(m_spawnId);
 
     WorldDatabaseTransaction trans2 = WorldDatabase.BeginTransaction();
 
     WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_CREATURE);
-    stmt->setUInt32(0, m_DBTableGuid);
+    stmt->setUInt32(0, m_spawnId);
     trans2->Append(stmt);
 
     stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_CREATURE_ADDON);
-    stmt->setUInt32(0, m_DBTableGuid);
+    stmt->setUInt32(0, m_spawnId);
     trans2->Append(stmt);
 
     stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_GAME_EVENT_CREATURE);
-    stmt->setUInt32(0, m_DBTableGuid);
+    stmt->setUInt32(0, m_spawnId);
     trans2->Append(stmt);
 
     stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_GAME_EVENT_MODEL_EQUIP);
-    stmt->setUInt32(0, m_DBTableGuid);
+    stmt->setUInt32(0, m_spawnId);
     trans2->Append(stmt);
 
     WorldDatabase.CommitTransaction(trans2);
@@ -1681,8 +1705,8 @@ void Creature::Respawn(bool force)
 
     if (getDeathState() == DEAD)
     {
-        if (m_DBTableGuid)
-            GetMap()->RemoveCreatureRespawnTime(m_DBTableGuid);
+        if (m_spawnId)
+            GetMap()->RemoveCreatureRespawnTime(m_spawnId);
 
         TC_LOG_DEBUG("entities.unit", "Respawning creature %s (GuidLow: %u, Full GUID: " UI64FMTD " Entry: %u)",
             GetName().c_str(), GetGUID().GetCounter(), GetGUID().GetRawValue(), GetEntry());
@@ -2156,10 +2180,10 @@ bool Creature::_IsTargetAcceptable(const Unit* target) const
 
 void Creature::SaveRespawnTime()
 {
-    if (IsSummon() || !m_DBTableGuid || (m_creatureData && !m_creatureData->dbData))
+    if (IsSummon() || !m_spawnId || (m_creatureData && !m_creatureData->dbData))
         return;
 
-    GetMap()->SaveCreatureRespawnTime(m_DBTableGuid, m_respawnTime);
+    GetMap()->SaveCreatureRespawnTime(m_spawnId, m_respawnTime);
 }
 
 // this should not be called by petAI or
@@ -2201,9 +2225,9 @@ bool Creature::CanCreatureAttack(Unit const* victim, bool /*force*/) const
 
 CreatureAddon const* Creature::GetCreatureAddon() const
 {
-    if (m_DBTableGuid)
+    if (m_spawnId)
     {
-        if (CreatureAddon const* addon = sObjectMgr->GetCreatureAddon(m_DBTableGuid))
+        if (CreatureAddon const* addon = sObjectMgr->GetCreatureAddon(m_spawnId))
             return addon;
     }
 
@@ -2481,7 +2505,7 @@ time_t Creature::GetRespawnTimeEx() const
 
 void Creature::GetRespawnPosition(float &x, float &y, float &z, float* ori, float* dist) const
 {
-    if (m_DBTableGuid)
+    if (m_spawnId)
     {
         if (CreatureData const* data = sObjectMgr->GetCreatureData(GetDBTableGUIDLow()))
         {
@@ -2504,6 +2528,14 @@ void Creature::GetRespawnPosition(float &x, float &y, float &z, float* ori, floa
         *ori = GetOrientation();
     if (dist)
         *dist = 0;
+}
+
+CreatureMovementData const& Creature::GetMovementTemplate() const
+{
+    if (CreatureMovementData const* movementOverride = sObjectMgr->GetCreatureMovementOverride(m_spawnId))
+        return *movementOverride;
+
+    return GetCreatureTemplate()->Movement;
 }
 
 bool Creature::CanSwim() const

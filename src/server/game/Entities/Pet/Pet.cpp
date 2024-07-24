@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1533,7 +1533,7 @@ bool Pet::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, uint3
     SetPhaseMask(phaseMask, false);
     Object::_Create(guidlow, petId, HighGuid::Pet);
 
-    m_DBTableGuid = guidlow;
+    m_spawnId = guidlow;
     m_originalEntry = Entry;
 
     if (!InitEntry(Entry))

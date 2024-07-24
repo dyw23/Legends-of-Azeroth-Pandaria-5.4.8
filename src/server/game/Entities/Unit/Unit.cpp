@@ -19370,7 +19370,7 @@ bool Unit::SetDisableGravity(bool disable, bool packetOnly /*= false*/)
 {
     if (!packetOnly)
     {
-        if (disable == IsLevitating())
+        if (disable == IsGravityDisabled())
             return false;
 
         if (disable)
@@ -19443,7 +19443,7 @@ bool Unit::SetCanFly(bool enable)
     else
     {
         RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_MASK_MOVING_FLY);
-        if (!IsLevitating() && (GetTypeId() != TYPEID_PLAYER || HasUnitMovementFlag(MOVEMENTFLAG_FLYING)))
+        if (!IsGravityDisabled() && (GetTypeId() != TYPEID_PLAYER || HasUnitMovementFlag(MOVEMENTFLAG_FLYING)))
             SetFall(true);
     }
 
@@ -19525,7 +19525,7 @@ bool Unit::SetHover(bool enable, bool packetOnly /*= false*/)
         //! Unconfirmed for players:
         if (enable)
             SetAnimTier(AnimTier::Hover);
-        else if (IsLevitating())
+        else if (IsGravityDisabled())
             SetAnimTier(AnimTier::Fly);
         else
             SetAnimTier(AnimTier::Ground);

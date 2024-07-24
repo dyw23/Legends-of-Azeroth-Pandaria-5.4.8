@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1063,7 +1063,8 @@ class ObjectMgr
         CreatureAddon const* GetCreatureAddon(uint32 lowguid);
         GameObjectAddon const* GetGameObjectAddon(uint32 lowguid);
         GameObjectTemplateAddon const* GetGameObjectTemplateAddon(uint32 entry) const;
-        CreatureAddon const* GetCreatureTemplateAddon(uint32 entry);
+        CreatureAddon const* GetCreatureTemplateAddon(uint32 entry) const;
+        CreatureMovementData const* GetCreatureMovementOverride(ObjectGuid::LowType spawnId) const;
         ItemTemplate const* GetItemTemplate(uint32 entry);
         ItemTemplateContainer const* GetItemTemplateStore() const { return &_itemTemplateStore; }
         AreaTriggerTemplate const* GetAreaTriggerTemplate(uint32 entry) const;
@@ -1246,6 +1247,7 @@ class ObjectMgr
         void LoadCreatureSparringTemplate();
         void LoadCreatureDifficultyModifiers();
         void CheckCreatureTemplate(CreatureTemplate const* cInfo);
+        void CheckCreatureMovement(char const* table, uint64 id, CreatureMovementData& creatureMovement);
         void LoadTempSummons();
         void LoadCreatures();
         void LoadLinkedRespawn();
@@ -1254,6 +1256,7 @@ class ObjectMgr
         void LoadGameObjectAddons();
         void LoadCreatureModelInfo();
         void LoadEquipmentTemplates();
+        void LoadCreatureMovementOverrides();
         void LoadGameObjectLocales();
         void LoadGameobjects();
         void LoadItemTemplates();
@@ -1946,6 +1949,7 @@ class ObjectMgr
         CreatureAddonContainer _creatureAddonStore;
         GameObjectAddonContainer _gameObjectAddonStore;
         CreatureAddonContainer _creatureTemplateAddonStore;
+        std::unordered_map<ObjectGuid::LowType, CreatureMovementData> _creatureMovementOverrides;
         CreatureSparringTemplateMap _creatureSparringTemplateStore;
         EquipmentInfoContainer _equipmentInfoStore;
         LinkedRespawnContainer _linkedRespawnStore;

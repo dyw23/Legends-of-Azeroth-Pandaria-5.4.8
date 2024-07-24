@@ -1759,14 +1759,9 @@ public:
 
     void SendSetPlayHoverAnim(bool PlayHoverAnim);
 
-    bool IsLevitating() const
-    {
-        return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
-    }
-    bool IsWalking() const
-    {
-        return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_WALKING);
-    }
+    bool IsGravityDisabled() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY); }
+    bool IsWalking() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_WALKING); }
+    bool IsHovering() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_HOVER); }    
     bool SetWalk(bool enable);
     bool SetDisableGravity(bool disable, bool packetOnly = false);
     bool SetFall(bool enable);
@@ -2537,8 +2532,6 @@ public:
     {
         return HasUnitMovementFlag(MOVEMENTFLAG_HOVER) ? GetFloatValue(UNIT_FIELD_HOVER_HEIGHT) : 0.0f;
     }
-
-    bool IsHovering() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_HOVER); }
 
     void RewardRage(float baseRage, bool attacker);
 

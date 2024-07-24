@@ -66,6 +66,66 @@ enum CreatureFlagsExtra : uint32
 
 };
 
+enum class CreatureGroundMovementType : uint8
+{
+    None,
+    Run,
+    Hover,
+
+    Max
+};
+
+enum class CreatureFlightMovementType : uint8
+{
+    None,
+    DisableGravity,
+    CanFly,
+
+    Max
+};
+
+enum class CreatureChaseMovementType : uint8
+{
+    Run,
+    CanWalk,
+    AlwaysWalk,
+
+    Max
+};
+
+enum class CreatureRandomMovementType : uint8
+{
+    Walk,
+    CanRun,
+    AlwaysRun,
+
+    Max
+};
+
+struct TC_GAME_API CreatureMovementData
+{
+    CreatureMovementData();
+
+    CreatureGroundMovementType Ground;
+    CreatureFlightMovementType Flight;
+    bool Swim;
+    bool Rooted;
+    CreatureChaseMovementType Chase;
+    CreatureRandomMovementType Random;
+    uint32 InteractionPauseTimer;
+
+    bool IsGroundAllowed() const { return Ground != CreatureGroundMovementType::None; }
+    bool IsSwimAllowed() const { return Swim; }
+    bool IsFlightAllowed() const { return Flight != CreatureFlightMovementType::None; }
+    bool IsRooted() const { return Rooted; }
+
+    CreatureChaseMovementType GetChase() const { return Chase; }
+    CreatureRandomMovementType GetRandom() const { return Random; }
+
+    uint32 GetInteractionPauseTimer() const { return InteractionPauseTimer; }
+
+    std::string ToString() const;
+};
 
 static uint8 const MAX_KILL_CREDIT = 2;
 static uint32 const MAX_CREATURE_MODELS = 4;
@@ -130,6 +190,7 @@ struct TC_GAME_API CreatureTemplate
     uint32  maxgold;
     std::string AIName;
     uint32  MovementType;
+    CreatureMovementData Movement;
     uint32  InhabitType;
     float   HoverHeight;
     float   ModHealth;

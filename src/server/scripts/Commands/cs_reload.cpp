@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -93,6 +93,7 @@ public:
             { "creature_questender",            SEC_ADMINISTRATOR,  true,   &HandleReloadCreatureQuestEnderCommand,         },
             { "creature_linked_respawn",        SEC_ADMINISTRATOR,  true,   &HandleReloadLinkedRespawnCommand,              },
             { "creature_loot_template",         SEC_ADMINISTRATOR,  true,   &HandleReloadLootTemplatesCreatureCommand,      },
+            { "creature_movement_override",     SEC_ADMINISTRATOR,  true,   &HandleReloadCreatureMovementOverrideCommand,   },
             { "creature_onkill_reputation",     SEC_ADMINISTRATOR,  true,   &HandleReloadOnKillReputationCommand,           },
             { "creature_queststarter",          SEC_ADMINISTRATOR,  true,   &HandleReloadCreatureQuestStarterCommand,       },
             { "creature_scaling",               SEC_ADMINISTRATOR,  true,   &HandleReloadCreatureScallingCommand,           },
@@ -666,6 +667,14 @@ public:
         sConditionMgr->LoadConditions(true);
         return true;
     }
+
+    static bool HandleReloadCreatureMovementOverrideCommand(ChatHandler* handler, char const* /*args*/)
+    {
+        TC_LOG_INFO("misc", "Re-Loading Creature movement overrides...");
+        sObjectMgr->LoadCreatureMovementOverrides();
+        handler->SendGlobalGMSysMessage("DB table `creature_movement_override` reloaded.");
+        return true;
+    }    
 
     static bool HandleReloadLootTemplatesDisenchantCommand(ChatHandler* handler, const char* /*args*/)
     {

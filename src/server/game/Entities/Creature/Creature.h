@@ -269,7 +269,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void SelectLevel(const CreatureTemplate* cinfo);
         void LoadEquipment(int8 id = 1, bool force = false);
 
-        uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
+        uint32 GetDBTableGUIDLow() const { return m_spawnId; }
 
         void Update(uint32 time) override;         // overwrited Unit::Update
         void GetRespawnPosition(float &x, float &y, float &z, float* ori = NULL, float* dist =NULL) const;
@@ -281,11 +281,12 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool IsTrigger() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER; }
         bool IsGuard() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_GUARD; }
         
+        CreatureMovementData const& GetMovementTemplate() const;
         bool CanWalk() const { return GetInhabitType() & INHABIT_GROUND; }
         bool CanSwim() const override;
         bool CanEnterWater() const override;
         bool CanFly() const override { return GetInhabitType() & INHABIT_AIR; }
-        bool CanHover() const { return true; } // TODO impl
+        bool CanHover() const { return GetMovementTemplate().Ground == CreatureGroundMovementType::Hover || IsHovering(); } 
 
         // Used to dynamically change allowed path generator and movement flags behavior during scripts.
         // Can be used to allow ground-only creatures to temporarily fly, restrict flying creatures to the ground etc.
@@ -599,7 +600,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         ReactStates m_reactState;                           // for AI, not charmInfo
 
         MovementGeneratorType m_defaultMovementType;
-        uint32 m_DBTableGuid;                               ///< For new or temporary creatures is 0 for saved it is lowguid
+        ObjectGuid::LowType m_spawnId;                      ///< For new or temporary creatures is 0 for saved it is lowguid
         uint8 m_equipmentId;
         int8 m_originalEquipmentId; // can be -1
 

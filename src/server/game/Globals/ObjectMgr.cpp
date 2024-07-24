@@ -434,11 +434,13 @@ void ObjectMgr::LoadCreatureTemplates()
                                              "type_flags, type_flags2, lootid, pickpocketloot, skinloot, resistance1, resistance2, resistance3, resistance4, resistance5, resistance6, "
     //                                          58      59      60      61      62      63      64      65          66           67        68       69       70         71
                                              "spell1, spell2, spell3, spell4, spell5, spell6, spell7, spell8, PetSpellDataId, VehicleId, mingold, maxgold, AIName, MovementType, "
-    //                                             72          73           74         75            76           77          78           79          80          81          82          83
+    //                                            72          73        74          75         76          77                78
+                                             "ctm.Ground, ctm.Swim, ctm.Flight, ctm.Rooted, ctm.Chase, ctm.Random, ctm.InteractionPauseTimer,"
+    //                                             79          80           81         82           83           84          85            86          87          88          89          90
                                              "InhabitType, HoverHeight, Health_mod, Mana_mod, Mana_mod_extra, Armor_mod, RacialLeader, questItem1, questItem2, questItem3, questItem4, questItem5, "
-    //                                            84           85          86           87            88                   89               90          91
+    //                                            91           92          93           94            95                   96               97          98
                                              " questItem6, movementId, RegenHealth, VignetteID, TrackingQuestID,  mechanic_immune_mask, flags_extra, ScriptName "
-                                             "FROM creature_template;");
+                                             "FROM creature_template ct LEFT JOIN creature_template_movement ctm ON ct.entry = ctm.CreatureId;");
 
     if (!result)
     {
@@ -522,24 +524,45 @@ void ObjectMgr::LoadCreatureTemplates()
         creatureTemplate.maxgold        = fields[69].GetUInt32();
         creatureTemplate.AIName         = fields[70].GetString();
         creatureTemplate.MovementType   = uint32(fields[71].GetUInt8());
-        creatureTemplate.InhabitType    = uint32(fields[72].GetUInt8());
-        creatureTemplate.HoverHeight    = fields[73].GetFloat();
-        creatureTemplate.ModHealth      = fields[74].GetFloat();
-        creatureTemplate.ModMana        = fields[75].GetFloat();
-        creatureTemplate.ModManaExtra   = fields[76].GetFloat();
-        creatureTemplate.ModArmor       = fields[77].GetFloat();
-        creatureTemplate.RacialLeader   = fields[78].GetBool();
+        if (!fields[72].IsNull())
+            creatureTemplate.Movement.Ground = static_cast<CreatureGroundMovementType>(fields[72].GetUInt8());
+
+        if (!fields[73].IsNull())
+            creatureTemplate.Movement.Swim = fields[73].GetBool();
+
+        if (!fields[74].IsNull())
+            creatureTemplate.Movement.Flight = static_cast<CreatureFlightMovementType>(fields[74].GetUInt8());
+
+        if (!fields[75].IsNull())
+            creatureTemplate.Movement.Rooted = fields[75].GetBool();
+
+        if (!fields[76].IsNull())
+            creatureTemplate.Movement.Chase = static_cast<CreatureChaseMovementType>(fields[76].GetUInt8());
+
+        if (!fields[77].IsNull())
+            creatureTemplate.Movement.Random = static_cast<CreatureRandomMovementType>(fields[77].GetUInt8());
+
+        if (!fields[78].IsNull())
+            creatureTemplate.Movement.InteractionPauseTimer = fields[78].GetUInt32();
+
+        creatureTemplate.InhabitType    = uint32(fields[79].GetUInt8());
+        creatureTemplate.HoverHeight    = fields[80].GetFloat();
+        creatureTemplate.ModHealth      = fields[81].GetFloat();
+        creatureTemplate.ModMana        = fields[82].GetFloat();
+        creatureTemplate.ModManaExtra   = fields[83].GetFloat();
+        creatureTemplate.ModArmor       = fields[84].GetFloat();
+        creatureTemplate.RacialLeader   = fields[85].GetBool();
 
         for (uint8 i = 0; i < MAX_CREATURE_QUEST_ITEMS; ++i)
-            creatureTemplate.questItems[i] = fields[79 + i].GetUInt32();
+            creatureTemplate.questItems[i] = fields[86 + i].GetUInt32();
 
-        creatureTemplate.movementId         = fields[85].GetUInt32();
-        creatureTemplate.RegenHealth        = fields[86].GetBool();
-        creatureTemplate.VignetteID         = fields[87].GetUInt32();
-        creatureTemplate.TrackingQuestID    = fields[88].GetUInt32();
-        creatureTemplate.MechanicImmuneMask = fields[89].GetUInt32();
-        creatureTemplate.flags_extra        = fields[90].GetUInt32();
-        creatureTemplate.ScriptID           = GetScriptId(fields[91].GetString());
+        creatureTemplate.movementId         = fields[92].GetUInt32();
+        creatureTemplate.RegenHealth        = fields[93].GetBool();
+        creatureTemplate.VignetteID         = fields[94].GetUInt32();
+        creatureTemplate.TrackingQuestID    = fields[95].GetUInt32();
+        creatureTemplate.MechanicImmuneMask = fields[96].GetUInt32();
+        creatureTemplate.flags_extra        = fields[97].GetUInt32();
+        creatureTemplate.ScriptID           = GetScriptId(fields[98].GetString());
 
         ++count;
     }
@@ -1112,6 +1135,37 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
     const_cast<CreatureTemplate*>(cInfo)->dmg_multiplier *= Creature::_GetDamageMod(cInfo->rank);
 }
 
+void ObjectMgr::CheckCreatureMovement(char const* table, uint64 id, CreatureMovementData& creatureMovement)
+{
+    if (creatureMovement.Ground >= CreatureGroundMovementType::Max)
+    {
+        TC_LOG_ERROR("sql.sql", "`%s`.`Ground` wrong value (%u) for Id %lu, setting to Run.",
+            table, uint32(creatureMovement.Ground), id);
+        creatureMovement.Ground = CreatureGroundMovementType::Run;
+    }
+
+    if (creatureMovement.Flight >= CreatureFlightMovementType::Max)
+    {
+        TC_LOG_ERROR("sql.sql", "`%s`.`Flight` wrong value (%u) for Id %lu, setting to None.",
+            table, uint32(creatureMovement.Flight), id);
+        creatureMovement.Flight = CreatureFlightMovementType::None;
+    }
+
+    if (creatureMovement.Chase >= CreatureChaseMovementType::Max)
+    {
+        TC_LOG_ERROR("sql.sql", "`%s`.`Chase` wrong value (%u) for Id %lu, setting to Run.",
+                     table, uint32(creatureMovement.Chase), id);
+        creatureMovement.Chase = CreatureChaseMovementType::Run;
+    }
+
+    if (creatureMovement.Random >= CreatureRandomMovementType::Max)
+    {
+        TC_LOG_ERROR("sql.sql", "`%s`.`Random` wrong value (%u) for Id %lu, setting to Walk.",
+                     table, uint32(creatureMovement.Random), id);
+        creatureMovement.Random = CreatureRandomMovementType::Walk;
+    }
+}
+
 void ObjectMgr::LoadCreatureAddons()
 {
     uint32 oldMSTime = getMSTime();
@@ -1301,13 +1355,18 @@ CreatureAddon const* ObjectMgr::GetCreatureAddon(uint32 lowguid)
     return NULL;
 }
 
-CreatureAddon const* ObjectMgr::GetCreatureTemplateAddon(uint32 entry)
+CreatureAddon const* ObjectMgr::GetCreatureTemplateAddon(uint32 entry) const
 {
     CreatureAddonContainer::const_iterator itr = _creatureTemplateAddonStore.find(entry);
     if (itr != _creatureTemplateAddonStore.end())
         return &(itr->second);
 
     return NULL;
+}
+
+CreatureMovementData const* ObjectMgr::GetCreatureMovementOverride(ObjectGuid::LowType spawnId) const
+{
+    return Trinity::Containers::MapGetValuePtr(_creatureMovementOverrides, spawnId);
 }
 
 EquipmentInfo const* ObjectMgr::GetEquipmentInfo(uint32 entry, int8& id)
@@ -1411,6 +1470,65 @@ void ObjectMgr::LoadEquipmentTemplates()
     while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %u equipment templates in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+void ObjectMgr::LoadCreatureMovementOverrides()
+{
+    uint32 oldMSTime = getMSTime();
+
+    _creatureMovementOverrides.clear();
+
+    // Load the data from creature_movement_override and if NULL fallback to creature_template_movement
+    QueryResult result = WorldDatabase.Query(
+        "SELECT cmo.SpawnId,"
+        "COALESCE(cmo.Ground, ctm.Ground),"
+        "COALESCE(cmo.Swim, ctm.Swim),"
+        "COALESCE(cmo.Flight, ctm.Flight),"
+        "COALESCE(cmo.Rooted, ctm.Rooted),"
+        "COALESCE(cmo.Chase, ctm.Chase),"
+        "COALESCE(cmo.Random, ctm.Random),"
+        "COALESCE(cmo.InteractionPauseTimer, ctm.InteractionPauseTimer) "
+        "FROM creature_movement_override AS cmo "
+        "LEFT JOIN creature AS c ON c.guid = cmo.SpawnId "
+        "LEFT JOIN creature_template_movement AS ctm ON ctm.CreatureId = c.id");
+
+    if (!result)
+    {
+        TC_LOG_INFO("server.loading", ">> Loaded 0 creature movement overrides. DB table `creature_movement_override` is empty!");
+        return;
+    }
+
+    do
+    {
+        Field* fields = result->Fetch();
+        ObjectGuid::LowType spawnId = fields[0].GetUInt32();
+        if (!GetCreatureData(spawnId))
+        {
+            TC_LOG_ERROR("sql.sql", "Creature (GUID: %u) does not exist but has a record in `creature_movement_override`", spawnId);
+            continue;
+        }
+
+        CreatureMovementData& movement = _creatureMovementOverrides[spawnId];
+        if (!fields[1].IsNull())
+            movement.Ground = static_cast<CreatureGroundMovementType>(fields[1].GetUInt8());
+        if (!fields[2].IsNull())
+            movement.Swim = fields[2].GetBool();
+        if (!fields[3].IsNull())
+            movement.Flight = static_cast<CreatureFlightMovementType>(fields[3].GetUInt8());
+        if (!fields[4].IsNull())
+            movement.Rooted = fields[4].GetBool();
+        if (!fields[5].IsNull())
+            movement.Chase = static_cast<CreatureChaseMovementType>(fields[5].GetUInt8());
+        if (!fields[6].IsNull())
+            movement.Random = static_cast<CreatureRandomMovementType>(fields[6].GetUInt8());
+        if (!fields[7].IsNull())
+            movement.InteractionPauseTimer = fields[7].GetUInt32();
+
+        CheckCreatureMovement("creature_movement_override", spawnId, movement);
+    }
+    while (result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> Loaded " SZFMTD " movement overrides in %u ms", _creatureMovementOverrides.size(), GetMSTimeDiffToNow(oldMSTime));
 }
 
 CreatureModelInfo const* ObjectMgr::GetCreatureModelInfo(uint32 modelId)
