@@ -4444,7 +4444,22 @@ CREATE TABLE `creature_movement_override` (
   PRIMARY KEY (`SpawnId`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- data for creature_template_movement
+INSERT IGNORE INTO `creature_template_movement`(`CreatureId`, `Ground`, `Swim`, `Flight`, `Rooted`) SELECT `entry`,0,0,0,0 FROM `creature_template` WHERE `InhabitType`!=3;
+UPDATE `creature_template_movement` SET `Ground`=1 WHERE `CreatureId` IN (SELECT `entry` FROM `creature_template` WHERE `InhabitType` & 1);
+UPDATE `creature_template_movement` SET `Swim`=1 WHERE `CreatureId` IN (SELECT `entry` FROM `creature_template` WHERE `InhabitType` & 2);
+UPDATE `creature_template_movement` SET `Flight`=1 WHERE `CreatureId` IN (SELECT `entry` FROM `creature_template` WHERE (`InhabitType` & 5) = 4);
+UPDATE `creature_template_movement` SET `Flight`=2 WHERE `CreatureId` IN (SELECT `entry` FROM `creature_template` WHERE (`InhabitType` & 5) = 5);
+UPDATE `creature_template_movement` SET `Rooted`=1 WHERE `CreatureId` IN (SELECT `entry` FROM `creature_template` WHERE `InhabitType` & 8);
+
+ALTER TABLE `creature_template` DROP `InhabitType`;
+
+-- UPDATE `trinity_string` SET `content_default`='Movement type: %s' WHERE `entry`=11008;
+
+DELETE FROM `command` WHERE `name`='reload creature_movement_override';
+INSERT INTO `command` (`name`,`security`,`help`) VALUES
+('reload creature_movement_override',5,'Syntax: .reload creature_movement_override\nReload creature_movement_override table.');
+
+-- More data for creature_template_movement
 INSERT IGNORE INTO `creature_template_movement` (`CreatureId`, `Ground`, `Swim`, `Flight`, `Rooted`, `Chase`, `Random`, `InteractionPauseTimer`) 
 VALUES 
 (1, 0, 0, 1, 0, 0, 0, NULL),

@@ -489,9 +489,6 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData* data)
         ApplySpellImmune(0, IMMUNITY_ID, 61391, true);
     }
 
-    if (cInfo->InhabitType & INHABIT_ROOT)
-        SetControlled(true, UNIT_STATE_ROOT);
-
     UpdateMovementFlags();
 
     //We must update last scriptId or it looks like we reloaded a script, breaking some things such as gossip temporarily

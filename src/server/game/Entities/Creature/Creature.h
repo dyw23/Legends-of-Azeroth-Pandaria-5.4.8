@@ -290,16 +290,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         // Used to dynamically change allowed path generator and movement flags behavior during scripts.
         // Can be used to allow ground-only creatures to temporarily fly, restrict flying creatures to the ground etc.
-        void OverrideInhabitType(InhabitTypeValues inhabitType) { m_inhabitTypeOverride = inhabitType; }
-        void ResetInhabitTypeOverride() { m_inhabitTypeOverride = (InhabitTypeValues)0; }
-        InhabitTypeValues GetInhabitType() const
-        {
-            if (IsPet())
-                return INHABIT_GROUND | INHABIT_WATER;
-            if (m_inhabitTypeOverride)
-                return m_inhabitTypeOverride;
-            return (InhabitTypeValues)GetCreatureTemplate()->InhabitType;
-        }
+        void OverrideInhabitType(InhabitTypeValues inhabitType) {  } // todo remove in future 
+        void ResetInhabitTypeOverride() { } // todo remove in future
 
         void SetReactState(ReactStates st) { m_reactState = st; }
         ReactStates GetReactState() { return m_reactState; }
@@ -623,8 +615,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         CreatureTemplate const* m_creatureInfo;                 // Can differ from sObjectMgr->GetCreatureTemplate(GetEntry()) in difficulty mode > 0
         CreatureData const* m_creatureData;
-
-        InhabitTypeValues m_inhabitTypeOverride = INHABIT_NONE;
 
         uint16 m_LootMode;                                  // Bitmask (default: LOOT_MODE_DEFAULT) that determines what loot will be lootable
         uint32 guid_transport;

@@ -748,7 +748,7 @@ public:
         handler->PSendSysMessage(LANG_NPCINFO_HEALTH, target->GetCreateHealth(), target->GetMaxHealth(), target->GetHealth());
 
         handler->PSendSysMessage("Gossip Menu ID: %u", cInfo->GossipMenuId);
-        handler->PSendSysMessage("Inhabit Type: %u", target->GetInhabitType());
+        handler->PSendSysMessage("Movement type: %s", target->GetMovementTemplate().ToString().c_str());
 
         handler->PSendSysMessage(LANG_NPCINFO_UNIT_FIELD_FLAGS, target->GetUInt32Value(UNIT_FIELD_FLAGS));
         for (uint8 i = 0; i < MAX_UNIT_FLAGS; ++i)

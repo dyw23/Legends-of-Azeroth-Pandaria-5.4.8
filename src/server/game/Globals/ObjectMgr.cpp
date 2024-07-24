@@ -436,8 +436,8 @@ void ObjectMgr::LoadCreatureTemplates()
                                              "spell1, spell2, spell3, spell4, spell5, spell6, spell7, spell8, PetSpellDataId, VehicleId, mingold, maxgold, AIName, MovementType, "
     //                                            72          73        74          75         76          77                78
                                              "ctm.Ground, ctm.Swim, ctm.Flight, ctm.Rooted, ctm.Chase, ctm.Random, ctm.InteractionPauseTimer,"
-    //                                             79          80           81         82           83           84          85            86          87          88          89          90
-                                             "InhabitType, HoverHeight, Health_mod, Mana_mod, Mana_mod_extra, Armor_mod, RacialLeader, questItem1, questItem2, questItem3, questItem4, questItem5, "
+    //                                            80           81         82           83           84          85            86          87          88          89          90
+                                             "HoverHeight, Health_mod, Mana_mod, Mana_mod_extra, Armor_mod, RacialLeader, questItem1, questItem2, questItem3, questItem4, questItem5, "
     //                                            91           92          93           94            95                   96               97          98
                                              " questItem6, movementId, RegenHealth, VignetteID, TrackingQuestID,  mechanic_immune_mask, flags_extra, ScriptName "
                                              "FROM creature_template ct LEFT JOIN creature_template_movement ctm ON ct.entry = ctm.CreatureId;");
@@ -545,24 +545,23 @@ void ObjectMgr::LoadCreatureTemplates()
         if (!fields[78].IsNull())
             creatureTemplate.Movement.InteractionPauseTimer = fields[78].GetUInt32();
 
-        creatureTemplate.InhabitType    = uint32(fields[79].GetUInt8());
-        creatureTemplate.HoverHeight    = fields[80].GetFloat();
-        creatureTemplate.ModHealth      = fields[81].GetFloat();
-        creatureTemplate.ModMana        = fields[82].GetFloat();
-        creatureTemplate.ModManaExtra   = fields[83].GetFloat();
-        creatureTemplate.ModArmor       = fields[84].GetFloat();
-        creatureTemplate.RacialLeader   = fields[85].GetBool();
+        creatureTemplate.HoverHeight    = fields[79].GetFloat();
+        creatureTemplate.ModHealth      = fields[80].GetFloat();
+        creatureTemplate.ModMana        = fields[81].GetFloat();
+        creatureTemplate.ModManaExtra   = fields[82].GetFloat();
+        creatureTemplate.ModArmor       = fields[83].GetFloat();
+        creatureTemplate.RacialLeader   = fields[84].GetBool();
 
         for (uint8 i = 0; i < MAX_CREATURE_QUEST_ITEMS; ++i)
-            creatureTemplate.questItems[i] = fields[86 + i].GetUInt32();
+            creatureTemplate.questItems[i] = fields[85 + i].GetUInt32();
 
-        creatureTemplate.movementId         = fields[92].GetUInt32();
-        creatureTemplate.RegenHealth        = fields[93].GetBool();
-        creatureTemplate.VignetteID         = fields[94].GetUInt32();
-        creatureTemplate.TrackingQuestID    = fields[95].GetUInt32();
-        creatureTemplate.MechanicImmuneMask = fields[96].GetUInt32();
-        creatureTemplate.flags_extra        = fields[97].GetUInt32();
-        creatureTemplate.ScriptID           = GetScriptId(fields[98].GetString());
+        creatureTemplate.movementId         = fields[91].GetUInt32();
+        creatureTemplate.RegenHealth        = fields[92].GetBool();
+        creatureTemplate.VignetteID         = fields[93].GetUInt32();
+        creatureTemplate.TrackingQuestID    = fields[94].GetUInt32();
+        creatureTemplate.MechanicImmuneMask = fields[95].GetUInt32();
+        creatureTemplate.flags_extra        = fields[96].GetUInt32();
+        creatureTemplate.ScriptID           = GetScriptId(fields[97].GetString());
 
         ++count;
     }
@@ -1034,11 +1033,7 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
         const_cast<CreatureTemplate*>(cInfo)->family = 0;
     }
 
-    if (cInfo->InhabitType <= 0 || cInfo->InhabitType > INHABIT_ANYWHERE)
-    {
-        TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) has wrong value (%u) in `InhabitType`, creature will not correctly walk/swim/fly.", cInfo->Entry, cInfo->InhabitType);
-        const_cast<CreatureTemplate*>(cInfo)->InhabitType = INHABIT_ANYWHERE;
-    }
+    CheckCreatureMovement("creature_template_movement", cInfo->Entry, const_cast<CreatureTemplate*>(cInfo)->Movement);
 
     if (cInfo->HoverHeight < 0.0f)
     {
