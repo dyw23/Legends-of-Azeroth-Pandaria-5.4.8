@@ -282,10 +282,10 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool IsGuard() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_GUARD; }
         
         CreatureMovementData const& GetMovementTemplate() const;
-        bool CanWalk() const { return GetInhabitType() & INHABIT_GROUND; }
+        bool CanWalk() const { return GetMovementTemplate().IsGroundAllowed(); }
         bool CanSwim() const override;
         bool CanEnterWater() const override;
-        bool CanFly() const override { return GetInhabitType() & INHABIT_AIR; }
+        bool CanFly()  const override { return GetMovementTemplate().IsFlightAllowed() || IsFlying(); }
         bool CanHover() const { return GetMovementTemplate().Ground == CreatureGroundMovementType::Hover || IsHovering(); } 
 
         // Used to dynamically change allowed path generator and movement flags behavior during scripts.
