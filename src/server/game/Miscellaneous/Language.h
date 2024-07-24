@@ -1358,9 +1358,9 @@ enum TrinityStrings
     LANG_DIFF_POOR                          = 11005,
     LANG_CHEATER_CHATLOG                    = 11006,
 
+    LANG_NPCINFO_MOVEMENT_DATA              = 11008,
+
     // premium
-    //                                        11007,
-    //                                        11008,
     LANG_PREMIUM_PVE_MODE_NEED_PREMIUM      = 11009,
     LANG_PREMIUM_PVE_NOT_NOW                = 11010,
     LANG_PREMIUM_COMMAND_DISABLED           = 11011,

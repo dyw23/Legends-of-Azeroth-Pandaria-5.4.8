@@ -4453,7 +4453,9 @@ UPDATE `creature_template_movement` SET `Rooted`=1 WHERE `CreatureId` IN (SELECT
 
 ALTER TABLE `creature_template` DROP `InhabitType`;
 
--- UPDATE `trinity_string` SET `content_default`='Movement type: %s' WHERE `entry`=11008;
+DELETE FROM `trinity_string` WHERE `entry`=11008;
+INSERT INTO `trinity_string` (`entry`, `content_default`, `content_loc1`, `content_loc2`, `content_loc3`, `content_loc4`, `content_loc5`, `content_loc6`, `content_loc7`, `content_loc8`, `content_loc9`, `content_loc10`, `content_loc11`, `content_female`, `content_female_loc1`, `content_female_loc2`, `content_female_loc3`, `content_female_loc4`, `content_female_loc5`, `content_female_loc6`, `content_female_loc7`, `content_female_loc8`, `content_female_loc9`, `content_female_loc10`, `content_female_loc11`) 
+VALUES (11008, 'Movement type: %s', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 DELETE FROM `command` WHERE `name`='reload creature_movement_override';
 INSERT INTO `command` (`name`,`security`,`help`) VALUES
