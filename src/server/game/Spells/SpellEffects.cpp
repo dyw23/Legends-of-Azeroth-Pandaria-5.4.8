@@ -350,35 +350,35 @@ void Spell::EffectInstaKill(SpellEffIndex /*effIndex*/)
     data.WriteBit(casterguid[7]);
     data.WriteBit(targetguid[2]);
     data.WriteBit(casterguid[3]);
-data.WriteBit(casterguid[1]);
-data.WriteBit(casterguid[2]);
-data.WriteBit(casterguid[0]);
-data.WriteBit(casterguid[4]);
+    data.WriteBit(casterguid[1]);
+    data.WriteBit(casterguid[2]);
+    data.WriteBit(casterguid[0]);
+    data.WriteBit(casterguid[4]);
     data.WriteBit(targetguid[4]);
-data.WriteBit(targetguid[7]);
-data.WriteBit(targetguid[1]);
-data.WriteBit(targetguid[6]);
-data.WriteBit(targetguid[5]);
+    data.WriteBit(targetguid[7]);
+    data.WriteBit(targetguid[1]);
+    data.WriteBit(targetguid[6]);
+    data.WriteBit(targetguid[5]);
     data.WriteBit(casterguid[5]);
     data.WriteBit(targetguid[3]);
 
     data.WriteByteSeq(casterguid[0]);
     data.WriteByteSeq(targetguid[1]);
     data.WriteByteSeq(casterguid[3]);
-data.WriteByteSeq(casterguid[4]);
-data.WriteByteSeq(casterguid[5]);
-data.WriteByteSeq(casterguid[7]);
+    data.WriteByteSeq(casterguid[4]);
+    data.WriteByteSeq(casterguid[5]);
+    data.WriteByteSeq(casterguid[7]);
     data.WriteByteSeq(targetguid[0]);
     data.WriteByteSeq(casterguid[6]);
     data.WriteByteSeq(targetguid[2]);
-data.WriteByteSeq(targetguid[4]);
+    data.WriteByteSeq(targetguid[4]);
     data.WriteByteSeq(casterguid[1]);
     data << int32(m_spellInfo->Id);
     data.WriteByteSeq(targetguid[3]);
     data.WriteByteSeq(casterguid[2]);
     data.WriteByteSeq(targetguid[7]);
-data.WriteByteSeq(targetguid[6]);
-data.WriteByteSeq(targetguid[5]);
+    data.WriteByteSeq(targetguid[6]);
+    data.WriteByteSeq(targetguid[5]);
 
     m_caster->SendMessageToSet(&data, true);
 
@@ -2840,18 +2840,18 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
         dataFail.WriteByteSeq(target[1]);
         dataFail.WriteByteSeq(caster[5]);
         dataFail.WriteByteSeq(target[2]);
-dataFail.WriteByteSeq(target[5]);
-dataFail.WriteByteSeq(target[3]);
-dataFail.WriteByteSeq(target[7]);
+        dataFail.WriteByteSeq(target[5]);
+        dataFail.WriteByteSeq(target[3]);
+        dataFail.WriteByteSeq(target[7]);
         dataFail.WriteByteSeq(caster[4]);
         dataFail.WriteByteSeq(target[4]);
         dataFail.WriteByteSeq(caster[3]);
-dataFail.WriteByteSeq(caster[0]);
-dataFail.WriteByteSeq(caster[1]);
+        dataFail.WriteByteSeq(caster[0]);
+        dataFail.WriteByteSeq(caster[1]);
         dataFail.WriteByteSeq(target[6]);
-dataFail.WriteByteSeq(target[0]);
+        dataFail.WriteByteSeq(target[0]);
         dataFail.WriteByteSeq(caster[7]);
-dataFail.WriteByteSeq(caster[6]);
+        dataFail.WriteByteSeq(caster[6]);
 
         for (auto itr : failedSpells)
             dataFail << int32(itr);
@@ -2879,10 +2879,10 @@ dataFail.WriteByteSeq(caster[6]);
     data.WriteBit(false); // is break
     data.WriteBit(false); // is steal
     data.WriteBit(target[5]);
-data.WriteBit(target[7]);
-data.WriteBit(target[4]);
-data.WriteBit(target[0]);
-data.WriteBit(target[1]);
+    data.WriteBit(target[7]);
+    data.WriteBit(target[4]);
+    data.WriteBit(target[0]);
+    data.WriteBit(target[1]);
     data.WriteBits(successList.size(), 22);
     data.WriteBit(caster[0]);
 
@@ -2894,11 +2894,11 @@ data.WriteBit(target[1]);
     }
 
     data.WriteBit(caster[3]);
-data.WriteBit(caster[2]);
+    data.WriteBit(caster[2]);
     data.WriteBit(target[3]);
     data.WriteBit(caster[1]);
-data.WriteBit(caster[7]);
-data.WriteBit(caster[6]);
+    data.WriteBit(caster[7]);
+    data.WriteBit(caster[6]);
 
     for (DispelChargesList::iterator itr = successList.begin(); itr != successList.end(); ++itr)
     {
@@ -2917,20 +2917,20 @@ data.WriteBit(caster[6]);
     data.WriteByteSeq(caster[4]);
     data.WriteByteSeq(target[3]);
     data.WriteByteSeq(caster[6]);
-data.WriteByteSeq(caster[0]);
+    data.WriteByteSeq(caster[0]);
     data.WriteByteSeq(target[5]);
-data.WriteByteSeq(target[1]);
+    data.WriteByteSeq(target[1]);
     data.WriteByteSeq(caster[3]);
-data.WriteByteSeq(caster[2]);
-data.WriteByteSeq(caster[1]);
-data.WriteByteSeq(caster[5]);
+    data.WriteByteSeq(caster[2]);
+    data.WriteByteSeq(caster[1]);
+    data.WriteByteSeq(caster[5]);
     data.WriteByteSeq(target[0]);
 
     data << uint32(m_spellInfo->Id);                // dispel spell id
 
     data.WriteByteSeq(target[7]);
-data.WriteByteSeq(target[6]);
-data.WriteByteSeq(target[2]);
+    data.WriteByteSeq(target[6]);
+    data.WriteByteSeq(target[2]);
     data.WriteByteSeq(caster[7]);
     data.WriteByteSeq(target[4]);
 
@@ -6196,18 +6196,18 @@ void Spell::EffectStealBeneficialBuff(SpellEffIndex effIndex)
         dataFail.WriteByteSeq(target[1]);
         dataFail.WriteByteSeq(caster[5]);
         dataFail.WriteByteSeq(target[2]);
-dataFail.WriteByteSeq(target[5]);
-dataFail.WriteByteSeq(target[3]);
-dataFail.WriteByteSeq(target[7]);
+        dataFail.WriteByteSeq(target[5]);
+        dataFail.WriteByteSeq(target[3]);
+        dataFail.WriteByteSeq(target[7]);
         dataFail.WriteByteSeq(caster[4]);
         dataFail.WriteByteSeq(target[4]);
         dataFail.WriteByteSeq(caster[3]);
-dataFail.WriteByteSeq(caster[0]);
-dataFail.WriteByteSeq(caster[1]);
+        dataFail.WriteByteSeq(caster[0]);
+        dataFail.WriteByteSeq(caster[1]);
         dataFail.WriteByteSeq(target[6]);
-dataFail.WriteByteSeq(target[0]);
+        dataFail.WriteByteSeq(target[0]);
         dataFail.WriteByteSeq(caster[7]);
-dataFail.WriteByteSeq(caster[6]);
+        dataFail.WriteByteSeq(caster[6]);
 
         for (auto itr : FailedSpells)
             dataFail << int32(itr);
@@ -6235,10 +6235,10 @@ dataFail.WriteByteSeq(caster[6]);
     data.WriteBit(false); // is break
     data.WriteBit(true); // is steal
     data.WriteBit(target[5]);
-data.WriteBit(target[7]);
-data.WriteBit(target[4]);
-data.WriteBit(target[0]);
-data.WriteBit(target[1]);
+    data.WriteBit(target[7]);
+    data.WriteBit(target[4]);
+    data.WriteBit(target[0]);
+    data.WriteBit(target[1]);
     data.WriteBits(success_list.size(), 22);
     data.WriteBit(caster[0]);
 
@@ -6250,11 +6250,11 @@ data.WriteBit(target[1]);
     }
 
     data.WriteBit(caster[3]);
-data.WriteBit(caster[2]);
+    data.WriteBit(caster[2]);
     data.WriteBit(target[3]);
     data.WriteBit(caster[1]);
-data.WriteBit(caster[7]);
-data.WriteBit(caster[6]);
+    data.WriteBit(caster[7]);
+    data.WriteBit(caster[6]);
 
     for (DispelList::iterator itr = success_list.begin(); itr != success_list.end(); ++itr)
     {
@@ -6273,20 +6273,20 @@ data.WriteBit(caster[6]);
     data.WriteByteSeq(caster[4]);
     data.WriteByteSeq(target[3]);
     data.WriteByteSeq(caster[6]);
-data.WriteByteSeq(caster[0]);
+    data.WriteByteSeq(caster[0]);
     data.WriteByteSeq(target[5]);
-data.WriteByteSeq(target[1]);
+    data.WriteByteSeq(target[1]);
     data.WriteByteSeq(caster[3]);
-data.WriteByteSeq(caster[2]);
-data.WriteByteSeq(caster[1]);
-data.WriteByteSeq(caster[5]);
+    data.WriteByteSeq(caster[2]);
+    data.WriteByteSeq(caster[1]);
+    data.WriteByteSeq(caster[5]);
     data.WriteByteSeq(target[0]);
 
     data << uint32(m_spellInfo->Id);                // dispel spell id
 
     data.WriteByteSeq(target[7]);
-data.WriteByteSeq(target[6]);
-data.WriteByteSeq(target[2]);
+    data.WriteByteSeq(target[6]);
+    data.WriteByteSeq(target[2]);
     data.WriteByteSeq(caster[7]);
     data.WriteByteSeq(target[4]);
 
