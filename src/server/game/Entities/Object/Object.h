@@ -741,9 +741,9 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         virtual uint16 GetMeleeAnimKitId() const { return 0; }
 
         // Watcher
-        bool IsPrivateObject() const { return _privateObjectOwner != 0; }
+        bool IsPrivateObject() const { return !_privateObjectOwner.IsEmpty(); }
         ObjectGuid GetPrivateObjectOwner() const { return _privateObjectOwner; }
-        void SetPrivateObjectOwner(ObjectGuid owner) { _privateObjectOwner = owner; }
+        void SetPrivateObjectOwner(ObjectGuid const& owner) { _privateObjectOwner = owner; }
         bool CheckPrivateObjectOwnerVisibility(WorldObject const* seer) const;
 
         void AddToUpdate() override;
