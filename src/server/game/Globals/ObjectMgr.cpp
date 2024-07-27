@@ -598,7 +598,7 @@ void ObjectMgr::LoadCreatureTemplateAddons()
     uint32 oldMSTime = getMSTime();
 
     //                                                 0       1       2           3       4          5         6           7        8        9             10                   11        12                          
-    QueryResult result = WorldDatabase.Query("SELECT entry, path_id, mount, StandState, AnimTier, VisFlags, SheathState, PvPFlags, emote, ai_anim_kit, movement_anim_kit, melee_anim_kit, auras FROM creature_template_addon");
+    QueryResult result = WorldDatabase.Query("SELECT entry, path_id, mount, StandState, AnimTier, VisFlags, SheathState, PvPFlags, emote, aiAnimKit, movementAnimKit, meleeAnimKit, auras FROM creature_template_addon");
 
     if (!result)
     {
@@ -629,9 +629,9 @@ void ObjectMgr::LoadCreatureTemplateAddons()
         creatureAddon.sheathState       = fields[6].GetUInt8();
         creatureAddon.pvpFlags          = fields[7].GetUInt8();
         creatureAddon.emote             = fields[8].GetUInt32();
-        creatureAddon.ai_anim_kit       = fields[9].GetUInt16();
-        creatureAddon.movement_anim_kit = fields[10].GetUInt16();
-        creatureAddon.melee_anim_kit    = fields[11].GetUInt16();
+        creatureAddon.aiAnimKit       = fields[9].GetUInt16();
+        creatureAddon.movementAnimKit = fields[10].GetUInt16();
+        creatureAddon.meleeAnimKit    = fields[11].GetUInt16();
 
         Tokenizer tokens(fields[12].GetString(), ' ');
         uint8 i = 0;
@@ -680,22 +680,22 @@ void ObjectMgr::LoadCreatureTemplateAddons()
             creatureAddon.emote = 0;
         }
 
-        if (creatureAddon.ai_anim_kit && !sAnimKitStore.LookupEntry(creatureAddon.ai_anim_kit))
+        if (creatureAddon.aiAnimKit && !sAnimKitStore.LookupEntry(creatureAddon.aiAnimKit))
         {
-            TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) has invalid ai_anim_kit (%u) defined in `creature_template_addon`.", entry, creatureAddon.ai_anim_kit);
-            creatureAddon.ai_anim_kit = 0;
+            TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) has invalid aiAnimKit (%u) defined in `creature_template_addon`.", entry, creatureAddon.aiAnimKit);
+            creatureAddon.aiAnimKit = 0;
         }
 
-        if (creatureAddon.movement_anim_kit && !sAnimKitStore.LookupEntry(creatureAddon.movement_anim_kit))
+        if (creatureAddon.movementAnimKit && !sAnimKitStore.LookupEntry(creatureAddon.movementAnimKit))
         {
-            TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) has invalid movement_anim_kit (%u) defined in `creature_template_addon`.", entry, creatureAddon.movement_anim_kit);
-            creatureAddon.movement_anim_kit = 0;
+            TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) has invalid movementAnimKit (%u) defined in `creature_template_addon`.", entry, creatureAddon.movementAnimKit);
+            creatureAddon.movementAnimKit = 0;
         }
 
-        if (creatureAddon.melee_anim_kit && !sAnimKitStore.LookupEntry(creatureAddon.melee_anim_kit))
+        if (creatureAddon.meleeAnimKit && !sAnimKitStore.LookupEntry(creatureAddon.meleeAnimKit))
         {
-            TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) has invalid melee_anim_kit (%u) defined in `creature_template_addon`.", entry, creatureAddon.melee_anim_kit);
-            creatureAddon.melee_anim_kit = 0;
+            TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) has invalid meleeAnimKit (%u) defined in `creature_template_addon`.", entry, creatureAddon.meleeAnimKit);
+            creatureAddon.meleeAnimKit = 0;
         }
 
         ++count;
@@ -1166,7 +1166,7 @@ void ObjectMgr::LoadCreatureAddons()
     uint32 oldMSTime = getMSTime();
 
     //                                                 0       1       2        3          4        5           6          7        8         9                      10                11           12            13
-    QueryResult result = WorldDatabase.Query("SELECT guid, path_id, mount, StandState, AnimTier, VisFlags, SheathState, PvPFlags, emote, visibilityDistanceType, ai_anim_kit, movement_anim_kit, melee_anim_kit, auras FROM creature_addon");
+    QueryResult result = WorldDatabase.Query("SELECT guid, path_id, mount, StandState, AnimTier, VisFlags, SheathState, PvPFlags, emote, visibilityDistanceType, aiAnimKit, movementAnimKit, meleeAnimKit, auras FROM creature_addon");
 
     if (!result)
     {
@@ -1205,9 +1205,9 @@ void ObjectMgr::LoadCreatureAddons()
         creatureAddon.pvpFlags                  = fields[7].GetUInt8();
         creatureAddon.emote                     = fields[8].GetUInt32();
         creatureAddon.visibilityDistanceType    = VisibilityDistanceType(fields[9].GetUInt8());
-        creatureAddon.ai_anim_kit               = fields[10].GetUInt16();
-        creatureAddon.movement_anim_kit         = fields[11].GetUInt16();
-        creatureAddon.melee_anim_kit            = fields[12].GetUInt16();
+        creatureAddon.aiAnimKit               = fields[10].GetUInt16();
+        creatureAddon.movementAnimKit         = fields[11].GetUInt16();
+        creatureAddon.meleeAnimKit            = fields[12].GetUInt16();
 
         Tokenizer tokens(fields[13].GetString(), ' ');
         uint8 i = 0;
@@ -1256,22 +1256,22 @@ void ObjectMgr::LoadCreatureAddons()
             creatureAddon.emote = 0;
         }
 
-        if (creatureAddon.ai_anim_kit && !sAnimKitStore.LookupEntry(creatureAddon.ai_anim_kit))
+        if (creatureAddon.aiAnimKit && !sAnimKitStore.LookupEntry(creatureAddon.aiAnimKit))
         {
-            TC_LOG_ERROR("sql.sql", "Creature (GUID: %lu) has invalid ai_anim_kit (%u) defined in `creature_addon`.", guid, creatureAddon.ai_anim_kit);
-            creatureAddon.ai_anim_kit = 0;
+            TC_LOG_ERROR("sql.sql", "Creature (GUID: %lu) has invalid aiAnimKit (%u) defined in `creature_addon`.", guid, creatureAddon.aiAnimKit);
+            creatureAddon.aiAnimKit = 0;
         }
 
-        if (creatureAddon.movement_anim_kit && !sAnimKitStore.LookupEntry(creatureAddon.movement_anim_kit))
+        if (creatureAddon.movementAnimKit && !sAnimKitStore.LookupEntry(creatureAddon.movementAnimKit))
         {
-            TC_LOG_ERROR("sql.sql", "Creature (GUID: %lu) has invalid movement_anim_kit (%u) defined in `creature_addon`.", guid, creatureAddon.movement_anim_kit);
-            creatureAddon.movement_anim_kit = 0;
+            TC_LOG_ERROR("sql.sql", "Creature (GUID: %lu) has invalid movementAnimKit (%u) defined in `creature_addon`.", guid, creatureAddon.movementAnimKit);
+            creatureAddon.movementAnimKit = 0;
         }
 
-        if (creatureAddon.melee_anim_kit && !sAnimKitStore.LookupEntry(creatureAddon.melee_anim_kit))
+        if (creatureAddon.meleeAnimKit && !sAnimKitStore.LookupEntry(creatureAddon.meleeAnimKit))
         {
-            TC_LOG_ERROR("sql.sql", "Creature (GUID: %lu) has invalid melee_anim_kit (%u) defined in `creature_addon`.", guid, creatureAddon.melee_anim_kit);
-            creatureAddon.melee_anim_kit = 0;
+            TC_LOG_ERROR("sql.sql", "Creature (GUID: %lu) has invalid meleeAnimKit (%u) defined in `creature_addon`.", guid, creatureAddon.meleeAnimKit);
+            creatureAddon.meleeAnimKit = 0;
         }
 
         ++count;
