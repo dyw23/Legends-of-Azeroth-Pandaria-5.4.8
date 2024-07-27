@@ -188,7 +188,7 @@ Unit::Unit(bool isWorldObject) :
 WorldObject(isWorldObject), m_movedPlayer(NULL), m_lastSanctuaryTime(0),
 IsAIEnabled(false), NeedChangeAI(false), LastCharmerGUID(),
 m_ControlledByPlayer(false), movespline(new Movement::MoveSpline()),
-i_AI(NULL), i_disabledAI(NULL), m_AutoRepeatFirstCast(false), m_procDeep(0),
+i_AI(NULL), i_disabledAI(NULL), m_procDeep(0),
 m_removedAurasCount(0), i_motionMaster(new MotionMaster(this)), m_ThreatManager(this),
 m_vehicle(NULL), m_vehicleKit(NULL), m_unitTypeMask(UNIT_MASK_NONE),
 m_HostileRefManager(this),
@@ -3432,46 +3432,48 @@ void Unit::_UpdateSpells(uint32 time)
 
 void Unit::_UpdateAutoRepeatSpell()
 {
-    // check "realtime" interrupts
-    // don't cancel spells which are affected by a SPELL_AURA_CAST_WHILE_WALKING effect
-    if (((GetTypeId() == TYPEID_PLAYER && ToPlayer()->isMoving()) || IsNonMeleeSpellCasted(false, false, true, m_currentSpells [CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id == 75)) &&
-        !HasAuraTypeWithAffectMask(SPELL_AURA_CAST_WHILE_WALKING, m_currentSpells [CURRENT_AUTOREPEAT_SPELL]->m_spellInfo))
+    SpellInfo const* spellProto = nullptr;
+    if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL])
     {
-        // cancel wand shoot
-        if (m_currentSpells [CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id != 75)
-            InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
-        m_AutoRepeatFirstCast = true;
+        spellProto = m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo;
+    }
+
+    if (!spellProto)
+    {
         return;
     }
 
-    // apply delay (Auto Shot (spellID 75) not affected)
-    if (m_AutoRepeatFirstCast && getAttackTimer(RANGED_ATTACK) < 500 && m_currentSpells [CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id != 75)
-        setAttackTimer(RANGED_ATTACK, 500);
-    m_AutoRepeatFirstCast = false;
+    static uint32 const HUNTER_AUTOSHOOT = 75;
+
+    // check "realtime" interrupts
+    // don't cancel spells which are affected by a SPELL_AURA_CAST_WHILE_WALKING effect
+    if (((IsPlayer() && ToPlayer()->isMoving() && spellProto->Id != HUNTER_AUTOSHOOT) || IsNonMeleeSpellCasted(false, false, true, spellProto->Id == HUNTER_AUTOSHOOT)) &&
+        !HasAuraTypeWithAffectMask(SPELL_AURA_CAST_WHILE_WALKING, spellProto))
+    {
+        // cancel wand shoot
+        if (spellProto->Id != 75)
+            InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+        return;
+    }
 
     // castroutine
-    if (isAttackReady(RANGED_ATTACK))
+    if (isAttackReady(RANGED_ATTACK) && m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->getState() != SPELL_STATE_PREPARING)
     {
-        // Auto Shot couldn't be casted while Aimed Shot in progress, but not interrupt it, just recheck later
-        if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->GetSpellInfo()->Id == 75 && FindCurrentSpellBySpellId(19434))
-        {
-            setAttackTimer(RANGED_ATTACK, 100);
-            return;
-        }
-
         // Check if able to cast
-        if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->CheckCast(true) != SPELL_CAST_OK)
+        SpellCastResult result = m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->CheckCast(true);
+        if (result != SPELL_CAST_OK)
         {
-            setAttackTimer(RANGED_ATTACK, 500);
+            if (spellProto->Id != HUNTER_AUTOSHOOT)
+                InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+            else if (GetTypeId() == TYPEID_PLAYER)
+                Spell::SendCastResult(ToPlayer(), spellProto, m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_cast_count, result);
+
             return;
         }
 
         // we want to shoot
-        Spell* spell = new Spell(this, m_currentSpells [CURRENT_AUTOREPEAT_SPELL]->m_spellInfo, TRIGGERED_FULL_MASK);
-        spell->prepare(&(m_currentSpells [CURRENT_AUTOREPEAT_SPELL]->m_targets));
-
-        // all went good, reset attack
-        resetAttackTimer(RANGED_ATTACK);
+        Spell* spell = new Spell(this, spellProto, TRIGGERED_IGNORE_GCD);
+        spell->prepare(&(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_targets));
     }
 }
 
@@ -3483,9 +3485,6 @@ void Unit::SetCurrentCastedSpell(Spell* pSpell)
 
     if (pSpell == m_currentSpells [CSpellType])             // avoid breaking self
         return;
-
-    // break same type spell if it is not delayed
-    InterruptSpell(CSpellType, false);
 
     // special breakage effects:
     switch (CSpellType)
@@ -3501,7 +3500,6 @@ void Unit::SetCurrentCastedSpell(Spell* pSpell)
                 // break autorepeat if not Auto Shot
                 if (m_currentSpells [CURRENT_AUTOREPEAT_SPELL]->GetSpellInfo()->Id != 75)
                     InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
-                m_AutoRepeatFirstCast = true;
             }
             if (pSpell->GetCastTime() > 0)
                 AddUnitState(UNIT_STATE_CASTING);
@@ -3524,6 +3522,9 @@ void Unit::SetCurrentCastedSpell(Spell* pSpell)
         }
         case CURRENT_AUTOREPEAT_SPELL:
         {
+            if (m_currentSpells[CSpellType] && m_currentSpells[CSpellType]->getState() == SPELL_STATE_IDLE)
+                m_currentSpells[CSpellType]->setState(SPELL_STATE_FINISHED);
+
             // only Auto Shoot does not break anything
             if (pSpell->GetSpellInfo()->Id != 75)
             {
@@ -3531,8 +3532,6 @@ void Unit::SetCurrentCastedSpell(Spell* pSpell)
                 InterruptSpell(CURRENT_GENERIC_SPELL, false);
                 InterruptSpell(CURRENT_CHANNELED_SPELL, false);
             }
-            // special action: set first cast flag
-            m_AutoRepeatFirstCast = true;
 
             break;
         }
@@ -3557,7 +3556,7 @@ void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool wi
     Spell* spell = m_currentSpells [spellType];
     if (spell
         && (withDelayed || spell->getState() != SPELL_STATE_DELAYED)
-        && (withInstant || spell->GetCastTime() > 0))
+        && (withInstant || spell->GetCastTime() > 0 || spell->getState() == SPELL_STATE_CASTING))
     {
         // for example, do not let self-stun aura interrupt itself
         if (!spell->IsInterruptable())
@@ -3573,9 +3572,11 @@ void Unit::InterruptSpell(CurrentSpellTypes spellType, bool withDelayed, bool wi
 
         if (spell->getState() != SPELL_STATE_FINISHED)
             spell->cancel();
-
-        m_currentSpells [spellType] = NULL;
-        spell->SetReferencedFromCurrent(false);
+        else
+        {
+            m_currentSpells[spellType] = nullptr;
+            spell->SetReferencedFromCurrent(false);
+        }
     }
 }
 

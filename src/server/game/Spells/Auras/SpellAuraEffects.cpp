@@ -2413,27 +2413,40 @@ void AuraEffect::HandleFeignDeath(AuraApplication const* aurApp, uint8 mode, boo
         Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(target, target, target->GetMap()->GetVisibilityRange());
         Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(target, targets, u_check);
         target->VisitNearbyObject(target->GetMap()->GetVisibilityRange(), searcher);
-        for (UnitList::iterator iter = targets.begin(); iter != targets.end(); ++iter)
+        for (Unit* unit : targets)
         {
-            if (!(*iter)->HasUnitState(UNIT_STATE_CASTING))
+            if (!unit->HasUnitState(UNIT_STATE_CASTING))
                 continue;
 
             for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
             {
-                if ((*iter)->GetCurrentSpell(i)
-                && (*iter)->GetCurrentSpell(i)->m_targets.GetUnitTargetGUID() == target->GetGUID())
+                if (unit->GetCurrentSpell(i)
+                && unit->GetCurrentSpell(i)->m_targets.GetUnitTargetGUID() == target->GetGUID())
                 {
-                    (*iter)->InterruptSpell(CurrentSpellTypes(i), false);
+                    unit->InterruptSpell(CurrentSpellTypes(i), false);
                 }
             }
         }
         if (!target->GetInstanceScript() || !target->GetInstanceScript()->IsEncounterInProgress())
-            target->CombatStop();
+        {
+            target->CombatStop(false);
+        }
         target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
 
         // prevent interrupt message
-        if (GetCasterGUID() == target->GetGUID() && target->GetCurrentSpell(CURRENT_GENERIC_SPELL))
-            target->FinishSpell(CURRENT_GENERIC_SPELL, false);
+        if (GetCasterGUID() == target->GetGUID())
+        {
+            if (target->GetCurrentSpell(CURRENT_GENERIC_SPELL))
+                target->FinishSpell(CURRENT_GENERIC_SPELL, true);
+
+            // interrupt auto shoot
+            if (target->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL))
+            {
+                target->FinishSpell(CURRENT_AUTOREPEAT_SPELL);
+                target->ToPlayer()->SendAutoRepeatCancel(target);
+            }
+        }
+
         target->InterruptNonMeleeSpells(true);
         target->getHostileRefManager().deleteReferences();
 

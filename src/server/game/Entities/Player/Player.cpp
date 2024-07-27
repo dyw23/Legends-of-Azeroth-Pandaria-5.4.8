@@ -22124,7 +22124,7 @@ void Player::SendAutoRepeatCancel(Unit* target)
     data.WriteByteSeq(Guid[4]);
     data.WriteByteSeq(Guid[1]);
     data.WriteByteSeq(Guid[3]);
-    GetSession()->SendPacket(&data);
+    SendMessageToSet(&data, false);
 }
 
 void Player::SendExplorationExperience(uint32 Area, uint32 Experience)
