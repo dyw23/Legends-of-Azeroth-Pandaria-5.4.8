@@ -629,9 +629,9 @@ void ObjectMgr::LoadCreatureTemplateAddons()
         creatureAddon.sheathState       = fields[6].GetUInt8();
         creatureAddon.pvpFlags          = fields[7].GetUInt8();
         creatureAddon.emote             = fields[8].GetUInt32();
-        creatureAddon.aiAnimKit       = fields[9].GetUInt16();
-        creatureAddon.movementAnimKit = fields[10].GetUInt16();
-        creatureAddon.meleeAnimKit    = fields[11].GetUInt16();
+        creatureAddon.aiAnimKit         = fields[9].GetUInt16();
+        creatureAddon.movementAnimKit   = fields[10].GetUInt16();
+        creatureAddon.meleeAnimKit      = fields[11].GetUInt16();
 
         Tokenizer tokens(fields[12].GetString(), ' ');
         uint8 i = 0;
