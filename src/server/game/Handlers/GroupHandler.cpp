@@ -780,8 +780,8 @@ void WorldSession::HandleRaidTargetUpdateOpcode(WorldPacket& recvData)
     if (!group)
         return;
 
-    uint8 Symbol, Index;
-    recvData >> Symbol >> Index;
+    uint8 PartyIndex, Symbol;
+    recvData >> PartyIndex >> Symbol; // PartyIndex always 0 ?
 
     /** error handling **/
     /********************/
@@ -814,7 +814,7 @@ void WorldSession::HandleRaidTargetUpdateOpcode(WorldPacket& recvData)
         recvData.ReadByteSeq(targetGuid[6]);
         recvData.ReadByteSeq(targetGuid[4]);
 
-        group->SetTargetIcon(Symbol, _player->GetGUID(), targetGuid, Index);
+        group->SetTargetIcon(Symbol, _player->GetGUID(), targetGuid, PartyIndex);
     }
 }
 

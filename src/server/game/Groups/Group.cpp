@@ -1820,18 +1820,18 @@ void Group::CountTheRoll(Rolls::iterator rollI)
     delete roll;
 }
 
-void Group::SetTargetIcon(uint8 id, ObjectGuid whoGuid, ObjectGuid targetGuid, uint8 Index)
+void Group::SetTargetIcon(uint8 symbol, ObjectGuid whoGuid, ObjectGuid targetGuid, uint8 partyIndex)
 {
-    if (id >= TARGETICONCOUNT)
+    if (symbol >= TARGETICONCOUNT)
         return;
 
     // clean other icons
     if (targetGuid != 0)
         for (int i=0; i<TARGETICONCOUNT; ++i)
             if (m_targetIcons[i] == targetGuid)
-                SetTargetIcon(i, ObjectGuid::Empty, ObjectGuid::Empty, 0);
+                SetTargetIcon(i, ObjectGuid::Empty, ObjectGuid::Empty, partyIndex);
 
-    m_targetIcons[id] = targetGuid;
+    m_targetIcons[symbol] = targetGuid;
 
     WorldPacket data(SMSG_RAID_TARGET_UPDATE_SINGLE, 8 + 1 + 8 + 1);
 
@@ -1854,7 +1854,7 @@ void Group::SetTargetIcon(uint8 id, ObjectGuid whoGuid, ObjectGuid targetGuid, u
 
     data.WriteByteSeq(targetGuid[1]);
 
-    data << uint8(id);
+    data << uint8(partyIndex);
 
     data.WriteByteSeq(whoGuid[0]);
     data.WriteByteSeq(whoGuid[5]);
@@ -1869,7 +1869,7 @@ void Group::SetTargetIcon(uint8 id, ObjectGuid whoGuid, ObjectGuid targetGuid, u
     data.WriteByteSeq(targetGuid[5]);
     data.WriteByteSeq(whoGuid[6]);
 
-    data << uint8(Index);
+    data << uint8(symbol);
 
     data.WriteByteSeq(whoGuid[4]);
     data.WriteByteSeq(whoGuid[2]);
