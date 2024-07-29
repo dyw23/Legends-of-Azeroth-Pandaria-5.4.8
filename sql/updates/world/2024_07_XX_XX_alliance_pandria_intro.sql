@@ -86,7 +86,7 @@ DELETE FROM `creature` WHERE `guid` BETWEEN 570539 AND 570611;
 -- new creature 
 SET @CGUID:=4000000;
 DELETE FROM `creature` WHERE `guid` BETWEEN @CGUID+0 AND @CGUID+77;
-INSERT INTO `creature` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `PhaseId`, `PhaseGroup`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `wander_distance`, `currentwaypoint`, `curhealth`, `curmana`, `Movement_Type`, `npcflag`, `unit_flags`, `unit_flags2`, `dynamicflags`, `VerifiedBuild`) VALUES
+INSERT INTO `creature` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `PhaseId`, `PhaseGroup`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `wander_distance`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `unit_flags`, `unit_flags2`, `dynamicflags`, `VerifiedBuild`) VALUES
 (@CGUID+0, 66480, 0, 1519, 6555, 1, 1686, 0, 0, 0, -7873.548828125, 1287.454833984375, 341.7664794921875, 1.134044289588928222, 120, 0, 0, 2854, 0, 0, 0, 0, 0, 0, 55261), -- Skyfire Engineer (Area: Northern Elwynn Mountains - Difficulty: 0) CreateObject1
 (@CGUID+1, 66460, 0, 1519, 6555, 1, 1686, 0, 0, 0, -7885.12158203125, 1339.751708984375, 338.94195556640625, 6.279649734497070312, 120, 0, 0, 8562, 0, 0, 0, 0, 0, 0, 55261), -- Skyfire Gyrocopter Pilot (Area: Northern Elwynn Mountains - Difficulty: 0) CreateObject1
 (@CGUID+2, 66480, 0, 1519, 6555, 1, 1686, 0, 0, 0, -7896.697265625, 1353.548095703125, 338.84442138671875, 4.525454998016357421, 120, 0, 0, 2854, 0, 0, 0, 0, 0, 0, 55261), -- Skyfire Engineer (Area: Northern Elwynn Mountains - Difficulty: 0) CreateObject1
@@ -296,7 +296,6 @@ INSERT INTO `creature_addon` (`guid`, `Path_Id`, `mount`, `StandState`, `AnimTie
 
 
 -- Sky Captain Callanan entry 64859
--- SET @CGUID := xxxxxx;
 SET @PATH := (@CGUID+70) * 10;
 DELETE FROM `waypoint_data` WHERE `id`= @PATH;
 INSERT INTO `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `delay`) VALUES
@@ -314,10 +313,88 @@ INSERT INTO `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `positio
 (@PATH, 11, -7880.628, 1356.922, 338.8488, NULL, 4),
 (@PATH, 12, -7880.561, 1309.455, 338.8661, NULL, 0);
 
--- 66480
+UPDATE `creature` SET `position_x`= -7880.561, `position_y`= 1309.455, `position_z`= 338.8661, `orientation`= 0, `wander_distance`= 0, `Movement_Type`= 2 WHERE `guid`= @CGUID+70;
+UPDATE `creature_addon` SET `Path_Id`=@PATH WHERE `guid`= @CGUID+70;
 
-SET @CGUID := xxxxxx;
-SET @PATH := @CGUID * 10;
+-- Skyfire Engineer entry 66480
+SET @PATH := (@CGUID+73) * 10;
+DELETE FROM `waypoint_data` WHERE `id`= @PATH;
+INSERT INTO `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `delay`) VALUES
+(@PATH, 0, -7898.217, 1334.785, 338.7588, NULL, -850),
+(@PATH, 1, -7898.092, 1331.565, 338.7538, NULL, -1297),
+(@PATH, 2, -7898.2, 1311.845, 338.8352, NULL, -670),
+(@PATH, 3, -7897.707, 1307.313, 338.8441, NULL, -1525),
+(@PATH, 4, -7896.303, 1306.513, 339.1078, NULL, 6316),
+(@PATH, 5, -7898.241, 1311.794, 338.8353, NULL, -1461),
+(@PATH, 6, -7898.234, 1331.564, 338.7529, NULL, -858),
+(@PATH, 7, -7897.993, 1334.594, 338.7627, NULL, -1155),
+(@PATH, 8, -7897.354, 1347.019, 338.8489, NULL, -1265),
+(@PATH, 9, -7897.094, 1350.396, 338.8614, NULL, -1566),
+(@PATH, 10, -7896.434, 1354.962, 338.8368, NULL, -922),
+(@PATH, 11, -7895.198, 1358.918, 339.2335, NULL, -1374),
+(@PATH, 12, -7890.538, 1365.399, 341.8928, NULL, -1124),
+(@PATH, 13, -7888.128, 1368.852, 341.7878, NULL, -1589),
+(@PATH, 14, -7886.337, 1370.811, 341.7793, NULL, -1464),
+(@PATH, 15, -7887.297, 1373.201, 341.8546, NULL, 7206),
+(@PATH, 16, -7891.354, 1365.448, 341.8876, NULL, -1328),
+(@PATH, 17, -7894.981, 1359.024, 339.2612, NULL, -462),
+(@PATH, 18, -7896.505, 1354.563, 338.8389, NULL, -1371),
+(@PATH, 19, -7897.293, 1350.396, 338.8615, NULL, -640),
+(@PATH, 20, -7897.603, 1347.063, 338.8851, NULL, -811),
+(@PATH, 21, -7898.217, 1334.785, 338.7588, NULL, -836),
+(@PATH, 22, -7898.092, 1331.565, 338.7538, NULL, -1173),
+(@PATH, 23, -7898.2, 1311.845, 338.8352, NULL, -1768),
+(@PATH, 24, -7898.128, 1309.794, 338.8607, NULL, -1859),
+(@PATH, 25, -7897.707, 1307.313, 338.8441, NULL, -1336),
+(@PATH, 26, -7896.303, 1306.513, 339.1078, NULL, 7598),
+(@PATH, 27, -7898.241, 1311.794, 338.8353, NULL, -1443),
+(@PATH, 28, -7898.234, 1331.564, 338.7529, NULL, -913),
+(@PATH, 29, -7897.993, 1334.594, 338.7627, NULL, -1133),
+(@PATH, 30, -7897.354, 1347.019, 338.8489, NULL, -1254),
+(@PATH, 31, -7897.094, 1350.396, 338.8614, NULL, -1541),
+(@PATH, 32, -7896.434, 1354.962, 338.8368, NULL, -922),
+(@PATH, 33, -7895.198, 1358.918, 339.2335, NULL, -1399),
+(@PATH, 34, -7890.538, 1365.399, 341.8928, NULL, -1122),
+(@PATH, 35, -7888.128, 1368.852, 341.7878, NULL, -1614),
+(@PATH, 36, -7886.337, 1370.811, 341.7793, NULL, -1454),
+(@PATH, 37, -7887.297, 1373.201, 341.8546, NULL, 8430),
+(@PATH, 38, -7891.354, 1365.448, 341.8876, NULL, -1162),
+(@PATH, 39, -7894.981, 1359.024, 339.2612, NULL, -667),
+(@PATH, 40, -7896.505, 1354.563, 338.8389, NULL, -1368),
+(@PATH, 41, -7897.293, 1350.396, 338.8615, NULL, -640),
+(@PATH, 42, -7897.603, 1347.063, 338.8851, NULL, -819),
+(@PATH, 43, -7898.217, 1334.785, 338.7588, NULL, -854),
+(@PATH, 44, -7898.092, 1331.565, 338.7538, NULL, -1205),
+(@PATH, 45, -7898.2, 1311.845, 338.8352, NULL, -1773),
+(@PATH, 46, -7898.128, 1309.794, 338.8607, NULL, -1630),
+(@PATH, 47, -7897.707, 1307.313, 338.8441, NULL, -1323),
+(@PATH, 48, -7896.303, 1306.513, 339.1078, NULL, 4087),
+(@PATH, 49, -7898.241, 1311.794, 338.8353, NULL, -1447),
+(@PATH, 50, -7898.234, 1331.564, 338.7529, NULL, -919),
+(@PATH, 51, -7897.993, 1334.594, 338.7627, NULL, -1156),
+(@PATH, 52, -7897.354, 1347.019, 338.8489, NULL, -1236),
+(@PATH, 53, -7897.094, 1350.396, 338.8614, NULL, -1556),
+(@PATH, 54, -7896.434, 1354.962, 338.8368, NULL, -918),
+(@PATH, 55, -7895.198, 1358.918, 339.2335, NULL, -1379),
+(@PATH, 56, -7890.538, 1365.399, 341.8928, NULL, -1143),
+(@PATH, 57, -7888.128, 1368.852, 341.7878, NULL, -1600),
+(@PATH, 58, -7886.337, 1370.811, 341.7793, NULL, -1447),
+(@PATH, 59, -7887.297, 1373.201, 341.8546, NULL, 4779),
+(@PATH, 60, -7891.354, 1365.448, 341.8876, NULL, -1156),
+(@PATH, 61, -7894.981, 1359.024, 339.2612, NULL, -670),
+(@PATH, 62, -7896.505, 1354.563, 338.8389, NULL, -1393),
+(@PATH, 63, -7897.293, 1350.396, 338.8615, NULL, -668),
+(@PATH, 64, -7897.603, 1347.063, 338.8851, NULL, -838),
+(@PATH, 65, -7898.217, 1334.785, 338.7588, NULL, -872),
+(@PATH, 66, -7898.092, 1331.565, 338.7538, NULL, -1221),
+(@PATH, 67, -7898.2, 1311.845, 338.8352, NULL, 0);
+
+UPDATE `creature` SET `position_x`= -7898.217, `position_y`= 1334.785, `position_z`= 338.7588, `orientation`= 0, `wander_distance`= 0, `MovementType`= 2 WHERE `guid`= @CGUID+73;
+UPDATE `creature_addon` SET `Path_Id`=@PATH WHERE `guid`= @CGUID+73;
+
+-- 0 2 6 9 41 
+-- 2
+SET @PATH := (@CGUID+2) * 10;
 DELETE FROM `waypoint_data` WHERE `id`= @PATH;
 INSERT INTO `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `delay`) VALUES
 (@PATH, 0, -7864.146, 1347.302, 338.8495, NULL, -1534),
@@ -383,28 +460,160 @@ INSERT INTO `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `positio
 (@PATH, 60, -7863.128, 1334.852, 338.816, NULL, -1710),
 (@PATH, 61, -7862.993, 1331.79, 338.757, NULL, 0);
 
-UPDATE `creature` SET `position_x`= -7864.146, `position_y`= 1347.302, `position_z`= 338.8495, `orientation`= NULL, `spawndist`= 0, `MovementType`= 2 WHERE `guid`= @CGUID;
-DELETE FROM `creature_addon` WHERE `guid`= @CGUID;
-INSERT INTO `creature_addon` (`guid`, `waypointPathId`, `bytes2`) VALUES
-(@CGUID, @PATH, 1);
+UPDATE `creature` SET `position_x`= -7864.146, `position_y`= 1347.302, `position_z`= 338.8495, `orientation`= 0, `wander_distance`= 0, `MovementType`= 2 WHERE `guid`= @CGUID+2;
+UPDATE `creature_addon` SET `Path_Id`=@PATH WHERE `guid`= @CGUID+2;
+
+-- Skyfire Marine entry 66300 13 24
+SET @PATH := (@CGUID+13) * 10;
+DELETE FROM `waypoint_data` WHERE `id`= @PATH;
+INSERT INTO `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `delay`) VALUES
+(@PATH, 0, -7918.184, 1278.201, 343.419, NULL, -1381),
+(@PATH, 1, -7909.846, 1279.118, 343.4194, NULL, -1109),
+(@PATH, 2, -7907.689, 1281.033, 343.4207, NULL, -1405),
+(@PATH, 3, -7907.675, 1284.469, 343.4159, NULL, -1165),
+(@PATH, 4, -7907.734, 1287.304, 342.5475, NULL, -1146),
+(@PATH, 5, -7907.151, 1290.3, 341.6843, NULL, -1225),
+(@PATH, 6, -7906.318, 1292.972, 341.079, NULL, -1168),
+(@PATH, 7, -7904.79, 1295.391, 340.2517, NULL, -1171),
+(@PATH, 8, -7902.833, 1297.823, 339.0133, NULL, -1295),
+(@PATH, 9, -7898.484, 1299.481, 338.8192, NULL, -745),
+(@PATH, 10, -7893.649, 1300.028, 338.8591, NULL, -1508),
+(@PATH, 11, -7881.143, 1300.394, 338.8939, NULL, -1638),
+(@PATH, 12, -7873.092, 1300.528, 338.929, NULL, -1246),
+(@PATH, 13, -7864.866, 1300.524, 338.907, NULL, -909),
+(@PATH, 14, -7861.866, 1299.931, 338.8307, NULL, -907),
+(@PATH, 15, -7861.866, 1299.931, 338.8307, NULL, -907),
+(@PATH, 16, -7861.866, 1299.931, 338.8307, NULL, -907),
+(@PATH, 17, -7861.866, 1299.931, 338.8307, NULL, -907),
+(@PATH, 18, -7857.518, 1298.873, 338.9271, NULL, -1521),
+(@PATH, 19, -7855.948, 1296.469, 340.0026, NULL, -1465),
+(@PATH, 20, -7854.58, 1293.767, 340.9899, NULL, -1470),
+(@PATH, 21, -7853.491, 1291.102, 341.6073, NULL, -1478),
+(@PATH, 22, -7852.777, 1288.286, 342.3914, NULL, -1480),
+(@PATH, 23, -7852.734, 1285.504, 343.2705, NULL, -1430),
+(@PATH, 24, -7852.34, 1281.38, 343.4205, NULL, -694),
+(@PATH, 25, -7849.528, 1279.859, 343.4193, NULL, -738),
+(@PATH, 26, -7837.253, 1276.924, 343.4189, NULL, 8779),
+(@PATH, 27, -7846.018, 1279.769, 343.4193, NULL, -1286),
+(@PATH, 28, -7852.905, 1282.254, 343.421, NULL, -1760),
+(@PATH, 29, -7852.759, 1284.957, 343.4159, NULL, -1640),
+(@PATH, 30, -7852.844, 1287.606, 342.6082, NULL, -1526),
+(@PATH, 31, -7853.229, 1290.332, 341.7832, NULL, -1485),
+(@PATH, 32, -7853.87, 1292.938, 341.2007, NULL, -1381),
+(@PATH, 33, -7855.224, 1295.969, 340.3858, NULL, -1549),
+(@PATH, 34, -7858.026, 1298.47, 338.877, NULL, -881),
+(@PATH, 35, -7861.931, 1299.847, 338.834, NULL, -1060),
+(@PATH, 36, -7872.624, 1300.335, 338.8302, NULL, -627),
+(@PATH, 37, -7879.412, 1300.306, 338.7977, NULL, -915),
+(@PATH, 38, -7889.403, 1300.116, 338.837, NULL, -1288),
+(@PATH, 39, -7898.603, 1299.717, 338.8099, NULL, -1348),
+(@PATH, 40, -7902.866, 1298.318, 338.8956, NULL, -705),
+(@PATH, 41, -7904.924, 1296.033, 340.0885, NULL, -811),
+(@PATH, 42, -7906.042, 1293.042, 341.0515, NULL, -962),
+(@PATH, 43, -7906.772, 1290.102, 341.7087, NULL, -969),
+(@PATH, 44, -7907.167, 1287.314, 342.5593, NULL, -961),
+(@PATH, 45, -7908.307, 1281.337, 343.4207, NULL, -1031),
+(@PATH, 46, -7913.603, 1278.858, 343.4189, NULL, -949),
+(@PATH, 47, -7924.332, 1276.031, 343.4189, NULL, 7939),
+(@PATH, 48, -7918.184, 1278.201, 343.419, NULL, -1463),
+(@PATH, 49, -7909.846, 1279.118, 343.4194, NULL, -1044),
+(@PATH, 50, -7907.689, 1281.033, 343.4207, NULL, -1070),
+(@PATH, 51, -7907.675, 1284.469, 343.4159, NULL, -1236),
+(@PATH, 52, -7907.734, 1287.304, 342.5475, NULL, -1214),
+(@PATH, 53, -7907.151, 1290.3, 341.6843, NULL, -1284),
+(@PATH, 54, -7906.318, 1292.972, 341.079, NULL, -1396),
+(@PATH, 55, -7904.79, 1295.391, 340.2517, NULL, -1022),
+(@PATH, 56, -7902.833, 1297.823, 339.0133, NULL, -1333),
+(@PATH, 57, -7898.484, 1299.481, 338.8192, NULL, -775),
+(@PATH, 58, -7893.649, 1300.028, 338.8591, NULL, -1551),
+(@PATH, 59, -7881.143, 1300.394, 338.8939, NULL, -1701),
+(@PATH, 60, -7873.092, 1300.528, 338.929, NULL, -1322),
+(@PATH, 61, -7864.866, 1300.524, 338.907, NULL, -956),
+(@PATH, 62, -7861.866, 1299.931, 338.8307, NULL, -988),
+(@PATH, 63, -7857.518, 1298.873, 338.9271, NULL, -1593),
+(@PATH, 64, -7855.948, 1296.469, 340.0026, NULL, -1525),
+(@PATH, 65, -7854.58, 1293.767, 340.9899, NULL, -1547),
+(@PATH, 66, -7853.491, 1291.102, 341.6073, NULL, -1558),
+(@PATH, 67, -7852.777, 1288.286, 342.3914, NULL, -1547),
+(@PATH, 68, -7852.734, 1285.504, 343.2705, NULL, -1506),
+(@PATH, 69, -7852.34, 1281.38, 343.4205, NULL, -747),
+(@PATH, 70, -7849.528, 1279.859, 343.4193, NULL, -827),
+(@PATH, 71, -7837.253, 1276.924, 343.4189, NULL, 12475),
+(@PATH, 72, -7846.018, 1279.769, 343.4193, NULL, -1261),
+(@PATH, 73, -7852.905, 1282.254, 343.421, NULL, -1780),
+(@PATH, 74, -7852.759, 1284.957, 343.4159, NULL, -1649),
+(@PATH, 75, -7852.844, 1287.606, 342.6082, NULL, -1544),
+(@PATH, 76, -7853.229, 1290.332, 341.7832, NULL, -1501),
+(@PATH, 77, -7853.87, 1292.938, 341.2007, NULL, -1399),
+(@PATH, 78, -7855.224, 1295.969, 340.3858, NULL, -1549),
+(@PATH, 79, -7858.026, 1298.47, 338.877, NULL, -744),
+(@PATH, 80, -7861.931, 1299.847, 338.834, NULL, -1184),
+(@PATH, 81, -7872.624, 1300.335, 338.8302, NULL, -620),
+(@PATH, 82, -7879.412, 1300.306, 338.7977, NULL, -915),
+(@PATH, 83, -7889.403, 1300.116, 338.837, NULL, -1289),
+(@PATH, 84, -7898.603, 1299.717, 338.8099, NULL, -1332),
+(@PATH, 85, -7902.866, 1298.318, 338.8956, NULL, -682),
+(@PATH, 86, -7904.924, 1296.033, 340.0885, NULL, -806),
+(@PATH, 87, -7906.042, 1293.042, 341.0515, NULL, -1010),
+(@PATH, 88, -7906.772, 1290.102, 341.7087, NULL, -910),
+(@PATH, 89, -7907.167, 1287.314, 342.5593, NULL, -948),
+(@PATH, 90, -7908.307, 1281.337, 343.4207, NULL, -1040),
+(@PATH, 91, -7913.603, 1278.858, 343.4189, NULL, -970),
+(@PATH, 92, -7924.332, 1276.031, 343.4189, NULL, 4284),
+(@PATH, 93, -7918.184, 1278.201, 343.419, NULL, -1388),
+(@PATH, 94, -7909.846, 1279.118, 343.4194, NULL, 0);
+
+UPDATE `creature` SET `position_x`= -7918.184, `position_y`= 1278.201, `position_z`= 343.419, `orientation`= 0, `wander_distance`= 0, `MovementType`= 2 WHERE `guid`= @CGUID+13;
+UPDATE `creature_addon` SET `Path_Id`=@PATH WHERE `guid`= @CGUID+13;
 
 
+SET @PATH := (@CGUID+24) * 10;
+DELETE FROM `waypoint_data` WHERE `id`= @PATH;
+INSERT INTO `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `delay`) VALUES
+(@PATH, 0, -7913.793, 1272.946, 343.631, NULL, -793),
+(@PATH, 1, -7896.021, 1272.911, 357.8981, NULL, -1365),
+(@PATH, 2, -7877.344, 1272.96, 358.4773, NULL, -1656),
+(@PATH, 3, -7864.49, 1273.271, 357.9572, NULL, -889),
+(@PATH, 4, -7846.616, 1273.462, 343.7882, NULL, -1562),
+(@PATH, 5, -7838.893, 1273.733, 343.4214, NULL, 3787),
+(@PATH, 6, -7846.41, 1273.736, 343.6446, NULL, -615),
+(@PATH, 7, -7863.997, 1272.894, 357.7568, NULL, -1119),
+(@PATH, 8, -7878.991, 1273.036, 358.4794, NULL, -1218),
+(@PATH, 9, -7894.147, 1273.177, 358.0936, NULL, -1349),
+(@PATH, 10, -7895.984, 1272.773, 357.9295, NULL, -951),
+(@PATH, 11, -7913.762, 1272.842, 343.6524, NULL, -1581),
+(@PATH, 12, -7921.799, 1273.422, 343.421, NULL, 8499),
+(@PATH, 13, -7913.793, 1272.946, 343.631, NULL, -802),
+(@PATH, 14, -7896.021, 1272.911, 357.8981, NULL, -1414),
+(@PATH, 15, -7877.344, 1272.96, 358.4773, NULL, -1725),
+(@PATH, 16, -7864.49, 1273.271, 357.9572, NULL, -1013),
+(@PATH, 17, -7846.616, 1273.462, 343.7882, NULL, -1602),
+(@PATH, 18, -7838.893, 1273.733, 343.4214, NULL, 3693),
+(@PATH, 19, -7846.41, 1273.736, 343.6446, NULL, -609),
+(@PATH, 20, -7863.997, 1272.894, 357.7568, NULL, -1154),
+(@PATH, 21, -7878.991, 1273.036, 358.4794, NULL, -1205),
+(@PATH, 22, -7894.147, 1273.177, 358.0936, NULL, -1532),
+(@PATH, 23, -7895.984, 1272.773, 357.9295, NULL, -793),
+(@PATH, 24, -7913.762, 1272.842, 343.6524, NULL, -1492),
+(@PATH, 25, -7921.799, 1273.422, 343.421, NULL, 3804),
+(@PATH, 26, -7913.793, 1272.946, 343.631, NULL, -817),
+(@PATH, 27, -7896.021, 1272.911, 357.8981, NULL, -1420),
+(@PATH, 28, -7877.344, 1272.96, 358.4773, NULL, -1688),
+(@PATH, 29, -7864.49, 1273.271, 357.9572, NULL, -945),
+(@PATH, 30, -7846.616, 1273.462, 343.7882, NULL, -1634),
+(@PATH, 31, -7838.893, 1273.733, 343.4214, NULL, 3695),
+(@PATH, 32, -7846.41, 1273.736, 343.6446, NULL, -615),
+(@PATH, 33, -7863.997, 1272.894, 357.7568, NULL, -1124),
+(@PATH, 34, -7878.991, 1273.036, 358.4794, NULL, 0);
+
+UPDATE `creature` SET `position_x`= -7913.793, `position_y`= 1272.946, `position_z`= 343.631, `orientation`= 0, `wander_distance`= 0, `MovementType`= 2 WHERE `guid`= @CGUID+24;
+UPDATE `creature_addon` SET `Path_Id`=@PATH WHERE `guid`= @CGUID+24;
+
+-- Captain Day entry 64861
+-- SAI
+-- @CGUID+7
 
 
-
-
-
-
-
-
-
-
-
-UPDATE `creature` SET `position_x`= -7880.561, `position_y`= 1309.455, `position_z`= 338.8661, `orientation`= 0, `wander_distance`= 0, `Movement_Type`= 2 WHERE `guid`= @CGUID+70;
-UPDATE `creature_addon` SET `Path_Id`=@PATH WHERE `guid`= @CGUID+70;
--- DELETE FROM `creature_addon` WHERE `guid`= @CGUID;
--- INSERT INTO `creature_addon` (`guid`, `waypointPathId`, `bytes2`) VALUES
--- (@CGUID, @PATH, 1);
 
 
 
@@ -427,8 +636,8 @@ UPDATE `creature_addon` SET `Path_Id`=@PATH WHERE `guid`= @CGUID+70;
 
 DELETE FROM `gameobject` WHERE `guid` BETWEEN @OGUID+0 AND @OGUID+6;
 INSERT INTO `gameobject` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnDifficulties`, `PhaseId`, `PhaseGroup`, `position_x`, `position_y`, `position_z`, `orientation`, `rotation0`, `rotation1`, `rotation2`, `rotation3`, `spawntimesecs`, `animprogress`, `state`, `VerifiedBuild`) VALUES
-(@OGUID+0, 215648, 0, 1519, 6555, '0', '23766 - 10335 - 10336 - 21820 - 6690 - 1706 - 20045 - 8389 - 10347 - 8658 - 7510 - 7434 - 21855 - 4064 - 16439 - 16440 - 4070 - 1139 - 11910 - 6481 - 1231 - 22154 - 16013 - 1686 - 1687', 0, -7894.48974609375, 1354.6822509765625, 339.892852783203125, 0, 0, 0, 0, 1, 120, 255, 1, 55261), -- Medical Supply Crate (Area: Northern Elwynn Mountains - Difficulty: 0) CreateObject1
-(@OGUID+1, 215648, 0, 1519, 6555, '0', '23766 - 10335 - 10336 - 21820 - 6690 - 1706 - 20045 - 8389 - 10347 - 8658 - 7510 - 7434 - 21855 - 4064 - 16439 - 16440 - 4070 - 1139 - 11910 - 6481 - 1231 - 22154 - 16013 - 1686 - 1687', 0, -7892.52783203125, 1354.90625, 338.81634521484375, 0, 0, 0, 0, 1, 120, 255, 1, 55261), -- Medical Supply Crate (Area: Northern Elwynn Mountains - Difficulty: 0) CreateObject1
+(@OGUID+0, 215648, 0, 1519, 6555, '0', 1686, 0, -7894.48974609375, 1354.6822509765625, 339.892852783203125, 0, 0, 0, 0, 1, 120, 255, 1, 55261), -- Medical Supply Crate (Area: Northern Elwynn Mountains - Difficulty: 0) CreateObject1
+(@OGUID+1, 215648, 0, 1519, 6555, '0', 1686, 0, -7892.52783203125, 1354.90625, 338.81634521484375, 0, 0, 0, 0, 1, 120, 255, 1, 55261), -- Medical Supply Crate (Area: Northern Elwynn Mountains - Difficulty: 0) CreateObject1
 (@OGUID+2, 215648, 0, 1519, 6555, '0', '23766 - 10335 - 10336 - 21820 - 6690 - 1706 - 20045 - 8389 - 10347 - 8658 - 7510 - 7434 - 21855 - 4064 - 16439 - 16440 - 4070 - 1139 - 11910 - 6481 - 1231 - 22154 - 16013 - 1686 - 1687', 0, -7893.98095703125, 1355.5555419921875, 338.81695556640625, 0, 0, 0, 0, 1, 120, 255, 1, 55261), -- Medical Supply Crate (Area: Northern Elwynn Mountains - Difficulty: 0) CreateObject1
 -- (@OGUID+3, 216056, 0, 1519, 6555, '0', '23766 - 10335 - 10336 - 21820 - 6690 - 1706 - 20045 - 8389 - 10347 - 8658 - 7510 - 7434 - 21855 - 4064 - 16439 - 16440 - 4070 - 1139 - 11910 - 6481 - 1231 - 22154 - 16013 - 1686 - 1687', 0, -7879.80029296875, 1279.515625, 358.560516357421875, 4.728822231292724609, 0, 0, -0.70127296447753906, 0.712892889976501464, 120, 255, 1, 55261), -- Collision PC Size (Area: Northern Elwynn Mountains - Difficulty: 0) CreateObject1 - !!! might be temporary spawn !!!
 (@OGUID+4, 215648, 0, 1519, 6555, '0', '23766 - 10335 - 10336 - 21820 - 6690 - 1706 - 20045 - 8389 - 10347 - 8658 - 7510 - 7434 - 21855 - 4064 - 16439 - 16440 - 4070 - 1139 - 11910 - 6481 - 1231 - 22154 - 16013 - 1686 - 1687', 0, -7892.501953125, 1353.515625, 338.827392578125, 0, 0, 0, 0, 1, 120, 255, 1, 55261), -- Medical Supply Crate (Area: Northern Elwynn Mountains - Difficulty: 0) CreateObject1
