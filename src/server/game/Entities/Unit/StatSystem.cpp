@@ -162,9 +162,9 @@ void Unit::UpdateAttackSpeed(WeaponAttackType att)
         if (IsSummon())
             timer = ToTempSummon()->GetBaseAttackTimer();
         else if (att == RANGED_ATTACK)
-            timer = ToCreature()->GetCreatureTemplate()->rangeattacktime;
+            timer = ToCreature()->GetCreatureTemplate()->RangeAttackTime;
         else
-            timer = ToCreature()->GetCreatureTemplate()->baseattacktime;
+            timer = ToCreature()->GetCreatureTemplate()->BaseAttackTime;
     }
 
     SetFloatValue(UNIT_FIELD_ATTACK_ROUND_BASE_TIME + att, timer * val);

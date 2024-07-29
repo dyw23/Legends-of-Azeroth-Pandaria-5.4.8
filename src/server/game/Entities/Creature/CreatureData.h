@@ -163,8 +163,8 @@ struct TC_GAME_API CreatureTemplate
     uint32  dmgschool;
     uint32  attackpower;
     float   dmg_multiplier;
-    uint32  baseattacktime;
-    uint32  rangeattacktime;
+    uint32  BaseAttackTime;
+    uint32  RangeAttackTime;
     uint32  unit_class;                                     // enum Classes. Note only 4 classes are known for creatures.
     uint32  unit_flags;                                     // enum UnitFlags mask values
     uint32  unit_flags2;                                    // enum UnitFlags2 mask values

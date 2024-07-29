@@ -427,7 +427,7 @@ void ObjectMgr::LoadCreatureTemplates()
     //                                           11       12      13        14        15           16           17        18     19     20        21        22         23        24        
                                              "modelid4, name, femaleName, subname, IconName, gossip_menu_id, minlevel, maxlevel, exp, exp_unk, faction, npcflag, npcflag2, speed_walk, "
     //                                            25       26     27      28      29       30          31             32              33              34             35          36           37
-                                             "speed_run, scale, `rank`, mindmg, maxdmg, dmgschool, attackpower, dmg_multiplier, baseattacktime, rangeattacktime, unit_class, unit_flags, unit_flags2, "
+                                             "speed_run, scale, `rank`, mindmg, maxdmg, dmgschool, attackpower, dmg_multiplier, BaseAttackTime, RangeAttackTime, unit_class, unit_flags, unit_flags2, "
     //                                             38         39         40             41            42           43           44              45           46
                                              "dynamicflags, family, trainer_type, trainer_class, trainer_race, minrangedmg, maxrangedmg, rangedattackpower, type, "
     //                                            47           48        49         50            51          52          53           54           55           56           57
@@ -492,8 +492,8 @@ void ObjectMgr::LoadCreatureTemplates()
         creatureTemplate.dmgschool         = uint32(fields[30].GetInt8());
         creatureTemplate.attackpower       = fields[31].GetUInt32();
         creatureTemplate.dmg_multiplier    = fields[32].GetFloat();
-        creatureTemplate.baseattacktime    = fields[33].GetUInt32();
-        creatureTemplate.rangeattacktime   = fields[34].GetUInt32();
+        creatureTemplate.BaseAttackTime    = fields[33].GetUInt32();
+        creatureTemplate.RangeAttackTime   = fields[34].GetUInt32();
         creatureTemplate.unit_class        = uint32(fields[35].GetUInt8());
         creatureTemplate.unit_flags        = fields[36].GetUInt32();
         creatureTemplate.unit_flags2       = fields[37].GetUInt32();
@@ -999,11 +999,11 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
         const_cast<CreatureTemplate*>(cInfo)->dmgschool = SPELL_SCHOOL_NORMAL;
     }
 
-    if (cInfo->baseattacktime == 0)
-        const_cast<CreatureTemplate*>(cInfo)->baseattacktime = BASE_ATTACK_TIME;
+    if (cInfo->BaseAttackTime == 0)
+        const_cast<CreatureTemplate*>(cInfo)->BaseAttackTime = BASE_ATTACK_TIME;
 
-    if (cInfo->rangeattacktime == 0)
-        const_cast<CreatureTemplate*>(cInfo)->rangeattacktime = BASE_ATTACK_TIME;
+    if (cInfo->RangeAttackTime == 0)
+        const_cast<CreatureTemplate*>(cInfo)->RangeAttackTime = BASE_ATTACK_TIME;
 
     if ((cInfo->npcflag & UNIT_NPC_FLAG_TRAINER) && cInfo->trainer_type >= MAX_TRAINER_TYPE)
         TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) has wrong trainer type %u.", cInfo->Entry, cInfo->trainer_type);
@@ -1962,7 +1962,7 @@ void ObjectMgr::LoadCreatures()
     //                                                      0        1   2      3          4            5           6           7            8            9                10                11
     QueryResult result = WorldDatabase.Query("SELECT creature.guid, id, map, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawntimesecs_max, wander_distance, "
     //         12            13         14         15          16         17       18                19                   20          21          22                23                 24                   25                    26                     27                   28
-        "currentwaypoint, curhealth, curmana, movement_type, spawnMask, phaseMask, creature.phaseid, creature.phasegroup, eventEntry, pool_entry, creature.npcflag, creature.npcflag2, creature.unit_flags, creature.unit_flags2, creature.dynamicflags, creature.ScriptName, creature.walk_mode "
+        "currentwaypoint, curhealth, curmana, MovementType, spawnMask, phaseMask, creature.phaseid, creature.phasegroup, eventEntry, pool_entry, creature.npcflag, creature.npcflag2, creature.unit_flags, creature.unit_flags2, creature.dynamicflags, creature.ScriptName, creature.walk_mode "
         "FROM creature "
         "LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid "
         "LEFT OUTER JOIN pool_creature ON creature.guid = pool_creature.guid");

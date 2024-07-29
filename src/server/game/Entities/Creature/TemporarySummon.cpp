@@ -390,7 +390,7 @@ uint32 TempSummon::GetBaseAttackTimer() const
         case 27893: // Dancing Rune Weapon
         case 62982: // Mindbender
         case 63508: // Xuen
-            return ToCreature()->GetCreatureTemplate()->baseattacktime;
+            return ToCreature()->GetCreatureTemplate()->BaseAttackTime;
     }
     return BASE_ATTACK_TIME;
 }
