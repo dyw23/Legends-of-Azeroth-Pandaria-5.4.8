@@ -1521,7 +1521,8 @@ UPDATE `creature_template` SET `unit_flags`=0 WHERE `entry`=66480; -- Skyfire En
 
 UPDATE `creature_template_addon` SET `auras`='' WHERE `entry`=66300;
 
-
+-- Creature text for Nodd Codejack <SI:7> 55832
+DELETE FROM `creature_text` WHERE `CreatureID`=55832;
 INSERT INTO `creature_text` (`CreatureID`, `GroupID`, `ID`, `Text`, `Type`, `Language`, `Probability`, `Emote`, `Duration`, `Sound`, `BroadcastTextId`, `TextRange`, `comment`) VALUES
-(55832, @GROUP_ID+0, @ID+, '13個旋軸反穩定器?確認。10個合金握柄?確認。我把我最愛的扳手放哪去了?', 12, 0, 100, 0, 0, 0, UNKNOWN, 0, '諾德‧代碼傑克'),
-(55832, @GROUP_ID+1, @ID+, '只有三十架旋翼機?我們在這場戰鬥結束前還需要比這還多上許多的旋翼機。', 12, 0, 100, 0, 0, 0, UNKNOWN, 0, '諾德‧代碼傑克');
+(55832, 0, 0, '13 gyromantic destabilizers? Check. 10 gnumatic flangegrips? Check. Now where did I put my favorite wrench?', 12, 0, 100, 0, 0, 0, 67697, 0, 'Nodd Codejack <SI:7>'),
+(55832, 1, 0, 'Only thirty gyrocopters? We are going to need way more than that before this is over.', 12, 0, 100, 0, 0, 0, 67699, 0, 'Nodd Codejack <SI:7>');
