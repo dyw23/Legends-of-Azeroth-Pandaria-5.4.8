@@ -455,11 +455,11 @@ bool Group::AddMember(Player* player)
     if (bind && bind->save->GetInstanceId() == player->GetInstanceId())
         player->m_InstanceValid = true;
 
-    if (!isRaidGroup())                                      // reset targetIcons for non-raid-groups
-    {
-        for (uint8 i = 0; i < TARGETICONCOUNT; ++i)
-            m_targetIcons[i].Clear();
-    }
+    //if (!isRaidGroup())                                      // reset targetIcons for non-raid-groups
+    //{
+    //    for (uint8 i = 0; i < TARGETICONCOUNT; ++i)
+    //        m_targetIcons[i].Clear();
+    //}
 
     // insert into the table if we're not a battleground group
     if (!isBGGroup() && !isBFGroup())
@@ -1883,7 +1883,7 @@ void Group::SendTargetIconList(WorldSession* session)
     if (!session)
         return;
 
-    uint8 Index = 0;
+    /*uint8 Index = 0;
     WorldPacket data(SMSG_RAID_TARGET_UPDATE_ALL, (1 + TARGETICONCOUNT * 9));
     data.WriteBits(0, 25);
 
@@ -1916,7 +1916,62 @@ void Group::SendTargetIconList(WorldSession* session)
 
     data << uint8(Index);
 
-    session->SendPacket(&data);
+    session->SendPacket(&data);*/
+
+    //-- SMSG_RAID_TARGET_UPDATE_ALL : packed wrong so we use workaround
+    ObjectGuid whoGuid = GetLeaderGUID();
+
+    for (uint8 i = 0; i < TARGETICONCOUNT; ++i)
+    {
+        if (m_targetIcons[i] == 0)
+            continue;
+
+        ObjectGuid targetGuid = m_targetIcons[i];
+
+        WorldPacket data(SMSG_RAID_TARGET_UPDATE_SINGLE, 8 + 1 + 8 + 1);
+
+        data.WriteBit(whoGuid[6]);
+        data.WriteBit(targetGuid[4]);
+        data.WriteBit(whoGuid[0]);
+        data.WriteBit(whoGuid[7]);
+        data.WriteBit(targetGuid[6]);
+        data.WriteBit(whoGuid[5]);
+        data.WriteBit(whoGuid[3]);
+        data.WriteBit(whoGuid[4]);
+        data.WriteBit(targetGuid[7]);
+        data.WriteBit(targetGuid[2]);
+        data.WriteBit(targetGuid[5]);
+        data.WriteBit(targetGuid[1]);
+        data.WriteBit(whoGuid[2]);
+        data.WriteBit(whoGuid[1]);
+        data.WriteBit(targetGuid[0]);
+        data.WriteBit(targetGuid[3]);
+
+        data.WriteByteSeq(targetGuid[1]);
+
+        data << uint8(0);
+
+        data.WriteByteSeq(whoGuid[0]);
+        data.WriteByteSeq(whoGuid[5]);
+        data.WriteByteSeq(whoGuid[3]);
+        data.WriteByteSeq(targetGuid[7]);
+        data.WriteByteSeq(targetGuid[6]);
+        data.WriteByteSeq(whoGuid[1]);
+        data.WriteByteSeq(targetGuid[2]);
+        data.WriteByteSeq(targetGuid[4]);
+        data.WriteByteSeq(targetGuid[0]);
+        data.WriteByteSeq(targetGuid[3]);
+        data.WriteByteSeq(targetGuid[5]);
+        data.WriteByteSeq(whoGuid[6]);
+
+        data << uint8(i);
+
+        data.WriteByteSeq(whoGuid[4]);
+        data.WriteByteSeq(whoGuid[2]);
+        data.WriteByteSeq(whoGuid[7]);
+
+        BroadcastPacket(&data, true);
+    }
 }
 
 void Group::SendUpdate()

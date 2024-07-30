@@ -1634,6 +1634,7 @@ void WorldSession::HandleGroupRequestJoinUpdates(WorldPacket& recvData)
         return;
 
     group->SendUpdate();
+    group->SendTargetIconList(this);
 }
 
 void WorldSession::HandleClearRaidMarkerOpcode(WorldPacket& recvData)
