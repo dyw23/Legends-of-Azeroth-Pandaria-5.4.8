@@ -564,7 +564,15 @@ void Pet::Update(uint32 diff)
                     m_duration -= diff;
                 else
                 {
-                    Remove(PET_REMOVE_DISMISS);
+                    if (getPetType() != SUMMON_PET)
+                    {
+                        Remove(PET_REMOVE_DISMISS);
+                    }
+                    else
+                    {
+                       Remove(PET_REMOVE_DISMISS, PET_REMOVE_FLAG_RESET_CURRENT); 
+                    }
+                    
                     return;
                 }
             }

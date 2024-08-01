@@ -13820,15 +13820,15 @@ void Unit::RemoveFromWorld()
             }
         }
 
-        if (GetTypeId() == TYPEID_PLAYER)
-        {
-            while (!m_summons.empty())
-            {
-                auto summon = m_summons.front();
-                m_summons.pop_front();
-                summon->UnSummon();
-            }
-        }
+        // if (GetTypeId() == TYPEID_PLAYER)
+        // {
+        //     while (!m_summons.empty())
+        //     {
+        //         auto summon = m_summons.front();
+        //         m_summons.pop_front();
+        //         summon->UnSummon();
+        //     }
+        // }
 
         getHostileRefManager().clearReferences();
 

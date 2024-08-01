@@ -299,6 +299,7 @@ class spell_hunt_stampede : public SpellScript
                     {
                         Pet* pet = new Pet{ player };
                         pet->SetTemporary();
+                        pet->setPetType(SUMMON_PET);
                         Position pos = target->GetRandomNearPosition(MELEE_RANGE + target->GetCombatReach());
                         if (!pet->LoadPetFromDB(PET_LOAD_BY_ENTRY, oldPet->GetEntry(), &pos))
                         {
