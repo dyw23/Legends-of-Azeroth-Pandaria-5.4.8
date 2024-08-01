@@ -13785,6 +13785,9 @@ void Unit::RemoveFromWorld()
         GetMotionMaster()->Clear(false);                    // Do it here, because MovementInform may provoke casts.
 
         m_duringRemoveFromWorld = true;
+        if (UnitAI* ai = GetAI())
+            ai->OnDespawn();
+                    
         if (IsVehicle())
             RemoveVehicleKit(true);
 

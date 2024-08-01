@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -323,9 +323,9 @@ void TempSummon::UnSummon(uint32 msTime)
     }
 
     //ASSERT(!IsPet());
-    if (IsPet() && !ToPet()->IsTemporary())
+    if (IsPet())
     {
-        ((Pet*)this)->Remove(PET_REMOVE_DISMISS, PET_REMOVE_FLAG_RESET_CURRENT);
+        ToPet()->Remove(PET_REMOVE_DISMISS, PET_REMOVE_FLAG_RESET_CURRENT);
         ASSERT(!IsInWorld());
         return;
     }
