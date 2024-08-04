@@ -1134,8 +1134,8 @@ void Item::SendUpdateSockets()
     for (uint32 i = SOCK_ENCHANTMENT_SLOT; i <= SOCK_ENCHANTMENT_SLOT_3; ++i)
         data << uint32(GetEnchantmentId(EnchantmentSlot(i)));
     data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[1]);
     data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[1]);
     data.WriteByteSeq(guid[6]);
 
     GetOwner()->GetSession()->SendPacket(&data);
