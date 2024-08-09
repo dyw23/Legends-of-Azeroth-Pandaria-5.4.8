@@ -26928,17 +26928,21 @@ void Player::UpdateCorpseReclaimDelay()
 int32 Player::CalculateCorpseReclaimDelay(bool load) const
 {
     Corpse* corpse = GetCorpse();
+
     if (load && !corpse)
         return -1;
 
     bool pvp = corpse ? corpse->GetType() == CORPSE_RESURRECTABLE_PVP : (m_ExtraFlags & PLAYER_EXTRA_PVP_DEATH) != 0;
+
     uint32 delay;
+
     if (load)
     {
         if (corpse->GetGhostTime() > m_deathExpireTime)
             return -1;
 
         uint64 count = 0;
+
         if ((pvp && sWorld->getBoolConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVP)) ||
             (!pvp && sWorld->getBoolConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVE)))
         {
@@ -26950,6 +26954,7 @@ int32 Player::CalculateCorpseReclaimDelay(bool load) const
 
         time_t expected_time = corpse->GetGhostTime() + copseReclaimDelay[count];
         time_t now = time(nullptr);
+
         if (now >= expected_time)
             return -1;
 
@@ -26958,18 +26963,14 @@ int32 Player::CalculateCorpseReclaimDelay(bool load) const
     else
         delay = GetCorpseReclaimDelay(pvp);
 
-    return delay;
+    return delay * IN_MILLISECONDS;
 }
 
 void Player::SendCorpseReclaimDelay(uint32 delay)
 {
-    WorldPacket data(SMSG_CORPSE_RECLAIM_DELAY, 4);
-    data.WriteBit(delay == 0);
-
-    if (delay)
-        data << uint32(delay * IN_MILLISECONDS);
-
-    GetSession()->SendPacket(&data);
+    WorldPackets::Misc::CorpseReclaimDelay packet;
+    packet.Remaining = delay;
+    GetSession()->SendPacket(packet.Write());
 }
 
 Player* Player::GetNextRandomRaidMember(float radius)

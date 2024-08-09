@@ -53,6 +53,16 @@ namespace WorldPackets
             uint32 Timer = 0;
         };
 
+        class CorpseReclaimDelay : public ServerPacket
+        {
+        public:
+            CorpseReclaimDelay() : ServerPacket(SMSG_CORPSE_RECLAIM_DELAY, 4) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 Remaining = 0;
+        };
+
         class FarSight final : public ClientPacket
         {
         public:

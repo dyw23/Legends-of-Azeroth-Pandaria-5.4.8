@@ -36,6 +36,16 @@ WorldPacket const* WorldPackets::Misc::StopMirrorTimer::Write()
     return &_worldPacket;
 }
 
+WorldPacket const* WorldPackets::Misc::CorpseReclaimDelay::Write()
+{
+    _worldPacket.WriteBit(Remaining == 0);
+
+    if (Remaining)
+        _worldPacket << uint32(Remaining);
+
+    return &_worldPacket;
+}
+
 void WorldPackets::Misc::FarSight::Read()
 {
     Enable = _worldPacket.ReadBit();
