@@ -635,7 +635,7 @@ class npc_rockfall_tortos : public CreatureScript
             void IsSummonedBy(Unit* /*summoner*/) override
             {
                 Reset();
-                me->SetDisplayId(me->GetCreatureTemplate()->Modelid1);
+                me->SetDisplayFromModel(0);
                 DoCast(me, SPELL_ROCKFALL, true);
                 me->DespawnOrUnsummon(10000);
             }

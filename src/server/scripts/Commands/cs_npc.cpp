@@ -261,7 +261,7 @@ public:
             data.curhealth = 0;
             data.curmana = 0;
             data.currentwaypoint = 0;
-            data.displayid = cinfo->GetFirstValidModelId();
+            //data.displayid = cinfo->GetFirstValidModelId(); Not sure need this line here
             data.dynamicflags = 0;
             data.equipmentId = 0;
             data.mapId = trans->GetGOInfo()->moTransport.mapID;

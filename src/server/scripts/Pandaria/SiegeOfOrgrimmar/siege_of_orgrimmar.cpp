@@ -4798,7 +4798,7 @@ struct npc_siege_of_orgrimmar_sha_cloud : public ScriptedAI
     void Reset() override
     {
         me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
-        me->SetDisplayId(me->GetCreatureTemplate()->Modelid2);
+        me->SetDisplayFromModel(1);
     }
 
     void OnSpellClick(Unit* clicker, bool& /*result*/) override

@@ -105,13 +105,7 @@ struct CreatureData
     uint32 gameEventId = 0;
 };
 
-struct CreatureModelInfo
-{
-    float bounding_radius;
-    float combat_reach;
-    uint8 gender;
-    uint32 modelid_other_gender;
-};
+
 
 // Benchmarked: Faster than std::map (insert/find)
 typedef std::unordered_map<uint16, CreatureModelInfo> CreatureModelContainer;
@@ -260,7 +254,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void RemoveFromWorld() override;
 
         void SetObjectScale(float scale) override;
-        void SetDisplayId(uint32 modelId) override;
+        void SetDisplayId(uint32 displayId, float displayScale = 1.f) override;
+        void SetDisplayFromModel(uint32 modelIdx);
 
         void DisappearAndDie();
 

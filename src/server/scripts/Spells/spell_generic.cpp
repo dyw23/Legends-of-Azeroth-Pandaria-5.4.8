@@ -4337,7 +4337,10 @@ class spell_gen_flesh_to_stone : public AuraScript
     {
         if (Unit* owner = GetUnitOwner())
             if (CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(aurEff->GetMiscValue()))
-                owner->SetDisplayId(creatureTemplate->Modelid2);
+            {
+                CreatureModel const* model2 = creatureTemplate->GetModelByIdx(1);
+                owner->SetDisplayId(model2->CreatureDisplayID);
+            }
     }
 
     void HandleRemoveEffect(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)

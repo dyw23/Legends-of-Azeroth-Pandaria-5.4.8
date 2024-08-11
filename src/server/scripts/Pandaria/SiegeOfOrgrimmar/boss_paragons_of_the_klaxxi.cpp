@@ -4694,7 +4694,8 @@ class spell_paragons_award : public AuraScript
             target->SetTitle(title);
 
         if (auto creat = sObjectMgr->GetCreatureTemplate(GetSpellInfo()->Effects[EFFECT_0].MiscValue))
-            target->SetDisplayId(creat->Modelid1);
+            target->SetDisplayId(creat->GetModelByIdx(0)->CreatureDisplayID);
+
     }
 
     void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)

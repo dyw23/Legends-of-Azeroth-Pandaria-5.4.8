@@ -2240,16 +2240,12 @@ public:
     {
         return GetUInt32Value(UNIT_FIELD_DISPLAY_ID);
     }
-    virtual void SetDisplayId(uint32 modelId);
-    uint32 GetNativeDisplayId() const
-    {
-        return GetUInt32Value(UNIT_FIELD_NATIVE_DISPLAY_ID);
-    }
+    virtual void SetDisplayId(uint32 modelId, float displayScale = 1.f);
+    uint32 GetNativeDisplayId() const { return GetUInt32Value(UNIT_FIELD_NATIVE_DISPLAY_ID); }
+    float GetNativeDisplayScale() const { return 1.0f /**GetFloatValue(UNIT_FIELD_NATIVE_X_DISPLAY_SCALE)**/; }    
     void RestoreDisplayId();
-    void SetNativeDisplayId(uint32 modelId)
-    {
-        SetUInt32Value(UNIT_FIELD_NATIVE_DISPLAY_ID, modelId);
-    }
+    void SetNativeDisplayId(uint32 displayId, float displayScale = 1.f) { SetUInt32Value(UNIT_FIELD_NATIVE_DISPLAY_ID, displayId); /**SetFloatValue(UNIT_FIELD_NATIVE_X_DISPLAY_SCALE, displayScale);**/ }
+
     void setTransForm(uint32 spellid)
     {
         m_transform = spellid;

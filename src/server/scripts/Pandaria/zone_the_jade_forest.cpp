@@ -353,7 +353,7 @@ class npc_kraxik_tornado : public CreatureScript
 
             void Reset() override
             {
-                me->SetDisplayId(me->GetCreatureTemplate()->Modelid1);
+                me->SetDisplayFromModel(0);
                 me->SetReactState(REACT_PASSIVE);
                 me->CastSpell(me, SPELL_TORNADO_DMG);
 

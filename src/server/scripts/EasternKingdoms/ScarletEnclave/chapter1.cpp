@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -357,7 +357,7 @@ struct npc_eye_of_acherus : public ScriptedAI
 {
     npc_eye_of_acherus(Creature* creature) : ScriptedAI(creature)
     {
-        creature->SetDisplayId(creature->GetCreatureTemplate()->Modelid1);
+        me->SetDisplayFromModel(0);
         creature->SetReactState(REACT_PASSIVE);
     }
 
@@ -1080,7 +1080,7 @@ class npc_scarlet_miner_cart : public CreatureScript
             npc_scarlet_miner_cartAI(Creature* creature) : PassiveAI(creature), _minerGUID(), _playerGUID()
             {
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
-                me->SetDisplayId(me->GetCreatureTemplate()->Modelid1); // Modelid2 is a horse.
+                me->SetDisplayFromModel(0);
             }
 
             void JustSummoned(Creature* summon) override
