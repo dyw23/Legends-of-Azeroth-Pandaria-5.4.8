@@ -23303,7 +23303,7 @@ void Player::SetRestBonus(float rest_bonus_new)
         SetByteValue(PLAYER_BYTES_2, 3, REST_STATE_NOT_RAF_LINKED);              // Set Reststate = Normal
 
     //RestTickUpdate
-    SetUInt32Value(PLAYER_BYTES_2_BONUS_POOL, uint32(m_rest_bonus));
+    SetUInt32Value(PLAYER_FIELD_REST_STATE_BONUS_POOL, uint32(m_rest_bonus));
 }
 
 bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc /*= NULL*/, uint32 spellid /*= 0*/)

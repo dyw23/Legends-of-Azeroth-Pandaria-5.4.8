@@ -215,7 +215,7 @@ enum PlayerFields
     PLAYER_FIELD_PVP_POWER_DAMAGE                          = UNIT_END + 0x5B9, // Size: 1, Flags: UF_FLAG_PRIVATE
     PLAYER_FIELD_PVP_POWER_HEALING                         = UNIT_END + 0x5BA, // Size: 1, Flags: UF_FLAG_PRIVATE
     PLAYER_FIELD_EXPLORED_ZONES                            = UNIT_END + 0x5BB, // Size: 200, Flags: UF_FLAG_PRIVATE
-    PLAYER_BYTES_2_BONUS_POOL                     = UNIT_END + 0x683, // Size: 1, Flags: UF_FLAG_PRIVATE
+    PLAYER_FIELD_REST_STATE_BONUS_POOL                     = UNIT_END + 0x683, // Size: 1, Flags: UF_FLAG_PRIVATE
     PLAYER_FIELD_MOD_DAMAGE_DONE_POS                       = UNIT_END + 0x684, // Size: 7, Flags: UF_FLAG_PRIVATE
     PLAYER_FIELD_MOD_DAMAGE_DONE_NEG                       = UNIT_END + 0x68B, // Size: 7, Flags: UF_FLAG_PRIVATE
     PLAYER_FIELD_MOD_DAMAGE_DONE_PERCENT                   = UNIT_END + 0x692, // Size: 7, Flags: UF_FLAG_PRIVATE
