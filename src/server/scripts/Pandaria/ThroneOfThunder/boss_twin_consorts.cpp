@@ -320,7 +320,7 @@ class boss_suen : public CreatureScript
 
                 // if feign death remove
                 me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-                me->RemoveFlag(UNIT_FIELD_FLAGS2, UNIT_FLAG2_FEIGN_DEATH);
+                me->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
 
                 me->GetMap()->SetWorldState(WORLDSTATE_FROM_DUSK_TILL_DOWN, 0);
 
@@ -936,7 +936,7 @@ class boss_lulin : public CreatureScript
 
                 // if feign death remove
                 me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-                me->RemoveFlag(UNIT_FIELD_FLAGS2, UNIT_FLAG2_FEIGN_DEATH);
+                me->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
 
                 scheduler
                     .Schedule(Seconds(2), [this](TaskContext context)

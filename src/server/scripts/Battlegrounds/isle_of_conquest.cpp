@@ -234,7 +234,7 @@ struct npc_ioc_keep_cannon : public VehicleAI
 
     void DamageTaken(Unit* /*attacker*/, uint32& damage) override
     {
-        if (me->HasFlag(UNIT_FIELD_FLAGS2, UNIT_FLAG2_FEIGN_DEATH))
+        if (me->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH))
             damage = 0;
 
         if (me->GetHealth() <= damage)

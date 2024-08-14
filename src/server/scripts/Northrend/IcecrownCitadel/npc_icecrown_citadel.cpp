@@ -2280,7 +2280,7 @@ class npc_ymirjar_deathbringer_10man_icc : public CreatureScript
             void JustSummoned(Creature* summon) override
             {
                 summon->m_Events.Schedule(1, [summon]() { summon->ToTempSummon()->SetTempSummonType(TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT); });
-                summon->SetFlag(UNIT_FIELD_FLAGS2, UNIT_FLAG2_INSTANTLY_APPEAR_MODEL);
+                summon->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_INSTANTLY_APPEAR_MODEL);
                 summon->CastSpell(summon, 26586, true);
             }
 

@@ -1935,7 +1935,7 @@ class spell_hunt_aspect_of_the_iron_hawk : public AuraScript
 
     void ScrewThat(AuraEffect const*, AuraEffectHandleModes)
     {
-        GetUnitOwner()->ForceValuesUpdateAtIndex(UNIT_FIELD_SHAPESHIFT_FORM);
+        GetUnitOwner()->ForceValuesUpdateAtIndex(UNIT_FIELD_BYTES_2);
     }
 
     void Register() override

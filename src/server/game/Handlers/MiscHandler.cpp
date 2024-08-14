@@ -1216,9 +1216,9 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
         if (sWorld->IsFFAPvPRealm())
         {
             if (entered)
-                player->RemoveByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+                player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
             else
-                player->SetByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+                player->SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
         }
 
         return;
@@ -1558,7 +1558,7 @@ void WorldSession::HandleSetActionBarToggles(WorldPacket& recvData)
         return;
     }
 
-    GetPlayer()->SetByteValue(PLAYER_FIELD_LIFETIME_MAX_RANK, 2, actionBar);
+    GetPlayer()->SetByteValue(PLAYER_FIELD_BYTES, 2, actionBar);
 }
 
 void WorldSession::HandlePlayedTime(WorldPacket& recvData)
@@ -2673,7 +2673,7 @@ void WorldSession::HandleSelectFactionOpcode(WorldPacket& recvPacket)
 
     if (choice == JOIN_THE_HORDE)
     {
-        _player->SetByteValue(UNIT_FIELD_SEX, 0, RACE_PANDAREN_HORDE);
+        _player->SetByteValue(UNIT_FIELD_BYTES_0, 0, RACE_PANDAREN_HORDE);
         _player->setFactionForRace(RACE_PANDAREN_HORDE);
         _player->SaveToDB();
         WorldLocation location(1, 1357.62f, -4373.55f, 26.13f, 0.13f);
@@ -2684,7 +2684,7 @@ void WorldSession::HandleSelectFactionOpcode(WorldPacket& recvPacket)
     }
     else if (choice == JOIN_THE_ALLIANCE)
     {
-        _player->SetByteValue(UNIT_FIELD_SEX, 0, RACE_PANDAREN_ALLIANCE);
+        _player->SetByteValue(UNIT_FIELD_BYTES_0, 0, RACE_PANDAREN_ALLIANCE);
         _player->setFactionForRace(RACE_PANDAREN_ALLIANCE);
         _player->SaveToDB();
         WorldLocation location(0, -8960.02f, 516.10f, 96.36f, 0.67f);

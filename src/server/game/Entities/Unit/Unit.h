@@ -133,7 +133,7 @@ enum SpellFacingFlags
 
 
 
-// high byte (3 from 0..3) of UNIT_FIELD_SHAPESHIFT_FORM
+// high byte (3 from 0..3) of UNIT_FIELD_BYTES_2
 enum ShapeshiftForm
 {
     FORM_NONE = 0x00,
@@ -1300,14 +1300,14 @@ public:
     void SetLevel(uint8 lvl, bool sendUpdate = true);
     // uint8 GetRace() const { return GetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_RACE); }
     // void SetRace(uint8 race) { SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_RACE, race); }
-    uint8 GetRace() const { return GetByteValue(UNIT_FIELD_SEX, 0); }
-    void SetRace(uint8 race) { SetByteValue(UNIT_FIELD_SEX, 0, race);}
+    uint8 GetRace() const { return GetByteValue(UNIT_FIELD_BYTES_0, 0); }
+    void SetRace(uint8 race) { SetByteValue(UNIT_FIELD_BYTES_0, 0, race);}
     uint32 GetRaceMask() const { return 1 << (GetRace() - 1); }
-    uint8 GetClass() const { return GetByteValue(UNIT_FIELD_SEX, 1); }
-    void SetClass(uint8 newClass) { SetByteValue(UNIT_FIELD_SEX, 1, newClass);}
+    uint8 GetClass() const { return GetByteValue(UNIT_FIELD_BYTES_0, 1); }
+    void SetClass(uint8 newClass) { SetByteValue(UNIT_FIELD_BYTES_0, 1, newClass);}
     uint32 GetClassMask() const { return 1 << (GetClass() - 1); }
-    uint8 GetGender() const { return GetByteValue(UNIT_FIELD_SEX, 3); }
-    void SetGender(uint8 gender) { SetByteValue(UNIT_FIELD_SEX, 3, gender); }
+    uint8 GetGender() const { return GetByteValue(UNIT_FIELD_BYTES_0, 3); }
+    void SetGender(uint8 gender) { SetByteValue(UNIT_FIELD_BYTES_0, 3, gender); }
 
     // Gender GetGender() const { return Gender(GetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER)); }
     // void SetGender(Gender gender) { SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER, gender); }
@@ -1420,17 +1420,17 @@ public:
     void RemoveUnitFlag(UnitFlags flags) { RemoveFlag(UNIT_FIELD_FLAGS, flags); }
     void ReplaceAllUnitFlags(UnitFlags flags) { SetUInt32Value(UNIT_FIELD_FLAGS, flags); }
 
-    UnitFlags2 GetUnitFlags2() const { return UnitFlags2(GetUInt32Value(UNIT_FIELD_FLAGS2)); }
-    bool HasUnitFlag2(UnitFlags2 flags) const { return HasFlag(UNIT_FIELD_FLAGS2, flags); }
-    void SetUnitFlag2(UnitFlags2 flags) { SetFlag(UNIT_FIELD_FLAGS2, flags); }
-    void RemoveUnitFlag2(UnitFlags2 flags) { RemoveFlag(UNIT_FIELD_FLAGS2, flags); }
-    void ReplaceAllUnitFlags2(UnitFlags2 flags) { SetUInt32Value(UNIT_FIELD_FLAGS2, flags); }
+    UnitFlags2 GetUnitFlags2() const { return UnitFlags2(GetUInt32Value(UNIT_FIELD_FLAGS_2)); }
+    bool HasUnitFlag2(UnitFlags2 flags) const { return HasFlag(UNIT_FIELD_FLAGS_2, flags); }
+    void SetUnitFlag2(UnitFlags2 flags) { SetFlag(UNIT_FIELD_FLAGS_2, flags); }
+    void RemoveUnitFlag2(UnitFlags2 flags) { RemoveFlag(UNIT_FIELD_FLAGS_2, flags); }
+    void ReplaceAllUnitFlags2(UnitFlags2 flags) { SetUInt32Value(UNIT_FIELD_FLAGS_2, flags); }
 
     Emote GetEmoteState() const { return Emote(GetUInt32Value(UNIT_FIELD_NPC_EMOTESTATE)); }
     void SetEmoteState(Emote emote) { SetUInt32Value(UNIT_FIELD_NPC_EMOTESTATE, emote); }
 
-    SheathState GetSheath() const { return SheathState(GetByteValue(UNIT_FIELD_SHAPESHIFT_FORM, 0)); }
-    virtual void SetSheath(SheathState sheathed) { SetByteValue(UNIT_FIELD_SHAPESHIFT_FORM, 0, sheathed); }
+    SheathState GetSheath() const { return SheathState(GetByteValue(UNIT_FIELD_BYTES_2, 0)); }
+    virtual void SetSheath(SheathState sheathed) { SetByteValue(UNIT_FIELD_BYTES_2, 0, sheathed); }
 
     // faction template id
     uint32 GetFaction() const { return GetUInt32Value(UNIT_FIELD_FACTION_TEMPLATE); }
@@ -1449,43 +1449,43 @@ public:
     void GetPartyMembers(std::list<Unit*> &units);
     bool IsContestedGuard() const;
 
-    UnitPVPStateFlags GetPvpFlags() const { return UnitPVPStateFlags(GetByteValue(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PVP_FLAG)); }
-    bool HasPvpFlag(UnitPVPStateFlags flags) const { return HasByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PVP_FLAG, flags); }
-    void SetPvpFlag(UnitPVPStateFlags flags) { SetByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PVP_FLAG, flags); }
-    void RemovePvpFlag(UnitPVPStateFlags flags) { RemoveByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PVP_FLAG, flags); }
-    void ReplaceAllPvpFlags(UnitPVPStateFlags flags) { SetByteValue(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PVP_FLAG, flags); }
+    UnitPVPStateFlags GetPvpFlags() const { return UnitPVPStateFlags(GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG)); }
+    bool HasPvpFlag(UnitPVPStateFlags flags) const { return HasByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, flags); }
+    void SetPvpFlag(UnitPVPStateFlags flags) { SetByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, flags); }
+    void RemovePvpFlag(UnitPVPStateFlags flags) { RemoveByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, flags); }
+    void ReplaceAllPvpFlags(UnitPVPStateFlags flags) { SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, flags); }
     
     bool IsPvP() const { return HasPvpFlag(UNIT_BYTE2_FLAG_PVP); }
     void SetPvP(bool state);
 
-    UnitPetFlag GetPetFlags() const { return UnitPetFlag(GetByteValue(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PET_FLAGS)); }
-    bool HasPetFlag(UnitPetFlag flags) const { return HasByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PET_FLAGS, flags); }
-    void SetPetFlag(UnitPetFlag flags) { SetByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PET_FLAGS, flags); }
-    void RemovePetFlag(UnitPetFlag flags) { RemoveByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PET_FLAGS, flags); }
-    void ReplaceAllPetFlags(UnitPetFlag flags) { SetByteValue(UNIT_FIELD_SHAPESHIFT_FORM, UNIT_BYTES_2_OFFSET_PET_FLAGS, flags); }
+    UnitPetFlag GetPetFlags() const { return UnitPetFlag(GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PET_FLAGS)); }
+    bool HasPetFlag(UnitPetFlag flags) const { return HasByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PET_FLAGS, flags); }
+    void SetPetFlag(UnitPetFlag flags) { SetByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PET_FLAGS, flags); }
+    void RemovePetFlag(UnitPetFlag flags) { RemoveByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PET_FLAGS, flags); }
+    void ReplaceAllPetFlags(UnitPetFlag flags) { SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PET_FLAGS, flags); }
 
     uint32 GetCreatureType() const;
     uint32 GetCreatureTypeMask() const;
 
-    UnitStandStateType GetStandState() const { return UnitStandStateType(GetByteValue(UNIT_FIELD_ANIM_TIER, UNIT_BYTES_1_OFFSET_STAND_STATE)); }
+    UnitStandStateType GetStandState() const { return UnitStandStateType(GetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_STAND_STATE)); }
     bool IsSitState() const;
     bool IsStandState() const;
     void SetStandState(UnitStandStateType state);
 
     void SetStandFlags(uint8 flags)
     {
-        SetByteFlag(UNIT_FIELD_ANIM_TIER, 2, flags);
+        SetByteFlag(UNIT_FIELD_BYTES_1, 2, flags);
     }
     void RemoveStandFlags(uint8 flags)
     {
-        RemoveByteFlag(UNIT_FIELD_ANIM_TIER, 2, flags);
+        RemoveByteFlag(UNIT_FIELD_BYTES_1, 2, flags);
     }
 
-    void SetVisFlag(UnitVisFlags flags) { SetByteFlag(UNIT_FIELD_ANIM_TIER, UNIT_BYTES_1_OFFSET_VIS_FLAG, flags); }
-    void RemoveVisFlag(UnitVisFlags flags) { RemoveByteFlag(UNIT_FIELD_ANIM_TIER, UNIT_BYTES_1_OFFSET_VIS_FLAG, flags); }
-    void ReplaceAllVisFlags(UnitVisFlags flags) { SetByteValue(UNIT_FIELD_ANIM_TIER, UNIT_BYTES_1_OFFSET_VIS_FLAG, flags); }
+    void SetVisFlag(UnitVisFlags flags) { SetByteFlag(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_VIS_FLAG, flags); }
+    void RemoveVisFlag(UnitVisFlags flags) { RemoveByteFlag(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_VIS_FLAG, flags); }
+    void ReplaceAllVisFlags(UnitVisFlags flags) { SetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_VIS_FLAG, flags); }
 
-    AnimTier GetAnimTier() const { return AnimTier(GetByteValue(UNIT_FIELD_ANIM_TIER, UNIT_BYTES_1_OFFSET_ANIM_TIER)); }
+    AnimTier GetAnimTier() const { return AnimTier(GetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_ANIM_TIER)); }
     void SetAnimTier(AnimTier animTier);
 
     bool IsMounted() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT); }
@@ -2119,7 +2119,7 @@ public:
 
     ShapeshiftForm GetShapeshiftForm() const
     {
-        return ShapeshiftForm(GetByteValue(UNIT_FIELD_SHAPESHIFT_FORM, 3));
+        return ShapeshiftForm(GetByteValue(UNIT_FIELD_BYTES_2, 3));
     }
     void SetShapeshiftForm(ShapeshiftForm form);
 

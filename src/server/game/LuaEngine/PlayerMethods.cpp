@@ -1562,7 +1562,7 @@ namespace LuaPlayer
             return 0;
         }
 
-        player->SetByteValue(UNIT_FIELD_SEX, 2, gender);
+        player->SetByteValue(UNIT_FIELD_BYTES_0, 2, gender);
         /*player->SetByteValue(PLAYER_BYTES_3, 0, gender);*/
         player->InitDisplayIds();
         return 0;

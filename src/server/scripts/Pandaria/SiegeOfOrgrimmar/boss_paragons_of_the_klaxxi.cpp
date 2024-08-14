@@ -761,7 +761,7 @@ class boss_paragon_of_the_klaxxi : public CreatureScript
                         {
                             klaxxi->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             klaxxi->SetFaction(14);
-                            klaxxi->RemoveFlag(UNIT_FIELD_FLAGS2, 69240832);
+                            klaxxi->RemoveFlag(UNIT_FIELD_FLAGS_2, 69240832);
                             klaxxi->RemoveAurasDueToSpell(SPELL_PERMANENT_FEIGN_DEATH);
 
                             klaxxi->RemoveAura(SPELL_PERMANENT_FEIGN_DEATH);
@@ -1113,7 +1113,7 @@ struct soo_paragon_typeAI : public ScriptedAI
             me->PrepareChanneledCast(me->GetOrientation());
             me->SetHealth(1);
             me->SetFaction(35); // cuz ref doesn`t work
-            me->SetFlag(UNIT_FIELD_FLAGS2, 69240832);
+            me->SetFlag(UNIT_FIELD_FLAGS_2, 69240832);
             DoCast(me, SPELL_PERMANENT_FEIGN_DEATH, true);
             DoCast(me, SPELL_CLICK_ME);
 

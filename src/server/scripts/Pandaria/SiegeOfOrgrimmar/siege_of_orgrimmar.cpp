@@ -4887,7 +4887,7 @@ struct npc_siege_of_orgrimmar_theramore_prisoners : public ScriptedAI
         else
         {
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_29);
-            me->RemoveFlag(UNIT_FIELD_FLAGS2, UNIT_FLAG2_FEIGN_DEATH);
+            me->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
         }
     }
     void DoAction(int32 actionId) override

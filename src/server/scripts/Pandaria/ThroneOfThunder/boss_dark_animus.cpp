@@ -393,7 +393,7 @@ class npc_anima_orb : public CreatureScript
                 me->setActive(true);
                 me->SetDisplayFromModel(1);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-                me->SetFlag(UNIT_FIELD_FLAGS2, UNIT_FLAG2_DISABLE_TURN);
+                me->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_DISABLE_TURN);
                 me->SetReactState(REACT_PASSIVE);
                 instance = me->GetInstanceScript();
                 Reset();

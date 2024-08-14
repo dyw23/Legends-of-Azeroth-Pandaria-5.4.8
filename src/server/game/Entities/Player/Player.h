@@ -71,6 +71,17 @@ class TradeData;
 typedef std::deque<Mail*> PlayerMails;
 
 #define PLAYER_MAX_SKILLS           128
+enum SkillFieldOffset
+{
+    SKILL_ID_OFFSET = 0,
+    SKILL_STEP_OFFSET = 64,
+    SKILL_RANK_OFFSET = SKILL_STEP_OFFSET + 64,
+    SUBSKILL_START_RANK_OFFSET = SKILL_RANK_OFFSET + 64,
+    SKILL_MAX_RANK_OFFSET = SUBSKILL_START_RANK_OFFSET + 64,
+    SKILL_MODIFIER_OFFSET = SKILL_MAX_RANK_OFFSET + 64,
+    SKILL_TALENT_OFFSET = SKILL_MODIFIER_OFFSET + 64
+};
+
 #define PLAYER_MAX_DAILY_QUESTS     750
 #define PLAYER_EXPLORED_ZONES_SIZE  200
 
@@ -553,7 +564,7 @@ enum PlayerFlags
 #define KNOWN_TITLES_SIZE   4
 #define MAX_TITLE_INDEX     (KNOWN_TITLES_SIZE * 64)        // 4 uint64 fields
 
-// used in PLAYER_FIELD_LIFETIME_MAX_RANK values
+// used in PLAYER_FIELD_BYTES values
 enum PlayerFieldByteFlags
 {
     PLAYER_FIELD_BYTE_TRACK_STEALTHED = 0x00000002,
@@ -561,7 +572,7 @@ enum PlayerFieldByteFlags
     PLAYER_FIELD_BYTE_NO_RELEASE_WINDOW = 0x00000010        // Display no "release spirit" window at all
 };
 
-// used in UNIT_FIELD_SHAPESHIFT_FORM values
+// used in UNIT_FIELD_BYTES_2 values
 enum PlayerFieldByte2Flags
 {
     PLAYER_FIELD_BYTE2_NONE = 0x00,
@@ -1470,11 +1481,11 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
     bool IsValidPos(uint8 bag, uint8 slot, bool explicit_pos);
     uint8 GetBankBagSlotCount() const
     {
-        return GetByteValue(PLAYER_FIELD_REST_STATE, 2);
+        return GetByteValue(PLAYER_BYTES_2, 2);
     }
     void SetBankBagSlotCount(uint8 count)
     {
-        SetByteValue(PLAYER_FIELD_REST_STATE, 2, count);
+        SetByteValue(PLAYER_BYTES_2, 2, count);
     }
     //BattlePay
     uint64 GetDonateTokens() const;
@@ -2559,7 +2570,7 @@ public:
     void SetDrunkValue(uint8 newDrunkValue, uint32 itemId = 0);
     uint8 GetDrunkValue() const
     {
-        return GetByteValue(PLAYER_FIELD_ARENA_FACTION, 1);
+        return GetByteValue(PLAYER_BYTES_3, 1);
     }
     static DrunkenState GetDrunkenstateByValue(uint8 value);
 

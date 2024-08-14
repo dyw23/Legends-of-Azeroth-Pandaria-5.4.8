@@ -382,7 +382,7 @@ class boss_council_of_elders_baseAI : public ScriptedAI
 
             // if feign death remove
             me->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-            me->RemoveFlag(UNIT_FIELD_FLAGS2, UNIT_FLAG2_FEIGN_DEATH);
+            me->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
 
             me->SetReactState(REACT_AGGRESSIVE);
 

@@ -629,7 +629,7 @@ class npc_ice_tomb : public CreatureScript
             {
                 SetCombatMovement(false);
                 _trappedPlayerGUID = ObjectGuid::Empty;
-                me->SetFlag(UNIT_FIELD_FLAGS2, UNIT_FLAG2_INSTANTLY_APPEAR_MODEL);
+                me->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_INSTANTLY_APPEAR_MODEL);
             }
 
             void Reset() override

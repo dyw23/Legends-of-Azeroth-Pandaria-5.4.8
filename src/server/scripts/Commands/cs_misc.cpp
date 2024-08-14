@@ -3321,7 +3321,7 @@ public:
                 waypoint->SetHomePosition(waypoint->GetPosition());
                 waypoint->InitStats(duration);
                 waypoint->SetDisableGravity(true);
-                waypoint->SetFlag(UNIT_FIELD_FLAGS2, UNIT_FLAG2_INSTANTLY_APPEAR_MODEL);
+                waypoint->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_INSTANTLY_APPEAR_MODEL);
                 if (i)
                     waypoint->SetFloatValue(OBJECT_FIELD_SCALE, 2.5f);
                 source->GetMap()->AddToMap(waypoint->ToCreature());
@@ -3349,7 +3349,7 @@ public:
                 waypoint->SetHomePosition(waypoint->GetPosition());
                 waypoint->InitStats(duration);
                 waypoint->SetDisableGravity(true);
-                waypoint->SetFlag(UNIT_FIELD_FLAGS2, UNIT_FLAG2_INSTANTLY_APPEAR_MODEL);
+                waypoint->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_INSTANTLY_APPEAR_MODEL);
                 source->GetMap()->AddToMap(waypoint->ToCreature());
                 waypoint->InitSummon();
                 waypoint->SetTempSummonType(TEMPSUMMON_TIMED_DESPAWN);

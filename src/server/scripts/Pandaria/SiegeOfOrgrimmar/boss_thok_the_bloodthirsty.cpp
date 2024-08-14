@@ -922,7 +922,7 @@ struct npc_korkron_jailer : public ScriptedAI
             me->PrepareChanneledCast(me->GetOrientation());
             me->SetHealth(1);
             me->SetFaction(35); // cuz ref doesn`t work
-            me->SetFlag(UNIT_FIELD_FLAGS2, 69240832);
+            me->SetFlag(UNIT_FIELD_FLAGS_2, 69240832);
             DoCast(me, SPELL_PERMANENT_FEIGN_DEATH, true);
 
             if (me->GetInstanceScript())
