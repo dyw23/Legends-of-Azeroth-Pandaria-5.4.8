@@ -2192,10 +2192,6 @@ uint32 GameObjectUpdateFieldFlags[GAMEOBJECT_END] =
     UF_FLAG_PUBLIC | UF_FLAG_URGENT, // GAMEOBJECT_FIELD_STATE_SPELL_VISUAL_ID
 };
 
-uint32 GameObjectDynamicUpdateFieldFlags[GAMEOBJECT_DYNAMIC_END] =
-{
-};
-
 uint32 DynamicObjectUpdateFieldFlags[DYNAMICOBJECT_END] =
 {
     UF_FLAG_PUBLIC, // OBJECT_FIELD_GUID
