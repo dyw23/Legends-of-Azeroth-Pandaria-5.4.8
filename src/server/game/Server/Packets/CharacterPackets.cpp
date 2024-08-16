@@ -17,6 +17,16 @@
 
 #include "CharacterPackets.h"
 
+void WorldPackets::Character::ShowingCloak::Read()
+{
+    _worldPacket >> ShowCloak;
+}
+
+void WorldPackets::Character::ShowingHelm::Read()
+{
+    _worldPacket >> ShowHelm;
+}
+
 WorldPacket const* WorldPackets::Character::LogoutResponse::Write()
 {
     _worldPacket << uint32(LogoutResult);

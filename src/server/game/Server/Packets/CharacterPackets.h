@@ -26,6 +26,26 @@ namespace WorldPackets
     namespace Character
     {
 
+        class ShowingCloak final : public ClientPacket
+        {
+        public:
+            ShowingCloak(WorldPacket&& packet) : ClientPacket(CMSG_SHOWING_CLOAK, std::move(packet)) { }
+
+            void Read() override;
+
+            bool ShowCloak = false;
+        };
+
+        class ShowingHelm final : public ClientPacket
+        {
+        public:
+            ShowingHelm(WorldPacket&& packet) : ClientPacket(CMSG_SHOWING_HELM, std::move(packet)) { }
+
+            void Read() override;
+
+            bool ShowHelm = false;
+        };
+
         class LogoutResponse final : public ServerPacket
         {
         public:
