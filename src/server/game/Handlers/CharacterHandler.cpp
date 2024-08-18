@@ -354,7 +354,7 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
 }
 
 
-void WorldSession::HandleCharEnumOpcode(WorldPacket & /*recvData*/)
+void WorldSession::HandleCharEnumOpcode(WorldPackets::Character::EnumCharacters& /*enumCharacters*/)
 {
     // remove expired bans
     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_EXPIRED_BANS);
@@ -862,51 +862,28 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket& recvData)
     SendPacket(&data);
 }
 
-void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
+void WorldSession::HandlePlayerLoginOpcode(WorldPackets::Character::PlayerLogin& packet)
 {
-    if (PlayerLoading() || GetPlayer() != NULL)
+    if (PlayerLoading() || GetPlayer() != nullptr)
     {
         TC_LOG_ERROR("network", "Player tries to login again, AccountId = %d", GetAccountId());
         return;
     }
 
     m_playerLoading = true;
-    ObjectGuid playerGuid;
-    float unk = 0;
 
     TC_LOG_DEBUG("network", "WORLD: Recvd Player Logon Message");
 
-    recvData >> unk;
+    TC_LOG_DEBUG("network", "Character (Guid: %u) logging in", packet.Guid.GetCounter());
 
-    playerGuid[1] = recvData.ReadBit();
-    playerGuid[4] = recvData.ReadBit();
-    playerGuid[7] = recvData.ReadBit();
-    playerGuid[3] = recvData.ReadBit();
-    playerGuid[2] = recvData.ReadBit();
-    playerGuid[6] = recvData.ReadBit();
-    playerGuid[5] = recvData.ReadBit();
-    playerGuid[0] = recvData.ReadBit();
-
-    recvData.ReadByteSeq(playerGuid[5]);
-    recvData.ReadByteSeq(playerGuid[1]);
-    recvData.ReadByteSeq(playerGuid[0]);
-    recvData.ReadByteSeq(playerGuid[6]);
-    recvData.ReadByteSeq(playerGuid[2]);
-    recvData.ReadByteSeq(playerGuid[4]);
-    recvData.ReadByteSeq(playerGuid[7]);
-    recvData.ReadByteSeq(playerGuid[3]);
-
-    //WorldObject* player = ObjectAccessor::GetWorldObject(*GetPlayer(), playerGuid);
-    TC_LOG_DEBUG("network", "Character (Guid: %u) logging in", playerGuid.GetCounter());
-
-    if (!IsLegitCharacterForAccount(playerGuid))
+    if (!IsLegitCharacterForAccount(packet.Guid))
     {
-        TC_LOG_ERROR("network", "Account (%u) can't login with that character (%u).", GetAccountId(), playerGuid.GetCounter());
+        TC_LOG_ERROR("network", "Account (%u) can't login with that character (%u).", GetAccountId(), packet.Guid.GetCounter());
         KickPlayer();
         return;
     }
 
-    std::shared_ptr<LoginQueryHolder> holder = std::make_shared<LoginQueryHolder>(GetAccountId(), playerGuid);
+    std::shared_ptr<LoginQueryHolder> holder = std::make_shared<LoginQueryHolder>(GetAccountId(), packet.Guid);
     if (!holder->Initialize())
     {
         m_playerLoading = false;

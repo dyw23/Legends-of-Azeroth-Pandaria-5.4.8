@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -408,8 +408,8 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     }
 
                     // some auth opcodes can be recieved before STATUS_LOGGEDIN_OR_RECENTLY_LOGGOUT opcodes
-                    // however when we recieve CMSG_CHAR_ENUM we are surely no longer during the logout process.
-                    if (packet->GetOpcode() == CMSG_CHAR_ENUM)
+                    // however when we recieve CMSG_ENUM_CHARACTERS we are surely no longer during the logout process.
+                    if (packet->GetOpcode() == CMSG_ENUM_CHARACTERS)
                         m_playerRecentlyLogout = false;
 
                     if (AntiDOS.EvaluateOpcode(*packet, currentTime))
@@ -703,7 +703,7 @@ void WorldSession::LogoutPlayer(bool save)
     m_playerLogout = false;
     m_playerSave = false;
     m_playerRecentlyLogout = true;
-    AntiDOS.AllowOpcode(CMSG_CHAR_ENUM, true);
+    AntiDOS.AllowOpcode(CMSG_ENUM_CHARACTERS, true);
     SetLogoutStartTime(0);
 }
 
@@ -1487,7 +1487,7 @@ uint32 WorldSession::DosProtection::GetMaxPacketCounterAllowed(uint16 opcode) co
     }
 
     case CMSG_CHAR_CREATE:                     //   7               5         3 async db queries
-    case CMSG_CHAR_ENUM:                      //  22               3         2 async db queries
+    case CMSG_ENUM_CHARACTERS:                      //  22               3         2 async db queries
     case CMSG_SUGGESTION_SUBMIT:     // not profiled                1 async db query
     case CMSG_SUBMIT_COMPLAIN:      // not profiled                1 async db query
     case CMSG_CALENDAR_UPDATE_EVENT:                // not profiled

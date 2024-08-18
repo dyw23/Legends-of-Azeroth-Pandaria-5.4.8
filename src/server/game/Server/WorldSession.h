@@ -485,10 +485,10 @@ class TC_GAME_API WorldSession
         void Handle_Deprecated(WorldPacket& recvPacket);    // never used anymore by client
         void LogUnprocessedTail(WorldPacket const* packet);
 
-        void HandleCharEnumOpcode(WorldPacket& recvPacket);
+        void HandleCharEnumOpcode(WorldPackets::Character::EnumCharacters& /*enumCharacters*/);
         void HandleCharDeleteOpcode(WorldPacket& recvPacket);
         void HandleCharCreateOpcode(WorldPacket& recvPacket);
-        void HandlePlayerLoginOpcode(WorldPacket& recvPacket);
+        void HandlePlayerLoginOpcode(WorldPackets::Character::PlayerLogin& packet);
         void HandleLoadScreenOpcode(WorldPacket& recvPacket);
         void HandleCharEnum(PreparedQueryResult result);
         void HandlePlayerLogin(LoginQueryHolder const& holder);

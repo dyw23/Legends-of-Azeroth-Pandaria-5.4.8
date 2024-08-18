@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -143,7 +143,7 @@ enum OpcodeClient : uint16
     CMSG_CHAR_CREATE                                      = 0x0F1D,
     CMSG_CHAR_CUSTOMIZE                                   = 0x0A13,
     CMSG_CHAR_DELETE                                      = 0x04E2,
-    CMSG_CHAR_ENUM                                        = 0x00E0,
+    CMSG_ENUM_CHARACTERS                                  = 0x00E0,
     CMSG_CHAR_FACTION_OR_RACE_CHANGE                      = 0x0329,
     CMSG_CHAR_RENAME                                      = 0x0963,
     CMSG_CHAT_IGNORED                                     = 0x048A,

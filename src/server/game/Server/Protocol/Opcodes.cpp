@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -245,7 +245,7 @@ void OpcodeTable::Initialize()
     DEFINE_HANDLER(CMSG_CHAR_CREATE, STATUS_AUTHED, PROCESS_THREADUNSAFE, &WorldSession::HandleCharCreateOpcode); // 5.4.8 18414
     DEFINE_HANDLER(CMSG_CHAR_CUSTOMIZE, STATUS_AUTHED, PROCESS_THREADUNSAFE, &WorldSession::HandleCharCustomize); // 5.4.8 18414
     DEFINE_HANDLER(CMSG_CHAR_DELETE, STATUS_AUTHED, PROCESS_THREADUNSAFE, &WorldSession::HandleCharDeleteOpcode); // 5.4.8 18414
-    DEFINE_HANDLER(CMSG_CHAR_ENUM, STATUS_AUTHED, PROCESS_THREADUNSAFE, &WorldSession::HandleCharEnumOpcode); // 5.4.8 18414
+    DEFINE_HANDLER(CMSG_ENUM_CHARACTERS, STATUS_AUTHED, PROCESS_THREADUNSAFE, &WorldSession::HandleCharEnumOpcode); // 5.4.8 18414
     DEFINE_HANDLER(CMSG_CHAR_FACTION_OR_RACE_CHANGE, STATUS_AUTHED, PROCESS_THREADUNSAFE, &WorldSession::HandleCharFactionOrRaceChange); // 5.4.8 18414
     DEFINE_HANDLER(CMSG_CHAR_RENAME, STATUS_AUTHED, PROCESS_THREADUNSAFE, &WorldSession::HandleCharRenameOpcode); // 5.4.8 18414
     DEFINE_HANDLER(CMSG_CHAT_IGNORED, STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleChatIgnoredOpcode); // 5.4.8 18414
