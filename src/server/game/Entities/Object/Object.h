@@ -601,10 +601,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         void MonsterSay(const char* text, uint32 language, WorldObject const* target);
         void MonsterYell(const char* text, uint32 language, WorldObject const* target);
-        void MonsterTextEmote(const char* text, WorldObject const* target, bool IsBossEmote = false);
         void MonsterSay(int32 textId, uint32 language, WorldObject const* target);
         void MonsterYell(int32 textId, uint32 language, WorldObject const* target);
-        void MonsterTextEmote(int32 textId, WorldObject const* target, bool IsBossEmote = false);
 
         void PlayDistanceSound(uint32 sound_id, Player* target = NULL);
         void PlayDirectSound(uint32 sound_id, Player* target = NULL);
