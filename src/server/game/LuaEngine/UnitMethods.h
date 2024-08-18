@@ -1085,8 +1085,9 @@ namespace LuaUnit
     {
         //@TODO
         const char* msg = luaL_checkstring(L, 1);
-        ObjectGuid receiver(uint64(luaL_checknumber(L, 2)));
-        bool bossWhisper = luaL_optbool(L, 3, false);
+        uint32 lang = luaL_checkunsigned(L, 2);
+        ObjectGuid receiver(uint64(luaL_checknumber(L, 3)));
+        bool bossWhisper = luaL_optbool(L, 4, false);
 
         WorldObject* target = nullptr;
         if (receiver)
@@ -1123,7 +1124,7 @@ namespace LuaUnit
             }
         }
         if (receiver && std::string(msg).length() > 0)
-            unit->Whisper(msg, target->ToPlayer(), bossWhisper);
+            unit->Whisper(msg, Language(lang), target->ToPlayer(), bossWhisper);
         return 0;
     }
 
@@ -1218,7 +1219,7 @@ namespace LuaUnit
         }
 
         if (std::string(msg).length() > 0)
-            unit->Say(msg, language, target);
+            unit->Say(msg, Language(language), target);
         return 0;
     }
 
@@ -1266,7 +1267,7 @@ namespace LuaUnit
 
 
         if (std::string(msg).length() > 0)
-            unit->Yell(msg, language, target);
+            unit->Yell(msg, Language(language), target);
         return 0;
     }
 
