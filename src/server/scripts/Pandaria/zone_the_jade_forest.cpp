@@ -3053,7 +3053,7 @@ class spell_q30063 : public SpellScriptLoader
             {
                 if (GetCaster()->GetTypeId() == TYPEID_PLAYER)
                     if (Player* player = GetCaster()->ToPlayer())
-                        player->MonsterWhisper(sCreatureTextMgr->GetLocalizedChatString(NPC_ELDER_SAGE_STORM_SING, 0, urand(0, 7), Gender(player->GetGender()), player->GetSession()->GetSessionDbLocaleIndex()).c_str(), player, false);
+                        player->Whisper(sCreatureTextMgr->GetLocalizedChatString(NPC_ELDER_SAGE_STORM_SING, 0, urand(0, 7), Gender(player->GetGender()), player->GetSession()->GetSessionDbLocaleIndex()).c_str(), LANG_UNIVERSAL, player);
             }
 
             void Register() override

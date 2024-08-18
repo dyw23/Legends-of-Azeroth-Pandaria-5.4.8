@@ -1123,7 +1123,7 @@ namespace LuaUnit
             }
         }
         if (receiver && std::string(msg).length() > 0)
-            unit->MonsterWhisper(msg, target->ToPlayer(), bossWhisper);
+            unit->Whisper(msg, target->ToPlayer(), bossWhisper);
         return 0;
     }
 
@@ -1171,7 +1171,7 @@ namespace LuaUnit
         }
 
         if (std::string(msg).length() > 0)
-            unit->MonsterTextEmote(msg, target, bossEmote);
+            unit->TextEmote(msg, target, bossEmote);
         return 0;
     }
 
@@ -1218,7 +1218,7 @@ namespace LuaUnit
         }
 
         if (std::string(msg).length() > 0)
-            unit->MonsterSay(msg, language, target);
+            unit->Say(msg, language, target);
         return 0;
     }
 
@@ -1266,7 +1266,7 @@ namespace LuaUnit
 
 
         if (std::string(msg).length() > 0)
-            unit->MonsterYell(msg, language, target);
+            unit->Yell(msg, language, target);
         return 0;
     }
 
