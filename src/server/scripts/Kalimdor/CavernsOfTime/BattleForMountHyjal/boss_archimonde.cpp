@@ -685,5 +685,5 @@ void AddSC_boss_archimonde()
     new npc_doomfire();
     new npc_doomfire_targetting();
     new npc_ancient_wisp();
-    //new spell_protection_of_elune();
+    new spell_protection_of_elune();
 }
