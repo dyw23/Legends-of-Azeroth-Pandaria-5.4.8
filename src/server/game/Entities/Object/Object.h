@@ -599,9 +599,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         virtual uint8 GetLevelForTarget(WorldObject const* /*target*/) const { return 1; }
 
-        void MonsterSay(const char* text, uint32 language, WorldObject const* target);
         void MonsterYell(const char* text, uint32 language, WorldObject const* target);
-        void MonsterSay(int32 textId, uint32 language, WorldObject const* target);
         void MonsterYell(int32 textId, uint32 language, WorldObject const* target);
 
         void PlayDistanceSound(uint32 sound_id, Player* target = NULL);

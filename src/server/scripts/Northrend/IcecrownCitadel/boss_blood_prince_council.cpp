@@ -373,7 +373,7 @@ class boss_prince_keleseth_icc : public CreatureScript
                         _spawnHealth = data->curhealth;
 
                 if (!me->isDead())
-                    JustRespawned();
+                    JustAppeared();
 
                 me->GetMap()->SetWorldState(WORLDSTATE_THE_ORB_WHISPERER, 1);
             }
@@ -431,7 +431,7 @@ class boss_prince_keleseth_icc : public CreatureScript
                 }
             }
 
-            void JustRespawned() override
+            void JustAppeared() override
             {
                 DoCast(me, SPELL_FEIGN_DEATH);
                 me->SetHealth(_spawnHealth);
@@ -597,7 +597,7 @@ class boss_prince_taldaram_icc : public CreatureScript
                         _spawnHealth = data->curhealth;
 
                 if (!me->isDead())
-                    JustRespawned();
+                    JustAppeared();
 
                 me->GetMap()->SetWorldState(WORLDSTATE_THE_ORB_WHISPERER, 1);
             }
@@ -645,7 +645,7 @@ class boss_prince_taldaram_icc : public CreatureScript
                 }
             }
 
-            void JustRespawned() override
+            void JustAppeared() override
             {
                 DoCast(me, SPELL_FEIGN_DEATH);
                 me->SetHealth(_spawnHealth);
@@ -826,7 +826,7 @@ class boss_prince_valanar_icc : public CreatureScript
                         _spawnHealth = data->curhealth;
 
                 if (!me->isDead())
-                    JustRespawned();
+                    JustAppeared();
 
                 me->GetMap()->SetWorldState(WORLDSTATE_THE_ORB_WHISPERER, 1);
             }
@@ -874,7 +874,7 @@ class boss_prince_valanar_icc : public CreatureScript
                 }
             }
 
-            void JustRespawned() override
+            void JustAppeared() override
             {
                 DoCast(me, SPELL_FEIGN_DEATH);
                 me->SetHealth(_spawnHealth);

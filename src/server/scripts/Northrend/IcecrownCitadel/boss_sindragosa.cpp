@@ -782,9 +782,9 @@ class npc_spinestalker : public CreatureScript
                     _instance->HandleGameObject(_instance->GetGuidData(GO_SINDRAGOSA_ENTRANCE_DOOR), false, sindragosaDoor);
             }
 
-            void JustRespawned() override
+            void JustAppeared() override
             {
-                ScriptedAI::JustRespawned();
+                ScriptedAI::JustAppeared();
                 _instance->SetData(DATA_SINDRAGOSA_FROSTWYRMS, 1);  // this cannot be in Reset because reset also happens on evade
             }
 
@@ -928,9 +928,9 @@ class npc_rimefang : public CreatureScript
                     me->OverrideInhabitType(INHABIT_GROUND);
             }
 
-            void JustRespawned() override
+            void JustAppeared() override
             {
-                ScriptedAI::JustRespawned();
+                ScriptedAI::JustAppeared();
                 _instance->SetData(DATA_SINDRAGOSA_FROSTWYRMS, 1);  // this cannot be in Reset because reset also happens on evade
             }
 
@@ -1115,9 +1115,9 @@ class npc_sindragosa_trash : public CreatureScript
                 _isTaunted = false;
             }
 
-            void JustRespawned() override
+            void JustAppeared() override
             {
-                ScriptedAI::JustRespawned();
+                ScriptedAI::JustAppeared();
 
                 // Increase add count
                 if (me->GetEntry() != NPC_FROSTWARDEN_HANDLER)

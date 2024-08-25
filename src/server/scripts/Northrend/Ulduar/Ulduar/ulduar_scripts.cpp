@@ -1531,7 +1531,7 @@ class npc_arachnopod_destroyer : public CreatureScript
                 events.ScheduleEvent(EVENT_CHARGED_LEAP, urand(22000, 27000));
             }
 
-            void JustRespawned() override
+            void JustAppeared() override
             {
                 damaged = false;
                 me->setRegeneratingHealth(true);

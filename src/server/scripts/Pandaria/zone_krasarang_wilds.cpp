@@ -2187,10 +2187,10 @@ struct npc_nahassa : public ScriptedAI
     npc_nahassa(Creature* creature) : ScriptedAI(creature)
     {
         me->setRegeneratingHealth(false);
-        JustRespawned();
+        JustAppeared();
     }
 
-    void JustRespawned() override
+    void JustAppeared() override
     {
         DoCast(SPELL_NAHASSA_INJURED_ANIM);
         DoCast(SPELL_DYING);
@@ -2200,7 +2200,7 @@ struct npc_nahassa : public ScriptedAI
 
     void JustReachedHome() override
     {
-        JustRespawned();
+        JustAppeared();
     }
 
     void JustEngagedWith(Unit* who) override

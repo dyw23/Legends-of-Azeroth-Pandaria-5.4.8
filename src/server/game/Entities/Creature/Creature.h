@@ -628,7 +628,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         //Formation var
         CreatureGroup* m_formation;
-        bool TriggerJustRespawned;
+        bool m_triggerJustAppeared;
 
         Spell const* _focusSpell;   ///> Locks the target during spell cast for proper facing
         CreatureTextRepeatGroup m_textRepeat;

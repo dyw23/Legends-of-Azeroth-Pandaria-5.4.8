@@ -1840,7 +1840,7 @@ public:
             me->CastSpell(me, STORM_VISUAL, true);
         }
 
-        void JustRespawned() override
+        void JustAppeared() override
         {
             Reset();
         }

@@ -2513,9 +2513,9 @@ struct npc_ymirjar_icc_base : public ScriptedAI
         });
     }
 
-    void JustRespawned() override
+    void JustAppeared() override
     {
-        ScriptedAI::JustRespawned();
+        ScriptedAI::JustAppeared();
         if (me->GetEntry() == NPC_YMIRJAR_HUNTRESS)
             me->m_Events.Schedule(1000, [this]() { DoCastAOE(SPELL_SUMMON_WARHAWK, true); });
     }

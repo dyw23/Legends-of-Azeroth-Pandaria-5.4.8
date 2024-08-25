@@ -884,11 +884,14 @@ public:
 };
 
 // correct way: 52312 52314 52555 ...
-enum Creatures_SG
+enum TheGiftThatKeepsOnGiving
 {
-    NPC_GHOULS = 28845,
-    NPC_GHOSTS = 28846,
+    SAY_LINE_0  = 0,
+
+    NPC_GHOULS  = 28845,
+    NPC_GHOSTS  = 28846,
 };
+
 class npc_dkc1_gothik : public CreatureScript
 {
 public:
@@ -993,8 +996,16 @@ public:
             // Ghouls should display their Birth Animation
             // Crawling out of the ground
             //DoCast(me, 35177, true);
-            //me->MonsterSay("Mommy?", LANG_UNIVERSAL, 0);
             me->SetReactState(REACT_DEFENSIVE);
+        }
+
+        void JustAppeared() override
+        {
+            CreatureAI::JustAppeared();
+
+            if (urand(0, 1))
+                if (Unit* owner = me->GetOwner())
+                    Talk(SAY_LINE_0, owner);
         }
 
         void FindMinions(Unit* owner)

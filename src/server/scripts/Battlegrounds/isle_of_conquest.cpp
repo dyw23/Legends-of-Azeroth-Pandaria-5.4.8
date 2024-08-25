@@ -58,7 +58,7 @@ struct boss_isle_of_conquest : public ScriptedAI
         //Talk(YELL_AGGRO);
     }
 
-    void JustRespawned() override
+    void JustAppeared() override
     {
         Reset();
     }
