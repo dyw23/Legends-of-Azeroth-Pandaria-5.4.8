@@ -21,10 +21,25 @@
 #include "Packet.h"
 #include <array>
 
+enum WeatherState : uint32;
+
 namespace WorldPackets
 {
     namespace Misc
     {
+        class TC_GAME_API Weather final : public ServerPacket
+        {
+        public:
+            Weather();
+            Weather(WeatherState weatherID, float intensity = 0.0f, bool abrupt = false);
+
+            WorldPacket const* Write() override;
+
+            bool Abrupt = false;
+            float Intensity = 0.0f;
+            WeatherState WeatherID = WeatherState(0);
+        };        
+
         class StartMirrorTimer final : public ServerPacket
         {
         public:
