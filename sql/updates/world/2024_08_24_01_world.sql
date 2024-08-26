@@ -390,8 +390,8 @@ INSERT INTO `smart_scripts` (`entryorguid`,`source_type`,`id`,`link`,`event_type
 -- Yggdras Worm SAI
 (@YGGWORM,0,0,0,11,0,100,0,0,0,0,0,2,14,0,0,0,0,0,1,0,0,0,0,0,0,0,"Yggdras Worm - On Spawn - Set Faction");
 -- Texts
-DELETE FROM `creature_text` WHERE `entry`IN(@GURGTHOCK,@YGGDRAS,@STINKBEARD,@GARGORAL,@AZBARIN,@DUKESINGEM,@ERATHIUS,@ORINOKO,@KORRAK,@VLADOF);
-INSERT INTO `creature_text` (`entry`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
+DELETE FROM `creature_text` WHERE `CreatureID` IN (@GURGTHOCK,@YGGDRAS,@STINKBEARD,@GARGORAL,@AZBARIN,@DUKESINGEM,@ERATHIUS,@ORINOKO,@KORRAK,@VLADOF);
+INSERT INTO `creature_text` (`CreatureID`, `groupid`, `id`, `text`, `type`, `language`, `probability`, `emote`, `duration`, `sound`, `comment`) VALUES
 (@GURGTHOCK, 0, 0, 'This battle must be seen to be believed! Once a mild-mannered tuskarr fisherman, our next fighter turned to the life of a soulless mercenary when his entire family was wiped out by a vicious pack of lion seals and ill-tempered penguins! Now he''s just in it for the gold! Ladies and gentlemen, ORINOKO TUSKBREAKER!!', 14, 0, 100, 15, 0, 0, 'Gurgthock'),
 (@GURGTHOCK, 1, 0, 'The champion of the Winterax trolls has challenged you, $N! I hope you''re ready!', 12, 0, 100, 1, 0, 0, 'Gurgthock'),
 (@GURGTHOCK, 2, 0, 'Hailling from the distant mountains of Alterac, one of the fiercest competitors this arena has ever seen: KORRAK THE BLOODRAGER!!!', 14, 0, 100, 15, 0, 13363, 'Gurgthock'),
