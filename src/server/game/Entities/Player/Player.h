@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -15,8 +15,8 @@
 * with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SF_PLAYER_H
-#define SF_PLAYER_H
+#ifndef _PLAYER_H
+#define _PLAYER_H
 
 #include "DBCStores.h"
 #include "GroupReference.h"
@@ -2401,13 +2401,18 @@ public:
     bool UpdatePosition(float x, float y, float z, float orientation, bool teleport = false) override;
     bool UpdatePosition(const Position &pos, bool teleport = false) override { return UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport); }
     void ProcessTerrainStatusUpdate(ZLiquidStatus oldLiquidStatus, Optional<LiquidData> const& newLiquidData) override;
-    void SendMessageToSet(WorldPacket* data, bool self)
-    {
-        SendMessageToSetInRange(data, GetVisibilityRange() + 2 * World::Visibility_RelocationLowerLimit, self);
-    };// overwrite Object::SendMessageToSet
-    void SendMessageToSetInRange(WorldPacket* data, float fist, bool self);// overwrite Object::SendMessageToSetInRange
-    void SendMessageToSetInRange(WorldPacket* data, float dist, bool self, bool own_team_only);
-    void SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr);
+    // void SendMessageToSet(WorldPacket* data, bool self)
+    // {
+    //     SendMessageToSetInRange(data, GetVisibilityRange() + 2 * World::Visibility_RelocationLowerLimit, self);
+    // };// overwrite Object::SendMessageToSet
+    // void SendMessageToSetInRange(WorldPacket* data, float fist, bool self);// overwrite Object::SendMessageToSetInRange
+    // void SendMessageToSetInRange(WorldPacket* data, float dist, bool self, bool own_team_only);
+    // void SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr);
+
+    void SendMessageToSet(WorldPacket const* data, bool self) const override { SendMessageToSetInRange(data, GetVisibilityRange() + 2 * World::Visibility_RelocationLowerLimit, self); }
+    void SendMessageToSetInRange(WorldPacket const* data, float dist, bool self) const override;
+    void SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, bool own_team_only, bool required3dDist = false) const;
+    void SendMessageToSet(WorldPacket const* data, Player const* skipped_rcvr) const override;
 
     Corpse* GetCorpse() const;
     void SpawnCorpseBones(bool triggerSave = true);

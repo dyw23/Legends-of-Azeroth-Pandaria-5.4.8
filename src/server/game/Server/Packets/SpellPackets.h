@@ -15,14 +15,32 @@
 * with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef AllPackets_h__
-#define AllPackets_h__
+#ifndef SpellPackets_h__
+#define SpellPackets_h__
 
-#include "AuthenticationPackets.h"
-#include "CharacterPackets.h"
-#include "MiscPackets.h"
-#include "QueryPackets.h"
-#include "QuestPackets.h"
-#include "SpellPackets.h"
+#include "Packet.h"
+#include "ObjectGuid.h"
+#include "Optional.h"
+#include "Position.h"
+#include "SharedDefines.h"
 
-#endif // AllPackets_h__
+namespace WorldPackets
+{
+    namespace Spells
+    {
+        
+        class ClearTarget final : public ServerPacket
+        {
+        public:
+            ClearTarget() : ServerPacket(SMSG_CLEAR_TARGET, 8) { }
+
+            WorldPacket const* Write() override;
+
+            ObjectGuid Guid;
+        };
+
+
+    }
+}
+
+#endif // SpellPackets_h__

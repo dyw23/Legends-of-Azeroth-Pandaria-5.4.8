@@ -18251,7 +18251,7 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
         creature->AI()->OnSpellClick(clicker, result);
 
     if (result)
-        clicker->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_USE);
+        clicker->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_LOOTING);
 
     return result;
 }

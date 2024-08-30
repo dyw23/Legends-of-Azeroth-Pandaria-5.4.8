@@ -1888,7 +1888,7 @@ void GameObject::Use(Unit* user)
     }
 
     if (spellCaster)
-        spellCaster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_USE);
+        spellCaster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_LOOTING);
 
     if (spellCaster)
         spellCaster->CastSpell(user, spellInfo, triggered);

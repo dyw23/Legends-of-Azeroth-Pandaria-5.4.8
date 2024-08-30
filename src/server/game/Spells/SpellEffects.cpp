@@ -27,10 +27,11 @@
 #include "Player.h"
 #include "SkillExtraItems.h"
 #include "Unit.h"
-#include "Spell.h"
 #include "DynamicObject.h"
+#include "Spell.h"
 #include "SpellAuras.h"
 #include "SpellAuraEffects.h"
+#include "SpellPackets.h"
 #include "Group.h"
 #include "UpdateData.h"
 #include "MapManager.h"
@@ -5355,6 +5356,10 @@ void Spell::EffectForceDeselect(SpellEffIndex /*effIndex*/)
 
     // SMSG_BREAK_TAREGT not SMSG_CLEAR_TARGET
     GetCaster()->SendClearTarget();
+
+    WorldPackets::Spells::ClearTarget clearTarget;
+    clearTarget.Guid = m_caster->GetGUID();
+    m_caster->SendMessageToSet(clearTarget.Write(), true);
 
     UnitList targets;
     Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(GetCaster(), GetCaster(), GetCaster()->GetMap()->GetVisibilityRange());

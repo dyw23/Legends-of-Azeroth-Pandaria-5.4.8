@@ -3584,7 +3584,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
                     break;
                 }
             if (targets->GetGOTarget())
-                m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_USE);
+                m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_LOOTING);
             if (m_spellInfo->Effects[EFFECT_0].Effect == SPELL_EFFECT_OPEN_LOCK && m_caster->IsMounted() && !m_caster->HasAura(134359)) // Sky Golem
             {
                 auto bounds = sSpellMgr->GetSkillLineAbilityMapBounds(m_spellInfo->Id);
