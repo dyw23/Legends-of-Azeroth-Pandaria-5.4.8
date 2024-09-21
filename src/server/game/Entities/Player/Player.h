@@ -2401,13 +2401,6 @@ public:
     bool UpdatePosition(float x, float y, float z, float orientation, bool teleport = false) override;
     bool UpdatePosition(const Position &pos, bool teleport = false) override { return UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport); }
     void ProcessTerrainStatusUpdate(ZLiquidStatus oldLiquidStatus, Optional<LiquidData> const& newLiquidData) override;
-    // void SendMessageToSet(WorldPacket* data, bool self)
-    // {
-    //     SendMessageToSetInRange(data, GetVisibilityRange() + 2 * World::Visibility_RelocationLowerLimit, self);
-    // };// overwrite Object::SendMessageToSet
-    // void SendMessageToSetInRange(WorldPacket* data, float fist, bool self);// overwrite Object::SendMessageToSetInRange
-    // void SendMessageToSetInRange(WorldPacket* data, float dist, bool self, bool own_team_only);
-    // void SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr);
 
     void SendMessageToSet(WorldPacket const* data, bool self) const override { SendMessageToSetInRange(data, GetVisibilityRange() + 2 * World::Visibility_RelocationLowerLimit, self); }
     void SendMessageToSetInRange(WorldPacket const* data, float dist, bool self) const override;
