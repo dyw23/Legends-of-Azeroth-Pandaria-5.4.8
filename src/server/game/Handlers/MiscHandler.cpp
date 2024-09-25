@@ -1425,21 +1425,19 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
         GetPlayer()->AddActionButton(slotId, button->id, button->type);
 }
 
-void WorldSession::HandleCompleteCinematic(WorldPacket& /*recvData*/)
+void WorldSession::HandleCompleteCinematic(WorldPackets::Misc::CompleteCinematic& /*packet*/)
 {
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_COMPLETE_CINEMATIC");
     // If player has sight bound to visual waypoint NPC we should remove it
     GetPlayer()->GetCinematicMgr()->EndCinematic();    
 }
 
-void WorldSession::HandleNextCinematicCamera(WorldPacket& /*recvData*/)
+void WorldSession::HandleNextCinematicCamera(WorldPackets::Misc::NextCinematicCamera& /*packet*/)
 {
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_NEXT_CINEMATIC_CAMERA");
     // Sent by client when cinematic actually begun. So we begin the server side process
     GetPlayer()->GetCinematicMgr()->NextCinematicCamera();
 }
 
-void WorldSession::HandleCompleteMovie(WorldPacket& /*recvData*/)
+void WorldSession::HandleCompleteMovie(WorldPackets::Misc::CompleteMovie& /*packet*/)
 {
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_COMPLETE_MOVIE");
     uint32 movie = _player->GetMovie();
@@ -2661,6 +2659,14 @@ void WorldSession::SendLoadCUFProfiles()
     data.FlushBits();
     data.append(byteBuffer);
     SendPacket(&data);
+}
+
+void WorldSession::SendStreamingMovie()
+{
+    WorldPackets::Misc::StreamingMovies packet;
+
+    // To-do: implement
+    SendPacket(packet.Write());
 }
 
 #define JOIN_THE_ALLIANCE 1

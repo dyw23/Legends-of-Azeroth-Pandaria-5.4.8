@@ -47,6 +47,48 @@ namespace WorldPackets
             uint32 MovieID = 0;
         };
 
+        class CompleteCinematic final : public ClientPacket
+        {
+        public:
+            CompleteCinematic(WorldPacket&& packet) : ClientPacket(CMSG_COMPLETE_CINEMATIC, std::move(packet)) { }
+
+            void Read() override { }
+        };
+        
+        class NextCinematicCamera final : public ClientPacket
+        {
+        public:
+            NextCinematicCamera(WorldPacket&& packet) : ClientPacket(CMSG_NEXT_CINEMATIC_CAMERA, std::move(packet)) { }
+
+            void Read() override { }
+        };
+
+        class CompleteMovie final : public ClientPacket
+        {
+        public:
+            CompleteMovie(WorldPacket&& packet) : ClientPacket(CMSG_COMPLETE_MOVIE, std::move(packet)) { }
+
+            void Read() override { }
+        };
+
+        class OpeningCinematic final : public ClientPacket
+        {
+        public:
+            OpeningCinematic(WorldPacket&& packet) : ClientPacket(CMSG_OPENING_CINEMATIC, std::move(packet)) { }
+
+            void Read() override { }
+        };
+
+        class StreamingMovies final : public ServerPacket
+        {
+        public:
+            StreamingMovies() : ServerPacket(SMSG_STREAMING_MOVIES) { }
+
+            WorldPacket const* Write() override;
+
+            std::vector<uint16> MovieIDs;
+        };
+
         class TC_GAME_API Weather final : public ServerPacket
         {
         public:

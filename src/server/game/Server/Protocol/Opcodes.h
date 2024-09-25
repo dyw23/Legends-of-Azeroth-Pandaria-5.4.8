@@ -1125,7 +1125,7 @@ enum OpcodeServer : uint16
     SMSG_START_TIMER                                             = 0x0E3F,
     SMSG_STOP_ELAPSED_TIMER                                      = 0x101E,
     SMSG_STOP_MIRROR_TIMER                                       = 0x1026,
-    SMSG_STREAMING_MOVIE                                         = 0x1843,
+    SMSG_STREAMING_MOVIES                                        = 0x1843,
     SMSG_SUMMON_REQUEST                                          = 0x081F,
     SMSG_SUPERCEDED_SPELL                                        = 0x1943,
     SMSG_SUSPEND_TOKEN                                           = 0x18BA,

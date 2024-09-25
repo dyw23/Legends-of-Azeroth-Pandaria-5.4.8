@@ -30,6 +30,17 @@ WorldPacket const* WorldPackets::Misc::TriggerMovie::Write()
     return &_worldPacket;
 }
 
+WorldPacket const* WorldPackets::Misc::StreamingMovies::Write()
+{
+    _worldPacket.WriteBits(MovieIDs.size(), 25);
+    _worldPacket.FlushBits();
+
+    for (uint16 moveId : MovieIDs)
+        _worldPacket << int16(moveId);
+
+    return &_worldPacket;
+}
+
 WorldPackets::Misc::Weather::Weather() : ServerPacket(SMSG_WEATHER, 4 + 4 + 1) { }
 
 WorldPackets::Misc::Weather::Weather(WeatherState weatherID, float intensity /*= 0.0f*/, bool abrupt /*= false*/)
