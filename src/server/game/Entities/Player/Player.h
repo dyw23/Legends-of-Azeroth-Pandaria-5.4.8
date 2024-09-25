@@ -1629,7 +1629,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
     TradeData* GetTradeData() const { return m_trade; }
     void TradeCancel(bool sendback);
 
-    CinematicMgr* GetCinematicMgr() const { return _cinematicMgr; }
+    CinematicMgr* GetCinematicMgr() const { return _cinematicMgr.get(); }
 
     void UpdateEnchantTime(uint32 time);
     void UpdateSoulboundTradeItems();
