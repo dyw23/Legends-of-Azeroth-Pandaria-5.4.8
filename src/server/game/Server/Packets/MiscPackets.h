@@ -27,6 +27,16 @@ namespace WorldPackets
 {
     namespace Misc
     {
+        class TriggerCinematic final : public ServerPacket
+        {
+        public:
+            TriggerCinematic() : ServerPacket(SMSG_TRIGGER_CINEMATIC, 4) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 CinematicID = 0;
+        };        
+
         class TC_GAME_API Weather final : public ServerPacket
         {
         public:
