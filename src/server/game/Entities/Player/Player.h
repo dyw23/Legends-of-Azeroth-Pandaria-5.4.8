@@ -2163,6 +2163,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
     uint8 getCinematic() const { return m_cinematic; }
     void setCinematic(uint8 cine) { m_cinematic = cine; }
 
+    uint32 GetMovie() const { return m_movie; }
+    void SetMovie(uint32 movie) { m_movie = movie; }
+
     ActionButton* AddActionButton(uint8 button, uint32 action, uint8 type);
     void RemoveActionButton(uint8 button);
     ActionButton const* GetActionButton(uint8 button);
@@ -2651,7 +2654,7 @@ public:
 
     void SendAurasForTarget(Unit* target);
 
-    PlayerMenu* PlayerTalkClass;
+    std::unique_ptr<PlayerMenu> PlayerTalkClass;
     std::vector<ItemSetEffect*> ItemSetEff;
 
     std::unordered_map<ObjectGuid, ObjectGuid> const& GetLootView() const { return m_lootView; }
@@ -3497,6 +3500,8 @@ protected:
 
     uint8 m_cinematic;
 
+    uint32 m_movie;
+
     TradeData* m_trade;
 
     bool   m_DailyQuestChanged;
@@ -3580,7 +3585,7 @@ protected:
     Item* _StoreItem(uint16 pos, Item* pItem, uint32 count, bool clone, bool update);
     Item* _LoadItem(CharacterDatabaseTransaction trans, uint32 zoneId, uint32 timeDiff, Field* fields);
 
-    CinematicMgr* _cinematicMgr;
+    std::unique_ptr<CinematicMgr> _cinematicMgr;
 
     std::set<uint32> m_refundableItems;
     void SendRefundInfo(Item* item);

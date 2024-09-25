@@ -23,6 +23,12 @@ WorldPacket const* WorldPackets::Misc::TriggerCinematic::Write()
 
     return &_worldPacket;
 }
+WorldPacket const* WorldPackets::Misc::TriggerMovie::Write()
+{
+    _worldPacket << uint32(MovieID);
+
+    return &_worldPacket;
+}
 
 WorldPackets::Misc::Weather::Weather() : ServerPacket(SMSG_WEATHER, 4 + 4 + 1) { }
 

@@ -37,6 +37,16 @@ namespace WorldPackets
             uint32 CinematicID = 0;
         };        
 
+        class TriggerMovie final : public ServerPacket
+        {
+        public:
+            TriggerMovie() : ServerPacket(SMSG_TRIGGER_MOVIE, 4) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 MovieID = 0;
+        };
+
         class TC_GAME_API Weather final : public ServerPacket
         {
         public:

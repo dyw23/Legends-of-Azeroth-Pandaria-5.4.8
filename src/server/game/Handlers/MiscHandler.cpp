@@ -1442,7 +1442,12 @@ void WorldSession::HandleNextCinematicCamera(WorldPacket& /*recvData*/)
 void WorldSession::HandleCompleteMovie(WorldPacket& /*recvData*/)
 {
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_COMPLETE_MOVIE");
+    uint32 movie = _player->GetMovie();
+    if (!movie)
+        return;
 
+    _player->SetMovie(0);
+    //sScriptMgr->OnMovieComplete(_player, movie);
     if (_player)
         if (InstanceScript* instance = _player->GetInstanceScript())
             instance->OnMovieEnded(_player);
