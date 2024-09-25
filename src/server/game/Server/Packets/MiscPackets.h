@@ -89,6 +89,16 @@ namespace WorldPackets
             std::vector<uint16> MovieIDs;
         };
 
+        class UITime final : public ServerPacket
+        {
+        public:
+            UITime() : ServerPacket(SMSG_WORLD_STATE_UI_TIMER_UPDATE, 4) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 Time = 0;
+        };
+
         class TC_GAME_API Weather final : public ServerPacket
         {
         public:
