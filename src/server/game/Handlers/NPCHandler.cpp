@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -92,21 +92,21 @@ void WorldSession::SendTabardVendorActivate(ObjectGuid guid)
     WorldPacket data(SMSG_TABARD_VENDOR_ACTIVATE, 8);
 
     data.WriteBit(guid[1]);
-data.WriteBit(guid[5]);
-data.WriteBit(guid[0]);
-data.WriteBit(guid[7]);
-data.WriteBit(guid[4]);
-data.WriteBit(guid[6]);
-data.WriteBit(guid[3]);
-data.WriteBit(guid[2]);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[2]);
     data.WriteByteSeq(guid[5]);
-data.WriteByteSeq(guid[4]);
-data.WriteByteSeq(guid[2]);
-data.WriteByteSeq(guid[3]);
-data.WriteByteSeq(guid[6]);
-data.WriteByteSeq(guid[0]);
-data.WriteByteSeq(guid[1]);
-data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[7]);
 
     SendPacket(&data);
 }
@@ -738,8 +738,17 @@ void WorldSession::SendPetList(ObjectGuid guid, uint8 first, uint8 last)
         uint8 petStableState = itr.first <= PET_SLOT_ACTIVE_LAST ? 1 : 2;
 
         uint32 modelId = 0;
+
         if (CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(petData.Entry))
-            modelId = cInfo->Modelid1 ? cInfo->Modelid1 : cInfo->Modelid2;
+        {
+            if (CreatureModel const* model1 = cInfo->GetModelByIdx(0))
+                modelId = model1->CreatureDisplayID;
+            else
+            {
+                CreatureModel const* model2 = cInfo->GetModelByIdx(1);
+                modelId = model2->CreatureDisplayID;
+            }
+        }
 
         buff << uint32(petData.Entry);
         buff << uint32(_player->GetLevel());    // All pets have equal level

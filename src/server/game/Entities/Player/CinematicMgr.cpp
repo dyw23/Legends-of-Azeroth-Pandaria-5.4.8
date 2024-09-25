@@ -20,14 +20,14 @@
 #include "M2Stores.h"
 #include "MotionMaster.h"
 #include "Player.h"
-#include "TemporarySummon.h"
 
 CinematicMgr::CinematicMgr(Player* playerref)
 {
     player = playerref;
     m_cinematicDiff = 0;
     m_lastCinematicCheck = 0;
-    m_activeCinematicCameraId = 0;
+    m_activeCinematic = nullptr;
+    m_activeCinematicCameraIndex = -1;
     m_cinematicLength = 0;
     m_cinematicCamera = nullptr;
     m_remoteSightPosition = Position(0.0f, 0.0f, 0.0f);
@@ -36,31 +36,34 @@ CinematicMgr::CinematicMgr(Player* playerref)
 
 CinematicMgr::~CinematicMgr()
 {
-    if (m_cinematicCamera && m_activeCinematicCameraId)
+    if (m_cinematicCamera && m_activeCinematic)
         EndCinematic();
 }
 
-void CinematicMgr::BeginCinematic()
+void CinematicMgr::NextCinematicCamera()
 {
     // Sanity check for active camera set
-    if (m_activeCinematicCameraId == 0)
+    if (!m_activeCinematic || m_activeCinematicCameraIndex >= int32(std::size(m_activeCinematic->Camera)))
         return;
 
-    if (std::vector<FlyByCamera> const* flyByCameras = GetFlyByCameras(m_activeCinematicCameraId))
+    uint32 cinematicCameraId = m_activeCinematic->Camera[++m_activeCinematicCameraIndex];
+    if (!cinematicCameraId)
+        return;
+
+    if (std::vector<FlyByCamera> const* flyByCameras = GetFlyByCameras(cinematicCameraId))
     {
         // Initialize diff, and set camera
         m_cinematicDiff = 0;
         m_cinematicCamera = flyByCameras;
 
-        auto camitr = m_cinematicCamera->begin();
-        if (camitr != m_cinematicCamera->end())
+        if (!m_cinematicCamera->empty())
         {
-            Position const& pos = camitr->locations;
+            FlyByCamera const& firstCamera = m_cinematicCamera->front();
+            Position const& pos = firstCamera.locations;
             if (!pos.IsPositionValid())
                 return;
 
-            player->GetMap()->LoadGrid(pos.GetPositionX(), pos.GetPositionY());
-            //m_CinematicObject = player->SummonCreature(VISUAL_WAYPOINT, pos.m_positionX, pos.m_positionY, pos.m_positionZ, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 5min);
+            player->GetMap()->LoadGridForActiveObject(pos.GetPositionX(), pos.GetPositionY(), player);
             m_CinematicObject = player->SummonCreature(VISUAL_WAYPOINT, pos.m_positionX, pos.m_positionY, pos.m_positionZ, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 5 * MINUTE * IN_MILLISECONDS);
             if (m_CinematicObject)
             {
@@ -76,12 +79,13 @@ void CinematicMgr::BeginCinematic()
 
 void CinematicMgr::EndCinematic()
 {
-    if (m_activeCinematicCameraId == 0)
+    if (!m_activeCinematic)
         return;
 
     m_cinematicDiff = 0;
     m_cinematicCamera = nullptr;
-    m_activeCinematicCameraId = 0;
+    m_activeCinematic = nullptr;
+    m_activeCinematicCameraIndex = -1;
     if (m_CinematicObject)
     {
         if (WorldObject* vpObject = player->GetViewpoint())
@@ -94,7 +98,7 @@ void CinematicMgr::EndCinematic()
 
 void CinematicMgr::UpdateCinematicLocation(uint32 /*diff*/)
 {
-    if (m_activeCinematicCameraId == 0 || !m_cinematicCamera || m_cinematicCamera->size() == 0)
+    if (!m_activeCinematic || m_activeCinematicCameraIndex == -1 || !m_cinematicCamera || m_cinematicCamera->size() == 0)
         return;
 
     Position lastPosition;
@@ -103,7 +107,7 @@ void CinematicMgr::UpdateCinematicLocation(uint32 /*diff*/)
     uint32 nextTimestamp = 0;
 
     // Obtain direction of travel
-    for (FlyByCamera cam : *m_cinematicCamera)
+    for (FlyByCamera const& cam : *m_cinematicCamera)
     {
         if (cam.timeStamp > m_cinematicDiff)
         {
@@ -135,7 +139,7 @@ void CinematicMgr::UpdateCinematicLocation(uint32 /*diff*/)
         workDiff = m_cinematicDiff;
 
     // Obtain the previous and next waypoint based on timestamp
-    for (FlyByCamera cam : *m_cinematicCamera)
+    for (FlyByCamera const& cam : *m_cinematicCamera)
     {
         if (static_cast<int32>(cam.timeStamp) >= workDiff)
         {

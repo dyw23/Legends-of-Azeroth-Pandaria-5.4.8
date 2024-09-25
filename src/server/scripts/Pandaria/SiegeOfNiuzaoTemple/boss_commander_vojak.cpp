@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -837,7 +837,6 @@ struct npc_vojak_addAI : public ScriptedAI
     {
         if (actionId & (ACTION_ENGAGE_COMBAT << waveNumber))
         {
-            //me->MonsterYell("triggered", 0, 0);
             me->SetReactState(REACT_PASSIVE);
             triggerTimer = TRIGGER_TIMER;
             //TC_LOG_FATAL("script", "Triggering %s, %u seconds", me->GetName().c_str(), triggerTimer);
@@ -1540,7 +1539,7 @@ class npc_sikthik_amberwing : public CreatureScript
                 me->SetSpeed(MOVE_FLIGHT, 5.5f, true);
                 me->SendMovementFlagUpdate();
                 me->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING);
-                me->SetAnimationTier(UnitAnimationTier::Hover);
+                me->SetAnimTier(AnimTier::Hover);
                 me->SetDisableGravity(true);
                 DoCast(me, SPELL_GREEN_WINGS, true);
                 wp = 0;

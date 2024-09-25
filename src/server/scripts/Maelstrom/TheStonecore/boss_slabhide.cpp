@@ -80,7 +80,7 @@ class boss_slabhide : public CreatureScript
                 nonCombatEvents.ScheduleEvent(EVENT_STALACTITE, urand(1500, 3000));
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_PACIFIED);
 
-                me->SetAnimationTier(UnitAnimationTier::Fly);
+                me->SetAnimTier(AnimTier::Fly);
                 me->OverrideInhabitType(INHABIT_AIR);
                 me->UpdateMovementFlags();
                 PreEventDone = false;
@@ -100,7 +100,7 @@ class boss_slabhide : public CreatureScript
                 HandleCloseEntranceRockwall();
                 doorGuid = ObjectGuid::Empty;
 
-                me->SetAnimationTier(UnitAnimationTier::Ground);
+                me->SetAnimTier(AnimTier::Ground);
                 me->OverrideInhabitType(INHABIT_GROUND);
                 me->UpdateMovementFlags();
             }
@@ -146,7 +146,7 @@ class boss_slabhide : public CreatureScript
                         case 2:
                             me->SetCanFly(false);
                             SetCombatMovement(true);
-                            me->SetAnimationTier(UnitAnimationTier::Ground);
+                            me->SetAnimTier(AnimTier::Ground);
                             me->OverrideInhabitType(INHABIT_GROUND);
                             me->UpdateMovementFlags();
                             events.ScheduleEvent(EVENT_SAND_BLAST, 10000);
@@ -197,7 +197,7 @@ class boss_slabhide : public CreatureScript
                             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_PACIFIED);
                             me->SetFacingTo(3.58f);
                             me->SetHomePosition(*me);
-                            me->SetAnimationTier(UnitAnimationTier::Ground);
+                            me->SetAnimTier(AnimTier::Ground);
                             me->OverrideInhabitType(INHABIT_GROUND);
                             me->UpdateMovementFlags();
                             break;
@@ -219,7 +219,7 @@ class boss_slabhide : public CreatureScript
                         case EVENT_FLY:
                             events.Reset();
                             SetCombatMovement(false);
-                            me->SetAnimationTier(UnitAnimationTier::Fly);
+                            me->SetAnimTier(AnimTier::Fly);
                             me->OverrideInhabitType(INHABIT_AIR);
                             me->UpdateMovementFlags();
                             me->SetCanFly(true);

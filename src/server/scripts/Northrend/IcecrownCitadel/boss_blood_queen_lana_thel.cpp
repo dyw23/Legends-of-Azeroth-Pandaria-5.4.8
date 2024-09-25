@@ -468,7 +468,7 @@ class boss_blood_queen_lana_thel : public CreatureScript
                         case EVENT_DELIRIOUS_SLASH:
                             if (_offtankGUID)
                                 if (Player* offtankPointer = Unit::GetPlayer(*me, _offtankGUID))
-                                    if (offtankPointer && me->GetAnimationTier() != UnitAnimationTier::Fly)
+                                    if (offtankPointer && me->GetAnimTier() != AnimTier::Fly)
                                         DoCast(offtankPointer, SPELL_DELIRIOUS_SLASH);
                             events.ScheduleEvent(EVENT_DELIRIOUS_SLASH, urand(20000, 24000), EVENT_GROUP_NORMAL);
                             break;

@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -1048,12 +1048,12 @@ void GameObject::SaveRespawnTime()
         GetMap()->SaveGORespawnTime(m_DBTableGuid, m_respawnTime);
 }
 
-bool GameObject::IsNeverVisible() const
+bool GameObject::IsNeverVisibleFor(WorldObject const* seer, bool allowServersideObjects) const
 {
-    if (WorldObject::IsNeverVisible())
+    if (WorldObject::IsNeverVisibleFor(seer))
         return true;
 
-    if (GetGoType() == GAMEOBJECT_TYPE_SPELL_FOCUS && GetGOInfo()->spellFocus.serverOnly == 1)
+    if (GetGOInfo()->GetServerOnly() && !allowServersideObjects)
         return true;
 
     return false;
@@ -1379,8 +1379,8 @@ void GameObject::Use(Unit* user)
                 {
                     if (Player* ChairUser = ObjectAccessor::FindPlayer(itr->second))
                     {
-                        if (ChairUser->IsSitState() && ChairUser->getStandState() != UNIT_STAND_STATE_SIT && ChairUser->GetExactDist2d(x_i, y_i) < 0.1f)
-                            continue;        // This seat is already occupied by ChairUser. NOTE: Not sure if the ChairUser->getStandState() != UNIT_STAND_STATE_SIT check is required.
+                        if (ChairUser->IsSitState() && ChairUser->GetStandState() != UNIT_STAND_STATE_SIT && ChairUser->GetExactDist2d(x_i, y_i) < 0.1f)
+                            continue;        // This seat is already occupied by ChairUser. NOTE: Not sure if the ChairUser->GetStandState() != UNIT_STAND_STATE_SIT check is required.
                         else
                             itr->second.Clear(); // This seat is unoccupied.
                     }
@@ -1409,7 +1409,7 @@ void GameObject::Use(Unit* user)
                 {
                     itr->second = player->GetGUID(); //this slot in now used by player
                     player->TeleportTo(GetMapId(), x_lowest, y_lowest, GetPositionZ(), GetOrientation(), TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET);
-                    player->SetStandState(UNIT_STAND_STATE_SIT_LOW_CHAIR+info->chair.height);
+                    player->SetStandState(UnitStandStateType(UNIT_STAND_STATE_SIT_LOW_CHAIR+info->chair.height));
                     return;
                 }
             }
@@ -1864,7 +1864,7 @@ void GameObject::Use(Unit* user)
             WorldPacket data(SMSG_ENABLE_BARBER_SHOP, 0);
             player->SendDirectMessage(&data);
 
-            player->SetStandState(UNIT_STAND_STATE_SIT_LOW_CHAIR+info->barberChair.chairheight);
+            player->SetStandState(UnitStandStateType(UNIT_STAND_STATE_SIT_LOW_CHAIR + info->barberChair.chairheight));
             return;
         }
         default:
@@ -1888,7 +1888,7 @@ void GameObject::Use(Unit* user)
     }
 
     if (spellCaster)
-        spellCaster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_USE);
+        spellCaster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_LOOTING);
 
     if (spellCaster)
         spellCaster->CastSpell(user, spellInfo, triggered);
@@ -1933,8 +1933,8 @@ void GameObject::CastSpell(Unit* target, uint32 spellId)
         trigger->SetOwnerGUID(owner->GetGUID());
         if (owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
             trigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
-        if (owner->HasByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 1, UNIT_BYTE2_FLAG_FFA_PVP))
-            trigger->SetByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+        if (owner->HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP))
+            trigger->SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
         trigger->CastSpell(target ? target : trigger, spellInfo, true, 0, 0, owner->GetGUID());
     }
     else
@@ -2462,7 +2462,7 @@ void GameObject::SetLootState(LootState state, Unit* unit)
 
 void GameObject::SetGoState(GOState state)
 {
-    SetByteValue(GAMEOBJECT_FIELD_PERCENT_HEALTH, 0, state);
+    SetByteValue(GAMEOBJECT_BYTES_1, 0, state);
     sScriptMgr->OnGameObjectStateChanged(this, state);
     if (m_model)
     {

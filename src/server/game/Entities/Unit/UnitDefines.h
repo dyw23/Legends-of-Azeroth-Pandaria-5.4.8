@@ -1,19 +1,19 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
+*
+* This program is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the
+* Free Software Foundation; either version 2 of the License, or (at your
+* option) any later version.
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef UnitDefines_h__
 #define UnitDefines_h__
@@ -26,7 +26,6 @@
 #define BASE_MAXDAMAGE 2.0f
 #define BASE_ATTACK_TIME 2000
 
-// byte value (UNIT_FIELD_ANIM_TIER, 0)
 // byte value (UNIT_FIELD_BYTES_1, 0)
 enum UnitStandStateType : uint8
 {
@@ -44,7 +43,34 @@ enum UnitStandStateType : uint8
     MAX_UNIT_STAND_STATE
 };
 
-// byte flag value (UNIT_FIELD_ANIM_TIER, 2)
+// byte flag value (UNIT_FIELD_BYTES_1, 2)
+enum UnitVisFlags : uint8
+{
+    UNIT_VIS_FLAGS_UNK1         = 0x01,
+    UNIT_VIS_FLAGS_CREEP        = 0x02,
+    UNIT_VIS_FLAGS_UNTRACKABLE  = 0x04,
+    UNIT_VIS_FLAGS_UNK4         = 0x08,
+    UNIT_VIS_FLAGS_UNK5         = 0x10,
+    UNIT_VIS_FLAGS_ALL          = 0xFF
+};
+
+enum UnitBytes1Offsets : uint8
+{
+    UNIT_BYTES_1_OFFSET_STAND_STATE = 0,
+    UNIT_BYTES_1_OFFSET_PET_TALENTS = 1,
+    UNIT_BYTES_1_OFFSET_VIS_FLAG    = 2,
+    UNIT_BYTES_1_OFFSET_ANIM_TIER   = 3
+};
+
+enum UnitBytes2Offsets : uint8
+{
+    UNIT_BYTES_2_OFFSET_SHEATH_STATE    = 0,
+    UNIT_BYTES_2_OFFSET_PVP_FLAG        = 1,
+    UNIT_BYTES_2_OFFSET_PET_FLAGS       = 2,
+    UNIT_BYTES_2_OFFSET_SHAPESHIFT_FORM = 3
+};
+
+// byte flag value (UNIT_FIELD_BYTES_1, 2)
 enum UnitStandFlags : uint8
 {
     UNIT_STAND_FLAGS_UNK1 = 0x01,
@@ -55,8 +81,8 @@ enum UnitStandFlags : uint8
     UNIT_STAND_FLAGS_ALL = 0xFF
 };
 
-
-// byte value (UNIT_FIELD_ANIM_TIER,3)
+// UNIT_FIELD_BYTES_1 (UNIT_BYTES_1_OFFSET_ANIM_TIER)
+// byte value (UNIT_FIELD_BYTES_1,3)
 // Used to switch between different animations sets for creatures that have them.
 // Last column in AnimationData.dbc specifies which tier does the animation belong to.
 // Second to last column specifies which animation behavior ID it is, same purpose animations from different tiers share the same behavior ID and it is used to find fallback animations in case the model is missing them.
@@ -65,7 +91,7 @@ enum UnitStandFlags : uint8
 // Hover|Fly -> Ground       - plays 460 ToGround
 //       Fly -> Ground|Hover - plays 463 FlyToGround (only when handling spline, is delayed until near the end of the spline (animation duration is subtracted from spline duration))
 //     Hover -> Ground       - plays 463 FlyToGround (only when handling spline, is delayed until near the end of the spline (animation duration is subtracted from spline duration))
-enum class UnitAnimationTier : uint8
+enum class AnimTier : uint8
 {                  // Name from client executable
     Ground    = 0, // Normal/Ground                   - Plays ground tier animations
     Swim      = 1, // Swim (NOT YET IMPLEMENTED)      - Falls back to ground tier animations, not handled by the client, should never appear in sniffs, will prevent tier change animations from playing correctly if used
@@ -76,33 +102,44 @@ enum class UnitAnimationTier : uint8
     Max
 };
 
-// low byte (0 from 0..3) of UNIT_FIELD_SHAPESHIFT_FORM
 // low byte (0 from 0..3) of UNIT_FIELD_BYTES_2
 enum SheathState : uint8
 {
-    SHEATH_STATE_UNARMED = 0,                              // non prepared weapon
-    SHEATH_STATE_MELEE = 1,                              // prepared melee weapon
-    SHEATH_STATE_RANGED = 2,                               // prepared ranged weapon
+    SHEATH_STATE_UNARMED  = 0,                              // non prepared weapon
+    SHEATH_STATE_MELEE    = 1,                              // prepared melee weapon
+    SHEATH_STATE_RANGED   = 2,                              // prepared ranged weapon
 
     MAX_SHEATH_STATE
 };
 
 
-// byte (1 from 0..3) of UNIT_FIELD_SHAPESHIFT_FORM
 // byte (1 from 0..3) of UNIT_FIELD_BYTES_2
 enum UnitPVPStateFlags : uint8
 {
-    UNIT_BYTE2_FLAG_PVP = 0x01,
-    UNIT_BYTE2_FLAG_UNK1 = 0x02,
-    UNIT_BYTE2_FLAG_FFA_PVP = 0x04,
-    UNIT_BYTE2_FLAG_SANCTUARY = 0x08,
-    UNIT_BYTE2_FLAG_UNK4 = 0x10,
-    UNIT_BYTE2_FLAG_UNK5 = 0x20,
-    UNIT_BYTE2_FLAG_UNK6 = 0x40,
-    UNIT_BYTE2_FLAG_UNK7 = 0x80
+    UNIT_BYTE2_FLAG_NONE        = 0x00,
+    UNIT_BYTE2_FLAG_PVP         = 0x01,
+    UNIT_BYTE2_FLAG_UNK1        = 0x02,
+    UNIT_BYTE2_FLAG_FFA_PVP     = 0x04,
+    UNIT_BYTE2_FLAG_SANCTUARY   = 0x08,
+    UNIT_BYTE2_FLAG_UNK4        = 0x10,
+    UNIT_BYTE2_FLAG_UNK5        = 0x20,
+    UNIT_BYTE2_FLAG_UNK6        = 0x40,
+    UNIT_BYTE2_FLAG_UNK7        = 0x80
 };
 
-// byte (2 from 0..3) of UNIT_FIELD_SHAPESHIFT_FORM
+DEFINE_ENUM_FLAG(UnitPVPStateFlags);
+
+// byte (2 from 0..3) of UNIT_FIELD_BYTES_2
+enum UnitPetFlag : uint8
+{
+    UNIT_PET_FLAG_NONE              = 0x0,
+    UNIT_PET_FLAG_CAN_BE_RENAMED    = 0x01,
+    UNIT_PET_FLAG_CAN_BE_ABANDONED  = 0x02
+};
+
+DEFINE_ENUM_FLAG(UnitPetFlag);
+
+// byte (2 from 0..3) of UNIT_FIELD_BYTES_2
 enum UnitRename : uint8
 {
     UNIT_CAN_BE_RENAMED = 0x01,
@@ -149,7 +186,7 @@ enum UnitFlags : uint32
 
 DEFINE_ENUM_FLAG(UnitFlags);
 
-// Value masks for UNIT_FIELD_FLAGS2
+// Value masks for UNIT_FIELD_FLAGS_2
 enum UnitFlags2 : uint32
 {
     UNIT_FLAG2_FEIGN_DEATH                = 0x00000001,

@@ -1106,7 +1106,7 @@ class boss_sister_svalna : public CreatureScript
                         {
                             Talk(EMOTE_SVALNA_IMPALE, target);
                             summon->CastCustomSpell(VEHICLE_SPELL_RIDE_HARDCODED, SPELLVALUE_BASE_POINT0, 1, target, false);
-                            summon->SetFlag(UNIT_FIELD_FLAGS2, UNIT_FLAG2_UNK1 | 0x4000);
+                            summon->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_UNK1 | 0x4000);
                             // give item
                             //ItemPosCountVec dest;
                             //uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 50307, 1);
@@ -2843,7 +2843,7 @@ class npc_icc_sindragosa_gauntlet_nerubar : public CreatureScript
                     me->InterruptSpell(CURRENT_CHANNELED_SPELL);
                     me->SetHomePosition(*me);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC);
-                    me->SetAnimationTier(UnitAnimationTier::Ground);
+                    me->SetAnimTier(AnimTier::Ground);
 
                     if (IsBroodling())
                     {

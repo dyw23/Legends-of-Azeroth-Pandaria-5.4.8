@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -93,6 +93,7 @@ public:
             { "creature_questender",            SEC_ADMINISTRATOR,  true,   &HandleReloadCreatureQuestEnderCommand,         },
             { "creature_linked_respawn",        SEC_ADMINISTRATOR,  true,   &HandleReloadLinkedRespawnCommand,              },
             { "creature_loot_template",         SEC_ADMINISTRATOR,  true,   &HandleReloadLootTemplatesCreatureCommand,      },
+            { "creature_movement_override",     SEC_ADMINISTRATOR,  true,   &HandleReloadCreatureMovementOverrideCommand,   },
             { "creature_onkill_reputation",     SEC_ADMINISTRATOR,  true,   &HandleReloadOnKillReputationCommand,           },
             { "creature_queststarter",          SEC_ADMINISTRATOR,  true,   &HandleReloadCreatureQuestStarterCommand,       },
             { "creature_scaling",               SEC_ADMINISTRATOR,  true,   &HandleReloadCreatureScallingCommand,           },
@@ -475,84 +476,7 @@ public:
             TC_LOG_INFO("misc", "Reloading creature template entry %u", entry);
 
             Field* fields = result->Fetch();
-
-            for (uint8 i = 0; i < MAX_TEMPLATE_DIFFICULTY - 1; ++i)
-                cInfo->DifficultyEntry[i] = fields[0 + i].GetUInt32();
-
-            for (uint8 i = 0; i < MAX_KILL_CREDIT; ++i)
-                cInfo->KillCredit[i] = fields[5 + i].GetUInt32();
-
-            cInfo->Modelid1           = fields[7].GetUInt32();
-            cInfo->Modelid2           = fields[8].GetUInt32();
-            cInfo->Modelid3           = fields[9].GetUInt32();
-            cInfo->Modelid4           = fields[10].GetUInt32();
-            cInfo->Name               = fields[11].GetString();
-            cInfo->SubName            = fields[12].GetString();
-            cInfo->IconName           = fields[13].GetString();
-            cInfo->GossipMenuId       = fields[14].GetUInt32();
-            cInfo->minlevel           = fields[15].GetUInt8();
-            cInfo->maxlevel           = fields[16].GetUInt8();
-            cInfo->expansion          = fields[17].GetUInt16();
-            cInfo->expansionUnknown   = fields[18].GetUInt16();
-            cInfo->faction            = fields[19].GetUInt16();
-            cInfo->npcflag            = fields[20].GetUInt32();
-            cInfo->npcflag2           = fields[21].GetUInt32();
-            cInfo->speed_walk         = fields[22].GetFloat();
-            cInfo->speed_run          = fields[23].GetFloat();
-            cInfo->scale              = fields[24].GetFloat();
-            cInfo->rank               = fields[25].GetUInt8();
-
-            cInfo->dmgschool          = fields[26].GetUInt8();
-            cInfo->attackpower        = fields[27].GetUInt32();
-            cInfo->dmg_multiplier     = fields[28].GetFloat();
-            cInfo->baseattacktime     = fields[29].GetUInt32();
-            cInfo->rangeattacktime    = fields[30].GetUInt32();
-            cInfo->unit_class         = fields[31].GetUInt8();
-            cInfo->unit_flags         = fields[32].GetUInt32();
-            cInfo->unit_flags2        = fields[33].GetUInt32();
-            cInfo->dynamicflags       = fields[34].GetUInt32();
-            cInfo->family             = fields[35].GetUInt8();
-            cInfo->trainer_type       = fields[36].GetUInt8();
-            cInfo->trainer_class      = fields[37].GetUInt8();
-            cInfo->trainer_race       = fields[38].GetUInt8();
-
-            cInfo->rangedattackpower  = fields[39].GetUInt16();
-            cInfo->type               = fields[40].GetUInt8();
-            cInfo->type_flags         = fields[41].GetUInt32();
-            cInfo->type_flags2        = fields[42].GetUInt32();
-            cInfo->lootid             = fields[43].GetUInt32();
-            cInfo->pickpocketLootId   = fields[44].GetUInt32();
-            cInfo->SkinLootId         = fields[45].GetUInt32();
-
-            for (uint8 i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
-                cInfo->resistance[i] = fields[46 + i -1].GetUInt16();
-
-            for (uint8 i = 0; i < CREATURE_MAX_SPELLS; ++i)
-                cInfo->spells[i] = fields[52 + i].GetUInt32();
-
-            cInfo->PetSpellDataId     = fields[60].GetUInt32();
-            cInfo->VehicleId          = fields[61].GetUInt32();
-            cInfo->mingold            = fields[62].GetUInt32();
-            cInfo->maxgold            = fields[63].GetUInt32();
-            cInfo->AIName             = fields[64].GetString();
-            cInfo->MovementType       = fields[65].GetUInt8();
-            cInfo->InhabitType        = fields[66].GetUInt8();
-            cInfo->HoverHeight        = fields[67].GetFloat();
-            cInfo->ModHealth          = fields[68].GetFloat();
-            cInfo->ModMana            = fields[69].GetFloat();
-            cInfo->ModManaExtra       = fields[70].GetFloat();
-            cInfo->ModArmor           = fields[71].GetFloat();
-            cInfo->RacialLeader       = fields[72].GetBool();
-
-            for (uint8 i = 0; i < MAX_CREATURE_QUEST_ITEMS; ++i)
-                cInfo->questItems[i] = fields[73 + i].GetUInt32();
-
-            cInfo->movementId         = fields[79].GetUInt32();
-            cInfo->RegenHealth        = fields[80].GetBool();
-            cInfo->MechanicImmuneMask = fields[81].GetUInt32();
-            cInfo->flags_extra        = fields[26].GetUInt32();
-            cInfo->ScriptID           = sObjectMgr->GetScriptId(fields[83].GetCString());
-
+            sObjectMgr->LoadCreatureTemplate(fields);
             sObjectMgr->CheckCreatureTemplate(cInfo);
         }
 
@@ -664,6 +588,14 @@ public:
         sConditionMgr->LoadConditions(true);
         return true;
     }
+
+    static bool HandleReloadCreatureMovementOverrideCommand(ChatHandler* handler, char const* /*args*/)
+    {
+        TC_LOG_INFO("misc", "Re-Loading Creature movement overrides...");
+        sObjectMgr->LoadCreatureMovementOverrides();
+        handler->SendGlobalGMSysMessage("DB table `creature_movement_override` reloaded.");
+        return true;
+    }    
 
     static bool HandleReloadLootTemplatesDisenchantCommand(ChatHandler* handler, const char* /*args*/)
     {

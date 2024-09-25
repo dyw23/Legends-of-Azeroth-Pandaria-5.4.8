@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -16,6 +16,7 @@
 */
 
 #include "WorldSocket.h"
+#include "AuthenticationPackets.h"
 #include "BigNumber.h"
 #include "DatabaseEnv.h"
 #include "GameTime.h"
@@ -204,39 +205,36 @@ void WorldSocket::InitializeHandler(boost::system::error_code error, std::size_t
 bool WorldSocket::Update()
 {
     EncryptablePacket* queued;
-    if (_bufferQueue.Dequeue(queued))
+    MessageBuffer buffer(_sendBufferSize);
+    while (_bufferQueue.Dequeue(queued))
     {
-        // Allocate buffer only when it's needed but not on every Update() call.
-        MessageBuffer buffer(_sendBufferSize);
-        do
+
+        uint32 packetSize = queued->size();
+        if (packetSize > MinSizeForCompression && queued->NeedsEncryption())
+            packetSize = compressBound(packetSize) + sizeof(CompressedWorldPacket);
+
+        if (buffer.GetRemainingSpace() < SizeOfHeader + packetSize)
         {
-            uint32 packetSize = queued->size();
-            if (packetSize > MinSizeForCompression && queued->NeedsEncryption())
-                packetSize = compressBound(packetSize) + sizeof(CompressedWorldPacket);
-
-            if (buffer.GetRemainingSpace() < SizeOfHeader + packetSize)
-            {
-                QueuePacket(std::move(buffer));
-                buffer.Resize(_sendBufferSize);
-            }
-
-            if (buffer.GetRemainingSpace() >=  SizeOfHeader + packetSize)
-            {
-                WritePacketToBuffer(*queued, buffer);
-            }
-            else    // single packet larger than 4096 bytes
-            {
-                MessageBuffer packetBuffer(SizeOfHeader + packetSize);
-                WritePacketToBuffer(*queued, packetBuffer);
-                QueuePacket(std::move(packetBuffer));
-            }
-
-            delete queued;
-        } while (_bufferQueue.Dequeue(queued));
-
-        if (buffer.GetActiveSize() > 0)
             QueuePacket(std::move(buffer));
+            buffer.Resize(_sendBufferSize);
+        }
+
+        if (buffer.GetRemainingSpace() >=  SizeOfHeader + packetSize)
+        {
+            WritePacketToBuffer(*queued, buffer);
+        }
+        else    // single packet larger than 4096 bytes
+        {
+            MessageBuffer packetBuffer(SizeOfHeader + packetSize);
+            WritePacketToBuffer(*queued, packetBuffer);
+            QueuePacket(std::move(packetBuffer));
+        }
+
+        delete queued;
     }
+
+    if (buffer.GetActiveSize() > 0)
+        QueuePacket(std::move(buffer));
 
     if (!BaseSocket::Update())
         return false;
@@ -248,14 +246,12 @@ bool WorldSocket::Update()
 
 void WorldSocket::HandleSendAuthSession()
 {
-    WorldPacket packet(SMSG_AUTH_CHALLENGE, 37);
-    packet << uint16(0); // header?
+    WorldPackets::Auth::AuthChallenge challenge;
+    challenge.Challenge = _authSeed;
+    memcpy(challenge.DosChallenge.data(), Trinity::Crypto::GetRandomBytes<32>().data(), 32);
+    challenge.DosZeroBits = 1;
 
-    packet.append(Trinity::Crypto::GetRandomBytes<32>());               // new encryption seeds
-    packet << uint8(1);
-    packet.append(_authSeed);
-
-    SendPacketAndLogOpcode(packet);
+    SendPacketAndLogOpcode(*challenge.Write());
 }
 
 void WorldSocket::OnClose()
@@ -532,15 +528,15 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
         case CMSG_PING:
         {
             LogOpcodeText(opcode, sessionGuard);
-            try
-            {
-                return HandlePing(packet) ? ReadDataHandlerResult::Ok : ReadDataHandlerResult::Error;
-            }
-            catch (ByteBufferException const&)
-            {
-            }
-            TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): client %s sent malformed CMSG_PING", GetRemoteIpAddress().to_string().c_str());
-            return ReadDataHandlerResult::Error;
+            WorldPackets::Auth::Ping ping(std::move(packet));
+            if (!ping.ReadNoThrow())
+            {   
+                TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): client %s sent malformed CMSG_PING", GetRemoteIpAddress().to_string().c_str());
+                return ReadDataHandlerResult::Error;
+            } 
+            if (!HandlePing(ping))
+                return ReadDataHandlerResult::Error;
+            return ReadDataHandlerResult::Ok;
         }
         case CMSG_AUTH_SESSION:
         {
@@ -1129,16 +1125,9 @@ void WorldSocket::SendAuthResponseError(uint8 code)
     SendPacketAndLogOpcode(packet);
 }
 
-bool WorldSocket::HandlePing(WorldPacket& recvPacket)
+bool WorldSocket::HandlePing(WorldPackets::Auth::Ping& ping)
 {
     using namespace std::chrono;
-
-    uint32 ping;
-    uint32 latency;
-
-    // Get the ping packet content
-    recvPacket >> ping;
-    recvPacket >> latency;
 
     if (_LastPingTime == steady_clock::time_point())
     {
@@ -1180,7 +1169,7 @@ bool WorldSocket::HandlePing(WorldPacket& recvPacket)
         std::lock_guard<std::mutex> sessionGuard(_worldSessionLock);
 
         if (_worldSession)
-            _worldSession->SetLatency(latency);
+            _worldSession->SetLatency(ping.Latency);
         else
         {
             TC_LOG_ERROR("network", "WorldSocket::HandlePing: peer sent CMSG_PING, but is not authenticated or got recently kicked, address = %s", GetRemoteIpAddress().to_string().c_str());
@@ -1188,8 +1177,6 @@ bool WorldSocket::HandlePing(WorldPacket& recvPacket)
         }
     }
 
-    WorldPacket packet(SMSG_PONG, 4);
-    packet << ping;
-    SendPacketAndLogOpcode(packet);
+    SendPacketAndLogOpcode(*WorldPackets::Auth::Pong(ping.Serial).Write());
     return true;
 }

@@ -1,5 +1,5 @@
 /*
-* This file is part of the Legends of Azeroth MOP Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -89,6 +89,7 @@ enum ShutdownExitCode
 enum WorldTimers
 {
     WUPDATE_AUCTIONS,
+    WUPDATE_AUCTIONS_PENDING,
     WUPDATE_WEATHERS,
     WUPDATE_UPTIME,
     WUPDATE_CORPSES,
@@ -448,7 +449,9 @@ enum WorldIntConfigs
     CONFIG_CHAT_STRICT_LINK_CHECKING_SEVERITY,
     CONFIG_CHAT_STRICT_LINK_CHECKING_KICK,
     CONFIG_CHAT_CHANNEL_LEVEL_REQ,
+    CONFIG_CHAT_EMOTE_LEVEL_REQ,
     CONFIG_CHAT_WHISPER_LEVEL_REQ,
+    CONFIG_CHAT_YELL_LEVEL_REQ,
     CONFIG_CHAT_SAY_LEVEL_REQ,
     CONFIG_TRADE_LEVEL_REQ,
     CONFIG_TICKET_LEVEL_REQ,
@@ -598,6 +601,7 @@ enum WorldIntConfigs
     CONFIG_DELETING_ITEM_MIN_QUALITY,
     CONFIG_DELETING_ITEM_MAX_QUALITY,
     CONFIG_CREATURE_PICKPOCKET_REFILL,
+    CONFIG_CREATURE_STOP_FOR_PLAYER,
     CONFIG_AHBOT_UPDATE_INTERVAL,
     CONFIG_AUCTIONHOUSE_MIN_DIFF_FOR_LOG,
     CONFIG_AUCTIONHOUSE_MIN_DIFF_FOR_THROTTLE,
@@ -611,9 +615,11 @@ enum WorldIntConfigs
     CONFIG_PLAYED_TIME_REWARD,
     CONFIG_AUTO_SERVER_RESTART_HOUR,
     CONFIG_SOCKET_TIMEOUTTIME_ACTIVE,
-    INT_CONFIG_VALUE_COUNT,
     CONFIG_RESPAWN_GUIDWARNLEVEL,
     CONFIG_RESPAWN_GUIDALERTLEVEL,
+    CONFIG_AUCTION_GETALL_DELAY,
+    CONFIG_AUCTION_SEARCH_DELAY,
+    INT_CONFIG_VALUE_COUNT,
 };
 
 /// Server rates
@@ -1005,7 +1011,7 @@ class TC_GAME_API World
         void SendGlobalMessage(WorldPacket* packet, WorldSession* self = 0, uint32 team = 0);
         void SendGlobalMessage(WorldPacket* packet, AccountTypes security, WorldSession* self = 0, uint32 team = 0);
         void SendGlobalGMMessage(WorldPacket* packet, WorldSession* self = 0, uint32 team = 0);
-        void SendZoneMessage(uint32 zone, WorldPacket* packet, WorldSession* self = 0, uint32 team = 0);
+        bool SendZoneMessage(uint32 zone, WorldPacket const* packet, WorldSession* self = nullptr, uint32 team = 0);
         void SendZoneText(uint32 zone, const char *text, WorldSession* self = 0, uint32 team = 0);
         void SendServerMessage(ServerMessageType type, const char *text = "", Player* player = NULL);
 

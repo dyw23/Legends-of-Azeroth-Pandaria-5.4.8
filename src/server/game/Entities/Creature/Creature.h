@@ -105,13 +105,7 @@ struct CreatureData
     uint32 gameEventId = 0;
 };
 
-struct CreatureModelInfo
-{
-    float bounding_radius;
-    float combat_reach;
-    uint8 gender;
-    uint32 modelid_other_gender;
-};
+
 
 // Benchmarked: Faster than std::map (insert/find)
 typedef std::unordered_map<uint16, CreatureModelInfo> CreatureModelContainer;
@@ -147,20 +141,6 @@ enum ChatType
 #else
 #pragma pack(pop)
 #endif
-
-// `creature_addon` table
-struct CreatureAddon
-{
-    uint32 path_id;
-    uint32 mount;
-    uint32 bytes1;
-    uint32 bytes2;
-    uint32 emote;
-    uint16 ai_anim_kit;
-    uint16 movement_anim_kit;
-    uint16 melee_anim_kit;
-    std::vector<uint32> auras;
-};
 
 typedef std::unordered_map<uint32, CreatureAddon> CreatureAddonContainer;
 
@@ -274,17 +254,18 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void RemoveFromWorld() override;
 
         void SetObjectScale(float scale) override;
-        void SetDisplayId(uint32 modelId) override;
+        void SetDisplayId(uint32 displayId, float displayScale = 1.f) override;
+        void SetDisplayFromModel(uint32 modelIdx);
 
         void DisappearAndDie();
 
         bool Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, uint32 vehId, uint32 team, float x, float y, float z, float ang, const CreatureData* data = NULL);
         bool LoadCreaturesAddon(bool reload = false);
-        void SelectLevel();
-        void UpdateLevelDependantStats();
+        void SelectLevel(const CreatureTemplate* cinfo);
         void LoadEquipment(int8 id = 1, bool force = false);
 
-        uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
+        uint32 GetDBTableGUIDLow() const { return m_spawnId; }
+        ObjectGuid::LowType GetSpawnId() const { return m_spawnId; }
 
         void Update(uint32 time) override;         // overwrited Unit::Update
         void GetRespawnPosition(float &x, float &y, float &z, float* ori = NULL, float* dist =NULL) const;
@@ -296,23 +277,17 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool IsTrigger() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER; }
         bool IsGuard() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_GUARD; }
         
-        bool CanWalk() const { return GetInhabitType() & INHABIT_GROUND; }
+        CreatureMovementData const& GetMovementTemplate() const;
+        bool CanWalk() const { return GetMovementTemplate().IsGroundAllowed(); }
         bool CanSwim() const override;
         bool CanEnterWater() const override;
-        bool CanFly() const override { return GetInhabitType() & INHABIT_AIR; }
+        bool CanFly()  const override { return GetMovementTemplate().IsFlightAllowed() || IsFlying(); }
+        bool CanHover() const { return GetMovementTemplate().Ground == CreatureGroundMovementType::Hover || IsHovering(); } 
 
         // Used to dynamically change allowed path generator and movement flags behavior during scripts.
         // Can be used to allow ground-only creatures to temporarily fly, restrict flying creatures to the ground etc.
-        void OverrideInhabitType(InhabitTypeValues inhabitType) { m_inhabitTypeOverride = inhabitType; }
-        void ResetInhabitTypeOverride() { m_inhabitTypeOverride = (InhabitTypeValues)0; }
-        InhabitTypeValues GetInhabitType() const
-        {
-            if (IsPet())
-                return INHABIT_GROUND | INHABIT_WATER;
-            if (m_inhabitTypeOverride)
-                return m_inhabitTypeOverride;
-            return (InhabitTypeValues)GetCreatureTemplate()->InhabitType;
-        }
+        void OverrideInhabitType(InhabitTypeValues inhabitType) {  } // todo remove in future 
+        void ResetInhabitTypeOverride() { } // todo remove in future
 
         void SetReactState(ReactStates st) { m_reactState = st; }
         ReactStates GetReactState() { return m_reactState; }
@@ -357,8 +332,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         bool HasSpell(uint32 spellID) const override;
 
-        bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data = nullptr);
         void SetPhaseMask(uint32 newPhaseMask, bool update) override;// overwrite Unit::SetPhaseMask
+        bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data = nullptr);
 
         void UpdateMovementFlags(bool force = false);
 
@@ -371,7 +346,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void UpdateMaxHealth() override;
         void UpdateMaxPower(Powers power) override;
         void UpdateAttackPowerAndDamage(bool ranged = false) override;
-        void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, uint8 damageIndex) const override;
         void UpdateDamagePhysical(WeaponAttackType attType) override;
 
         int8 GetOriginalEquipmentId() const { return m_originalEquipmentId; }
@@ -614,7 +588,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         ReactStates m_reactState;                           // for AI, not charmInfo
 
         MovementGeneratorType m_defaultMovementType;
-        uint32 m_DBTableGuid;                               ///< For new or temporary creatures is 0 for saved it is lowguid
+        ObjectGuid::LowType m_spawnId;                      ///< For new or temporary creatures is 0 for saved it is lowguid
         uint8 m_equipmentId;
         int8 m_originalEquipmentId; // can be -1
 
@@ -638,8 +612,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         CreatureTemplate const* m_creatureInfo;                 // Can differ from sObjectMgr->GetCreatureTemplate(GetEntry()) in difficulty mode > 0
         CreatureData const* m_creatureData;
 
-        InhabitTypeValues m_inhabitTypeOverride = INHABIT_NONE;
-
         uint16 m_LootMode;                                  // Bitmask (default: LOOT_MODE_DEFAULT) that determines what loot will be lootable
         uint32 guid_transport;
 
@@ -657,7 +629,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         //Formation var
         CreatureGroup* m_formation;
-        bool TriggerJustRespawned;
+        bool m_triggerJustAppeared;
 
         Spell const* _focusSpell;   ///> Locks the target during spell cast for proper facing
         CreatureTextRepeatGroup m_textRepeat;

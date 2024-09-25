@@ -218,7 +218,7 @@ class boss_jaomin_ro : public CreatureScript
 
                 if (who->GetDistance(me) < 15.f)
                 {
-                    if (me->getStandState() != UNIT_STAND_STATE_STAND)
+                    if (me->GetStandState() != UNIT_STAND_STATE_STAND)
                     {
                         Talk(0);
                         me->SetStandState(UNIT_STAND_STATE_STAND);

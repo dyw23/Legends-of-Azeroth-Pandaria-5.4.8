@@ -638,8 +638,6 @@ m_spellValue(new SpellValue(m_spellInfo)), m_researchData(NULL)
 
     //Auto Shot & Shoot (wand)
     m_autoRepeat = m_spellInfo->IsAutoRepeatRangedSpell();
-    if (m_autoRepeat)
-        _triggeredCastFlags = TriggerCastFlags(_triggeredCastFlags | TRIGGERED_IGNORE_GCD);
 
     m_runesState = 0;
     m_casttime = 0;                                         // setup to correct value in Spell::prepare, must not be used before.
@@ -3455,7 +3453,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     m_caster->m_Events.AddEvent(Event, m_caster->m_Events.CalculateTime(1));
 
     //Prevent casting at cast another spell (ServerSide check)
-    if (!(_triggeredCastFlags & TRIGGERED_IGNORE_CAST_IN_PROGRESS) && m_caster->IsNonMeleeSpellCasted(false, true, true) && m_cast_count&& m_spellInfo->Id != 75) // Allow Auto Shot to be turned on while casting
+    if (!(_triggeredCastFlags & TRIGGERED_IGNORE_CAST_IN_PROGRESS) && m_caster->IsNonMeleeSpellCasted(false, true, true, m_spellInfo->Id == 75))
     {
         SendCastResult(SPELL_FAILED_SPELL_IN_PROGRESS);
         finish(false);
@@ -3487,7 +3485,11 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
         m_needComboPoints = false;
 
     SpellCastResult result = CheckCast(true);
-    if (result != SPELL_CAST_OK && !IsAutoRepeat())          //always cast autorepeat dummy for triggering
+    // target is checked in too many locations and with different results to handle each of them
+    // handle just the general SPELL_FAILED_BAD_TARGETS result which is the default result for most DBC target checks
+    if (_triggeredCastFlags & TRIGGERED_IGNORE_TARGET_CHECK && result == SPELL_FAILED_BAD_TARGETS)
+        result = SPELL_CAST_OK;
+    if (result != SPELL_CAST_OK)
     {
         // Periodic auras should be interrupted when aura triggers a spell which can't be cast
         // for example bladestorm aura should be removed on disarm as of patch 3.3.5
@@ -3501,6 +3503,11 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
 
         m_castResult = result;
         SendCastResult(result);
+
+        // queue autorepeat spells for future repeating
+        if (GetCurrentContainer() == CURRENT_AUTOREPEAT_SPELL && m_caster->IsUnit())
+            m_caster->ToUnit()->SetCurrentCastedSpell(this);
+
         if (Player* player = m_caster->ToPlayer())
             player->RestoreSpellMods(this);
         finish(false);
@@ -3577,7 +3584,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
                     break;
                 }
             if (targets->GetGOTarget())
-                m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_USE);
+                m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_LOOTING);
             if (m_spellInfo->Effects[EFFECT_0].Effect == SPELL_EFFECT_OPEN_LOCK && m_caster->IsMounted() && !m_caster->HasAura(134359)) // Sky Golem
             {
                 auto bounds = sSpellMgr->GetSkillLineAbilityMapBounds(m_spellInfo->Id);
@@ -4173,6 +4180,9 @@ void Spell::SendSpellCooldown()
         return;
 
     m_caster->GetSpellHistory()->StartCooldown(m_spellInfo, m_CastItem ? m_CastItem->GetEntry() : 0, this);
+
+    if (IsAutoRepeat())
+        m_caster->ToUnit()->resetAttackTimer(RANGED_ATTACK);
 }
 
 void Spell::update(uint32 difftime)
@@ -4217,7 +4227,7 @@ void Spell::update(uint32 difftime)
                     m_timer -= difftime;
             }
 
-            if (m_timer == 0 && !IsNextMeleeSwingSpell() && !IsAutoRepeat())
+            if (m_timer == 0 && !IsNextMeleeSwingSpell())
                 // don't CheckCast for instant spells - done in spell::prepare, skip duplicate checks, needed for range checks for example
                 cast(!m_casttime);
             break;
@@ -4257,12 +4267,16 @@ void Spell::update(uint32 difftime)
 
 void Spell::finish(bool ok)
 {
-    if (!m_caster)
-        return;
-
     if (m_spellState == SPELL_STATE_FINISHED)
         return;
     m_spellState = SPELL_STATE_FINISHED;
+
+    if (!m_caster)
+        return;
+
+    // successful cast of the initial autorepeat spell is moved to idle state so that it is not deleted as long as autorepeat is active
+    if (IsAutoRepeat() && m_caster->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL) == this)
+        m_spellState = SPELL_STATE_IDLE;
 
     if (m_spellInfo->IsChanneled())
         m_caster->UpdateInterruptMask();
@@ -5352,10 +5366,10 @@ void Spell::SendLogExecute()
 
     WorldPacket data(SMSG_SPELL_EXECUTE_LOG);
     data.WriteBit(guid[0]);
-data.WriteBit(guid[6]);
-data.WriteBit(guid[5]);
-data.WriteBit(guid[7]);
-data.WriteBit(guid[2]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[2]);
     data.WriteBits(m_effectExecuteData.size(), 19);
     data.WriteBit(guid[4]);
 
@@ -5408,7 +5422,7 @@ data.WriteBit(guid[2]);
     }
 
     data.WriteBit(guid[1]);
-data.WriteBit(guid[3]);
+    data.WriteBit(guid[3]);
 
     data.WriteBit(unkBit);
     if (unkBit)
@@ -6257,7 +6271,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 return SPELL_FAILED_NOT_READY;
     }
 
-    if (m_spellInfo->AttributesEx7 & SPELL_ATTR7_IS_CHEAT_SPELL && !m_caster->HasFlag(UNIT_FIELD_FLAGS2, UNIT_FLAG2_ALLOW_CHEAT_SPELLS))
+    if (m_spellInfo->AttributesEx7 & SPELL_ATTR7_IS_CHEAT_SPELL && !m_caster->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_ALLOW_CHEAT_SPELLS))
     {
         m_customError = SPELL_CUSTOM_ERROR_GM_ONLY;
         return SPELL_FAILED_CUSTOM_ERROR;
@@ -8538,7 +8552,7 @@ void Spell::HandleAfterCast()
         if (!found && !(m_spellInfo->AttributesEx2 & SPELL_ATTR2_NOT_RESET_AUTO_ACTIONS))
         {
             m_caster->resetAttackTimer(BASE_ATTACK);
-            if (m_caster->haveOffhandWeapon())
+            if (m_caster->HasOffhandWeapon())
                 m_caster->resetAttackTimer(OFF_ATTACK);
             m_caster->resetAttackTimer(RANGED_ATTACK);
         }

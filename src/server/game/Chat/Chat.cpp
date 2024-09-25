@@ -634,7 +634,7 @@ size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Languag
 {
     size_t receiverGUIDPos = 0;
     bool hasAchievementId = (chatType == CHAT_MSG_ACHIEVEMENT || chatType == CHAT_MSG_GUILD_ACHIEVEMENT) && achievementId;
-    bool hasLanguage = (language > Language::LANG_UNIVERSAL);
+    bool hasLanguage = (language > Language::LANG_UNIVERSAL || language == Language::LANG_ADDON);
     bool hasSenderName = false;
     bool hasReceiverName = false;
     bool hasChannelName = false;

@@ -1480,7 +1480,7 @@ void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool Sen
         // reset destination bg team
         player->SetBGTeam(0);
 
-        player->SetByteValue(PLAYER_FIELD_ARENA_FACTION, 3, 0);
+        player->SetByteValue(PLAYER_BYTES_3, 3, 0);
         player->RemoveBattlegroundQueueJoinTime(bgTypeId);
 
         if (Transport)
@@ -1595,7 +1595,7 @@ void Battleground::AddPlayer(Player* player)
         }
 
         // Set arena faction client-side to display arena unit frame
-        player->SetByteValue(PLAYER_FIELD_ARENA_FACTION, 3, team == HORDE ? 0 : 1);
+        player->SetByteValue(PLAYER_BYTES_3, 3, team == HORDE ? 0 : 1);
 
         if (BuildArenaPrepOpponentSpecPacket(&data, team))
             SendPacketToTeam(GetOtherTeam(team), &data);
@@ -2567,7 +2567,7 @@ uint32 Battleground::GetAlivePlayersCountByTeam(uint32 Team) const
         if (itr->second.Team == Team)
         {
             Player* player = ObjectAccessor::FindPlayer(itr->first);
-            if (player && player->IsAlive() && !player->HasByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 3, FORM_SPIRITOFREDEMPTION))
+            if (player && player->IsAlive() && !player->HasByteFlag(UNIT_FIELD_BYTES_2, 3, FORM_SPIRITOFREDEMPTION))
                 ++count;
         }
     }

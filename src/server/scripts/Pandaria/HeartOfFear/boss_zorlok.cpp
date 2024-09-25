@@ -217,7 +217,7 @@ class boss_zorlok : public CreatureScript
                 // Set Flying
                 me->SetCanFly(true);
                 me->SetSpeed(MOVE_FLIGHT, 4.5f);
-                me->SetAnimationTier(UnitAnimationTier::Hover);
+                me->SetAnimTier(AnimTier::Hover);
                 me->SetDisableGravity(true);
                 me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -293,7 +293,7 @@ class boss_zorlok : public CreatureScript
                 // Make sure we can target zorlok
                 me->SetCanFly(true);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_PACIFIED);
-                me->SetAnimationTier(UnitAnimationTier::Hover);
+                me->SetAnimTier(AnimTier::Hover);
                 me->SetDisableGravity(true);
                 me->SetReactState(REACT_AGGRESSIVE);
                 me->RemoveAllAreasTrigger();
@@ -375,7 +375,7 @@ class boss_zorlok : public CreatureScript
                 me->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
                 me->SetDisableGravity(true);
                 me->SendMovementFlagUpdate();
-                me->SetAnimationTier(UnitAnimationTier::Hover);
+                me->SetAnimTier(AnimTier::Hover);
                 me->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_PACIFIED);
 
@@ -392,7 +392,7 @@ class boss_zorlok : public CreatureScript
                 me->SetCanFly(false);
                 me->SetDisableGravity(false);
                 me->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING);
-                me->SetAnimationTier(UnitAnimationTier::Ground);
+                me->SetAnimTier(AnimTier::Ground);
                 me->SendMovementFlagUpdate();
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_PACIFIED);
                 me->SetReactState(REACT_AGGRESSIVE);

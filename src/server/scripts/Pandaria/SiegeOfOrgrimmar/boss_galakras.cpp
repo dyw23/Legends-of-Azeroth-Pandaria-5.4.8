@@ -310,7 +310,7 @@ class boss_galakras : public CreatureScript
 
                 me->GetMap()->SetWorldState(WORLDSTATE_IMMORTAL_VANGUARD, 1);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_PACIFIED);
-                me->SetAnimationTier(UnitAnimationTier::Fly);
+                me->SetAnimTier(AnimTier::Fly);
                 me->OverrideInhabitType(INHABIT_AIR);
                 me->UpdateMovementFlags();
 
@@ -325,7 +325,7 @@ class boss_galakras : public CreatureScript
                     .Schedule(Milliseconds(1000), [this](TaskContext context)
                 {
                     // in case: sometimes galakras could move in air instead fly
-                    me->SetAnimationTier(UnitAnimationTier::Fly);
+                    me->SetAnimTier(AnimTier::Fly);
                     me->OverrideInhabitType(INHABIT_AIR);
                     me->UpdateMovementFlags();
 
@@ -831,7 +831,7 @@ class boss_galakras : public CreatureScript
                         case EVENT_SECOND_PHASE:
                             me->StopMoving();
                             me->GetMotionMaster()->Clear();
-                            me->SetAnimationTier(UnitAnimationTier::Ground);
+                            me->SetAnimTier(AnimTier::Ground);
                             me->OverrideInhabitType(INHABIT_GROUND);
                             me->UpdateMovementFlags();
 
@@ -1716,7 +1716,7 @@ struct npc_galakras_dragonmaw_war_banner : public ScriptedAI
     void Reset() override
     {
         me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
-        me->SetDisplayId(me->GetCreatureTemplate()->Modelid1);
+        me->SetDisplayFromModel(0);
         DoCast(me, SPELL_WAR_BANNER_AT);
     }
     void EnterEvadeMode() override { }

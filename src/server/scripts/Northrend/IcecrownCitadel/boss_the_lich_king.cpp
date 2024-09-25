@@ -2671,9 +2671,9 @@ class npc_lich_king_spirit : public CreatureScript
                     me->SetSpeed(MOVE_RUN, 0.35f);
             }
 
-            void JustRespawned() override
+            void JustAppeared() override
             {
-                ScriptedAI::JustRespawned();
+                ScriptedAI::JustAppeared();
                 me->SetVisible(me->FindNearestPlayer(100.0f));
             }
 

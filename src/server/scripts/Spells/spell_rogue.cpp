@@ -217,50 +217,56 @@ class spell_rog_growl : public SpellScript
 // Combat Readiness - 74001
 class spell_rog_combat_readiness : public SpellScriptLoader
 {
-    public:
-        spell_rog_combat_readiness() : SpellScriptLoader("spell_rog_combat_readiness") { }
+public:
+    spell_rog_combat_readiness() : SpellScriptLoader("spell_rog_combat_readiness") { }
 
-        class spell_rog_combat_readiness_AuraScript : public AuraScript
+    class spell_rog_combat_readiness_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_rog_combat_readiness_AuraScript);
+
+        bool Load()
         {
-            PrepareAuraScript(spell_rog_combat_readiness_AuraScript);
-
-            uint32 update;
-            bool hit;
-
-            void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (GetCaster())
-                {
-                    update = 10000;
-                    hit = false;
-                }
-            }
-
-            void OnUpdate(uint32 diff)
-            {
-                update -= diff;
-
-                if (GetCaster())
-                    if (GetCaster()->HasAura(ROGUE_SPELL_COMBAT_INSIGHT))
-                        hit = true;
-
-                if (update <= 0)
-                    if (Player* _player = GetCaster()->ToPlayer())
-                        if (!hit)
-                            _player->RemoveAura(ROGUE_SPELL_COMBAT_READINESS);
-            }
-
-            void Register() override
-            {
-                OnEffectApply += AuraEffectApplyFn(spell_rog_combat_readiness_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
-                OnAuraUpdate += AuraUpdateFn(spell_rog_combat_readiness_AuraScript::OnUpdate);
-            }
-        };
-
-        AuraScript* GetAuraScript() const override
-        {
-            return new spell_rog_combat_readiness_AuraScript();
+            tickCount = 0;
+            return true;
         }
+
+        bool CheckProc(ProcEventInfo& eventInfo)
+        {
+            return !(eventInfo.GetHitMask() & PROC_EX_ABSORB);
+        }
+
+        void CalcPeriodic(AuraEffect const* /*effect*/, bool& isPeriodic, int32& amplitude)
+        {
+            isPeriodic = true;
+            amplitude = 1000;
+        }
+
+        void OnPeriodicTick(AuraEffect const* /*aurEff*/)
+        {
+            if (++tickCount >= 10)
+                Remove(AURA_REMOVE_BY_EXPIRE);
+        }
+
+        void ResetTimerCheck(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+        {
+            tickCount = 0;
+        }
+
+        void Register()
+        {
+            DoCheckProc += AuraCheckProcFn(spell_rog_combat_readiness_AuraScript::CheckProc);
+            DoEffectCalcPeriodic += AuraEffectCalcPeriodicFn(spell_rog_combat_readiness_AuraScript::CalcPeriodic, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_rog_combat_readiness_AuraScript::OnPeriodicTick, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+            OnEffectProc += AuraEffectProcFn(spell_rog_combat_readiness_AuraScript::ResetTimerCheck, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+        }
+
+        uint8 tickCount;
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_rog_combat_readiness_AuraScript();
+    }
 };
 
 // 408 - Kidney Shot, 1833 - Cheap Shot
@@ -1678,7 +1684,7 @@ protected:
         if (rogue->HasAura(SPELL_ROG_SHADOW_FOCUS_TALENT))
             rogue->CastSpell(rogue, SPELL_ROG_SHADOW_FOCUS, true);
 
-        rogue->ForceValuesUpdateAtIndex(UNIT_FIELD_SHAPESHIFT_FORM);    // Needs for vanish + subterfuge
+        rogue->ForceValuesUpdateAtIndex(UNIT_FIELD_BYTES_2);    // Needs for vanish + subterfuge
     }
 
     void HandleRemove(AuraEffect const*, AuraEffectHandleModes)
@@ -1694,7 +1700,7 @@ protected:
             nightstalker->SetDuration(100); // Set duration instead of remove as stealth removal is done before spell-cast damage calculation
 
         rogue->RemoveAura(SPELL_ROG_SHADOW_FOCUS);
-        rogue->ForceValuesUpdateAtIndex(UNIT_FIELD_SHAPESHIFT_FORM);    // Needs for vanish + subterfuge
+        rogue->ForceValuesUpdateAtIndex(UNIT_FIELD_BYTES_2);    // Needs for vanish + subterfuge
 
         if (!rogue->HasStealthAura())
             rogue->RemoveOwnedAura(SPELL_ROGUE_SHROUD_OF_CONCEALMENT);

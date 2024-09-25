@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -325,7 +325,7 @@ void TempSummon::UnSummon(uint32 msTime)
     //ASSERT(!IsPet());
     if (IsPet() && !ToPet()->IsTemporary())
     {
-        ((Pet*)this)->Remove(PET_REMOVE_DISMISS, PET_REMOVE_FLAG_RESET_CURRENT);
+        ToPet()->Remove(PET_REMOVE_DISMISS, PET_REMOVE_FLAG_RESET_CURRENT);
         ASSERT(!IsInWorld());
         return;
     }
@@ -333,6 +333,9 @@ void TempSummon::UnSummon(uint32 msTime)
     Unit* owner = GetSummoner();
     if (owner && owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->IsAIEnabled)
         owner->ToCreature()->AI()->SummonedCreatureDespawn(this);
+
+    if (IsAIEnabled)
+        AI()->Unsummoned();
 
     AddObjectToRemoveList();
 }
@@ -390,7 +393,7 @@ uint32 TempSummon::GetBaseAttackTimer() const
         case 27893: // Dancing Rune Weapon
         case 62982: // Mindbender
         case 63508: // Xuen
-            return ToCreature()->GetCreatureTemplate()->baseattacktime;
+            return ToCreature()->GetCreatureTemplate()->BaseAttackTime;
     }
     return BASE_ATTACK_TIME;
 }
@@ -429,14 +432,18 @@ void Minion::RemoveFromWorld()
 
 bool Minion::IsGuardianPet() const
 {
-    return IsPet() || (m_Properties && m_Properties->Category == SUMMON_CATEGORY_PET);
+    if (IsPet())
+        return !ToPet()->IsTemporary();
+
+    return m_Properties && m_Properties->Category == SUMMON_CATEGORY_PET;
 }
 
 Guardian::Guardian(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject) : Minion(properties, owner, isWorldObject), m_bonusSpellDamage(0)
 {
     memset(m_statFromOwner, 0, sizeof(float)*MAX_STATS);
     m_unitTypeMask |= UNIT_MASK_GUARDIAN;
-    if (properties && properties->Type == SUMMON_TYPE_PET)
+    if (properties && (properties->Category == SUMMON_CATEGORY_PET ||
+        (properties->Type == SUMMON_TYPE_PET && properties->Category != SUMMON_CATEGORY_ALLY)))
     {
         m_unitTypeMask |= UNIT_MASK_CONTROLABLE_GUARDIAN;
         InitCharmInfo();

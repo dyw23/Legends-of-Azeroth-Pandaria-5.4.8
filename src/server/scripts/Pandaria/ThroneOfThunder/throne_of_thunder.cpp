@@ -2435,7 +2435,7 @@ struct npc_corpse_spider : public customCreatureAI
 
         if (pointId == 0)
         {
-            me->SetAnimationTier(UnitAnimationTier::Ground);
+            me->SetAnimTier(AnimTier::Ground);
             me->OverrideInhabitType(INHABIT_GROUND);
             me->UpdateMovementFlags();
 

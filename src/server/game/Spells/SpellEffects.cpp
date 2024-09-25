@@ -27,10 +27,11 @@
 #include "Player.h"
 #include "SkillExtraItems.h"
 #include "Unit.h"
-#include "Spell.h"
 #include "DynamicObject.h"
+#include "Spell.h"
 #include "SpellAuras.h"
 #include "SpellAuraEffects.h"
+#include "SpellPackets.h"
 #include "Group.h"
 #include "UpdateData.h"
 #include "MapManager.h"
@@ -350,35 +351,35 @@ void Spell::EffectInstaKill(SpellEffIndex /*effIndex*/)
     data.WriteBit(casterguid[7]);
     data.WriteBit(targetguid[2]);
     data.WriteBit(casterguid[3]);
-data.WriteBit(casterguid[1]);
-data.WriteBit(casterguid[2]);
-data.WriteBit(casterguid[0]);
-data.WriteBit(casterguid[4]);
+    data.WriteBit(casterguid[1]);
+    data.WriteBit(casterguid[2]);
+    data.WriteBit(casterguid[0]);
+    data.WriteBit(casterguid[4]);
     data.WriteBit(targetguid[4]);
-data.WriteBit(targetguid[7]);
-data.WriteBit(targetguid[1]);
-data.WriteBit(targetguid[6]);
-data.WriteBit(targetguid[5]);
+    data.WriteBit(targetguid[7]);
+    data.WriteBit(targetguid[1]);
+    data.WriteBit(targetguid[6]);
+    data.WriteBit(targetguid[5]);
     data.WriteBit(casterguid[5]);
     data.WriteBit(targetguid[3]);
 
     data.WriteByteSeq(casterguid[0]);
     data.WriteByteSeq(targetguid[1]);
     data.WriteByteSeq(casterguid[3]);
-data.WriteByteSeq(casterguid[4]);
-data.WriteByteSeq(casterguid[5]);
-data.WriteByteSeq(casterguid[7]);
+    data.WriteByteSeq(casterguid[4]);
+    data.WriteByteSeq(casterguid[5]);
+    data.WriteByteSeq(casterguid[7]);
     data.WriteByteSeq(targetguid[0]);
     data.WriteByteSeq(casterguid[6]);
     data.WriteByteSeq(targetguid[2]);
-data.WriteByteSeq(targetguid[4]);
+    data.WriteByteSeq(targetguid[4]);
     data.WriteByteSeq(casterguid[1]);
     data << int32(m_spellInfo->Id);
     data.WriteByteSeq(targetguid[3]);
     data.WriteByteSeq(casterguid[2]);
     data.WriteByteSeq(targetguid[7]);
-data.WriteByteSeq(targetguid[6]);
-data.WriteByteSeq(targetguid[5]);
+    data.WriteByteSeq(targetguid[6]);
+    data.WriteByteSeq(targetguid[5]);
 
     m_caster->SendMessageToSet(&data, true);
 
@@ -2513,24 +2514,22 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
     if (Player* modOwner = m_originalCaster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
     
-    ObjectGuid privateObjectOwner;
-    if (!(properties->Flags & (SUMMON_PROP_FLAG_PERSONAL_SPAWN | SUMMON_PROP_FLAG_PERSONAL_GROUP_SPAWN)))
+    ObjectGuid privateObjectOwner = [&]()
     {
-        privateObjectOwner = ObjectGuid::Empty;
-    }
-    else if (m_originalCaster->IsPrivateObject())
-    {
-        privateObjectOwner = m_originalCaster->GetPrivateObjectOwner();
-    }
-    else if (properties->Flags & SUMMON_PROP_FLAG_PERSONAL_GROUP_SPAWN)
-    {
-        if (m_originalCaster->IsPlayer() && m_originalCaster->ToPlayer()->GetGroup())
-            privateObjectOwner = m_originalCaster->ToPlayer()->GetGroup()->GetGUID();
-    }
-    else
-        privateObjectOwner = m_originalCaster->GetGUID();
+        if (!(properties->Flags & (SUMMON_PROP_FLAG_PERSONAL_SPAWN | SUMMON_PROP_FLAG_PERSONAL_GROUP_SPAWN)))
+            return ObjectGuid::Empty;
 
-    TempSummon* summon = NULL;
+        if (m_originalCaster->IsPrivateObject())
+            return m_originalCaster->GetPrivateObjectOwner();
+
+        if (properties->Flags & SUMMON_PROP_FLAG_PERSONAL_GROUP_SPAWN)
+            if (m_originalCaster->IsPlayer() && m_originalCaster->ToPlayer()->GetGroup())
+                return m_originalCaster->ToPlayer()->GetGroup()->GetGUID();
+
+        return m_originalCaster->GetGUID();
+    }();
+
+    TempSummon* summon = nullptr;
 
     // determine how many units should be summoned
     uint32 numSummons;
@@ -2643,7 +2642,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                 {
                     if (entry == 60199 || entry == 47649 || entry == 59172) // Rune of Power, Wild Mushrooms (druid), Wild Mushroom: Plague (dk)
                     {
-                        summon = SummonTotem(entry, properties, duration);
+                        summon = SummonTotem(entry, properties, duration, ObjectGuid::Empty);
                         break;
                     }
 
@@ -2842,18 +2841,18 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
         dataFail.WriteByteSeq(target[1]);
         dataFail.WriteByteSeq(caster[5]);
         dataFail.WriteByteSeq(target[2]);
-dataFail.WriteByteSeq(target[5]);
-dataFail.WriteByteSeq(target[3]);
-dataFail.WriteByteSeq(target[7]);
+        dataFail.WriteByteSeq(target[5]);
+        dataFail.WriteByteSeq(target[3]);
+        dataFail.WriteByteSeq(target[7]);
         dataFail.WriteByteSeq(caster[4]);
         dataFail.WriteByteSeq(target[4]);
         dataFail.WriteByteSeq(caster[3]);
-dataFail.WriteByteSeq(caster[0]);
-dataFail.WriteByteSeq(caster[1]);
+        dataFail.WriteByteSeq(caster[0]);
+        dataFail.WriteByteSeq(caster[1]);
         dataFail.WriteByteSeq(target[6]);
-dataFail.WriteByteSeq(target[0]);
+        dataFail.WriteByteSeq(target[0]);
         dataFail.WriteByteSeq(caster[7]);
-dataFail.WriteByteSeq(caster[6]);
+        dataFail.WriteByteSeq(caster[6]);
 
         for (auto itr : failedSpells)
             dataFail << int32(itr);
@@ -2881,10 +2880,10 @@ dataFail.WriteByteSeq(caster[6]);
     data.WriteBit(false); // is break
     data.WriteBit(false); // is steal
     data.WriteBit(target[5]);
-data.WriteBit(target[7]);
-data.WriteBit(target[4]);
-data.WriteBit(target[0]);
-data.WriteBit(target[1]);
+    data.WriteBit(target[7]);
+    data.WriteBit(target[4]);
+    data.WriteBit(target[0]);
+    data.WriteBit(target[1]);
     data.WriteBits(successList.size(), 22);
     data.WriteBit(caster[0]);
 
@@ -2896,11 +2895,11 @@ data.WriteBit(target[1]);
     }
 
     data.WriteBit(caster[3]);
-data.WriteBit(caster[2]);
+    data.WriteBit(caster[2]);
     data.WriteBit(target[3]);
     data.WriteBit(caster[1]);
-data.WriteBit(caster[7]);
-data.WriteBit(caster[6]);
+    data.WriteBit(caster[7]);
+    data.WriteBit(caster[6]);
 
     for (DispelChargesList::iterator itr = successList.begin(); itr != successList.end(); ++itr)
     {
@@ -2919,20 +2918,20 @@ data.WriteBit(caster[6]);
     data.WriteByteSeq(caster[4]);
     data.WriteByteSeq(target[3]);
     data.WriteByteSeq(caster[6]);
-data.WriteByteSeq(caster[0]);
+    data.WriteByteSeq(caster[0]);
     data.WriteByteSeq(target[5]);
-data.WriteByteSeq(target[1]);
+    data.WriteByteSeq(target[1]);
     data.WriteByteSeq(caster[3]);
-data.WriteByteSeq(caster[2]);
-data.WriteByteSeq(caster[1]);
-data.WriteByteSeq(caster[5]);
+    data.WriteByteSeq(caster[2]);
+    data.WriteByteSeq(caster[1]);
+    data.WriteByteSeq(caster[5]);
     data.WriteByteSeq(target[0]);
 
     data << uint32(m_spellInfo->Id);                // dispel spell id
 
     data.WriteByteSeq(target[7]);
-data.WriteByteSeq(target[6]);
-data.WriteByteSeq(target[2]);
+    data.WriteByteSeq(target[6]);
+    data.WriteByteSeq(target[2]);
     data.WriteByteSeq(caster[7]);
     data.WriteByteSeq(target[4]);
 
@@ -3433,7 +3432,7 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
     {
         SummonPropertiesEntry const* properties = sSummonPropertiesStore.LookupEntry(67);
         if (properties)
-            SummonGuardian(effIndex, petentry, properties, 1);
+            SummonGuardian(effIndex, petentry, properties, 1, ObjectGuid::Empty);
         return;
     }
 
@@ -3757,7 +3756,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
         float weapon_total_pct = 1.0f;
         if (m_spellInfo->SchoolMask & SPELL_SCHOOL_MASK_NORMAL)
         {
-            weapon_total_pct = m_caster->GetPctModifierValue(unitMod, TOTAL_PCT);
+            weapon_total_pct = m_caster->GetModifierValue(unitMod, TOTAL_PCT);
             weapon_total_pct *= m_caster->GetTotalAuraEffectValue(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
             weapon_total_pct *= m_caster->GetScallingDamageMod();
             // Bonus weapon damage should not be subject to 50% off-hand damage penalty
@@ -3885,24 +3884,24 @@ void Spell::EffectInterruptCast(SpellEffIndex effIndex)
                     data.WriteBit(caster[5]);
                     data.WriteBits(m_spellInfo->Mechanic, 8);
                     data.WriteBit(caster[7]);
-data.WriteBit(caster[2]);
-data.WriteBit(caster[1]);
-data.WriteBit(caster[6]);
-data.WriteBit(caster[3]);
-data.WriteBit(caster[4]);
+                    data.WriteBit(caster[2]);
+                    data.WriteBit(caster[1]);
+                    data.WriteBit(caster[6]);
+                    data.WriteBit(caster[3]);
+                    data.WriteBit(caster[4]);
                     data.WriteBits(CONTROL_TYPE_INTERRUPT, 8);
                     data.WriteBit(caster[0]);
 
                     data.FlushBits();
 
                     data.WriteByteSeq(caster[4]);
-data.WriteByteSeq(caster[2]);
-data.WriteByteSeq(caster[5]);
-data.WriteByteSeq(caster[6]);
-data.WriteByteSeq(caster[0]);
-data.WriteByteSeq(caster[7]);
-data.WriteByteSeq(caster[1]);
-data.WriteByteSeq(caster[3]);
+                    data.WriteByteSeq(caster[2]);
+                    data.WriteByteSeq(caster[5]);
+                    data.WriteByteSeq(caster[6]);
+                    data.WriteByteSeq(caster[0]);
+                    data.WriteByteSeq(caster[7]);
+                    data.WriteByteSeq(caster[1]);
+                    data.WriteByteSeq(caster[3]);
 
                     unitTarget->ToPlayer()->SendDirectMessage(&data);
                 }
@@ -4230,24 +4229,24 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 // Roll Dice - Decahedral Dwarven Dice
                 case 47770:
                 {
-                    char buf[128];
-                    const char *gender = "his";
-                    if (m_caster->GetGender() > 0)
-                        gender = "her";
-                    sprintf(buf, "%s rubs %s [Decahedral Dwarven Dice] between %s hands and rolls. One %u and one %u.", m_caster->GetName().c_str(), gender, gender, urand(1, 10), urand(1, 10));
-                    m_caster->MonsterTextEmote(buf, 0);
+                    BroadcastText const* bct = sObjectMgr->GetBroadcastText(26147);//rubs his |Hitem:36863|h|cFFFFFFFF[Decahedral Dwarven Dice]|r|h between his hands and rolls.
+                    LocaleConstant loc_idx = m_caster->ToPlayer()->GetSession()->GetSessionDbLocaleIndex();
+                    std::string baseText = "";
+                    if (bct)
+                        baseText = bct->GetText(loc_idx, m_caster->GetGender());
+                        m_caster->TextEmote(baseText);
                     break;
                 }
                 // Roll 'dem Bones - Worn Troll Dice
                 case 47776:
                 {
-                    char buf[128];
-                    const char *gender = "his";
-                    if (m_caster->GetGender() > 0)
-                        gender = "her";
-                    sprintf(buf, "%s causually tosses %s [Worn Troll Dice]. One %u and one %u.", m_caster->GetName().c_str(), gender, urand(1, 6), urand(1, 6));
-                    m_caster->MonsterTextEmote(buf, 0);
-                    break;
+                    BroadcastText const* bct = sObjectMgr->GetBroadcastText(26152);//casually tosses his |Hitem:36862|h|cFFFFFFFF[Worn Troll Dice]|r|h.
+                    LocaleConstant loc_idx = m_caster->ToPlayer()->GetSession()->GetSessionDbLocaleIndex();
+                    std::string baseText = "";
+                    if (bct)
+                        baseText = bct->GetText(loc_idx, m_caster->GetGender());
+                        m_caster->TextEmote(baseText);
+                    break;                    
                 }
                 // Death Knight Initiate Visual
                 case 51519:
@@ -5358,6 +5357,10 @@ void Spell::EffectForceDeselect(SpellEffIndex /*effIndex*/)
     // SMSG_BREAK_TAREGT not SMSG_CLEAR_TARGET
     GetCaster()->SendClearTarget();
 
+    WorldPackets::Spells::ClearTarget clearTarget;
+    clearTarget.Guid = m_caster->GetGUID();
+    m_caster->SendMessageToSet(clearTarget.Write(), true);
+
     UnitList targets;
     Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(GetCaster(), GetCaster(), GetCaster()->GetMap()->GetVisibilityRange());
     Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(GetCaster(), targets, u_check);
@@ -6198,18 +6201,18 @@ void Spell::EffectStealBeneficialBuff(SpellEffIndex effIndex)
         dataFail.WriteByteSeq(target[1]);
         dataFail.WriteByteSeq(caster[5]);
         dataFail.WriteByteSeq(target[2]);
-dataFail.WriteByteSeq(target[5]);
-dataFail.WriteByteSeq(target[3]);
-dataFail.WriteByteSeq(target[7]);
+        dataFail.WriteByteSeq(target[5]);
+        dataFail.WriteByteSeq(target[3]);
+        dataFail.WriteByteSeq(target[7]);
         dataFail.WriteByteSeq(caster[4]);
         dataFail.WriteByteSeq(target[4]);
         dataFail.WriteByteSeq(caster[3]);
-dataFail.WriteByteSeq(caster[0]);
-dataFail.WriteByteSeq(caster[1]);
+        dataFail.WriteByteSeq(caster[0]);
+        dataFail.WriteByteSeq(caster[1]);
         dataFail.WriteByteSeq(target[6]);
-dataFail.WriteByteSeq(target[0]);
+        dataFail.WriteByteSeq(target[0]);
         dataFail.WriteByteSeq(caster[7]);
-dataFail.WriteByteSeq(caster[6]);
+        dataFail.WriteByteSeq(caster[6]);
 
         for (auto itr : FailedSpells)
             dataFail << int32(itr);
@@ -6237,10 +6240,10 @@ dataFail.WriteByteSeq(caster[6]);
     data.WriteBit(false); // is break
     data.WriteBit(true); // is steal
     data.WriteBit(target[5]);
-data.WriteBit(target[7]);
-data.WriteBit(target[4]);
-data.WriteBit(target[0]);
-data.WriteBit(target[1]);
+    data.WriteBit(target[7]);
+    data.WriteBit(target[4]);
+    data.WriteBit(target[0]);
+    data.WriteBit(target[1]);
     data.WriteBits(success_list.size(), 22);
     data.WriteBit(caster[0]);
 
@@ -6252,11 +6255,11 @@ data.WriteBit(target[1]);
     }
 
     data.WriteBit(caster[3]);
-data.WriteBit(caster[2]);
+    data.WriteBit(caster[2]);
     data.WriteBit(target[3]);
     data.WriteBit(caster[1]);
-data.WriteBit(caster[7]);
-data.WriteBit(caster[6]);
+    data.WriteBit(caster[7]);
+    data.WriteBit(caster[6]);
 
     for (DispelList::iterator itr = success_list.begin(); itr != success_list.end(); ++itr)
     {
@@ -6275,20 +6278,20 @@ data.WriteBit(caster[6]);
     data.WriteByteSeq(caster[4]);
     data.WriteByteSeq(target[3]);
     data.WriteByteSeq(caster[6]);
-data.WriteByteSeq(caster[0]);
+    data.WriteByteSeq(caster[0]);
     data.WriteByteSeq(target[5]);
-data.WriteByteSeq(target[1]);
+    data.WriteByteSeq(target[1]);
     data.WriteByteSeq(caster[3]);
-data.WriteByteSeq(caster[2]);
-data.WriteByteSeq(caster[1]);
-data.WriteByteSeq(caster[5]);
+    data.WriteByteSeq(caster[2]);
+    data.WriteByteSeq(caster[1]);
+    data.WriteByteSeq(caster[5]);
     data.WriteByteSeq(target[0]);
 
     data << uint32(m_spellInfo->Id);                // dispel spell id
 
     data.WriteByteSeq(target[7]);
-data.WriteByteSeq(target[6]);
-data.WriteByteSeq(target[2]);
+    data.WriteByteSeq(target[6]);
+    data.WriteByteSeq(target[2]);
     data.WriteByteSeq(caster[7]);
     data.WriteByteSeq(target[4]);
 
@@ -6513,7 +6516,7 @@ void Spell::EffectGameObjectSetDestructionState(SpellEffIndex effIndex)
     gameObjTarget->SetDestructibleState(GameObjectDestructibleState(m_spellInfo->Effects[effIndex].MiscValue), player, true);
 }
 
-void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* properties, uint32 numGuardians, bool visibleBySummonerOnly /*= false*/)
+void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* properties, uint32 numGuardians, ObjectGuid privateObjectOwner)
 {
     Unit* caster = m_originalCaster;
     if (!caster)
@@ -6550,7 +6553,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
             // randomize position for multiple summons
             pos = m_caster->GetRandomPoint(*destTarget, radius);
 
-        TempSummon* summon = map->SummonCreature(entry, pos, properties, duration, caster, m_spellInfo->Id, 0, ObjectGuid(uint64(visibleBySummonerOnly)));
+        TempSummon* summon = map->SummonCreature(entry, pos, properties, duration, caster, m_spellInfo->Id, 0, privateObjectOwner);
         if (!summon)
             return;
         if (summon->HasUnitTypeMask(UNIT_MASK_GUARDIAN))
@@ -6609,9 +6612,9 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
     }
 }
 
-TempSummon* Spell::SummonTotem(uint32 entry, SummonPropertiesEntry const* properties, uint32 duration, bool visibleBySummonerOnly /*= false*/)
+TempSummon* Spell::SummonTotem(uint32 entry, SummonPropertiesEntry const* properties, uint32 duration, ObjectGuid privateObjectOwner)
 {
-    auto summon = m_caster->GetMap()->SummonCreature(entry, *destTarget, properties, duration, m_originalCaster, m_spellInfo->Id, 0, ObjectGuid(uint64(visibleBySummonerOnly)));
+    auto summon = m_caster->GetMap()->SummonCreature(entry, *destTarget, properties, duration, m_originalCaster, m_spellInfo->Id, 0, privateObjectOwner);
     if (!summon || !summon->IsTotem())
         return nullptr;
 
@@ -6642,7 +6645,7 @@ void Spell::EffectRenamePet(SpellEffIndex /*effIndex*/)
         !unitTarget->ToCreature()->IsPet() || ((Pet*)unitTarget)->getPetType() != HUNTER_PET)
         return;
 
-    unitTarget->SetByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 2, UNIT_CAN_BE_RENAMED);
+    unitTarget->SetByteFlag(UNIT_FIELD_BYTES_2, 2, UNIT_CAN_BE_RENAMED);
 }
 
 void Spell::EffectForcePlayerInteraction(SpellEffIndex effIndex)
@@ -7325,7 +7328,7 @@ void Spell::EffectUpdateZoneAurasAndPhases(SpellEffIndex /*effIndex*/)
 
 void Spell::EffectSummonPersonalGameObject(SpellEffIndex effIndex)
 {
-    /*
+
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
@@ -7341,36 +7344,59 @@ void Spell::EffectSummonPersonalGameObject(SpellEffIndex effIndex)
 
     Map* map = m_caster->GetMap();
     Position pos = Position(x, y, z, m_caster->GetOrientation());
-    QuaternionData rot = QuaternionData::fromEulerAnglesZYX(m_caster->GetOrientation(), 0.f, 0.f);
+    //QuaternionData rot = QuaternionData::fromEulerAnglesZYX(m_caster->GetOrientation(), 0.f, 0.f);
     GameObject* go = new GameObject();
 
-    if (!go->Create(map->GenerateLowGuid<HighGuid::GameObject>(), goId, map, pos, rot, 255, GO_STATE_READY))
+    if (!go->Create(map->GenerateLowGuid<HighGuid::GameObject>(), goId, map, m_caster->GetPhaseMask(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), 
+        pos.GetOrientation(), { }/*rot*/, 100, GO_STATE_READY))
     {
         TC_LOG_WARN("spells", "SpellEffect Failed to summon personal gameobject. SpellId %u, effect %u", m_spellInfo->Id, effIndex);
         delete go;
         return;
     }
 
-    PhasingHandler::InheritPhaseShift(go, m_caster);
+    go->AddToTransportIfNeeded(m_caster->GetTransport());
 
-    int32 duration = m_spellInfo->CalcDuration(m_caster);
+    //PhasingHandler::InheritPhaseShift(go, m_caster);
+    for (auto phase : m_caster->GetPhases())
+        go->SetPhased(phase, false, true);
+
+    int32 duration = m_spellInfo->GetDuration();
 
     go->SetRespawnTime(duration > 0 ? duration / IN_MILLISECONDS : 0);
     go->SetSpellId(m_spellInfo->Id);
-    go->SetVisibleByUnitOnly(m_caster->GetGUID());
+    go->SetPrivateObjectOwner(m_caster->GetGUID());
 
     ExecuteLogEffectSummonObject(effIndex, go);
 
     map->AddToMap(go);
 
-    if (GameObject* linkedTrap = go->GetLinkedTrap())
+    if (uint32 linkedEntry = go->GetGOInfo()->GetLinkedGameObjectEntry())
     {
-        PhasingHandler::InheritPhaseShift(linkedTrap, m_caster);
+        GameObject* linkedTrap = new GameObject;
 
-        linkedTrap->SetRespawnTime(duration > 0 ? duration / IN_MILLISECONDS : 0);
-        linkedTrap->SetSpellId(m_spellInfo->Id);
+        if (linkedTrap->Create(map->GenerateLowGuid<HighGuid::GameObject>(), linkedEntry, map, m_caster->GetPhaseMask(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(),
+            pos.GetOrientation(), { }/*rot*/, 255, GO_STATE_READY))
+        {
+            linkedTrap->AddToTransportIfNeeded(m_caster->GetTransport());
 
-        ExecuteLogEffectSummonObject(effIndex, linkedTrap);
+            //PhasingHandler::InheritPhaseShift(linkedTrap, m_caster);
+            for (auto phase : m_caster->GetPhases())
+                linkedTrap->SetPhased(phase, false, true);
+
+            linkedTrap->SetRespawnTime(duration > 0 ? duration / IN_MILLISECONDS : 0);
+            linkedTrap->SetSpellId(m_spellInfo->Id);
+
+            ExecuteLogEffectSummonObject(effIndex, linkedTrap);
+
+            map->AddToMap(linkedTrap);
+        }
+        else
+        {
+            TC_LOG_WARN("spells", "SpellEffect Failed to summon linked gameobject. SpellId %u, effect %u", m_spellInfo->Id, effIndex);
+            delete linkedTrap;
+            linkedTrap = nullptr;
+            return;
+        }
     }
-    */
 }

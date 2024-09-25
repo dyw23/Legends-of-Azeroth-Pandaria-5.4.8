@@ -135,7 +135,7 @@ class boss_wing_leader_neronok : public CreatureScript
                         me->SetCanFly(true);
                         me->SendMovementFlagUpdate();
                         me->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING);
-                        me->SetAnimationTier(UnitAnimationTier::Hover);
+                        me->SetAnimTier(AnimTier::Hover);
                         me->SetDisableGravity(true);
                         me->GetMotionMaster()->MovePoint(0, bridgePos[phase]);
                         events.CancelEventGroup(EVENT_GROUP_COMBAT);

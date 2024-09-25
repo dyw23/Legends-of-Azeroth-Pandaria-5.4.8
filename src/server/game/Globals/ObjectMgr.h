@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -51,6 +51,7 @@
 class AreaTrigger;
 class Item;
 class PhaseMgr;
+enum GossipOptionIcon : uint8;
 struct AccessRequirement;
 struct PlayerLevelInfo;
 struct DeclinedName;
@@ -577,7 +578,7 @@ struct GossipMenuItems
 {
     uint32              MenuID;
     uint32              OptionID;
-    uint8               OptionIcon;
+    GossipOptionIcon    OptionIcon;
     std::string         OptionText;
     uint32              OptionBroadcastTextID;
     uint32              OptionType;
@@ -1053,17 +1054,18 @@ class ObjectMgr
         void LoadGameObjectTemplateAddons();
         void AddGameobjectInfo(GameObjectTemplate* goinfo);
 
-        CreatureTemplate const* GetCreatureTemplate(uint32 entry);
+        CreatureTemplate const* GetCreatureTemplate(uint32 entry) const;
         CreatureTemplateContainer const* GetCreatureTemplates() const { return &_creatureTemplateStore; }
-        CreatureModelInfo const* GetCreatureModelInfo(uint32 modelId);
-        CreatureModelInfo const* GetCreatureModelRandomGender(uint32* displayID);
-        static uint32 ChooseDisplayId(CreatureTemplate const* cinfo, CreatureData const* data = NULL);
+        CreatureModelInfo const* GetCreatureModelInfo(uint32 modelId) const;
+        CreatureModelInfo const* GetCreatureModelRandomGender(CreatureModel* model, CreatureTemplate const* creatureTemplate) const;
+        static CreatureModel const* ChooseDisplayId(CreatureTemplate const* cinfo, CreatureData const* data = nullptr);
         static void ChooseCreatureFlags(CreatureTemplate const* cinfo, uint32& npcflag, uint32& unit_flags, uint32& dynamicflags, CreatureData const* data = NULL);
         EquipmentInfo const* GetEquipmentInfo(uint32 entry, int8& id);
         CreatureAddon const* GetCreatureAddon(uint32 lowguid);
         GameObjectAddon const* GetGameObjectAddon(uint32 lowguid);
         GameObjectTemplateAddon const* GetGameObjectTemplateAddon(uint32 entry) const;
-        CreatureAddon const* GetCreatureTemplateAddon(uint32 entry);
+        CreatureAddon const* GetCreatureTemplateAddon(uint32 entry) const;
+        CreatureMovementData const* GetCreatureMovementOverride(ObjectGuid::LowType spawnId) const;
         ItemTemplate const* GetItemTemplate(uint32 entry);
         ItemTemplateContainer const* GetItemTemplateStore() const { return &_itemTemplateStore; }
         AreaTriggerTemplate const* GetAreaTriggerTemplate(uint32 entry) const;
@@ -1244,8 +1246,11 @@ class ObjectMgr
         void LoadCreatureTemplates();
         void LoadCreatureTemplateAddons();
         void LoadCreatureSparringTemplate();
+        void LoadCreatureTemplate(Field* fields);
+        void LoadCreatureTemplateModels();        
         void LoadCreatureDifficultyModifiers();
         void CheckCreatureTemplate(CreatureTemplate const* cInfo);
+        void CheckCreatureMovement(char const* table, uint64 id, CreatureMovementData& creatureMovement);
         void LoadTempSummons();
         void LoadCreatures();
         void LoadLinkedRespawn();
@@ -1254,6 +1259,7 @@ class ObjectMgr
         void LoadGameObjectAddons();
         void LoadCreatureModelInfo();
         void LoadEquipmentTemplates();
+        void LoadCreatureMovementOverrides();
         void LoadGameObjectLocales();
         void LoadGameobjects();
         void LoadItemTemplates();
@@ -1946,6 +1952,7 @@ class ObjectMgr
         CreatureAddonContainer _creatureAddonStore;
         GameObjectAddonContainer _gameObjectAddonStore;
         CreatureAddonContainer _creatureTemplateAddonStore;
+        std::unordered_map<ObjectGuid::LowType, CreatureMovementData> _creatureMovementOverrides;
         CreatureSparringTemplateMap _creatureSparringTemplateStore;
         EquipmentInfoContainer _equipmentInfoStore;
         LinkedRespawnContainer _linkedRespawnStore;

@@ -780,8 +780,8 @@ void WorldSession::HandleRaidTargetUpdateOpcode(WorldPacket& recvData)
     if (!group)
         return;
 
-    uint8 Symbol, Index;
-    recvData >> Symbol >> Index;
+    uint8 PartyIndex, Symbol;
+    recvData >> PartyIndex >> Symbol; // PartyIndex always 0 ?
 
     /** error handling **/
     /********************/
@@ -814,7 +814,7 @@ void WorldSession::HandleRaidTargetUpdateOpcode(WorldPacket& recvData)
         recvData.ReadByteSeq(targetGuid[6]);
         recvData.ReadByteSeq(targetGuid[4]);
 
-        group->SetTargetIcon(Symbol, _player->GetGUID(), targetGuid, Index);
+        group->SetTargetIcon(Symbol, _player->GetGUID(), targetGuid, PartyIndex);
     }
 }
 
@@ -1246,7 +1246,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
             if (player->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
                 status |= MEMBER_STATUS_GHOST;
 
-            if (player->HasByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 1, UNIT_BYTE2_FLAG_FFA_PVP))
+            if (player->HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP))
                 status |= MEMBER_STATUS_PVP_FFA;
 
             if (player->isAFK())
@@ -1634,6 +1634,7 @@ void WorldSession::HandleGroupRequestJoinUpdates(WorldPacket& recvData)
         return;
 
     group->SendUpdate();
+    group->SendTargetIconList(this);
 }
 
 void WorldSession::HandleClearRaidMarkerOpcode(WorldPacket& recvData)

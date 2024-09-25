@@ -169,7 +169,7 @@ class boss_striker_gadok : public CreatureScript
                 me->SetSpeed(MOVE_FLIGHT, 3.5f);
                 me->SendMovementFlagUpdate();
                 me->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING);
-                me->SetAnimationTier(UnitAnimationTier::Hover);
+                me->SetAnimTier(AnimTier::Hover);
                 me->SetDisableGravity(true);
                 me->SetReactState(REACT_AGGRESSIVE);
 

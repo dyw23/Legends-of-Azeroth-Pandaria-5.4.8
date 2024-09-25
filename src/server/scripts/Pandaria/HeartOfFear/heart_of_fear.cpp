@@ -190,7 +190,7 @@ class npc_wind_lord_meljarak_intro : public CreatureScript
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->SetCanFly(true);
                 me->SetDisableGravity(true);
-                me->SetAnimationTier(UnitAnimationTier::Hover);
+                me->SetAnimTier(AnimTier::Hover);
                 me->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING);
             }
 
@@ -200,7 +200,7 @@ class npc_wind_lord_meljarak_intro : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->SetCanFly(true); me->SetDisableGravity(true);
-                me->SetAnimationTier(UnitAnimationTier::Hover);
+                me->SetAnimTier(AnimTier::Hover);
                 me->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING);
                 inCombat = false;
 
@@ -224,7 +224,7 @@ class npc_wind_lord_meljarak_intro : public CreatureScript
                     itr->SetReactState(REACT_PASSIVE);
                     itr->SetCanFly(true); 
                     itr->SetDisableGravity(true);
-                    itr->SetAnimationTier(UnitAnimationTier::Hover);
+                    itr->SetAnimTier(AnimTier::Hover);
                     itr->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING);
                 }
             }

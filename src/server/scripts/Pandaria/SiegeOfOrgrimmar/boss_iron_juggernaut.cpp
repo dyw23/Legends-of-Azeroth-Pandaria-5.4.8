@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -159,7 +159,7 @@ class boss_iron_juggernaut : public CreatureScript
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED | UNIT_FLAG_NON_ATTACKABLE);
                 });
 
-                me->SetAnimationTier(UnitAnimationTier::Ground);
+                me->SetAnimTier(AnimTier::Ground);
                 me->SetReactState(REACT_DEFENSIVE);
                 energyGainTick = 0;
                 crawlerCount   = 0;
@@ -399,7 +399,7 @@ class boss_iron_juggernaut : public CreatureScript
                                 targetGUID = target->GetGUID();
 
                             me->PrepareChanneledCast(me->GetOrientation());
-                            me->SetAnimationTier(UnitAnimationTier::Fly); // fly tier for borer to ground.. interesting
+                            me->SetAnimTier(AnimTier::Fly); // fly tier for borer to ground.. interesting
                             DoCast(me, SPELL_SIESMIC_ACTIVITY);
 
                             events.ScheduleEvent(EVENT_SHOCK_PULSE, 18 * IN_MILLISECONDS);
@@ -426,7 +426,7 @@ class boss_iron_juggernaut : public CreatureScript
                             berserkerEvents.CancelEvent(EVENT_CUTTER_LASER);
                             berserkerEvents.CancelEvent(EVENT_MORTAR_BARRAGE);
                             me->RemoveAurasDueToSpell(SPELL_SIESMIC_ACTIVITY);
-                            me->SetAnimationTier(UnitAnimationTier::Ground);
+                            me->SetAnimTier(AnimTier::Ground);
                             me->RemoveChanneledCast(targetGUID);
                             events.ScheduleEvent(EVENT_SCATTER_LASTER, 10 * IN_MILLISECONDS);
                             events.ScheduleEvent(EVENT_MORTAR_STRIKE, 15 * IN_MILLISECONDS);
@@ -592,7 +592,7 @@ struct npc_juggernaut_crawler_mine_clicker : public ScriptedAI
         if (Creature* juggernaut = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_IRON_JUGGERNAUT) : ObjectGuid::Empty))
             juggernaut->AI()->JustSummoned(me);
 
-        me->SetDisplayId(me->GetCreatureTemplate()->Modelid1);
+        me->SetDisplayFromModel(0);
     }
 
     void UpdateAI(uint32 /*diff*/) override { }
@@ -619,7 +619,7 @@ struct npc_borer_drill : public ScriptedAI
 
     void Reset() override
     {
-        me->SetDisplayId(me->GetCreatureTemplate()->Modelid1);
+        me->SetDisplayFromModel(0);
         DoCast(me, SPELL_BORER_DRILL_MAIN_AT, true);
 
         scheduler
@@ -664,7 +664,7 @@ struct npc_juggernaut_explosive_tar : public ScriptedAI
 
     void Reset() override
     {
-        me->SetDisplayId(me->GetCreatureTemplate()->Modelid1);
+        me->SetDisplayFromModel(0);
         DoCast(me, SPELL_EXPLOSIVE_TAR_AT, true);
         DoCast(me, SPELL_EXPLOSIVE_TAR_VISUAL, true);
         hasDestroyed = false;
@@ -694,7 +694,7 @@ struct npc_juggernaut_cutter_laser : public ScriptedAI
 
     void IsSummonedBy(Unit* summoner) override
     {
-        me->SetDisplayId(me->GetCreatureTemplate()->Modelid1);
+        me->SetDisplayFromModel(0);
 
         if (Creature* juggernaut = ObjectAccessor::GetCreature(*me, me->GetInstanceScript() ? me->GetInstanceScript()->GetGuidData(DATA_IRON_JUGGERNAUT) : ObjectGuid::Empty))
             juggernaut->AI()->JustSummoned(me);

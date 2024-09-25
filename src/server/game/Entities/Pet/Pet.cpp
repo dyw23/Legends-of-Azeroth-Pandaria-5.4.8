@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -95,6 +95,12 @@ void Pet::RemoveFromWorld()
     ///- Remove the pet from the accessor
     if (IsInWorld())
     {
+        if (IsTemporary()) // hackfix, need remove in future
+        {
+            ASSERT(FindMap() == GetOwner()->FindMap());
+            GetOwner()->SetMinion(this, false);
+            GetOwner()->RemoveSummon(this);
+        }
         ///- Don't call the function for Creature, normal mobs + totems go in a different storage
         Unit::RemoveFromWorld();
         GetMap()->GetObjectsStore().Remove<Pet>(GetGUID());
@@ -253,7 +259,7 @@ bool Pet::LoadPetFromDB(PetLoadMode mode, uint32 param, Position const* pos)
             SetClass(CLASS_WARRIOR);
             SetGender(GENDER_NONE);
             SetFieldPowerType(POWER_FOCUS);
-            SetByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 2, fields[9].GetBool() ? UNIT_CAN_BE_ABANDONED : UNIT_CAN_BE_RENAMED | UNIT_CAN_BE_ABANDONED);
+            SetByteFlag(UNIT_FIELD_BYTES_2, 2, fields[9].GetBool() ? UNIT_CAN_BE_ABANDONED : UNIT_CAN_BE_RENAMED | UNIT_CAN_BE_ABANDONED);
             SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
                                                             // this enables popup window (pet abandon, cancel)
             SetPowerType(POWER_FOCUS);
@@ -440,7 +446,7 @@ void Pet::SavePetToDB(CharacterDatabaseTransaction trans)
         << uint32(GetReactState()) << ','
         << uint32(dbslot) << ", '"
         << name.c_str() << "', "
-        << uint32(HasByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 2, UNIT_CAN_BE_RENAMED) ? 0 : 1) << ','
+        << uint32(HasByteFlag(UNIT_FIELD_BYTES_2, 2, UNIT_CAN_BE_RENAMED) ? 0 : 1) << ','
         << curhealth << ','
         << curmana << ", '";
 
@@ -674,7 +680,7 @@ bool Pet::CreateBaseAtTamed(CreatureTemplate const* cinfo, Map* map, uint32 phas
         SetGender(GENDER_NONE);
         SetFieldPowerType(POWER_FOCUS);
         SetSheath(SHEATH_STATE_MELEE);
-        SetByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 2, UNIT_CAN_BE_RENAMED | UNIT_CAN_BE_ABANDONED);
+        SetByteFlag(UNIT_FIELD_BYTES_2, 2, UNIT_CAN_BE_RENAMED | UNIT_CAN_BE_ABANDONED);
     }
 
     return true;
@@ -715,7 +721,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     SetMeleeDamageSchool(SpellSchools(cinfo->dmgschool));
 
     if (!IsPet())
-        SetStatFlatModifier(UNIT_MOD_ARMOR, BASE_VALUE, float(petlevel*50));
+        SetModifierValue(UNIT_MOD_ARMOR, BASE_VALUE, float(petlevel*50));
 
     SetAttackTime(BASE_ATTACK, GetBaseAttackTimer());
     SetAttackTime(OFF_ATTACK, GetBaseAttackTimer());
@@ -741,7 +747,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 
     // Resistance
     for (uint8 i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
-        SetStatFlatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + i), BASE_VALUE, float(cinfo->resistance[i]));
+        SetModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + i), BASE_VALUE, float(cinfo->resistance[i]));
 
     //health, mana, armor and resistance
     PetLevelInfo const* pInfo = sObjectMgr->GetPetLevelInfo(creature_ID, petlevel);
@@ -752,7 +758,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             SetCreateMana(pInfo->mana);
 
         if (pInfo->armor > 0 && !IsPet())
-            SetStatFlatModifier(UNIT_MOD_ARMOR, BASE_VALUE, float(pInfo->armor));
+            SetModifierValue(UNIT_MOD_ARMOR, BASE_VALUE, float(pInfo->armor));
 
         for (uint8 stat = 0; stat < MAX_STATS; ++stat)
             SetCreateStat(Stats(stat), float(pInfo->stats[stat]));
@@ -845,8 +851,8 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     if (!pInfo)
                         SetCreateHealth(30*petlevel);
 
-                    SetStatFlatModifier(UNIT_MOD_ARMOR, BASE_VALUE, float(GetOwner()->GetArmor()) * 0.35f);  // Bonus Armor (35% of player armor)
-                    SetStatFlatModifier(UNIT_MOD_STAT_STAMINA, BASE_VALUE, float(GetOwner()->GetStat(STAT_STAMINA)) * 0.3f);  // Bonus Stamina (30% of player stamina)
+                    SetModifierValue(UNIT_MOD_ARMOR, BASE_VALUE, float(GetOwner()->GetArmor()) * 0.35f);  // Bonus Armor (35% of player armor)
+                    SetModifierValue(UNIT_MOD_STAT_STAMINA, BASE_VALUE, float(GetOwner()->GetStat(STAT_STAMINA)) * 0.3f);  // Bonus Stamina (30% of player stamina)
                     if (!HasAura(58877))//prevent apply twice for the 2 wolves
                         AddAura(58877, this);//Spirit Hunt, passive, Spirit Wolves' attacks heal them and their master for 150% of damage done.
                     break;
@@ -1533,7 +1539,7 @@ bool Pet::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, uint3
     SetPhaseMask(phaseMask, false);
     Object::_Create(guidlow, petId, HighGuid::Pet);
 
-    m_DBTableGuid = guidlow;
+    m_spawnId = guidlow;
     m_originalEntry = Entry;
 
     if (!InitEntry(Entry))
@@ -1752,9 +1758,9 @@ Player* Pet::GetOwner() const
     return Minion::GetOwner()->ToPlayer();
 }
 
-void Pet::SetDisplayId(uint32 modelId)
+void Pet::SetDisplayId(uint32 modelId, float displayScale /*= 1.f*/)
 {
-    Guardian::SetDisplayId(modelId);
+    Guardian::SetDisplayId(modelId, displayScale);
 
     if (!isControlled())
         return;

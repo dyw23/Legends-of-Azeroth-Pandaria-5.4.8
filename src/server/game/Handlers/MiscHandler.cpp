@@ -739,7 +739,18 @@ void WorldSession::HandleStandStateChangeOpcode(WorldPacket& recvData)
     uint32 animstate;
     recvData >> animstate;
 
-    _player->SetStandState(animstate);
+    switch (animstate)
+    {
+        case UNIT_STAND_STATE_STAND:
+        case UNIT_STAND_STATE_SIT:
+        case UNIT_STAND_STATE_SLEEP:
+        case UNIT_STAND_STATE_KNEEL:
+            break;
+        default:
+            return;
+    }
+
+    _player->SetStandState(UnitStandStateType(animstate));
 }
 
 void WorldSession::HandleContactListOpcode(WorldPacket& recvData)
@@ -1205,9 +1216,9 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
         if (sWorld->IsFFAPvPRealm())
         {
             if (entered)
-                player->RemoveByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+                player->RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
             else
-                player->SetByteFlag(UNIT_FIELD_SHAPESHIFT_FORM, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+                player->SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
         }
 
         return;
@@ -1414,24 +1425,27 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
         GetPlayer()->AddActionButton(slotId, button->id, button->type);
 }
 
-void WorldSession::HandleCompleteCinematic(WorldPacket& /*recvData*/)
+void WorldSession::HandleCompleteCinematic(WorldPackets::Misc::CompleteCinematic& /*packet*/)
 {
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_COMPLETE_CINEMATIC");
     // If player has sight bound to visual waypoint NPC we should remove it
     GetPlayer()->GetCinematicMgr()->EndCinematic();    
 }
 
-void WorldSession::HandleNextCinematicCamera(WorldPacket& /*recvData*/)
+void WorldSession::HandleNextCinematicCamera(WorldPackets::Misc::NextCinematicCamera& /*packet*/)
 {
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_NEXT_CINEMATIC_CAMERA");
     // Sent by client when cinematic actually begun. So we begin the server side process
-    GetPlayer()->GetCinematicMgr()->BeginCinematic();    
+    GetPlayer()->GetCinematicMgr()->NextCinematicCamera();
 }
 
-void WorldSession::HandleCompleteMovie(WorldPacket& /*recvData*/)
+void WorldSession::HandleCompleteMovie(WorldPackets::Misc::CompleteMovie& /*packet*/)
 {
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_COMPLETE_MOVIE");
+    uint32 movie = _player->GetMovie();
+    if (!movie)
+        return;
 
+    _player->SetMovie(0);
+    //sScriptMgr->OnMovieComplete(_player, movie);
     if (_player)
         if (InstanceScript* instance = _player->GetInstanceScript())
             instance->OnMovieEnded(_player);
@@ -1547,7 +1561,7 @@ void WorldSession::HandleSetActionBarToggles(WorldPacket& recvData)
         return;
     }
 
-    GetPlayer()->SetByteValue(PLAYER_FIELD_LIFETIME_MAX_RANK, 2, actionBar);
+    GetPlayer()->SetByteValue(PLAYER_FIELD_BYTES, 2, actionBar);
 }
 
 void WorldSession::HandlePlayedTime(WorldPacket& recvData)
@@ -1633,22 +1647,22 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
     data << uint8(0);                                               // rank
 
     data.WriteBit(playerGuid[2]);
-data.WriteBit(playerGuid[1]);
-data.WriteBit(playerGuid[6]);
-data.WriteBit(playerGuid[4]);
-data.WriteBit(playerGuid[5]);
-data.WriteBit(playerGuid[3]);
-data.WriteBit(playerGuid[7]);
-data.WriteBit(playerGuid[0]);
+    data.WriteBit(playerGuid[1]);
+    data.WriteBit(playerGuid[6]);
+    data.WriteBit(playerGuid[4]);
+    data.WriteBit(playerGuid[5]);
+    data.WriteBit(playerGuid[3]);
+    data.WriteBit(playerGuid[7]);
+    data.WriteBit(playerGuid[0]);
     data.FlushBits();
     data.WriteByteSeq(playerGuid[1]);
-data.WriteByteSeq(playerGuid[3]);
-data.WriteByteSeq(playerGuid[6]);
-data.WriteByteSeq(playerGuid[7]);
-data.WriteByteSeq(playerGuid[2]);
-data.WriteByteSeq(playerGuid[4]);
-data.WriteByteSeq(playerGuid[5]);
-data.WriteByteSeq(playerGuid[0]);
+    data.WriteByteSeq(playerGuid[3]);
+    data.WriteByteSeq(playerGuid[6]);
+    data.WriteByteSeq(playerGuid[7]);
+    data.WriteByteSeq(playerGuid[2]);
+    data.WriteByteSeq(playerGuid[4]);
+    data.WriteByteSeq(playerGuid[5]);
+    data.WriteByteSeq(playerGuid[0]);
 
     SendPacket(&data);
 }
@@ -1814,24 +1828,21 @@ void WorldSession::HandleRealmSplitOpcode(WorldPacket& recvData)
     //TC_LOG_DEBUG("response sent %u", unk);
 }
 
-void WorldSession::HandleFarSightOpcode(WorldPacket& recvData)
+void WorldSession::HandleFarSightOpcode(WorldPackets::Misc::FarSight& packet)
 {
     TC_LOG_DEBUG("network", "WORLD: CMSG_FAR_SIGHT");
 
-    bool apply;
-    recvData >> apply;
-
-    if (apply)
+    if (packet.Enable)
     {
-        TC_LOG_DEBUG("network", "Added FarSight " UI64FMTD " to player %u", _player->GetUInt64Value(PLAYER_FIELD_FARSIGHT_OBJECT), _player->GetGUID().GetCounter());
+        TC_LOG_DEBUG("network", "Added FarSight %s to player %s", _player->GetGuidValue(PLAYER_FIELD_FARSIGHT_OBJECT).ToString().c_str(), _player->GetGUID().ToString().c_str());
         if (WorldObject* target = _player->GetViewpoint())
             _player->SetSeer(target);
         else
-            TC_LOG_ERROR("network", "Player %s (GUID: %u) requests non-existing seer " UI64FMTD, _player->GetName().c_str(), _player->GetGUID().GetCounter(), _player->GetUInt64Value(PLAYER_FIELD_FARSIGHT_OBJECT));
+            TC_LOG_ERROR("network", "Player %s %s requests non-existing seer %s", _player->GetName().c_str(), _player->GetGUID().ToString().c_str(), _player->GetGuidValue(PLAYER_FIELD_FARSIGHT_OBJECT).ToString().c_str());
     }
     else
     {
-        TC_LOG_DEBUG("network", "Player %u set vision to self", _player->GetGUID().GetCounter());
+        TC_LOG_DEBUG("network", "Player %s set vision to self", _player->GetGUID().ToString().c_str());
         _player->SetSeer(_player);
     }
 
@@ -2121,9 +2132,9 @@ void WorldSession::HandleWorldStateUITimerUpdate(WorldPacket& /*recvData*/)
     // empty opcode
     TC_LOG_DEBUG("network", "WORLD: CMSG_WORLD_STATE_UI_TIMER_UPDATE");
 
-    WorldPacket data(SMSG_WORLD_STATE_UI_TIMER_UPDATE, 4);
-    data << uint32(time(NULL));
-    SendPacket(&data);
+    WorldPackets::Misc::UITime response;
+    response.Time = GameTime::GetGameTime();
+    SendPacket(response.Write());
 }
 
 void WorldSession::HandleReadyForAccountDataTimes(WorldPacket& /*recvData*/)
@@ -2650,6 +2661,14 @@ void WorldSession::SendLoadCUFProfiles()
     SendPacket(&data);
 }
 
+void WorldSession::SendStreamingMovie()
+{
+    WorldPackets::Misc::StreamingMovies packet;
+
+    // To-do: implement
+    SendPacket(packet.Write());
+}
+
 #define JOIN_THE_ALLIANCE 1
 #define JOIN_THE_HORDE    0
 
@@ -2665,7 +2684,7 @@ void WorldSession::HandleSelectFactionOpcode(WorldPacket& recvPacket)
 
     if (choice == JOIN_THE_HORDE)
     {
-        _player->SetByteValue(UNIT_FIELD_SEX, 0, RACE_PANDAREN_HORDE);
+        _player->SetByteValue(UNIT_FIELD_BYTES_0, 0, RACE_PANDAREN_HORDE);
         _player->setFactionForRace(RACE_PANDAREN_HORDE);
         _player->SaveToDB();
         WorldLocation location(1, 1357.62f, -4373.55f, 26.13f, 0.13f);
@@ -2676,7 +2695,7 @@ void WorldSession::HandleSelectFactionOpcode(WorldPacket& recvPacket)
     }
     else if (choice == JOIN_THE_ALLIANCE)
     {
-        _player->SetByteValue(UNIT_FIELD_SEX, 0, RACE_PANDAREN_ALLIANCE);
+        _player->SetByteValue(UNIT_FIELD_BYTES_0, 0, RACE_PANDAREN_ALLIANCE);
         _player->setFactionForRace(RACE_PANDAREN_ALLIANCE);
         _player->SaveToDB();
         WorldLocation location(0, -8960.02f, 516.10f, 96.36f, 0.67f);
@@ -2745,13 +2764,13 @@ void WorldSession::HandleInspectRatedBGStatsOpcode(WorldPacket& recvData)
     WorldPacket data(SMSG_INSPECT_RATED_BG_STATS);
 
     data.WriteBit(playerGuid[4]);
-data.WriteBit(playerGuid[2]);
-data.WriteBit(playerGuid[3]);
-data.WriteBit(playerGuid[6]);
-data.WriteBit(playerGuid[0]);
-data.WriteBit(playerGuid[5]);
-data.WriteBit(playerGuid[7]);
-data.WriteBit(playerGuid[1]);
+    data.WriteBit(playerGuid[2]);
+    data.WriteBit(playerGuid[3]);
+    data.WriteBit(playerGuid[6]);
+    data.WriteBit(playerGuid[0]);
+    data.WriteBit(playerGuid[5]);
+    data.WriteBit(playerGuid[7]);
+    data.WriteBit(playerGuid[1]);
 
     size_t pos = data.bitwpos();
     data.WriteBits(numSlots, 3);
@@ -2776,13 +2795,13 @@ data.WriteBit(playerGuid[1]);
         numSlots++;
     }
     data.WriteByteSeq(playerGuid[1]);
-data.WriteByteSeq(playerGuid[7]);
-data.WriteByteSeq(playerGuid[3]);
-data.WriteByteSeq(playerGuid[2]);
-data.WriteByteSeq(playerGuid[0]);
-data.WriteByteSeq(playerGuid[5]);
-data.WriteByteSeq(playerGuid[6]);
-data.WriteByteSeq(playerGuid[4]);
+    data.WriteByteSeq(playerGuid[7]);
+    data.WriteByteSeq(playerGuid[3]);
+    data.WriteByteSeq(playerGuid[2]);
+    data.WriteByteSeq(playerGuid[0]);
+    data.WriteByteSeq(playerGuid[5]);
+    data.WriteByteSeq(playerGuid[6]);
+    data.WriteByteSeq(playerGuid[4]);
 
     data.PutBits(pos, numSlots, 3);
 
@@ -2837,32 +2856,32 @@ void WorldSession::HandleShowTradeSkill(WorldPacket& recvData)
     data.WriteBits(1, 22);
     data.WriteBits(1, 22);
     data.WriteBit(guid[5]);
-data.WriteBit(guid[6]);
-data.WriteBit(guid[0]);
-data.WriteBit(guid[2]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[2]);
     data.WriteBits(1, 22);
     data.WriteBit(guid[4]);
-data.WriteBit(guid[1]);
-data.WriteBit(guid[3]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[3]);
     auto pos = data.bitwpos();
     data.WriteBits(1, 22);
     data.WriteBit(guid[7]);
 
-        data << uint32(val);
+    data << uint32(val);
 
     data.WriteByteSeq(guid[3]);
 
-        data << uint32(skillId);
+    data << uint32(skillId);
 
     data.WriteByteSeq(guid[0]);
-data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[1]);
 
-        data << uint32(player->GetMaxSkillValue(skillId));
+    data << uint32(player->GetMaxSkillValue(skillId));
 
     data.WriteByteSeq(guid[6]);
-data.WriteByteSeq(guid[7]);
-data.WriteByteSeq(guid[5]);
-data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[4]);
 
     uint32 count = 0;
     for (auto&& it : player->GetSpellMap())

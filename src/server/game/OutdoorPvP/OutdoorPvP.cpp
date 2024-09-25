@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -147,6 +147,9 @@ bool OPvPCapturePoint::DelCreature(uint32 type)
         return false;
     }
 
+    if (!m_capturePoint)
+        return false;
+
     Map* map = sMapMgr->FindBaseMap(m_capturePoint->m_mapId);
     if (!map)
         return false;
@@ -186,6 +189,9 @@ bool OPvPCapturePoint::DelCreature(uint32 type)
 bool OPvPCapturePoint::DelObject(uint32 type)
 {
     if (!m_Objects[type])
+        return false;
+
+    if (!m_capturePoint)
         return false;
 
     Map* map = sMapMgr->FindBaseMap(m_capturePoint->m_mapId);

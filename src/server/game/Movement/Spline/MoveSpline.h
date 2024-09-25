@@ -119,7 +119,7 @@ namespace Movement
         bool HasAnimation() const { return splineflags.animation; }
         bool IsWalking() { return splineflags.walkmode; }
         bool IsEnteringTransport() { return splineflags.transportEnter; }
-        UnitAnimationTier GetAnimation() const { return (UnitAnimationTier)splineflags.getAnimationId(); }
+        AnimTier GetAnimation() const { return (AnimTier)splineflags.getAnimationId(); }
         Vector3 FinalDestination() const { return Initialized() ? spline.getPoint(spline.last()) : Vector3(); }
         Vector3 CurrentDestination() const { return Initialized() ? spline.getPoint(point_Idx + 1) : Vector3(); }
         int32 currentPathIdx() const;

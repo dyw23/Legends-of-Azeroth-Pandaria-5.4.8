@@ -303,7 +303,7 @@ class npc_dagger_in_dark_voljin : public CreatureScript
                             {
                                 Talk(TALK_SPECIAL_3);
                                 me->SetUInt32Value(UNIT_FIELD_MOUNT_DISPLAY_ID, 29261);
-                                me->SetAnimationTier(UnitAnimationTier::Ground);
+                                me->SetAnimTier(AnimTier::Ground);
                             });
 
                             scheduler

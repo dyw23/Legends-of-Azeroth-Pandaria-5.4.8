@@ -1,5 +1,5 @@
 /*
-* This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
+* This file is part of the Legends of Azeroth Pandaria Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms of the GNU General Public License as published by the
@@ -632,7 +632,7 @@ struct quelingBaseAI : public ScriptedAI
                 me->RemoveChanneledCast(targetGUID);
 
                 me->OverrideInhabitType(INHABIT_GROUND);
-                me->SetAnimationTier(UnitAnimationTier::Ground);
+                me->SetAnimTier(AnimTier::Ground);
                 me->UpdateMovementFlags();
 
                 switch (me->GetEntry())
@@ -1021,7 +1021,7 @@ class npc_quetzal : public CreatureScript
                                 me->RemoveChanneledCast(targetGUID);
 
                                 me->OverrideInhabitType(INHABIT_GROUND);
-                                me->SetAnimationTier(UnitAnimationTier::Ground);
+                                me->SetAnimTier(AnimTier::Ground);
                                 me->UpdateMovementFlags();
                             });
 
@@ -1267,7 +1267,7 @@ struct npc_rushing_wind : public ScriptedAI
     void IsSummonedBy(Unit* summoner) override
     {
         instance = me->GetInstanceScript();
-        me->SetDisplayId(me->GetCreatureTemplate()->Modelid1);
+        me->SetDisplayFromModel(0);
 
         if (Creature* ironQon = ObjectAccessor::GetCreature(*me, instance ? instance->GetGuidData(DATA_IRON_QON) : ObjectGuid::Empty))
         {

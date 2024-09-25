@@ -20,6 +20,7 @@
 
 #include "Unit.h"
 #include "UnitDefines.h"
+enum class VisibilityDistanceType : uint8;
 
 enum CreatureFlagsExtra : uint32
 {
@@ -65,11 +66,87 @@ enum CreatureFlagsExtra : uint32
 
 };
 
+enum class CreatureGroundMovementType : uint8
+{
+    None,
+    Run,
+    Hover,
+
+    Max
+};
+
+enum class CreatureFlightMovementType : uint8
+{
+    None,
+    DisableGravity,
+    CanFly,
+
+    Max
+};
+
+enum class CreatureChaseMovementType : uint8
+{
+    Run,
+    CanWalk,
+    AlwaysWalk,
+
+    Max
+};
+
+enum class CreatureRandomMovementType : uint8
+{
+    Walk,
+    CanRun,
+    AlwaysRun,
+
+    Max
+};
+
+struct TC_GAME_API CreatureMovementData
+{
+    CreatureMovementData();
+
+    CreatureGroundMovementType Ground;
+    CreatureFlightMovementType Flight;
+    bool Swim;
+    bool Rooted;
+    CreatureChaseMovementType Chase;
+    CreatureRandomMovementType Random;
+    uint32 InteractionPauseTimer;
+
+    bool IsGroundAllowed() const { return Ground != CreatureGroundMovementType::None; }
+    bool IsSwimAllowed() const { return Swim; }
+    bool IsFlightAllowed() const { return Flight != CreatureFlightMovementType::None; }
+    bool IsRooted() const { return Rooted; }
+
+    CreatureChaseMovementType GetChase() const { return Chase; }
+    CreatureRandomMovementType GetRandom() const { return Random; }
+
+    uint32 GetInteractionPauseTimer() const { return InteractionPauseTimer; }
+
+    std::string ToString() const;
+};
 
 static uint8 const MAX_KILL_CREDIT = 2;
 static uint32 const MAX_CREATURE_MODELS = 4;
 static uint32 const MAX_CREATURE_QUEST_ITEMS = 6;
 static uint32 const MAX_CREATURE_SPELLS = 8;
+
+struct CreatureModel
+{
+    static CreatureModel const DefaultInvisibleModel;
+    static CreatureModel const DefaultVisibleModel;
+
+    CreatureModel() :
+        CreatureDisplayID(0), DisplayScale(0.0f), Probability(0.0f) { }
+
+    CreatureModel(uint32 creatureDisplayID, float displayScale, float probability) :
+        CreatureDisplayID(creatureDisplayID), DisplayScale(displayScale), Probability(probability) { }
+
+    uint32 CreatureDisplayID;
+    float DisplayScale;
+    float Probability;
+};
 
 // from `creature_template` table
 struct TC_GAME_API CreatureTemplate
@@ -77,10 +154,7 @@ struct TC_GAME_API CreatureTemplate
     uint32  Entry;
     uint32  DifficultyEntry[MAX_TEMPLATE_DIFFICULTY - 1];
     uint32  KillCredit[MAX_KILL_CREDIT];
-    uint32  Modelid1;
-    uint32  Modelid2;
-    uint32  Modelid3;
-    uint32  Modelid4;
+    std::vector<CreatureModel> Models;
     std::string  Name;
     std::string  FemaleName;
     std::string  SubName;
@@ -97,13 +171,13 @@ struct TC_GAME_API CreatureTemplate
     float   speed_run;
     float   scale;
     uint32  rank;
+    float   mindmg;
+    float   maxdmg;
     uint32  dmgschool;
     uint32  attackpower;
     float   dmg_multiplier;
-    uint32  baseattacktime;
-    uint32  rangeattacktime;
-    float   BaseVariance;
-    float   RangeVariance;    
+    uint32  BaseAttackTime;
+    uint32  RangeAttackTime;
     uint32  unit_class;                                     // enum Classes. Note only 4 classes are known for creatures.
     uint32  unit_flags;                                     // enum UnitFlags mask values
     uint32  unit_flags2;                                    // enum UnitFlags2 mask values
@@ -112,6 +186,8 @@ struct TC_GAME_API CreatureTemplate
     uint32  trainer_type;
     uint32  trainer_class;
     uint32  trainer_race;
+    float   minrangedmg;
+    float   maxrangedmg;
     uint32  rangedattackpower;
     uint32  type;                                           // enum CreatureType values
     uint32  type_flags;                                     // enum CreatureTypeFlags mask values
@@ -127,13 +203,12 @@ struct TC_GAME_API CreatureTemplate
     uint32  maxgold;
     std::string AIName;
     uint32  MovementType;
-    uint32  InhabitType;
+    CreatureMovementData Movement;
     float   HoverHeight;
     float   ModHealth;
     float   ModMana;
     float   ModManaExtra;                                   // Added in 4.x, this value is usually 2 for a small group of creatures with double mana
     float   ModArmor;
-    float   ModDamage;    
     bool    RacialLeader;
     uint32  questItems[MAX_CREATURE_QUEST_ITEMS];
     uint32  movementId;
@@ -143,8 +218,12 @@ struct TC_GAME_API CreatureTemplate
     uint32  MechanicImmuneMask;
     uint32  flags_extra;
     uint32  ScriptID;
-    uint32  GetRandomValidModelId() const;
-    uint32  GetFirstValidModelId() const;
+    CreatureModel const* GetModelByIdx(uint32 idx) const;
+    CreatureModel const* GetRandomValidModel() const;
+    CreatureModel const* GetFirstValidModel() const;
+    CreatureModel const* GetModelWithDisplayId(uint32 displayId) const;
+    CreatureModel const* GetFirstInvisibleModel() const;
+    CreatureModel const* GetFirstVisibleModel() const;
 
     // helpers
     SkillType GetRequiredLootSkill() const
@@ -222,6 +301,33 @@ struct CreatureLocale
     std::vector<std::string> Title;
 };
 
+struct CreatureModelInfo
+{
+    float bounding_radius;
+    float combat_reach;
+    uint8 gender;
+    uint32 modelid_other_gender;
+    bool is_trigger;    
+};
+
 #pragma pack(pop)
+
+// `creature_addon` table
+struct CreatureAddon
+{
+    uint32 path_id;
+    uint32 mount;
+    uint8 standState;
+    uint8 animTier;
+    uint8 sheathState;
+    uint8 pvpFlags;
+    uint8 visFlags;
+    uint32 emote;
+    uint16 aiAnimKit;
+    uint16 movementAnimKit;
+    uint16 meleeAnimKit;
+    std::vector<uint32> auras;
+    VisibilityDistanceType visibilityDistanceType;
+};
 
 #endif // CreatureData_h__
