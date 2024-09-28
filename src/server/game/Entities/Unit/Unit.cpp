@@ -18574,7 +18574,7 @@ void Unit::WriteMovementInfo(WorldPacket& data, Movement::ExtraMovementStatusEle
                 break;
             case MSETimestamp:
                 if (hasTimestamp)
-                    data << getMSTime();
+                    data << mi.time;
                 break;
             case MSEPositionX:
                 if (data.GetOpcode() == SMSG_MOVE_TELEPORT && hasTransportData)
