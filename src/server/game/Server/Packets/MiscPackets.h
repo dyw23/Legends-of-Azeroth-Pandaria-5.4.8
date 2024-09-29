@@ -123,6 +123,18 @@ namespace WorldPackets
             uint32 SoundKitID = 0;
         };
 
+        class TC_GAME_API PlaySound final : public ServerPacket
+        {
+        public:
+            PlaySound() : ServerPacket(SMSG_PLAY_SOUND, 4 + 8) { }
+            PlaySound(ObjectGuid sourceObjectGuid, uint32 soundKitID) : ServerPacket(SMSG_PLAY_SOUND, 4 + 8), SourceObjectGUID(sourceObjectGuid), SoundKitID(soundKitID) { }
+
+            WorldPacket const* Write() override;
+
+            ObjectGuid SourceObjectGUID;
+            uint32 SoundKitID = 0;
+        };
+
         class StartMirrorTimer final : public ServerPacket
         {
         public:

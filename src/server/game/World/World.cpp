@@ -2793,12 +2793,12 @@ void World::ForceGameEventUpdate()
 }
 
 /// Send a packet to all players (except self if mentioned)
-void World::SendGlobalMessage(WorldPacket* packet, WorldSession* self, uint32 team)
+void World::SendGlobalMessage(WorldPacket const* packet, WorldSession* self, uint32 team)
 {
     SendGlobalMessage(packet, SEC_PLAYER, self, team);
 }
 
-void World::SendGlobalMessage(WorldPacket* packet, AccountTypes security, WorldSession* self, uint32 team)
+void World::SendGlobalMessage(WorldPacket const* packet, AccountTypes security, WorldSession* self, uint32 team)
 {
     SessionMap::iterator itr;
     for (itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)

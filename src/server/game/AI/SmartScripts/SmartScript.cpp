@@ -213,7 +213,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     if (IsUnit(*itr))
                     {
-                        (*itr)->SendPlaySound(e.action.sound.sound, e.action.sound.onlySelf > 0);
+                        // if (e.action.sound.distance == 1)
+                        //     target->PlayDistanceSound(e.action.sound.sound, e.action.sound.onlySelf ? target->ToPlayer() : nullptr);
+                        // else
+                        (*itr)->PlayDirectSound(e.action.sound.sound, e.action.sound.onlySelf ? (*itr)->ToPlayer() : nullptr);
+
                         TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_SOUND: target: %s (GuidLow: %u), sound: %u, onlyself: %u",
                             (*itr)->GetName().c_str(), (*itr)->GetGUID().GetCounter(), e.action.sound.sound, e.action.sound.onlySelf);
                     }

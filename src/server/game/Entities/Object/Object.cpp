@@ -2461,34 +2461,6 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj) const
     return true;
 }
 
-void WorldObject::SendPlaySound(uint32 Sound, bool OnlySelf)
-{
-    ObjectGuid guid = GetGUID();
-
-    WorldPacket data(SMSG_PLAY_SOUND, 4 + 9);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[1]);
-    data << uint32(Sound);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[1]);
-    if (OnlySelf && GetTypeId() == TYPEID_PLAYER)
-        this->ToPlayer()->GetSession()->SendPacket(&data);
-    else
-        SendMessageToSet(&data, true); // ToSelf ignored in this case
-}
-
 void Object::ForceValuesUpdateAtIndex(uint32 i)
 {
     _changesMask.SetBit(i);
@@ -3752,32 +3724,15 @@ void WorldObject::PlayDistanceSound(uint32 sound_id, Player* target /*= NULL*/)
         SendMessageToSet(&data, true);
 }
 
-void WorldObject::PlayDirectSound(uint32 sound_id, Player* target /*= NULL*/)
+void WorldObject::PlayDirectSound(uint32 sound_id, Player* target /*= nullptr*/)
 {
-    ObjectGuid guid = target ? target->GetGUID() : ObjectGuid::Empty;
-
-    WorldPacket data(SMSG_PLAY_SOUND, 4);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[1]);
-    data << uint32(sound_id);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[1]);
+    WorldPackets::Misc::PlaySound packet;
+    packet.SourceObjectGUID = GetGUID();
+    packet.SoundKitID = sound_id;
     if (target)
-        target->SendDirectMessage(&data);
+        target->SendDirectMessage(packet.Write());
     else
-        SendMessageToSet(&data, true);
+        SendMessageToSet(packet.Write(), true);
 }
 
 void WorldObject::PlayDirectMusic(uint32 musicId, Player* target /*= nullptr*/)

@@ -624,9 +624,6 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         FlaggedValuesArray32<int32, uint32, ServerSideVisibilityType, TOTAL_SERVERSIDE_VISIBILITY_TYPES> m_serverSideVisibility;
         FlaggedValuesArray32<int32, uint32, ServerSideVisibilityType, TOTAL_SERVERSIDE_VISIBILITY_TYPES> m_serverSideVisibilityDetect;
 
-        // Low Level Packets
-        void SendPlaySound(uint32 Sound, bool OnlySelf);
-
         virtual void SetMap(Map* map);
         virtual void ResetMap();
         Map* GetMap() const { ASSERT(m_currMap); return m_currMap; }

@@ -6707,13 +6707,17 @@ void Spell::EffectPlaySound(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+    if (!unitTarget)
+        return;
+
+    Player* player = unitTarget->ToPlayer();
+    if (!player)
         return;
 
     switch (m_spellInfo->Id)
     {
         case 91604: // Restricted Flight Area
-            unitTarget->ToPlayer()->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
+            player->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
             break;
         default:
             break;
@@ -6727,27 +6731,7 @@ void Spell::EffectPlaySound(SpellEffIndex effIndex)
         return;
     }
 
-    ObjectGuid guid = m_caster->GetGUID();
-
-    WorldPacket data(SMSG_PLAY_SOUND, 4 + 9);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[1]);
-    data << uint32(soundId);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[1]);
-    unitTarget->ToPlayer()->GetSession()->SendPacket(&data);
+    player->PlayDirectSound(soundId, player);
 }
 
 void Spell::EffectRemoveAura(SpellEffIndex effIndex)

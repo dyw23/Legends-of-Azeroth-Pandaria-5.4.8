@@ -69,6 +69,29 @@ WorldPacket const* WorldPackets::Misc::PlayMusic::Write()
     return &_worldPacket;
 }
 
+WorldPacket const* WorldPackets::Misc::PlaySound::Write()
+{
+    _worldPacket.WriteBit(SourceObjectGUID[2]);
+    _worldPacket.WriteBit(SourceObjectGUID[3]);
+    _worldPacket.WriteBit(SourceObjectGUID[7]);
+    _worldPacket.WriteBit(SourceObjectGUID[6]);
+    _worldPacket.WriteBit(SourceObjectGUID[0]);
+    _worldPacket.WriteBit(SourceObjectGUID[5]);
+    _worldPacket.WriteBit(SourceObjectGUID[4]);
+    _worldPacket.WriteBit(SourceObjectGUID[1]);
+    _worldPacket << SoundKitID;
+    _worldPacket.WriteByteSeq(SourceObjectGUID[3]);
+    _worldPacket.WriteByteSeq(SourceObjectGUID[2]);
+    _worldPacket.WriteByteSeq(SourceObjectGUID[4]);
+    _worldPacket.WriteByteSeq(SourceObjectGUID[7]);
+    _worldPacket.WriteByteSeq(SourceObjectGUID[5]);
+    _worldPacket.WriteByteSeq(SourceObjectGUID[0]);
+    _worldPacket.WriteByteSeq(SourceObjectGUID[6]);
+    _worldPacket.WriteByteSeq(SourceObjectGUID[1]);
+
+    return &_worldPacket;
+}
+
 WorldPacket const* WorldPackets::Misc::StartMirrorTimer::Write()
 {
     _worldPacket << MaxValue;

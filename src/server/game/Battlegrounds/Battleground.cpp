@@ -27,6 +27,7 @@
 #include "Guild.h"
 #include "GuildMgr.h"
 #include "MapManager.h"
+#include "MiscPackets.h"
 #include "Object.h"
 #include "ObjectMgr.h"
 #include "Player.h"
@@ -824,7 +825,7 @@ void Battleground::SetTeamStartLoc(uint32 TeamID, float X, float Y, float Z, flo
     m_TeamStartLocO[idx] = O;
 }
 
-void Battleground::SendPacketToAll(WorldPacket* packet)
+void Battleground::SendPacketToAll(WorldPacket const* packet)
 {
     for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
         if (Player* player = _GetPlayer(itr, "SendPacketToAll"))
@@ -845,17 +846,14 @@ void Battleground::SendPacketToTeam(uint32 TeamID, WorldPacket* packet, Player* 
 
 void Battleground::PlaySoundToAll(uint32 SoundID)
 {
-    for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
-        if (Player* player = _GetPlayer(itr, "SendPacketToAll"))
-            player->SendPlaySound(SoundID, true);
+    SendPacketToAll(WorldPackets::Misc::PlaySound(ObjectGuid::Empty, SoundID).Write());
 }
 
 void Battleground::PlaySoundToTeam(uint32 SoundID, uint32 TeamID)
 {
-    WorldPacket data;
     for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
         if (Player* player = _GetPlayerForTeam(TeamID, itr, "PlaySoundToTeam"))
-            player->SendPlaySound(SoundID, true);
+            player->SendDirectMessage(WorldPackets::Misc::PlaySound(ObjectGuid::Empty, SoundID).Write());
 }
 
 void Battleground::CastSpellOnTeam(uint32 SpellID, uint32 TeamID)
