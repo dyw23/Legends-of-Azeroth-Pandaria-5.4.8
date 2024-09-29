@@ -3677,51 +3677,17 @@ void WorldObject::ClearWorldMapSwap(bool update)
         UpdateObjectVisibility();
 }
 
-void WorldObject::PlayDistanceSound(uint32 sound_id, Player* target /*= NULL*/)
+void WorldObject::PlayDistanceSound(uint32 sound_id, Player* target /*= nullptr*/)
 {
-    ObjectGuid guid1 = GetGUID();
-    ObjectGuid guid2 = GetGUID();
-
-    WorldPacket data(SMSG_PLAY_OBJECT_SOUND, 4 + 9);
-    data.WriteBit(guid2[5]);
-    data.WriteBit(guid1[7]);
-    data.WriteBit(guid1[0]);
-    data.WriteBit(guid1[3]);
-    data.WriteBit(guid2[1]);
-    data.WriteBit(guid1[4]);
-    data.WriteBit(guid2[7]);
-    data.WriteBit(guid2[2]);
-    data.WriteBit(guid2[4]);
-    data.WriteBit(guid2[3]);
-    data.WriteBit(guid1[5]);
-    data.WriteBit(guid1[1]);
-    data.WriteBit(guid1[6]);
-    data.WriteBit(guid1[2]);
-    data.WriteBit(guid2[6]);
-    data.WriteBit(guid2[0]);
-
-    data.WriteByteSeq(guid1[6]);
-    data.WriteByteSeq(guid1[2]);
-    data.WriteByteSeq(guid2[2]);
-    data.WriteByteSeq(guid2[5]);
-    data.WriteByteSeq(guid1[7]);
-    data.WriteByteSeq(guid1[5]);
-    data.WriteByteSeq(guid1[3]);
-    data.WriteByteSeq(guid1[1]);
-    data.WriteByteSeq(guid2[3]);
-    data.WriteByteSeq(guid2[1]);
-    data << uint32(sound_id);
-    data.WriteByteSeq(guid1[4]);
-    data.WriteByteSeq(guid2[4]);
-    data.WriteByteSeq(guid2[7]);
-    data.WriteByteSeq(guid2[0]);
-    data.WriteByteSeq(guid2[6]);
-    data.WriteByteSeq(guid1[0]);
+    WorldPackets::Misc::PlayObjectSound packet;
+    packet.SoundKitID = sound_id;
+    packet.SourceObjectGUID = GetGUID();
+    packet.TargetObjectGUID = target ? target->GetGUID() : GetGUID();
 
     if (target)
-        target->SendDirectMessage(&data);
+        target->SendDirectMessage(packet.Write());
     else
-        SendMessageToSet(&data, true);
+        SendMessageToSet(packet.Write(), true);
 }
 
 void WorldObject::PlayDirectSound(uint32 sound_id, Player* target /*= nullptr*/)

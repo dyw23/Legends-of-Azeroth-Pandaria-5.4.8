@@ -69,6 +69,46 @@ WorldPacket const* WorldPackets::Misc::PlayMusic::Write()
     return &_worldPacket;
 }
 
+WorldPacket const* WorldPackets::Misc::PlayObjectSound::Write()
+{
+    _worldPacket.WriteBit(SourceObjectGUID[5]);
+    _worldPacket.WriteBit(TargetObjectGUID[7]);
+    _worldPacket.WriteBit(TargetObjectGUID[0]);
+    _worldPacket.WriteBit(TargetObjectGUID[3]);
+    _worldPacket.WriteBit(SourceObjectGUID[1]);
+    _worldPacket.WriteBit(TargetObjectGUID[4]);
+    _worldPacket.WriteBit(SourceObjectGUID[7]);
+    _worldPacket.WriteBit(SourceObjectGUID[2]);
+    _worldPacket.WriteBit(SourceObjectGUID[4]);
+    _worldPacket.WriteBit(SourceObjectGUID[3]);
+    _worldPacket.WriteBit(TargetObjectGUID[5]);
+    _worldPacket.WriteBit(TargetObjectGUID[1]);
+    _worldPacket.WriteBit(TargetObjectGUID[6]);
+    _worldPacket.WriteBit(TargetObjectGUID[2]);
+    _worldPacket.WriteBit(SourceObjectGUID[6]);
+    _worldPacket.WriteBit(SourceObjectGUID[0]);
+
+    _worldPacket.WriteByteSeq(TargetObjectGUID[6]);
+    _worldPacket.WriteByteSeq(TargetObjectGUID[2]);
+    _worldPacket.WriteByteSeq(SourceObjectGUID[2]);
+    _worldPacket.WriteByteSeq(SourceObjectGUID[5]);
+    _worldPacket.WriteByteSeq(TargetObjectGUID[7]);
+    _worldPacket.WriteByteSeq(TargetObjectGUID[5]);
+    _worldPacket.WriteByteSeq(TargetObjectGUID[3]);
+    _worldPacket.WriteByteSeq(TargetObjectGUID[1]);
+    _worldPacket.WriteByteSeq(SourceObjectGUID[3]);
+    _worldPacket.WriteByteSeq(SourceObjectGUID[1]);
+    _worldPacket << SoundKitID;
+    _worldPacket.WriteByteSeq(TargetObjectGUID[4]);
+    _worldPacket.WriteByteSeq(SourceObjectGUID[4]);
+    _worldPacket.WriteByteSeq(SourceObjectGUID[7]);
+    _worldPacket.WriteByteSeq(SourceObjectGUID[0]);
+    _worldPacket.WriteByteSeq(SourceObjectGUID[6]);
+    _worldPacket.WriteByteSeq(TargetObjectGUID[0]);
+
+    return &_worldPacket;
+}
+
 WorldPacket const* WorldPackets::Misc::PlaySound::Write()
 {
     _worldPacket.WriteBit(SourceObjectGUID[2]);

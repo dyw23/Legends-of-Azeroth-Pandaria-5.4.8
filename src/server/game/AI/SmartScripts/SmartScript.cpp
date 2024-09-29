@@ -213,10 +213,10 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     if (IsUnit(*itr))
                     {
-                        // if (e.action.sound.distance == 1)
-                        //     target->PlayDistanceSound(e.action.sound.sound, e.action.sound.onlySelf ? target->ToPlayer() : nullptr);
-                        // else
-                        (*itr)->PlayDirectSound(e.action.sound.sound, e.action.sound.onlySelf ? (*itr)->ToPlayer() : nullptr);
+                        if (e.action.sound.distance == 1)
+                            (*itr)->PlayDistanceSound(e.action.sound.sound, e.action.sound.onlySelf ? (*itr)->ToPlayer() : nullptr);
+                        else
+                            (*itr)->PlayDirectSound(e.action.sound.sound, e.action.sound.onlySelf ? (*itr)->ToPlayer() : nullptr);
 
                         TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_SOUND: target: %s (GuidLow: %u), sound: %u, onlyself: %u",
                             (*itr)->GetName().c_str(), (*itr)->GetGUID().GetCounter(), e.action.sound.sound, e.action.sound.onlySelf);
@@ -2264,7 +2264,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     if (IsUnit(obj))
                     {
                         uint32 sound = Trinity::Containers::SelectRandomContainerElement(sounds);
-                        obj->PlayDirectSound(sound, onlySelf ? obj->ToPlayer() : nullptr);
+                        if (e.action.randomSound.distance == 1)
+                            obj->PlayDistanceSound(sound, onlySelf ? obj->ToPlayer() : nullptr);
+                        else
+                            obj->PlayDirectSound(sound, onlySelf ? obj->ToPlayer() : nullptr);
+
                         TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_RANDOM_SOUND: target: %s (" UI64FMTD "), sound: %u, onlyself: %s",
                             obj->GetName().c_str(), obj->GetGUID().GetRawValue(), sound, onlySelf ? "true" : "false");
                     }
