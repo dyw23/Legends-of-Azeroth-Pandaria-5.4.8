@@ -7957,11 +7957,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
         // Let there be light! :3
         if (m_zoneUpdateId == 876 || newZone == 876) // GM Island
         {
-            WorldPacket data(SMSG_OVERRIDE_LIGHT, 12);
-            data << uint32(newZone == 876 ? 500 : 0);
-            data << uint32(2488);
-            data << uint32(1);
-            SendDirectMessage(&data);
+            GetMap()->SetZoneOverrideLight(876, newZone == 876 ? 500 : 0, 2488, 1s);
         }
     }
 
@@ -7979,19 +7975,10 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     if (!zone)
         return;
 
-    if (sWorld->getBoolConfig(CONFIG_WEATHER) && !HasAuraType(SPELL_AURA_FORCE_WEATHER))
-    {
-        if (Weather* weather = WeatherMgr::FindWeather(zone->ID))
-            weather->SendWeatherUpdateToPlayer(this);
-        else
-        {
-            if (!WeatherMgr::AddWeather(zone->ID))
-            {
-                // send fine weather packet to remove old zone's weather
-                WeatherMgr::SendFineWeatherUpdateToPlayer(this);
-            }
-        }
-    }
+    if (sWorld->getBoolConfig(CONFIG_WEATHER))
+        GetMap()->GetOrGenerateZoneDefaultWeather(newZone);
+
+    GetMap()->SendZoneDynamicInfo(newZone, this);
 
     sScriptMgr->OnPlayerUpdateZone(this, newZone, newArea);
 

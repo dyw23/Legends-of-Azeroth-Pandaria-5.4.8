@@ -348,8 +348,10 @@ enum EncounterActions
 
 enum MiscData
 {
+    LIGHT_DEFAULT               = 2488,
     LIGHT_SNOWSTORM             = 2490,
     LIGHT_SOULSTORM             = 2508,
+    LIGHT_FOG                   = 2509,
 
     MUSIC_FROZEN_THRONE         = 17457,
     MUSIC_SPECIAL               = 17458,    // Summon Shambling Horror, Remorseless Winter, Quake, Summon Val'kyr Periodic, Harvest Soul, Vile Spirits
@@ -748,7 +750,7 @@ class boss_the_lich_king : public CreatureScript
                 me->VisitNearbyGridObject(333.0f, worker);
 
                 // Reset any light override
-                SendLightOverride(0, 5000);
+                me->GetMap()->SetZoneOverrideLight(AREA_ICECROWN_CITADEL, LIGHT_DEFAULT, 0, 5s);
             }
 
             bool CanAIAttack(Unit const* target) const override
@@ -793,7 +795,7 @@ class boss_the_lich_king : public CreatureScript
                         me->GetMap()->SetZoneMusic(AREA_ICECROWN_CITADEL, MUSIC_FINAL);
                         break;
                     case ACTION_RESTORE_LIGHT:
-                        SendLightOverride(0, 5000);
+                        me->GetMap()->SetZoneOverrideLight(AREA_ICECROWN_CITADEL, LIGHT_DEFAULT, 0, 5s);
                         break;
                     case ACTION_BREAK_FROSTMOURNE:
                         me->InterruptNonMeleeSpells(false);
@@ -987,8 +989,8 @@ class boss_the_lich_king : public CreatureScript
                     {
                         summon->CastSpell((Unit*)nullptr, SPELL_BROKEN_FROSTMOURNE, true);
 
-                        SendLightOverride(LIGHT_SOULSTORM, 10000);
-                        SendWeather(WEATHER_STATE_BLACKSNOW);
+                        me->GetMap()->SetZoneOverrideLight(AREA_ICECROWN_CITADEL, LIGHT_DEFAULT, LIGHT_SOULSTORM, 10s);
+                        me->GetMap()->SetZoneWeather(AREA_ICECROWN_CITADEL, WEATHER_STATE_BLACKSNOW, 0.5f);
 
                         events.ScheduleEvent(EVENT_OUTRO_SOUL_BARRAGE, 5000, 0, PHASE_OUTRO);
                         return;
@@ -1048,8 +1050,8 @@ class boss_the_lich_king : public CreatureScript
                 //default:
                     if (spell->Id == SPELL_REMORSELESS_WINTER_1 || spell->Id == SPELL_REMORSELESS_WINTER_2)
                     {
-                        SendLightOverride(LIGHT_SNOWSTORM, 5000);
-                        SendWeather(WEATHER_STATE_LIGHT_SNOW);
+                        me->GetMap()->SetZoneOverrideLight(AREA_ICECROWN_CITADEL, LIGHT_DEFAULT, LIGHT_SNOWSTORM, 5s);
+                        me->GetMap()->SetZoneWeather(AREA_ICECROWN_CITADEL, WEATHER_STATE_LIGHT_SNOW, 0.5f);
                         summons.DespawnEntry(39137 /* Shadow Trap */);
                     }
                 //    break;
@@ -1434,24 +1436,6 @@ class boss_the_lich_king : public CreatureScript
                 summon->SetSpeed(MOVE_FLIGHT, 0.5f);
                 summon->AI()->DoAction(ACTION_START_ATTACK_2);
             }*/
-
-            void SendLightOverride(uint32 overrideId, uint32 fadeInTime) const
-            {
-                WorldPacket data(SMSG_OVERRIDE_LIGHT, 12);
-                data << uint32(overrideId); // Light.dbc entry (override)
-                data << uint32(2488);       // Light.dbc entry (map default)
-                data << uint32(fadeInTime);
-                SendPacketToPlayers(&data);
-            }
-
-            void SendWeather(WeatherState weather) const
-            {
-                WorldPacket data(SMSG_WEATHER, 9);
-                data << uint32(weather);
-                data << float(0.5f);
-                data << uint8(0);
-                SendPacketToPlayers(&data);
-            }
 
             // Send packet to all players in The Frozen Throne
             void SendPacketToPlayers(WorldPacket const* data) const

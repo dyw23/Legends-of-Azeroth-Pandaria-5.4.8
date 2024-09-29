@@ -2625,13 +2625,6 @@ void World::Update(uint32 diff)
     UpdateSessions(diff);
     RecordTimeDiff("UpdateSessions");
 
-    /// <li> Handle weather updates when the timer has passed
-    if (m_timers[WUPDATE_WEATHERS].Passed())
-    {
-        m_timers[WUPDATE_WEATHERS].Reset();
-        WeatherMgr::Update(uint32(m_timers[WUPDATE_WEATHERS].GetInterval()));
-    }
-
     /// <li> Update uptime table
     if (m_timers[WUPDATE_UPTIME].Passed())
     {
