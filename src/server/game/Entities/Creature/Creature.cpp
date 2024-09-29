@@ -312,21 +312,6 @@ void Creature::SearchFormation()
         sFormationMgr->AddCreatureToGroup(frmdata->second.leaderGUID, this);
 }
 
-void Creature::PlayMusic(uint32 MusicID)
-{
-    uint32 areaId = GetAreaId();
-    Map::PlayerList const& pList = GetMap()->GetPlayers();
-    for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
-    {
-        if (itr->GetSource()->GetAreaId() == areaId)
-        {
-            WorldPacket data(SMSG_PLAY_MUSIC, 4);
-            data << uint32(MusicID);
-            (itr->GetSource())->GetSession()->SendPacket(&data);
-        }
-    }
-}
-
 void Creature::RemoveCorpse(bool setSpawnTime)
 {
     if (getDeathState() != CORPSE)

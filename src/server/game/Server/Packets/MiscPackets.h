@@ -112,6 +112,17 @@ namespace WorldPackets
             WeatherState WeatherID = WeatherState(0);
         };        
 
+        class TC_GAME_API PlayMusic final : public ServerPacket
+        {
+        public:
+            PlayMusic() : ServerPacket(SMSG_PLAY_MUSIC, 4) { }
+            PlayMusic(uint32 soundKitID) : ServerPacket(SMSG_PLAY_MUSIC, 4), SoundKitID(soundKitID) { }
+
+            WorldPacket const* Write() override;
+
+            uint32 SoundKitID = 0;
+        };
+
         class StartMirrorTimer final : public ServerPacket
         {
         public:

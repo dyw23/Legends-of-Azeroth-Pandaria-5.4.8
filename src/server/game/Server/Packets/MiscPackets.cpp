@@ -62,6 +62,13 @@ WorldPacket const* WorldPackets::Misc::Weather::Write()
     return &_worldPacket;
 }
 
+WorldPacket const* WorldPackets::Misc::PlayMusic::Write()
+{
+    _worldPacket << SoundKitID;
+
+    return &_worldPacket;
+}
+
 WorldPacket const* WorldPackets::Misc::StartMirrorTimer::Write()
 {
     _worldPacket << MaxValue;
