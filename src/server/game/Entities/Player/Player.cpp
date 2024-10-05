@@ -22085,8 +22085,8 @@ void Player::SendAttackSwingResult(AttackSwingResult result) const
 
 void Player::SendAttackSwingCancelAttack()
 {
-    WorldPacket data(SMSG_CANCEL_COMBAT, 0);
-    GetSession()->SendPacket(&data);
+    //WorldPacket data(SMSG_CANCEL_COMBAT, 0); @TODO : wrong packet opcode
+    //GetSession()->SendPacket(&data);
 }
 
 void Player::SendAutoRepeatCancel(Unit* target)
