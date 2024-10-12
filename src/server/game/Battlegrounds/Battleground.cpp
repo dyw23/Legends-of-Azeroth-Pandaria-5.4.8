@@ -383,7 +383,7 @@ void Battleground::UpdateAfkReports()
         {
             if (report.ReportTime + Minutes(1) < now)
             {
-                if (Player* player = ObjectAccessor::FindPlayer(guid))
+                if (Player* player = ObjectAccessor::FindConnectedPlayer(guid))
                     m_afkReports.erase(guid);
                 else
                     RemovePlayerAtLeave(guid, true, true);
@@ -2394,7 +2394,7 @@ void Battleground::RewardSolo()
 
     for (auto&& itr : losers)
     {
-        Player* player = ObjectAccessor::FindPlayer(itr->Guid);
+        Player* player = ObjectAccessor::FindConnectedPlayer(itr->Guid);
 
         if (res != RoundResult::Normal)
         {

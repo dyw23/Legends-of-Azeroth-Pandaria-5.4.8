@@ -20732,7 +20732,7 @@ bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report
         Player* leader = this;
         ObjectGuid leaderGuid = GetGroup() ? GetGroup()->GetLeaderGUID() : GetGUID();
         if (leaderGuid != GetGUID())
-            leader = ObjectAccessor::FindPlayer(leaderGuid);
+            leader = ObjectAccessor::FindConnectedPlayer(leaderGuid);
 
         if (ar->achievement)
             if (!leader || !leader->HasAchieved(ar->achievement))

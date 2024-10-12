@@ -372,7 +372,7 @@ std::string BlackMarketAuction::BuildAuctionMailBody(ObjectGuid::LowType lowGuid
 void BlackMarketMgr::SendAuctionOutbidded(BlackMarketAuction* auction, Player* newBidder, CharacterDatabaseTransaction trans)
 {
     ObjectGuid bidder_guid(HighGuid::Player, auction->GetCurrentBidder());
-    Player* bidder = ObjectAccessor::FindPlayer(bidder_guid);
+    Player* bidder = ObjectAccessor::FindConnectedPlayer(bidder_guid);
     uint32 oldBidder_accId = sObjectMgr->GetPlayerAccountIdByGUID(bidder_guid);
 
     // old bidder exist
@@ -396,7 +396,7 @@ void BlackMarketMgr::SendAuctionOutbidded(BlackMarketAuction* auction, Player* n
 void BlackMarketMgr::SendAuctionWon(BlackMarketAuction* auction, CharacterDatabaseTransaction trans)
 {
     ObjectGuid bidder_guid(HighGuid::Player, auction->GetCurrentBidder());
-    Player* bidder = ObjectAccessor::FindPlayer(bidder_guid);
+    Player* bidder = ObjectAccessor::FindConnectedPlayer(bidder_guid);
 
     if (bidder)
     {

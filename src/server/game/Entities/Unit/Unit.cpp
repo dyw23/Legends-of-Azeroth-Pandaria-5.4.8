@@ -4086,7 +4086,7 @@ void Unit::RemoveOwnedAura(AuraMap::iterator &i, AuraRemoveMode removeMode)
         if (!caster)
         {
             TC_LOG_ERROR("shitlog", "Unit::RemoveOwnedAura !caster aura: %u, owner: " UI64FMTD " (entry: %u)\n", aura->GetId(), GetGUID().GetRawValue(), GetEntry());
-            caster = ObjectAccessor::FindPlayer(aura->GetCasterGUID());
+            caster = ObjectAccessor::FindConnectedPlayer(aura->GetCasterGUID());
             if (!caster)
                 TC_LOG_ERROR("shitlog", "Unit::RemoveOwnedAura !caster and !caster aura: %u, owner: " UI64FMTD " (entry: %u)\n", aura->GetId(), GetGUID().GetRawValue(), GetEntry());
         }

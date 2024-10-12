@@ -1614,7 +1614,7 @@ void BattlegroundMgr::RemoveBattleground(BattlegroundTypeId bgTypeId, uint32 ins
 
 void BattlegroundMgr::ApplyDeserter(ObjectGuid guid, uint32 duration)
 {
-    Player* player = ObjectAccessor::FindPlayer(guid);
+    Player* player = ObjectAccessor::FindConnectedPlayer(guid);
     if (player)
         player->ApplyDeserter();
     else

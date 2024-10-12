@@ -579,7 +579,7 @@ bool Group::RemoveMember(ObjectGuid guid, const RemoveMethod& method /*= GROUP_R
     // remove member and change leader (if need) only if strong more 2 members _before_ member remove (BG/BF allow 1 member group)
     if (GetMembersCount() > ((isBGGroup() || isLFGGroup() || isBFGroup()) ? 1u : 2u))
     {
-        Player* player = ObjectAccessor::FindPlayer(guid);
+        Player* player = ObjectAccessor::FindConnectedPlayer(guid);
         if (player)
         {
             // Don't homebind if player was removed from the original group but still has instance group
@@ -778,7 +778,7 @@ void Group::Disband(bool hideDestroy /* = false */)
     {
         sGroupMgr->UnbindGroupFromPlayer(citr->guid, this);
 
-        player = ObjectAccessor::FindPlayer(citr->guid);
+        player = ObjectAccessor::FindConnectedPlayer(citr->guid);
         if (!player)
             continue;
 
@@ -1984,7 +1984,7 @@ void Group::SendUpdateToPlayer(ObjectGuid playerGUID, MemberSlot const* slot)
 {
     ASSERT(slot);
 
-    Player* player = ObjectAccessor::FindPlayer(playerGUID);
+    Player* player = ObjectAccessor::FindConnectedPlayer(playerGUID);
 
     if (!player)
         return;
@@ -2216,7 +2216,7 @@ void Group::SendUpdateToPlayer(ObjectGuid playerGUID)
 
 void Group::SendGroupRemoved(ObjectGuid playerGUID)
 {
-    Player* player = ObjectAccessor::FindPlayer(playerGUID);
+    Player* player = ObjectAccessor::FindConnectedPlayer(playerGUID);
 
     if (!player)
         return;
@@ -3725,7 +3725,7 @@ char const* Group::GetPlayerName(ObjectGuid guid) const
         if (member.guid == guid)
             return member.name.c_str();
 
-    if (Player* player = ObjectAccessor::FindPlayer(guid))
+    if (Player* player = ObjectAccessor::FindConnectedPlayer(guid))
         return player->GetName().c_str();
 
     return "<offline>";

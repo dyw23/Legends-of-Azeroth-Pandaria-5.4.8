@@ -1284,7 +1284,7 @@ public:
         if (!handler->extractPlayerTarget(tempArgs[0], &target, &targetGuid, &targetName))
             return false;
 
-        target = ObjectAccessor::FindPlayer(targetGuid);  // Update it because player may be out of world.
+        target = ObjectAccessor::FindConnectedPlayer(targetGuid);  // Update it because player may be out of world.
         QueryResult result = CharacterDatabase.PQuery("SELECT class, race, account FROM characters WHERE guid = %u", targetGuid.GetCounter());
         if (!result)
         {

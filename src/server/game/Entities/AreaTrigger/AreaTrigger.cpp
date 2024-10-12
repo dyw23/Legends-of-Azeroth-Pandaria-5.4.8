@@ -159,7 +159,7 @@ void IAreaTriggerAura::OnUpdate(uint32)
             // remove
             if (WorldObject* object = ObjectAccessor::GetWorldObject(*m_target, iter->Guid))
                 OnTriggeringRemove(object);
-            else if (Player* player = ObjectAccessor::FindPlayer(iter->Guid))
+            else if (Player* player = ObjectAccessor::FindConnectedPlayer(iter->Guid))
                 if (player->GetMap() == m_areaTrigger->GetMap())
                     OnTriggeringRemove(player);
 

@@ -4121,7 +4121,7 @@ public:
         }
 
         ObjectGuid ownerGuid(HighGuid::Player, info.owner_guid);
-        if (Player* player = ObjectAccessor::FindPlayer(ownerGuid))
+        if (Player* player = ObjectAccessor::FindConnectedPlayer(ownerGuid))
         {
             handler->PSendSysMessage("Item owner %s (GUID: %u) is currently online.", player->GetName().c_str(), info.owner_guid);
             handler->SetSentErrorMessage(true);

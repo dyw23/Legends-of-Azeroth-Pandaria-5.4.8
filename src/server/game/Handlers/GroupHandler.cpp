@@ -215,7 +215,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket& recvData)
         // If any player in group in challenge dungeon leader must not allowed to invite any players
         for (auto itr = group->GetMemberSlots().begin(); itr != group->GetMemberSlots().end(); itr++)
         {
-            if (Player* plr = ObjectAccessor::FindPlayer(itr->guid))
+            if (Player* plr = ObjectAccessor::FindConnectedPlayer(itr->guid))
                 if (InstanceScript* instance = plr->GetInstanceScript())
                     if (instance->instance->IsChallengeDungeon() && instance->IsChallengeModeStarted())
                     {

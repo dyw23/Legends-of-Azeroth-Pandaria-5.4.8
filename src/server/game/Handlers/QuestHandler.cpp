@@ -180,7 +180,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(WorldPacket& recvData)
     if (!guid.IsPlayer())
         object = ObjectAccessor::GetObjectByTypeMask(*_player, guid, TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT | TYPEMASK_ITEM);
     else
-        object = ObjectAccessor::FindPlayer(guid);
+        object = ObjectAccessor::FindConnectedPlayer(guid);
 
     if (prevQuestInChain)
     {
@@ -641,7 +641,7 @@ void WorldSession::HandleQuestConfirmAccept(WorldPacket& recvData)
         if (!quest->HasFlag(QUEST_FLAGS_PARTY_ACCEPT))
             return;
 
-        Player* originalPlayer = ObjectAccessor::FindPlayer(_player->GetDivider());
+        Player* originalPlayer = ObjectAccessor::FindConnectedPlayer(_player->GetDivider());
         if (!originalPlayer)
             return;
 
@@ -860,7 +860,7 @@ void WorldSession::HandleQuestPushResult(WorldPacket& recvPacket)
     if (_player->GetDivider())
     {
         if (_player->GetDivider() == guid)
-            if (Player* player = ObjectAccessor::FindPlayer(_player->GetDivider()))
+            if (Player* player = ObjectAccessor::FindConnectedPlayer(_player->GetDivider()))
                 player->SendPushToPartyResponse(_player, msg);
 
         _player->SetDivider(ObjectGuid::Empty);

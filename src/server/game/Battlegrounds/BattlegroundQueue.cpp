@@ -423,7 +423,7 @@ void BattlegroundQueue::RemovePlayer(ObjectGuid guid, bool decreaseInvitedCount,
 
     // https://us.battle.net/forums/en/wow/topic/13242714145
     if (leave && group->IsInvitedToBGInstanceGUID && (group->IsRated || group->IsRatedBG))
-        if (Player* player = ObjectAccessor::FindPlayer(guid))
+        if (Player* player = ObjectAccessor::FindConnectedPlayer(guid))
             player->ApplyDeserter();
 
     uint32 index = (group->Team == HORDE) ? BG_QUEUE_PREMADE_HORDE : BG_QUEUE_PREMADE_ALLIANCE;
@@ -1152,7 +1152,7 @@ bool SoloGroup::Create(GroupQueueInfo* ginfo)
 {
     for (auto&& it : ginfo->Players)
     {
-        Player* player = ObjectAccessor::FindPlayer(it.first);
+        Player* player = ObjectAccessor::FindConnectedPlayer(it.first);
         if (!player)
             return false;
 
@@ -1696,7 +1696,7 @@ void SoloQueue::DynamicUpdate()
                 bool heal = false;
                 for (auto&& it2 : (*it)->Players)
                 {
-                    if (Player* player = ObjectAccessor::FindPlayer(it2.first))
+                    if (Player* player = ObjectAccessor::FindConnectedPlayer(it2.first))
                     {
                         if (GetRole(player->GetSpecialization()) == SoloQueueRole::Healer)
                         {

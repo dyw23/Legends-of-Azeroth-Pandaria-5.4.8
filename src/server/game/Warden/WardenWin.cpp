@@ -345,7 +345,7 @@ void WardenWin::RequestData(WardenRequestContext* context)
     TC_LOG_DEBUG("warden", "%s", stream.str().c_str());
 
     if (_responseReceiverGUID)
-        if (Player* receiver = ObjectAccessor::FindPlayer(_responseReceiverGUID))
+        if (Player* receiver = ObjectAccessor::FindConnectedPlayer(_responseReceiverGUID))
             ChatHandler(receiver->GetSession()).SendSysMessage(stream.str().c_str());
 }
 
@@ -355,7 +355,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
 
     Player* receiver = NULL;
     if (_responseReceiverGUID)
-        if (receiver = ObjectAccessor::FindPlayer(_responseReceiverGUID))
+        if (receiver = ObjectAccessor::FindConnectedPlayer(_responseReceiverGUID))
             ChatHandler(receiver->GetSession()).PSendSysMessage("Received warden check response from player %s (guid: %u, account: %u, map: %d). Handling...", _session->GetPlayerName().c_str(), _session->GetGuidLow(), _session->GetAccountId(), _session->GetPlayer() ? _session->GetPlayer()->GetMapId() : -1);
 
     _dataSent = false;

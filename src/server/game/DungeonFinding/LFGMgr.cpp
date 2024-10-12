@@ -1077,7 +1077,7 @@ void LFGMgr::UpdateRoleCheck(ObjectGuid gguid, ObjectGuid guid /* = 0 */, uint8 
                 SetRoles(pguid, queueId, LfgRoles(it.second));
                 SendLfgUpdateStatus(LFG_UPDATETYPE_JOIN_QUEUE_INITIAL, pguid, queueId);
                 SendLfgUpdateStatus(LFG_UPDATETYPE_ADDED_TO_QUEUE, pguid, queueId);
-                if (Player* player = ObjectAccessor::FindPlayer(pguid))
+                if (Player* player = ObjectAccessor::FindConnectedPlayer(pguid))
                     if (group && group->IsLeader(pguid))
                         player->GetSession()->SendLfgJoinResult(queueId, joinData);
                 SendLfgUpdateStatus(LFG_UPDATETYPE_ADDED_TO_QUEUE, pguid, queueId);
@@ -1439,7 +1439,7 @@ void LFGMgr::MakeNewGroup(LfgProposal const& proposal)
         ObjectGuid pguid = itr.guid;
         uint32 oldQueueId = itr.queueId;
 
-        Player* player = ObjectAccessor::FindPlayer(pguid);
+        Player* player = ObjectAccessor::FindConnectedPlayer(pguid);
         if (!player)
         {
             TC_LOG_DEBUG("lfg", "LFGMgr::MakeNewGroup: Player [%u] not found", pguid.GetCounter());

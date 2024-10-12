@@ -6952,7 +6952,7 @@ void Spell::EffectResurrectWithAura(SpellEffIndex effIndex)
 
     Player* target = unitTarget ? unitTarget->ToPlayer() : nullptr;
     if (!unitTarget && corpseTarget)
-        target = ObjectAccessor::FindPlayer(corpseTarget->GetOwnerGUID());
+        target = ObjectAccessor::FindConnectedPlayer(corpseTarget->GetOwnerGUID());
 
     if (!target)
         return;
@@ -6965,8 +6965,8 @@ void Spell::EffectResurrectWithAura(SpellEffIndex effIndex)
     // Shitty workaround but still better than unsafe access
 //     TaskMgr::Default()->ScheduleInvocation([playerGuid, casterGuid, effectValue, spellInfo, effIndex]
 //     {
-//         Player* player = ObjectAccessor::FindPlayerInOrOutOfWorld(playerGuid);
-//         Player* caster = ObjectAccessor::FindPlayerInOrOutOfWorld(casterGuid);
+//         Player* player = ObjectAccessor::FindConnectedPlayer(playerGuid);
+//         Player* caster = ObjectAccessor::FindConnectedPlayer(casterGuid);
 //         if (!player || !caster)
 //             return;
 
@@ -6989,8 +6989,8 @@ void Spell::EffectResurrectWithAura(SpellEffIndex effIndex)
 // #pragma warning(pop)
 //     });
 
-        Player* player = ObjectAccessor::FindPlayer(playerGuid);
-        Player* caster = ObjectAccessor::FindPlayer(casterGuid);
+        Player* player = ObjectAccessor::FindConnectedPlayer(playerGuid);
+        Player* caster = ObjectAccessor::FindConnectedPlayer(casterGuid);
         if (!player || !caster)
             return;
 

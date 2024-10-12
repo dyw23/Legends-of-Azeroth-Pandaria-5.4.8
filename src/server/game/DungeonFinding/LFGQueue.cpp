@@ -97,7 +97,7 @@ void Queuer::OutDebug(std::ostringstream& ss, QueueManager const* manager, Queue
     }
     else
     {
-        if (ObjectAccessor::FindPlayer(GetGUID()))
+        if (ObjectAccessor::FindConnectedPlayer(GetGUID()))
             ss << sWorld->GetCharacterNameData(GetGUID())->m_name;
         else
             ss << "|cFFFF0000" << sWorld->GetCharacterNameData(GetGUID())->m_name << "<OFFLINE>|r";
@@ -443,7 +443,7 @@ QueueManager::QueuerData::QueuerData(ObjectGuid guid, uint32 queueId, time_t joi
     if (guid.IsPlayer())
     {
         Players.insert(guid);
-        if (Player* player = ObjectAccessor::FindPlayer(guid))
+        if (Player* player = ObjectAccessor::FindConnectedPlayer(guid))
             for (auto&& social : player->GetSocial()->GetSocialMap())
                 if (social.second.Flags & SOCIAL_FLAG_IGNORED)
                     Ignores.insert(social.first);
@@ -453,7 +453,7 @@ QueueManager::QueuerData::QueuerData(ObjectGuid guid, uint32 queueId, time_t joi
         for (auto&& member : sLFGMgr->GetPlayers(guid))
         {
             Players.insert(member);
-            if (Player* player = ObjectAccessor::FindPlayer(member))
+            if (Player* player = ObjectAccessor::FindConnectedPlayer(member))
                 for (auto&& social : player->GetSocial()->GetSocialMap())
                     if (social.second.Flags & SOCIAL_FLAG_IGNORED)
                         Ignores.insert(social.first);

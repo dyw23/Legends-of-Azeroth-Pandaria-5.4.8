@@ -151,7 +151,7 @@ void RatedPvpMgr::SendBonusRewardIfNeed(RatedPvpInfo* info)
             MailDraft draft{ reward.MailTitle, body };
             item->SaveToDB(trans);
             draft.AddItem(item);
-            draft.SendMailTo(trans, MailReceiver{ ObjectAccessor::FindPlayer(info->Guid), info->Guid.GetCounter() },
+            draft.SendMailTo(trans, MailReceiver{ ObjectAccessor::FindConnectedPlayer(info->Guid), info->Guid.GetCounter() },
                 MailSender{ MAIL_NORMAL, info->Guid.GetCounter(), MAIL_STATIONERY_GM });
         }
     }
@@ -165,7 +165,7 @@ void RatedPvpMgr::SendBonusRewardIfNeed(RatedPvpInfo* info)
                 MailDraft draft{ sObjectMgr->GetTrinityString(LANG_BG_REWARD_TITLE_RICH, LOCALE_ruRU), body };
                 item->SaveToDB(trans);
                 draft.AddItem(item);
-                draft.SendMailTo(trans, MailReceiver{ ObjectAccessor::FindPlayer(info->Guid), info->Guid.GetCounter() },
+                draft.SendMailTo(trans, MailReceiver{ ObjectAccessor::FindConnectedPlayer(info->Guid), info->Guid.GetCounter() },
                     MailSender{ MAIL_NORMAL, info->Guid.GetCounter(), MAIL_STATIONERY_GM });
             }
         }
@@ -175,7 +175,7 @@ void RatedPvpMgr::SendBonusRewardIfNeed(RatedPvpInfo* info)
     if (!sWorld->getBoolConfig(CONFIG_RBG_REWARDS_FOR_ARENA_ENABLED))
         return;
 
-    Player* player = ObjectAccessor::FindPlayer(info->Guid);
+    Player* player = ObjectAccessor::FindConnectedPlayer(info->Guid);
     if (!player)
         return;
     //if (info->Slot == PVP_SLOT_RATED_BG)
