@@ -457,9 +457,9 @@ void WorldSession::HandleAuctionSellItem(WorldPacket& recvData)
         AH->itemGUIDLow = item->GetGUID().GetCounter();
         AH->itemEntry = item->GetEntry();
         AH->itemCount = item->GetCount();
-        AH->owner = _player->GetGUID().GetCounter();
+        AH->owner = _player->GetGUID();
         AH->startbid = bid;
-        AH->bidder = 0;
+        AH->bidder = ObjectGuid::Empty;
         AH->bid = 0;
         AH->buyout = buyout;
         AH->expire_time = GameTime::GetGameTime() + auctionTime;
@@ -514,9 +514,9 @@ void WorldSession::HandleAuctionSellItem(WorldPacket& recvData)
         AH->itemGUIDLow = newItem->GetGUID().GetCounter();
         AH->itemEntry = newItem->GetEntry();
         AH->itemCount = newItem->GetCount();
-        AH->owner = _player->GetGUID().GetCounter();
+        AH->owner = _player->GetGUID();
         AH->startbid = bid;
-        AH->bidder = 0;
+        AH->bidder = ObjectGuid::Empty;
         AH->bid = 0;
         AH->buyout = buyout;
         AH->expire_time = GameTime::GetGameTime() + auctionTime;
@@ -625,7 +625,7 @@ void WorldSession::HandleAuctionPlaceBid(WorldPacket& recvData)
     AuctionEntry* auction = auctionHouse->GetAuction(auctionId);
     Player* player = GetPlayer();
 
-    if (!auction || auction->owner == player->GetGUID().GetCounter())
+    if (!auction || auction->owner == player->GetGUID())
     {
         //you cannot bid your own auction:
         SendAuctionCommandResult(NULL, AUCTION_PLACE_BID, ERR_AUCTION_BID_OWN);
@@ -679,7 +679,7 @@ void WorldSession::HandleAuctionPlaceBid(WorldPacket& recvData)
         else
             player->ModifyMoney(-int64(price));
 
-        auction->bidder = player->GetGUID().GetCounter();
+        auction->bidder = player->GetGUID();
         auction->bid = price;
         GetPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_AUCTION_BID, price);
 
@@ -712,7 +712,7 @@ void WorldSession::HandleAuctionPlaceBid(WorldPacket& recvData)
             if (auction->bidder)                          //buyout for bidded auction ..
                 sAuctionMgr->SendAuctionOutbiddedMail(auction, auction->buyout, GetPlayer(), trans);
         }
-        auction->bidder = player->GetGUID().GetCounter();
+        auction->bidder = player->GetGUID();
         auction->bid = auction->buyout;
         GetPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_AUCTION_BID, auction->buyout);
 
@@ -777,7 +777,7 @@ void WorldSession::HandleAuctionRemoveItem(WorldPacket& recvData)
     Player* player = GetPlayer();
 
     CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
-    if (auction && auction->owner == player->GetGUID().GetCounter())
+    if (auction && auction->owner == player->GetGUID())
     {
         Item* pItem = sAuctionMgr->GetAItem(auction->itemGUIDLow);
         if (pItem)
@@ -792,7 +792,7 @@ void WorldSession::HandleAuctionRemoveItem(WorldPacket& recvData)
             }
 
             // item will deleted or added to received mail list
-            MailDraft(auction->BuildAuctionMailSubject(AUCTION_CANCELED), AuctionEntry::BuildAuctionMailBody(0, 0, auction->buyout, auction->deposit, 0))
+            MailDraft(auction->BuildAuctionMailSubject(AUCTION_CANCELED), AuctionEntry::BuildAuctionMailBody(ObjectGuid::Empty, 0, auction->buyout, auction->deposit, 0))
                 .AddItem(pItem)
                 .SendMailTo(trans, player, auction, MAIL_CHECK_MASK_COPIED);
         }

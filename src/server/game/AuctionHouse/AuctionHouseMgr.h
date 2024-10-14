@@ -80,12 +80,12 @@ struct AuctionEntry
     ObjectGuid::LowType itemGUIDLow;
     uint32 itemEntry;
     uint32 itemCount;
-    ObjectGuid::LowType owner;
+    ObjectGuid owner;
     uint64 startbid;                                        //maybe useless
     uint64 bid;
     uint64 buyout;
     time_t expire_time;
-    ObjectGuid::LowType bidder;
+    ObjectGuid bidder;
     uint64 deposit;                                         //deposit can be calculated only when creating auction
     uint32 etime;
     std::unordered_set<ObjectGuid> bidders;
@@ -100,7 +100,7 @@ struct AuctionEntry
     void SaveToDB(CharacterDatabaseTransaction& trans) const;
     bool LoadFromDB(Field* fields);
     std::string BuildAuctionMailSubject(MailAuctionAnswers response) const;
-    static std::string BuildAuctionMailBody(ObjectGuid::LowType lowGuid, uint64 bid, uint64 buyout, uint64 deposit, uint64 cut);
+    static std::string BuildAuctionMailBody(ObjectGuid guid, uint64 bid, uint64 buyout, uint64 deposit, uint64 cut);
 };
 
 //this class is used as auctionhouse instance

@@ -74,7 +74,7 @@ bool AuctionBotConfig::Initialize()
                 do
                 {
                     Field* fields = result->Fetch();
-                    _AHBotCharacters.push_back(fields[0].GetUInt32());
+                    _AHBotCharacters.push_back(ObjectGuid::Create<HighGuid::Player>(fields[0].GetUInt32()));
                     ++count;
                 } while (result->NextRow());
             }
@@ -307,35 +307,35 @@ char const* AuctionBotConfig::GetHouseTypeName(AuctionHouseType houseType)
 }
 
 // Picks a random character from the list of AHBot chars
-uint32 AuctionBotConfig::GetRandChar() const
+ObjectGuid AuctionBotConfig::GetRandChar() const
 {
     if (_AHBotCharacters.empty())
-        return 0;
+        return ObjectGuid::Empty;
 
     return Trinity::Containers::SelectRandomContainerElement(_AHBotCharacters);
 }
 
 // Picks a random AHBot character, but excludes a specific one. This is used
 // to have another character than the auction owner place bids
-uint32 AuctionBotConfig::GetRandCharExclude(uint32 exclude) const
+ObjectGuid AuctionBotConfig::GetRandCharExclude(ObjectGuid exclude) const
 {
     if (_AHBotCharacters.empty())
-        return 0;
+        return ObjectGuid::Empty;
 
-    std::vector<uint32> filteredCharacters;
+    std::vector<ObjectGuid> filteredCharacters;
     filteredCharacters.reserve(_AHBotCharacters.size() - 1);
 
-    for (uint32 charId : _AHBotCharacters)
+    for (ObjectGuid charId : _AHBotCharacters)
         if (charId != exclude)
             filteredCharacters.push_back(charId);
 
     if (filteredCharacters.empty())
-        return 0;
+        return ObjectGuid::Empty;
 
     return Trinity::Containers::SelectRandomContainerElement(filteredCharacters);
 }
 
-bool AuctionBotConfig::IsBotChar(uint32 characterID) const
+bool AuctionBotConfig::IsBotChar(ObjectGuid characterID) const
 {
     return !characterID || std::find(_AHBotCharacters.begin(), _AHBotCharacters.end(), characterID) != _AHBotCharacters.end();
 }
