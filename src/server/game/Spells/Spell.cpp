@@ -116,8 +116,8 @@ SpellDestination::SpellDestination(WorldObject const& wObj)
 
 SpellCastTargets::SpellCastTargets() : m_elevation(0), m_speed(0), m_strTarget()
 {
-    m_objectTarget = NULL;
-    m_itemTarget = NULL;
+    m_objectTarget = nullptr;
+    m_itemTarget = nullptr;
 
     m_objectTargetGUID   = ObjectGuid::Empty;
     m_itemTargetGUID   = ObjectGuid::Empty;
@@ -129,8 +129,8 @@ SpellCastTargets::SpellCastTargets() : m_elevation(0), m_speed(0), m_strTarget()
 SpellCastTargets::SpellCastTargets(Unit* caster, uint32 targetMask, ObjectGuid targetGuid, ObjectGuid itemTargetGuid, ObjectGuid srcTransportGuid, ObjectGuid destTransportGuid, Position srcPos, Position destPos, float elevation, float missileSpeed, std::string targetString) :
     m_targetMask(targetMask), m_objectTargetGUID(targetGuid), m_itemTargetGUID(itemTargetGuid), m_elevation(elevation), m_speed(missileSpeed), m_strTarget(targetString)
 {
-    m_objectTarget = NULL;
-    m_itemTarget = NULL;
+    m_objectTarget = nullptr;
+    m_itemTarget = nullptr;
     m_itemTargetEntry = 0;
 
     m_src._transportGUID = srcTransportGuid;
@@ -624,7 +624,7 @@ m_spellValue(new SpellValue(m_spellInfo)), m_researchData(NULL)
         _triggeredCastFlags = TriggerCastFlags(_triggeredCastFlags | TRIGGERED_IGNORE_CAST_IN_PROGRESS | TRIGGERED_IGNORE_AURA_INTERRUPT_FLAGS);
 
     m_CastItem = NULL;
-    m_castItemGUID = 0;
+    m_castItemGUID = ObjectGuid::Empty;
 
     unitTarget = NULL;
     itemTarget = NULL;
@@ -3418,7 +3418,7 @@ void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggered
     if (m_CastItem)
         m_castItemGUID = m_CastItem->GetGUID();
     else
-        m_castItemGUID = 0;
+        m_castItemGUID = ObjectGuid::Empty;
 
     InitExplicitTargets(*targets);
 

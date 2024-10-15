@@ -252,7 +252,7 @@ void AuraApplication::ClientUpdate(bool remove)
         data << uint8(flags);
 
         uint32 itemLevel = 0;
-        if (uint64 itemGUID = aura->GetCastItemGUID())
+        if (ObjectGuid itemGUID = aura->GetCastItemGUID())
             if (Unit* caster = aura->GetCaster())
                 if (Player* player = caster->ToPlayer())
                     if (Item* castItem = player->GetItemByGuid(itemGUID))
