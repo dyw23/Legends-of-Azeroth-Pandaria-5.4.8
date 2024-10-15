@@ -110,7 +110,7 @@ class boss_sacrolash : public CreatureScript
                         if (temp->isDead())
                             temp->Respawn();
                         else if (temp->GetVictim())
-                            me->getThreatManager().addThreat(temp->GetVictim(),0.0f);
+                            me->GetThreatManager().addThreat(temp->GetVictim(),0.0f);
                     }
                 }
 
@@ -380,7 +380,7 @@ class boss_alythess : public CreatureScript
                         if (temp->isDead())
                             temp->Respawn();
                         else if (temp->GetVictim())
-                            me->getThreatManager().addThreat(temp->GetVictim(),0.0f);
+                            me->GetThreatManager().addThreat(temp->GetVictim(),0.0f);
                     }
                 }
 

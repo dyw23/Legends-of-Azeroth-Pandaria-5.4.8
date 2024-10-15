@@ -845,7 +845,7 @@ public:
             if (Blink_Timer <= diff)
             {
                 bool InMeleeRange = false;
-                ThreatContainer::StorageType const &t_list = me->getThreatManager().getThreatList();
+                ThreatContainer::StorageType const &t_list = me->GetThreatManager().getThreatList();
                 for (ThreatContainer::StorageType::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                 {
                     if (Unit* target = Unit::GetUnit(*me, (*itr)->getUnitGuid()))
@@ -931,7 +931,7 @@ public:
             if (Intercept_Stun_Timer <= diff)
             {
                 bool InMeleeRange = false;
-                ThreatContainer::StorageType const &t_list = me->getThreatManager().getThreatList();
+                ThreatContainer::StorageType const &t_list = me->GetThreatManager().getThreatList();
                 for (ThreatContainer::StorageType::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                 {
                     if (Unit* target = Unit::GetUnit(*me, (*itr)->getUnitGuid()))

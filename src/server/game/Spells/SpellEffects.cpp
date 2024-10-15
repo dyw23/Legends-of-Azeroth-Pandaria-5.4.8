@@ -3561,7 +3561,7 @@ void Spell::EffectTaunt(SpellEffIndex /*effIndex*/)
     Player* player = m_caster->ToPlayer();
     if (player && player->GetRoleForGroup() == ROLES_TANK)
     {
-        if (auto currentVictim = unitTarget->getThreatManager().getCurrentVictim())
+        if (auto currentVictim = unitTarget->GetThreatManager().getCurrentVictim())
         {
             const uint32 spellVengeance = 132365;
 
@@ -3580,18 +3580,18 @@ void Spell::EffectTaunt(SpellEffIndex /*effIndex*/)
     }
 
     // Also use this effect to set the taunter's threat to the taunted creature's highest value
-    if (unitTarget->getThreatManager().getCurrentVictim())
+    if (unitTarget->GetThreatManager().getCurrentVictim())
     {
-        float myThreat = unitTarget->getThreatManager().getThreat(m_caster);
-        float itsThreat = unitTarget->getThreatManager().getCurrentVictim()->getThreat();
+        float myThreat = unitTarget->GetThreatManager().getThreat(m_caster);
+        float itsThreat = unitTarget->GetThreatManager().getCurrentVictim()->getThreat();
         if (itsThreat > myThreat)
-            unitTarget->getThreatManager().addThreat(m_caster, itsThreat - myThreat);
+            unitTarget->GetThreatManager().addThreat(m_caster, itsThreat - myThreat);
     }
 
     //Set aggro victim to caster
-    if (!unitTarget->getThreatManager().getOnlineContainer().empty())
-        if (HostileReference* forcedVictim = unitTarget->getThreatManager().getOnlineContainer().getReferenceByTarget(m_caster))
-            unitTarget->getThreatManager().setCurrentVictim(forcedVictim);
+    if (!unitTarget->GetThreatManager().getOnlineContainer().empty())
+        if (HostileReference* forcedVictim = unitTarget->GetThreatManager().getOnlineContainer().getReferenceByTarget(m_caster))
+            unitTarget->GetThreatManager().setCurrentVictim(forcedVictim);
 
     if ((unitTarget->ToCreature()->IsAIEnabled && !unitTarget->ToCreature()->HasReactState(REACT_PASSIVE)) || (unitTarget->IsPetGuardianStuff() && unitTarget->GetCharmerOrOwnerGUID().IsPlayer()))
         unitTarget->ToCreature()->AI()->AttackStart(m_caster);
@@ -5847,7 +5847,7 @@ void Spell::EffectModifyThreatPercent(SpellEffIndex /*effIndex*/)
     if (!unitTarget)
         return;
 
-    unitTarget->getThreatManager().modifyThreatPercent(m_caster, damage);
+    unitTarget->GetThreatManager().modifyThreatPercent(m_caster, damage);
 }
 
 void Spell::EffectTransmitted(SpellEffIndex effIndex)

@@ -1536,7 +1536,7 @@ class spell_sha_natures_guardian : public AuraScript
         PreventDefaultAction();
         GetUnitOwner()->CastCustomSpell(SPELL_SHA_NATURES_GUARDIAN, SPELLVALUE_BASE_POINT0, eff->GetAmount(), GetUnitOwner(), true);
         if (eventInfo.GetActor() && eventInfo.GetActor()->CanHaveThreatList())
-            eventInfo.GetActor()->getThreatManager().modifyThreatPercent(GetUnitOwner(), -10.f); // No idea
+            eventInfo.GetActor()->GetThreatManager().modifyThreatPercent(GetUnitOwner(), -10.f); // No idea
         m_caster->AddSpellCooldown(SPELL_SHA_NATURES_GUARDIAN, Seconds(30));
     }
 
@@ -2934,8 +2934,8 @@ struct npc_sha_earth_elemental : public ScriptedAI
             ctx.Repeat(Milliseconds(5000));
 
             if (Unit* target = me->GetVictim())
-                if (target->getThreatManager().getCurrentVictim())
-                    if (Unit* tank = target->getThreatManager().getCurrentVictim()->getTarget())
+                if (target->GetThreatManager().getCurrentVictim())
+                    if (Unit* tank = target->GetThreatManager().getCurrentVictim()->getTarget())
                         if (tank->GetTypeId() == TYPEID_PLAYER && tank->ToPlayer()->GetRoleForGroup() == ROLES_TANK)
                             return;
 

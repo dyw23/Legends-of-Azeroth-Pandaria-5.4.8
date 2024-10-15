@@ -619,7 +619,7 @@ class npc_green_dragon_combat_trigger : public CreatureScript
                 if (!me->IsInCombat() || _isEvading)
                     return;
 
-                std::list<HostileReference*> const& threatList = me->getThreatManager().getThreatList();
+                std::list<HostileReference*> const& threatList = me->GetThreatManager().getThreatList();
                 if (threatList.empty())
                 {
                     EnterEvadeMode();

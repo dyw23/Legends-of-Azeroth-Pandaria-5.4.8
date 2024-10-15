@@ -346,7 +346,7 @@ class boss_yu_lon_tjs : public CreatureScript
                         me->SetReactState(REACT_PASSIVE);
                         me->CombatStop(true);
                         me->DeleteThreatList();
-                        me->getThreatManager().resetAllAggro();
+                        me->GetThreatManager().resetAllAggro();
                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         events.Reset();
 
@@ -541,7 +541,7 @@ class npc_minion_of_doubt : public CreatureScript
                     if (me->GetHealth() < me->GetMaxHealth() || me->GetHealth() <= damage)
                     {
                         damage = 0;
-                        me->getThreatManager().addThreat(attacker, 0.f);
+                        me->GetThreatManager().addThreat(attacker, 0.f);
                     }
                 }
 
@@ -569,8 +569,8 @@ class npc_minion_of_doubt : public CreatureScript
                            return;
 
                        targeted = true;
-                       me->getThreatManager().resetAllAggro();
-                       me->getThreatManager().addThreat(who, 100.0f);
+                       me->GetThreatManager().resetAllAggro();
+                       me->GetThreatManager().addThreat(who, 100.0f);
                        AttackStart(who);
                    }
             }
@@ -649,7 +649,7 @@ class npc_lesser_sha : public CreatureScript
                     if (me->GetHealth() < me->GetMaxHealth() || me->GetHealth() <= damage)
                     {
                         damage = 0;
-                        me->getThreatManager().addThreat(attacker, 0.f);
+                        me->GetThreatManager().addThreat(attacker, 0.f);
                     }
                 }
             }
@@ -664,8 +664,8 @@ class npc_lesser_sha : public CreatureScript
                         return;
 
                     targeted = true;
-                    me->getThreatManager().resetAllAggro();
-                    me->getThreatManager().addThreat(who, 100.0f);
+                    me->GetThreatManager().resetAllAggro();
+                    me->GetThreatManager().addThreat(who, 100.0f);
                     AttackStart(who);
                 }
             }
@@ -746,7 +746,7 @@ class npc_lie_flameheart_trash_base_ai : public CreatureScript
                     if (me->GetHealth() < me->GetMaxHealth() || me->GetHealth() <= damage)
                     {
                         damage = 0;
-                        me->getThreatManager().addThreat(attacker, 0.f);
+                        me->GetThreatManager().addThreat(attacker, 0.f);
                     }
                 }
             }

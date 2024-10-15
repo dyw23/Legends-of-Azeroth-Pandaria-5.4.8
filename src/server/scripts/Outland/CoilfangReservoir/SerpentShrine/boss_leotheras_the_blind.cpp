@@ -323,7 +323,7 @@ public:
                     Unit* victim = NULL;
                     victim = Unit::GetUnit(*me, instance->GetGuidData(DATA_LEOTHERAS_EVENT_STARTER));
                     if (victim)
-                        me->getThreatManager().addThreat(victim, 1);
+                        me->GetThreatManager().addThreat(victim, 1);
                     StartEvent();
                 }
             }
@@ -516,7 +516,7 @@ public:
                 //Summon Inner Demon
                 if (InnerDemons_Timer <= diff)
                 {
-                    ThreatContainer::StorageType const & ThreatList = me->getThreatManager().getThreatList();
+                    ThreatContainer::StorageType const & ThreatList = me->GetThreatManager().getThreatList();
                     std::vector<Unit*> TargetList;
                     for (ThreatContainer::StorageType::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
                     {

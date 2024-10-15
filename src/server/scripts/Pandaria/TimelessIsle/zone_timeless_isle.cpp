@@ -3881,7 +3881,7 @@ struct npc_dread_ship_vazuvius : public ScriptedAI
 
     void UpdateAI(uint32 diff) override
     {
-        if (me->getThreatManager().getThreatList().empty())
+        if (me->GetThreatManager().getThreatList().empty())
             return;
 
         events.Update(diff);
@@ -3927,7 +3927,7 @@ private:
     std::list<ObjectGuid> playersAura;
     Unit* GetTarget()
     {
-        std::list<HostileReference*> threatList = me->getThreatManager().getThreatList();
+        std::list<HostileReference*> threatList = me->GetThreatManager().getThreatList();
         HostileReference* ref = Trinity::Containers::SelectRandomContainerElement(threatList);
         Unit* target = Unit::GetUnit(*me, ref->getUnitGuid());
         return target;
@@ -4001,7 +4001,7 @@ struct npc_evermaw : public ScriptedAI
         scheduler
             .Schedule(Seconds(1), [this](TaskContext context)
         {
-            for (auto&& itr : me->getThreatManager().getThreatList())
+            for (auto&& itr : me->GetThreatManager().getThreatList())
             {
                 if (Unit* target = ObjectAccessor::GetUnit(*me, itr->getUnitGuid()))
                 {

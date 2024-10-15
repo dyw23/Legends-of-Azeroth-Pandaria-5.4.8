@@ -240,7 +240,7 @@ class boss_taldaram : public CreatureScript
                                 // Count alive players
                                 Unit* target = NULL;
                                 std::vector<Unit*> target_list;
-                                for (auto&& threat : me->getThreatManager().getThreatList())
+                                for (auto&& threat : me->GetThreatManager().getThreatList())
                                 {
                                     target = Unit::GetUnit(*me, threat->getUnitGuid());
                                     // exclude pets & totems

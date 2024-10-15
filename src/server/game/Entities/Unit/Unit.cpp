@@ -394,7 +394,7 @@ void Unit::Update(uint32 p_time)
     // Having this would prevent spells from being proced, so let's crash
     ASSERT(!m_procDeep);
 
-    if (CanHaveThreatList() && getThreatManager().isNeedUpdateToClient(p_time))
+    if (CanHaveThreatList() && GetThreatManager().isNeedUpdateToClient(p_time))
         SendThreatListUpdate();
 
     // update combat timer only for players and pets (only pets with PetAI)
@@ -17326,8 +17326,8 @@ void Unit::SetPhaseMask(uint32 newPhaseMask, bool update)
             // modify threat lists for new phasemask
             if (GetTypeId() != TYPEID_PLAYER)
             {
-                std::list<HostileReference*> threatList = getThreatManager().getThreatList();
-                std::list<HostileReference*> offlineThreatList = getThreatManager().getOfflineThreatList();
+                std::list<HostileReference*> threatList = GetThreatManager().getThreatList();
+                std::list<HostileReference*> offlineThreatList = GetThreatManager().getOfflineThreatList();
 
                 // merge expects sorted lists
                 threatList.sort();
@@ -17390,8 +17390,8 @@ bool Unit::SetPhased(uint32 id, bool update, bool apply)
         // modify threat lists for new phasemask
         if (GetTypeId() != TYPEID_PLAYER)
         {
-            std::list<HostileReference*> threatList = getThreatManager().getThreatList();
-            std::list<HostileReference*> offlineThreatList = getThreatManager().getOfflineThreatList();
+            std::list<HostileReference*> threatList = GetThreatManager().getThreatList();
+            std::list<HostileReference*> offlineThreatList = GetThreatManager().getOfflineThreatList();
 
             // merge expects sorted lists
             threatList.sort();
@@ -18794,9 +18794,9 @@ void Unit::UpdateHeight(float newZ)
 
 void Unit::SendThreatListUpdate()
 {
-    if (!getThreatManager().isThreatListEmpty())
+    if (!GetThreatManager().isThreatListEmpty())
     {
-        uint32 count = getThreatManager().getThreatList().size();
+        uint32 count = GetThreatManager().getThreatList().size();
 
         TC_LOG_DEBUG("entities.unit", "WORLD: Send SMSG_THREAT_UPDATE Message");
 
@@ -18812,7 +18812,7 @@ void Unit::SendThreatListUpdate()
         data.WriteBit(Guid[4]);
         data.WriteBits(count, 21);
 
-        ThreatContainer::StorageType const &tlist = getThreatManager().getThreatList();
+        ThreatContainer::StorageType const &tlist = GetThreatManager().getThreatList();
         for (ThreatContainer::StorageType::const_iterator itr = tlist.begin(); itr != tlist.end(); ++itr)
         {
             ObjectGuid unitGuid = (*itr)->getUnitGuid();
@@ -18859,9 +18859,9 @@ void Unit::SendThreatListUpdate()
 
 void Unit::SendChangeCurrentVictimOpcode(HostileReference* pHostileReference)
 {
-    if (!getThreatManager().isThreatListEmpty())
+    if (!GetThreatManager().isThreatListEmpty())
     {
-        uint32 count = getThreatManager().getThreatList().size();
+        uint32 count = GetThreatManager().getThreatList().size();
 
         TC_LOG_DEBUG("entities.unit", "WORLD: Send SMSG_HIGHEST_THREAT_UPDATE Message");
         ObjectGuid unitGuid = pHostileReference->getUnitGuid();
@@ -18883,7 +18883,7 @@ void Unit::SendChangeCurrentVictimOpcode(HostileReference* pHostileReference)
         data.WriteBit(guid[4]);
         data.WriteBits(count, 21);
 
-        ThreatContainer::StorageType const &tlist = getThreatManager().getThreatList();
+        ThreatContainer::StorageType const &tlist = GetThreatManager().getThreatList();
         for (ThreatContainer::StorageType::const_iterator itr = tlist.begin(); itr != tlist.end(); ++itr)
         {
             ObjectGuid UnitGuid = (*itr)->getUnitGuid();
@@ -20162,7 +20162,7 @@ float Unit::GetScallingDamageMod() const
     // calculate celestials scalling mod
     if (GetEntry() == 71955 || GetEntry() == 71953 || GetEntry() == 71952 || GetEntry() == 71954)
     {
-        auto threatList = const_cast<Unit*>(this)->getThreatManager().getThreatList();
+        auto threatList = const_cast<Unit*>(this)->GetThreatManager().getThreatList();
         for (auto&& itr : threatList)
             if (Unit* unit = ObjectAccessor::GetUnit(*this, itr->getUnitGuid()))
                 if (unit->GetTypeId() == TYPEID_PLAYER && unit->IsWithinDist(this, 100.0f))

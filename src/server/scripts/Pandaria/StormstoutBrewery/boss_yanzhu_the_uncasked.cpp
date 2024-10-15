@@ -948,7 +948,7 @@ class boss_yanzhu : public CreatureScript
                                         itr++;
                                 }
 
-                                for (auto&& itr : me->getThreatManager().getThreatList())
+                                for (auto&& itr : me->GetThreatManager().getThreatList())
                                 {
                                     if (Unit* unit = ObjectAccessor::GetUnit(*me, (*itr).getUnitGuid()))
                                     {

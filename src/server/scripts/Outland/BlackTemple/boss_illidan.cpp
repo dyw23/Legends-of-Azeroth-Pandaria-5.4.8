@@ -563,7 +563,7 @@ class boss_illidan_stormrage : public CreatureScript
 
             void DeleteFromThreatList(uint64 TargetGUID)
             {
-                for (std::list<HostileReference*>::const_iterator itr = me->getThreatManager().getThreatList().begin(); itr != me->getThreatManager().getThreatList().end(); ++itr)
+                for (std::list<HostileReference*>::const_iterator itr = me->GetThreatManager().getThreatList().begin(); itr != me->GetThreatManager().getThreatList().end(); ++itr)
                 {
                     if ((*itr)->getUnitGuid() == TargetGUID)
                     {
@@ -1472,7 +1472,7 @@ class npc_akama_illidan : public CreatureScript
 
             void KillAllElites()
             {
-                ThreatContainer::StorageType const& threatList = me->getThreatManager().getThreatList();
+                ThreatContainer::StorageType const& threatList = me->GetThreatManager().getThreatList();
                 std::vector<Unit*> eliteList;
                 for (ThreatContainer::StorageType::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
                 {

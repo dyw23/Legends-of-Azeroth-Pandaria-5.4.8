@@ -1675,7 +1675,7 @@ public:
 
         void DamageTaken(Unit* attacker, uint32& damage) override
         {
-            me->getThreatManager().addThreat(attacker, damage);
+            me->GetThreatManager().addThreat(attacker, damage);
 
             if (Player* owner = attacker->GetCharmerOrOwnerPlayerOrPlayerItself())
                 clearAttackerCombat[owner->GetGUID()] = time(NULL) + 5;

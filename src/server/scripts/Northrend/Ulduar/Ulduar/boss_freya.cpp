@@ -1354,7 +1354,7 @@ class npc_detonating_lasher : public CreatureScript
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
                             {
                                 // Switching to other target - modify aggro of new target by 20% from current target's aggro
-                                me->AddThreat(target, me->getThreatManager().getThreat(me->GetVictim(), false) * 1.2f);
+                                me->AddThreat(target, me->GetThreatManager().getThreat(me->GetVictim(), false) * 1.2f);
                                 me->AI()->AttackStart(target);
                             }
                             _events.ScheduleEvent(EVENT_CHANGE_TARGET, urand(5*IN_MILLISECONDS, 10*IN_MILLISECONDS));

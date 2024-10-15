@@ -418,7 +418,7 @@ class npc_zandalari_stormcaller : public CreatureScript
 
             void DoStun()
             {
-                std::list<HostileReference*> threatList = me->getThreatManager().getThreatList();
+                std::list<HostileReference*> threatList = me->GetThreatManager().getThreatList();
                 std::list<Unit*> spellTargets;
 
                 for (auto&& ref : threatList)

@@ -1234,7 +1234,7 @@ struct npc_twilight_emberscar_devourer : public customCreatureAI
             hasEnrage = true;
             Talk(TALK_TWILIGHT_TERROR_SKY);
 
-            for (auto&& itr : me->getThreatManager().getThreatList())
+            for (auto&& itr : me->GetThreatManager().getThreatList())
                 if (Player* target = ObjectAccessor::GetPlayer(*me, itr->getUnitGuid()))
                     target->CastSpell(target, SPELL_VOLCANIC_SKYBOX, true);
         }

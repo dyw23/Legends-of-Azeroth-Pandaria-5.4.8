@@ -309,7 +309,7 @@ class boss_malchezaar : public CreatureScript
                 if (!info)
                     return;
 
-                std::list<HostileReference *> t_list = me->getThreatManager().getThreatList();
+                std::list<HostileReference *> t_list = me->GetThreatManager().getThreatList();
                 std::vector<Unit *> targets;
 
                 if (!t_list.size())
@@ -455,7 +455,7 @@ class boss_malchezaar : public CreatureScript
                                 if (target)
                                 {
                                     axe->AI()->AttackStart(target);
-                                    //axe->getThreatManager().tauntApply(target); // Taunt Apply and fade out does not work properly
+                                    //axe->GetThreatManager().tauntApply(target); // Taunt Apply and fade out does not work properly
                                     // So we'll use a hack to add a lot of threat to our target
                                     axe->AddThreat(target, 10000000.0f);
                                 }
@@ -498,8 +498,8 @@ class boss_malchezaar : public CreatureScript
                                         DoModifyThreatPercent(axe->GetVictim(), -100);
                                     if (target)
                                         axe->AddThreat(target, 1000000.0f);
-                                    //axe->getThreatManager().tauntFadeOut(axe->GetVictim());
-                                    //axe->getThreatManager().tauntApply(target);
+                                    //axe->GetThreatManager().tauntFadeOut(axe->GetVictim());
+                                    //axe->GetThreatManager().tauntApply(target);
                                 }
                             }
                         }

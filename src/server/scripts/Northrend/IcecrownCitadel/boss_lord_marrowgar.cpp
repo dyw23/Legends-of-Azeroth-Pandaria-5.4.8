@@ -237,7 +237,7 @@ class boss_lord_marrowgar : public CreatureScript
                                 break;
                             }
 
-                            auto list = me->getThreatManager().getThreatList();
+                            auto list = me->GetThreatManager().getThreatList();
                             if (!instance->instance->IsHeroic() && list.size() == 1)
                                 break;
 

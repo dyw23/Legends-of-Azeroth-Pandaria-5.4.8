@@ -451,7 +451,7 @@ class boss_hodir : public CreatureScript
 
                 if (gettingColdInHereTimer <= diff && gettingColdInHere)
                 {
-                    for (auto&& itr : me->getThreatManager().getThreatList())
+                    for (auto&& itr : me->GetThreatManager().getThreatList())
                         if (Unit* target = ObjectAccessor::GetUnit(*me, itr->getUnitGuid()))
                             if (Aura* BitingColdAura = target->GetAura(SPELL_BITING_COLD_TRIGGERED))
                                 if ((target->GetTypeId() == TYPEID_PLAYER) && (BitingColdAura->GetStackAmount() > 2))

@@ -724,11 +724,11 @@ class boss_sathrovarr : public CreatureScript
 
                 if (resetThreat <= diff)
                 {
-                    for (auto&& itr : me->getThreatManager().getThreatList())
+                    for (auto&& itr : me->GetThreatManager().getThreatList())
                     {
                         if (Unit* unit = Unit::GetUnit(*me, itr->getUnitGuid()))
                             if (unit->GetPositionZ() > me->GetPositionZ()+5)
-                                me->getThreatManager().modifyThreatPercent(unit,-100);
+                                me->GetThreatManager().modifyThreatPercent(unit,-100);
                     }
                     resetThreat = 1000;
                 } else resetThreat -= diff;

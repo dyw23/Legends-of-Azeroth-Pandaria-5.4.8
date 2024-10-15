@@ -981,13 +981,13 @@ class npc_ravenous_creeper : public CreatureScript
                                 me->GetExactDist2d(&conclaveHomePositions[0]) > 90.0f)
                             {
                                 if (me->GetVictim())
-                                    me->getThreatManager().modifyThreatPercent(me->GetVictim(), -100);
+                                    me->GetThreatManager().modifyThreatPercent(me->GetVictim(), -100);
                                 me->GetMotionMaster()->Clear();
                                 Player* target = me->FindNearestPlayer(90);
                                 if (target && target->GetExactDist2d(&conclaveHomePositions[0]) <= 90.0f)
                                 {
                                     evading = false;
-                                    me->getThreatManager().setCurrentVictim(NULL);
+                                    me->GetThreatManager().setCurrentVictim(NULL);
                                     AttackStart(target);
                                     me->GetMotionMaster()->MoveChase(target);
                                 }

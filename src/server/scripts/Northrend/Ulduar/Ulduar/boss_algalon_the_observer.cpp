@@ -576,9 +576,9 @@ class boss_algalon_the_observer : public CreatureScript
             void UpdateAI(uint32 diff) override
             {
                 // This monstrosity of a code makes Algalon cast Ascend to the Heavens instead of evading if all players enter Black Holes
-                if (!_fightWon && me->IsInCombat() && !events.IsInPhase(PHASE_BIG_BANG) && me->getThreatManager().getOnlineContainer().empty() && !me->getThreatManager().getOfflineContainer().empty())
+                if (!_fightWon && me->IsInCombat() && !events.IsInPhase(PHASE_BIG_BANG) && me->GetThreatManager().getOnlineContainer().empty() && !me->GetThreatManager().getOfflineContainer().empty())
                 {
-                    for (auto&& ref : me->getThreatManager().getOfflineContainer().getThreatList())
+                    for (auto&& ref : me->GetThreatManager().getOfflineContainer().getThreatList())
                     {
                         if (ref->getUnitGuid().IsPlayer())
                         {
@@ -638,8 +638,8 @@ class boss_algalon_the_observer : public CreatureScript
                             // Workaround for Creature::_IsTargetAcceptable returning false
                             // for creatures that start combat in REACT_PASSIVE and UNIT_FLAG_NOT_SELECTABLE
                             // causing them to immediately evade
-                            if (!me->getThreatManager().isThreatListEmpty())
-                                AttackStart(me->getThreatManager().getHostilTarget());
+                            if (!me->GetThreatManager().isThreatListEmpty())
+                                AttackStart(me->GetThreatManager().getHostilTarget());
                             for (uint32 i = 0; i < LIVING_CONSTELLATION_COUNT; ++i)
                                 if (Creature* summon = DoSummon(NPC_LIVING_CONSTELLATION, ConstellationPos[i], 0, TEMPSUMMON_DEAD_DESPAWN))
                                     summon->SetReactState(REACT_PASSIVE);
@@ -994,8 +994,8 @@ class npc_black_hole : public CreatureScript
 
                     if (Creature* algalon = me->FindNearestCreature(NPC_ALGALON, 200.0f))
                     {
-                        algalon->getThreatManager().getOnlineContainer().modifyThreatPercent(target, -100);
-                        algalon->getThreatManager().getOfflineContainer().modifyThreatPercent(target, -100); // SpellHitTarget is called after effects are handle, hence the target was already moved to offline container due to being in unreachable phase
+                        algalon->GetThreatManager().getOnlineContainer().modifyThreatPercent(target, -100);
+                        algalon->GetThreatManager().getOfflineContainer().modifyThreatPercent(target, -100); // SpellHitTarget is called after effects are handle, hence the target was already moved to offline container due to being in unreachable phase
                     }
                 }
             }

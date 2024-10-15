@@ -2484,8 +2484,8 @@ void Creature::FixateOnTarget(ObjectGuid targetGUID, uint32 timer)
 {
     if (Unit* target = ObjectAccessor::GetUnit(*this, targetGUID))
     {
-        getThreatManager().clearReferences();
-        getThreatManager().addThreat(target, std::numeric_limits<float>::max());
+        GetThreatManager().clearReferences();
+        GetThreatManager().addThreat(target, std::numeric_limits<float>::max());
 
         if (AI())
             AI()->AttackStart(target);

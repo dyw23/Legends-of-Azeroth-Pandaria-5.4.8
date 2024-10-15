@@ -737,7 +737,7 @@ class boss_professor_putricide : public CreatureScript
                             {
                                 std::list<Unit*> targetList;
                                 {
-                                    const std::list<HostileReference*>& threatlist = me->getThreatManager().getThreatList();
+                                    const std::list<HostileReference*>& threatlist = me->GetThreatManager().getThreatList();
                                     for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
                                         if ((*itr)->getTarget()->GetTypeId() == TYPEID_PLAYER)
                                             targetList.push_back((*itr)->getTarget());

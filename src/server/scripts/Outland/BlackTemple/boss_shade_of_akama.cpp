@@ -448,7 +448,7 @@ class boss_shade_of_akama : public CreatureScript
                 if (IsBanished)
                 {
                     // Akama is set in the threatlist so when we reset, we make sure that he is not included in our check
-                    if (me->getThreatManager().getThreatList().size() < 2)
+                    if (me->GetThreatManager().getThreatList().size() < 2)
                     {
                         EnterEvadeMode();
                         return;
@@ -804,7 +804,7 @@ class npc_akama_shade : public CreatureScript
                             }
                             if (Shade && Shade->IsAlive())
                             {
-                                if (Shade->getThreatManager().getThreatList().size() < 2)
+                                if (Shade->GetThreatManager().getThreatList().size() < 2)
                                     Shade->AI()->EnterEvadeMode();
                             }
                         }

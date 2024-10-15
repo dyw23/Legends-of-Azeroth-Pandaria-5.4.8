@@ -2114,10 +2114,8 @@ public:
     void DeleteThreatList();
     void TauntApply(Unit* victim);
     void TauntFadeOut(Unit* taunter);
-    ThreatManager& getThreatManager()
-    {
-        return m_ThreatManager;
-    }
+    ThreatManager& GetThreatManager() { return m_ThreatManager; }
+    ThreatManager const& GetThreatManager() const { return m_ThreatManager; }
     void addHatedBy(HostileReference* pHostileReference)
     {
         m_HostileRefManager.insertFirst(pHostileReference);

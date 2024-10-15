@@ -550,7 +550,7 @@ class boss_blood_queen_lana_thel : public CreatureScript
             // offtank for this encounter is the player standing closest to main tank
             Player* SelectRandomTarget(bool includeOfftank, std::list<Player*>* targetList = nullptr)
             {
-                std::list<HostileReference*> const& threatlist = me->getThreatManager().getThreatList();
+                std::list<HostileReference*> const& threatlist = me->GetThreatManager().getThreatList();
                 std::list<Player*> tempTargets;
 
                 if (threatlist.empty())

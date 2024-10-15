@@ -308,7 +308,7 @@ class boss_tortos : public CreatureScript
                     }
                     else
                     {
-                        ThreatContainer::StorageType threatList = me->getThreatManager().getThreatList();
+                        ThreatContainer::StorageType threatList = me->GetThreatManager().getThreatList();
 
                         for (ThreatContainer::StorageType::const_iterator itr = threatList.cbegin(); itr != threatList.cend(); ++itr)
                         {

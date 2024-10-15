@@ -226,7 +226,7 @@ class TC_GAME_API UnitAI
         // order, if <targetType> is SelectTargetMethod::Random) are skipped.
         template <class PREDICATE> Unit* SelectTarget(SelectAggroTarget targetType, uint32 position, PREDICATE const& predicate)
         {
-            ThreatContainer::StorageType const& threatlist = me->getThreatManager().getThreatList();
+            ThreatContainer::StorageType const& threatlist = me->GetThreatManager().getThreatList();
             if (position >= threatlist.size())
                 return NULL;
 
@@ -287,7 +287,7 @@ class TC_GAME_API UnitAI
         // order, if <targetType> is SelectTargetMethod::Random) are skipped.
         template <class PREDICATE> void SelectTargetList(std::list<Unit*>& targetList, PREDICATE const& predicate, uint32 maxTargets, SelectAggroTarget targetType)
         {
-            ThreatContainer::StorageType const& threatlist = me->getThreatManager().getThreatList();
+            ThreatContainer::StorageType const& threatlist = me->GetThreatManager().getThreatList();
             if (threatlist.empty())
                 return;
 

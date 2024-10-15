@@ -982,7 +982,7 @@ class npc_hand_of_the_deceiver : public CreatureScript
                     if (Creature* portal = DoSpawnCreature(NPC_FELFIRE_PORTAL, 0, 0,0, 0, TEMPSUMMON_TIMED_DESPAWN, 20000))
                     {
                         std::list<HostileReference*>::iterator itr;
-                        for (auto&& itr : me->getThreatManager().getThreatList())
+                        for (auto&& itr : me->GetThreatManager().getThreatList())
                         {
                             Unit* unit = Unit::GetUnit(*me, itr->getUnitGuid());
                             if (unit)

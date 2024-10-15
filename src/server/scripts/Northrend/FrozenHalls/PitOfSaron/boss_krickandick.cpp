@@ -213,7 +213,7 @@ class boss_ick : public CreatureScript
                 if (!me->IsInCombat())
                     return;
 
-                if (!me->GetVictim() && me->getThreatManager().isThreatListEmpty())
+                if (!me->GetVictim() && me->GetThreatManager().isThreatListEmpty())
                 {
                     EnterEvadeMode();
                     return;
@@ -657,7 +657,7 @@ class spell_krick_pursuit : public SpellScriptLoader
                 if (Unit* target = GetHitUnit())
                 {
                     ickAI->Talk(SAY_ICK_CHASE_1, target);
-                    CAST_AI(boss_ick::boss_ickAI, ickAI)->SetTempThreat(caster->getThreatManager().getThreat(target));
+                    CAST_AI(boss_ick::boss_ickAI, ickAI)->SetTempThreat(caster->GetThreatManager().getThreat(target));
                     caster->AddThreat(target, float(GetEffectValue()));
                     target->AddThreat(caster, float(GetEffectValue()));
                 }

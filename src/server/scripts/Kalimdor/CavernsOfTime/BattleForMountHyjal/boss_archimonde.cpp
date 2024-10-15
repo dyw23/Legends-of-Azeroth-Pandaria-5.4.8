@@ -360,7 +360,7 @@ public:
             if (victim && me->IsWithinDistInMap(victim, me->GetAttackDistance(victim)))
                 return false;
 
-            ThreatContainer::StorageType const &threatlist = me->getThreatManager().getThreatList();
+            ThreatContainer::StorageType const &threatlist = me->GetThreatManager().getThreatList();
             if (threatlist.empty())
                 return false;
 
@@ -383,7 +383,7 @@ public:
                 if (!me->IsWithinDistInMap(target, me->GetAttackDistance(target)))
                     return true;                                // Cast Finger of Death
                 else                                            // This target is closest, he is our new tank
-                    me->AddThreat(target, me->getThreatManager().getThreat(me->GetVictim()));
+                    me->AddThreat(target, me->GetThreatManager().getThreat(me->GetVictim()));
             }
 
             return false;

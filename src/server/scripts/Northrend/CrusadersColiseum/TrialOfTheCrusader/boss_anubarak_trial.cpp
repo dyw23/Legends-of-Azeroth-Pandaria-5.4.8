@@ -788,9 +788,9 @@ class npc_anubarak_spike : public CreatureScript
                 DoCast(who, SPELL_MARK);
                 me->SetSpeed(MOVE_RUN, 0.5f);
                 // make sure the Spine will really follow the one he should
-                me->getThreatManager().clearReferences();
+                me->GetThreatManager().clearReferences();
                 me->SetInCombatWithZone();
-                me->getThreatManager().addThreat(who, std::numeric_limits<float>::max());
+                me->GetThreatManager().addThreat(who, std::numeric_limits<float>::max());
                 me->GetMotionMaster()->Clear(true);
                 me->GetMotionMaster()->MoveChase(who);
                 me->TauntApply(who);

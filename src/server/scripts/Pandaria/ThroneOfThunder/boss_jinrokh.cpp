@@ -372,8 +372,8 @@ class boss_jinrokh : public CreatureScript
             {
                 if (target && spell->Id == SPELL_THUNDERING_THROW_FORCED_PLAYER)
                 {
-                    if (me->getThreatManager().getThreat(target))
-                        me->getThreatManager().modifyThreatPercent(target, -100);
+                    if (me->GetThreatManager().getThreat(target))
+                        me->GetThreatManager().modifyThreatPercent(target, -100);
                 }
             }
 

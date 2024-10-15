@@ -159,7 +159,7 @@ class npc_shadowy_construct : public CreatureScript
 
             void CheckPlayers()
             {
-                ThreatContainer::StorageType const& threatlist = me->getThreatManager().getThreatList();
+                ThreatContainer::StorageType const& threatlist = me->GetThreatManager().getThreatList();
                 if (threatlist.empty())
                     return;                                         // No threat list. Don't continue.
                 ThreatContainer::StorageType::const_iterator itr = threatlist.begin();
@@ -309,7 +309,7 @@ class boss_teron_gorefiend : public CreatureScript
             {
                 if (!blossom) return;
 
-                ThreatContainer::StorageType const& threatlist = me->getThreatManager().getThreatList();
+                ThreatContainer::StorageType const& threatlist = me->GetThreatManager().getThreatList();
                 ThreatContainer::StorageType::const_iterator i = threatlist.begin();
                 for (i = threatlist.begin(); i != threatlist.end(); ++i)
                 {

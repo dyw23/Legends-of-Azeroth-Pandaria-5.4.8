@@ -1883,7 +1883,7 @@ class spell_malygos_vortex_visual : public SpellScriptLoader
             {
                 if (Creature* caster = GetCaster()->ToCreature())
                 {
-                    ThreatContainer::StorageType const& m_threatlist = caster->getThreatManager().getThreatList();
+                    ThreatContainer::StorageType const& m_threatlist = caster->GetThreatManager().getThreatList();
                     for (ThreatContainer::StorageType::const_iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
                     {
                         if (Unit* target = (*itr)->getTarget())

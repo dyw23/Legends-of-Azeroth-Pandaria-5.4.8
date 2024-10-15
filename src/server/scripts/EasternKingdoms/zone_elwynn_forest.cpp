@@ -212,14 +212,14 @@ struct npc_stormwind_infantry : public ScriptedAI
     {
         if (who->GetTypeId() == TYPEID_PLAYER)
         {
-            me->getThreatManager().resetAllAggro();
+            me->GetThreatManager().resetAllAggro();
             who->AddThreat(me, 1.0f);
             me->AddThreat(who, 1.0f);
             me->AI()->AttackStart(who);
         }
         else if (who->IsPet())
         {
-            me->getThreatManager().resetAllAggro();
+            me->GetThreatManager().resetAllAggro();
             me->AddThreat(who, 1.0f);
             me->AI()->AttackStart(who);
         }
@@ -274,14 +274,14 @@ struct npc_blackrock_battle_worg : public ScriptedAI
     {
         if (who->GetTypeId() == TYPEID_PLAYER)
         {
-            me->getThreatManager().resetAllAggro();
+            me->GetThreatManager().resetAllAggro();
             who->AddThreat(me, 1.0f);
             me->AddThreat(who, 1.0f);
             me->AI()->AttackStart(who);
         }
         else if (who->IsPet())
         {
-            me->getThreatManager().resetAllAggro();
+            me->GetThreatManager().resetAllAggro();
             me->AddThreat(who, 1.0f);
             me->AI()->AttackStart(who);
         }

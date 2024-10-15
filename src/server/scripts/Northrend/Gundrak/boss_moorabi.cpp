@@ -459,7 +459,7 @@ class npc_drakkari_earthshaker : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
-                if (sparring && me->getThreatManager().getOnlineContainer().getThreatList().size() > 1)
+                if (sparring && me->GetThreatManager().getOnlineContainer().getThreatList().size() > 1)
                 {
                     sparring = false;
                     StopSparring();

@@ -187,8 +187,8 @@ class boss_ormorok : public CreatureScript
                                 case 3: Healer = CLASS_DRUID;   break;
                                 case 4: Healer = CLASS_SHAMAN;  break;
                             }
-                            std::list<HostileReference*>::const_iterator i = me->getThreatManager().getThreatList().begin();
-                            for (; i != me->getThreatManager().getThreatList().end(); ++i)
+                            std::list<HostileReference*>::const_iterator i = me->GetThreatManager().getThreatList().begin();
+                            for (; i != me->GetThreatManager().getThreatList().end(); ++i)
                             {
                                 Unit* pTemp = Unit::GetUnit(*me,(*i)->getUnitGuid());
                                 if (pTemp && pTemp->GetTypeId() == TYPEID_PLAYER && pTemp->GetClass() == Healer)
@@ -205,7 +205,7 @@ class boss_ormorok : public CreatureScript
                         if (target)
                         {
                             Crystalline_Tangler->AI()->AttackStart(target);
-                            Crystalline_Tangler->getThreatManager().addThreat(target, 1000000000.0f);
+                            Crystalline_Tangler->GetThreatManager().addThreat(target, 1000000000.0f);
                         }
                     }
                     uiSummonCrystallineTanglerTimer = 17 * IN_MILLISECONDS;

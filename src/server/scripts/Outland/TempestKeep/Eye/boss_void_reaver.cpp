@@ -119,7 +119,7 @@ class boss_void_reaver : public CreatureScript
                 if (ArcaneOrb_Timer <= diff)
                 {
                     Unit* target = NULL;
-                    std::list<HostileReference*> t_list = me->getThreatManager().getThreatList();
+                    std::list<HostileReference*> t_list = me->GetThreatManager().getThreatList();
                     std::vector<Unit*> target_list;
                     for (std::list<HostileReference*>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                     {

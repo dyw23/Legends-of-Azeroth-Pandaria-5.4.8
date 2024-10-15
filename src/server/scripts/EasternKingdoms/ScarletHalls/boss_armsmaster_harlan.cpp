@@ -213,7 +213,7 @@ class boss_armsmaster_harlan : public CreatureScript
                             if (Unit* vict = me->GetVictim())
                                 targetGuid = vict->GetGUID();
 
-                            me->getThreatManager().resetAllAggro();
+                            me->GetThreatManager().resetAllAggro();
                             me->AttackStop();
                             me->SetReactState(REACT_PASSIVE);
                             break;

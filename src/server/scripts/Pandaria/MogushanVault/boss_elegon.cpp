@@ -660,7 +660,7 @@ class boss_elegon : public CreatureScript
 
                                     me->AI()->AttackStart(pItr);
                                     me->SetInCombatWith(pItr);
-                                    me->getThreatManager().addThreat(pItr, 100.0f);
+                                    me->GetThreatManager().addThreat(pItr, 100.0f);
                                     canGrasp = false;
                                     break;
                                 }

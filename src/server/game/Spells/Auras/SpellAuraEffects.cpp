@@ -187,7 +187,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNoImmediateEffect,                         //125 SPELL_AURA_MOD_MELEE_DAMAGE_TAKEN implemented in Unit::MeleeDamageBonus
     &AuraEffect::HandleNoImmediateEffect,                         //126 SPELL_AURA_MOD_MELEE_DAMAGE_TAKEN_PCT implemented in Unit::MeleeDamageBonus
     &AuraEffect::HandleNoImmediateEffect,                         //127 SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS implemented in Unit::MeleeDamageBonus
-    &AuraEffect::HandleModFixateTarget,                             //128 SPELL_AURA_FIXATE_TARGET
+    &AuraEffect::HandleModFixateTarget,                           //128 SPELL_AURA_FIXATE_TARGET
     &AuraEffect::HandleAuraModIncreaseSpeed,                      //129 SPELL_AURA_MOD_SPEED_ALWAYS
     &AuraEffect::HandleAuraModIncreaseMountedSpeed,               //130 SPELL_AURA_MOD_MOUNTED_SPEED_ALWAYS
     &AuraEffect::HandleNoImmediateEffect,                         //131 SPELL_AURA_MOD_RANGED_ATTACK_POWER_VERSUS implemented in Unit::MeleeDamageBonus
@@ -3167,44 +3167,17 @@ void AuraEffect::HandleModFixateTarget(AuraApplication const* aurApp, uint8 mode
     if (!(mode & AURA_EFFECT_HANDLE_REAL))
         return;
 
-    Unit* target = aurApp->GetTarget();
-    if (!target->IsAlive())
-        return;
-
     Unit* caster = GetCaster();
-    if (!caster || caster->GetTypeId() != TYPEID_UNIT || !caster->IsAlive())
+    Unit* target = aurApp->GetTarget();
+
+    if (!caster || !caster->IsAlive() || !target->IsAlive() || caster->GetTypeId() != TYPEID_UNIT )
         return;
 
+    // Todo ThreatManager needs upgrade
     // if (apply)
-    //     caster->BindAura(aurApp->GetBase());
-
-    Pet* pet = target->ToPet();
-    if (apply)
-    {
-        if (caster->ToPlayer()->GetPet() != pet)
-            return;
-
-        pet->SetCharmedBy(caster, CHARM_TYPE_POSSESS, aurApp);
-    }
-    else
-    {
-        pet->RemoveCharmedBy(caster);
-
-        if (!pet->IsWithinDistInMap(caster, pet->GetMap()->GetVisibilityRange()))
-            pet->Remove(PET_REMOVE_DISMISS, PET_REMOVE_FLAG_RETURN_REAGENT | PET_REMOVE_FLAG_RESET_CURRENT);
-            //pet->Remove(PET_REMOVE_DISMISS, true); // PET_SAVE_NOT_IN_SLOT
-        else
-        {
-            // Reinitialize the pet bar or it will appear greyed out
-            caster->ToPlayer()->PetSpellInitialize();
-
-            // TODO: remove this
-            if (!pet->GetVictim() && !pet->GetCharmInfo()->HasCommandState(COMMAND_STAY))
-                pet->GetMotionMaster()->MoveFollow(caster, PET_FOLLOW_DIST, pet->GetFollowAngle());
-        }
-    }
-
-    // No need to unbind it will happen automatically
+    //     caster->GetThreatManager().FixateTarget(target);
+    // else
+    //     caster->GetThreatManager().ClearFixate();
 }
 
 void AuraEffect::HandleModCharm(AuraApplication const* aurApp, uint8 mode, bool apply) const

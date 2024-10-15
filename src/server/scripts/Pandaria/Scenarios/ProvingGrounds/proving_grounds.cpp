@@ -1155,7 +1155,7 @@ struct npc_proving_grounds_ki_the_assassin : public customCreatureAI
         uint32 getTotalVictims()
         {
             uint32 count = 0;
-            for (auto&& itr : me->getThreatManager().getThreatList())
+            for (auto&& itr : me->GetThreatManager().getThreatList())
                 if (Creature* target = ObjectAccessor::GetCreature(*me, itr->getUnitGuid()))
                     count++;
 
@@ -1316,7 +1316,7 @@ struct npc_proving_grounds_oto_the_protector : public customCreatureAI
         uint32 getTotalVictims()
         {
             uint32 count = 0;
-            for (auto&& itr : me->getThreatManager().getThreatList())
+            for (auto&& itr : me->GetThreatManager().getThreatList())
                 if (Creature* target = ObjectAccessor::GetCreature(*me, itr->getUnitGuid()))
                     count++;
 
@@ -1470,7 +1470,7 @@ struct npc_proving_grounds_sooli_the_survivalist : public customCreatureAI
         uint32 getTotalVictims()
         {
             uint32 count = 0;
-            for (auto&& itr : me->getThreatManager().getThreatList())
+            for (auto&& itr : me->GetThreatManager().getThreatList())
                 if (Creature* target = ObjectAccessor::GetCreature(*me, itr->getUnitGuid()))
                     count++;
 
@@ -3202,7 +3202,7 @@ struct npc_proving_grounds_sikari_the_mistweaver : public customCreatureAI
         uint32 getTotalVictims()
         {
             uint32 count = 0;
-            for (auto&& itr : me->getThreatManager().getThreatList())
+            for (auto&& itr : me->GetThreatManager().getThreatList())
                 if (Creature* target = ObjectAccessor::GetCreature(*me, itr->getUnitGuid()))
                     count++;
 
@@ -3437,7 +3437,7 @@ class spell_proving_grounds_wing_blast : public SpellScript
     void HandleHit(SpellEffIndex effIndex)
     {
         if (Player* affectedTarget = GetHitPlayer())
-            GetCaster()->getThreatManager().modifyThreatPercent(affectedTarget, -100);
+            GetCaster()->GetThreatManager().modifyThreatPercent(affectedTarget, -100);
     }
 
     void Register() override

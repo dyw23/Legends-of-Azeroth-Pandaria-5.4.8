@@ -155,7 +155,7 @@ class boss_murmur : public CreatureScript
 
                 if (!me->IsWithinMeleeRange(me->GetVictim()))
                 {
-                    ThreatContainer::StorageType threatlist = me->getThreatManager().getThreatList();
+                    ThreatContainer::StorageType threatlist = me->GetThreatManager().getThreatList();
                     for (ThreatContainer::StorageType::const_iterator i = threatlist.begin(); i != threatlist.end(); ++i)
                         if (Unit* target = ObjectAccessor::GetUnit(*me, (*i)->getUnitGuid()))
                             if (me->IsWithinMeleeRange(target))

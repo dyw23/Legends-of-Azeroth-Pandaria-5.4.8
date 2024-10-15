@@ -273,7 +273,7 @@ void boss_attumen::boss_attumenAI::UpdateAI(uint32 diff)
         {
             Unit* target = nullptr;
             std::vector<Unit *> target_list;
-            for (auto&& itr : me->getThreatManager().getThreatList())
+            for (auto&& itr : me->GetThreatManager().getThreatList())
             {
                 target = Unit::GetUnit(*me, itr->getUnitGuid());
                 if (target && !target->IsWithinDist(me, ATTACK_DISTANCE, false))

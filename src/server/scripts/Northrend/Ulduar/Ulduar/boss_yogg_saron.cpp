@@ -1718,8 +1718,8 @@ class npc_crusher_tentacle : public CreatureScript
                         {
                             if (newVictim != me->GetVictim())
                             {
-                                float threat = me->getThreatManager().getThreat(me->GetVictim());
-                                me->getThreatManager().modifyThreatPercent(me->GetVictim(), -100);
+                                float threat = me->GetThreatManager().getThreat(me->GetVictim());
+                                me->GetThreatManager().modifyThreatPercent(me->GetVictim(), -100);
                                 me->AddThreat(newVictim, threat);
                                 AttackStartNoMove(newVictim);
                             }
@@ -3570,7 +3570,7 @@ class spell_yogg_saron_hate_to_zero : public SpellScriptLoader
             {
                 if (Unit* target = GetHitUnit())
                     if (target->CanHaveThreatList())
-                        target->getThreatManager().modifyThreatPercent(GetCaster(), -100);
+                        target->GetThreatManager().modifyThreatPercent(GetCaster(), -100);
             }
 
             void Register() override

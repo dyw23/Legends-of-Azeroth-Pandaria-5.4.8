@@ -85,8 +85,8 @@ void CreatureAI::DoZoneInCombat(Creature* creature /*= NULL*/, float maxRangeToN
             if (Unit* summoner = creature->ToTempSummon()->GetSummoner())
             {
                 Unit* target = summoner->getAttackerForHelper();
-                if (!target && summoner->CanHaveThreatList() && !summoner->getThreatManager().isThreatListEmpty())
-                    target = summoner->getThreatManager().getHostilTarget();
+                if (!target && summoner->CanHaveThreatList() && !summoner->GetThreatManager().isThreatListEmpty())
+                    target = summoner->GetThreatManager().getHostilTarget();
                 if (target && (creature->IsFriendlyTo(summoner) || creature->IsHostileTo(target)))
                     creature->AI()->AttackStart(target);
             }
@@ -144,7 +144,7 @@ void CreatureAI::DoAttackerAreaInCombat(Unit* attacker, float range, Unit* pUnit
     if (!map->IsDungeon())
         return;
 
-    if (!pUnit->CanHaveThreatList() || pUnit->getThreatManager().isThreatListEmpty())
+    if (!pUnit->CanHaveThreatList() || pUnit->GetThreatManager().isThreatListEmpty())
         return;
 
     Map::PlayerList const& PlayerList = map->GetPlayers();
@@ -317,7 +317,7 @@ bool CreatureAI::UpdateVictim()
             AttackStart(victim);
         return me->GetVictim();
     }
-    else if (me->getThreatManager().isThreatListEmpty())
+    else if (me->GetThreatManager().isThreatListEmpty())
     {
         EnterEvadeMode();
         return false;

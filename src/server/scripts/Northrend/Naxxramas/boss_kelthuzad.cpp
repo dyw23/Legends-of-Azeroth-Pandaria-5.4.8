@@ -601,7 +601,7 @@ public:
                         case EVENT_DETONATE:
                         {
                             std::vector<Unit*> unitList;
-                            ThreatContainer::StorageType const &threatList = me->getThreatManager().getThreatList();
+                            ThreatContainer::StorageType const &threatList = me->GetThreatManager().getThreatList();
                             for (ThreatContainer::StorageType::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
                             {
                                 Unit* const target = (*itr)->getTarget();

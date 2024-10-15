@@ -2416,8 +2416,8 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj) const
     // Hack for Subterfuge. When rogue opens and Subterfuge triggered - player is still invisible and mob just goes to evade.
     if (Player const* player = obj->ToPlayer())
         if (GetTypeId() == TYPEID_UNIT && player->IsInCombat() && player->HasAura(115192))
-            if (const_cast<Unit*>(unit)->getThreatManager().getThreatList().size() == 1)
-                if (const_cast<Unit*>(unit)->getThreatManager().getThreat(const_cast<Player*>(player)) > 0.0f)
+            if (const_cast<Unit*>(unit)->GetThreatManager().getThreatList().size() == 1)
+                if (const_cast<Unit*>(unit)->GetThreatManager().getThreat(const_cast<Player*>(player)) > 0.0f)
                     return true;
 
     if (!HasInArc(M_PI, obj))

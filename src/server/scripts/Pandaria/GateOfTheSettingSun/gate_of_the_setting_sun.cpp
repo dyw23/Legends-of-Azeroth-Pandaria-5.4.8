@@ -79,7 +79,7 @@ struct gss_trash_generic_baseAI : public ScriptedAI
             if ((me->GetVictim() && me->GetVictim()->GetTypeId() != TYPEID_PLAYER) || !me->IsInCombat())
             {
                 me->DeleteThreatList();
-                me->getThreatManager().addThreat(who, 100.0f);
+                me->GetThreatManager().addThreat(who, 100.0f);
                 AttackStart(who);
             }
         }
@@ -92,7 +92,7 @@ struct gss_trash_generic_baseAI : public ScriptedAI
             if (me->GetHealthPct() <= randHealth || me->GetHealth() <= damage)
             {
                 damage = 0;
-                me->getThreatManager().addThreat(attacker, 0.f);
+                me->GetThreatManager().addThreat(attacker, 0.f);
             }
         }
     }
@@ -100,7 +100,7 @@ struct gss_trash_generic_baseAI : public ScriptedAI
     void EnterEvadeMode() override
     {
         ScriptedAI::EnterEvadeMode();
-        me->getThreatManager().resetAllAggro();
+        me->GetThreatManager().resetAllAggro();
         me->DeleteThreatList();
     }
 };
@@ -260,7 +260,7 @@ class npc_kirkthik_conscript : public CreatureScript
                     if (me->GetHealth() < me->GetMaxHealth() || me->GetHealth() <= damage)
                     {
                         damage = 0;
-                        me->getThreatManager().addThreat(attacker, 0.f);
+                        me->GetThreatManager().addThreat(attacker, 0.f);
                     }
                 }
 

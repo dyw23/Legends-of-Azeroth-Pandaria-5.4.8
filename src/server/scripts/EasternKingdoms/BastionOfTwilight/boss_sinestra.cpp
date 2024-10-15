@@ -469,7 +469,7 @@ class boss_sinestra : public CreatureScript
                         {
                             std::list<Unit*> targetList;
 
-                            const std::list<HostileReference*> &threatlist = me->getThreatManager().getThreatList();
+                            const std::list<HostileReference*> &threatlist = me->GetThreatManager().getThreatList();
 
                             if (threatlist.empty())
                                 return;

@@ -301,8 +301,8 @@ class boss_sapphiron : public CreatureScript
                             case EVENT_ICEBOLT:
                             {
                                 std::vector<Unit*> targets;
-                                std::list<HostileReference*>::const_iterator i = me->getThreatManager().getThreatList().begin();
-                                for (; i != me->getThreatManager().getThreatList().end(); ++i)
+                                std::list<HostileReference*>::const_iterator i = me->GetThreatManager().getThreatList().begin();
+                                for (; i != me->GetThreatManager().getThreatList().end(); ++i)
                                     if ((*i)->getTarget()->GetTypeId() == TYPEID_PLAYER && !(*i)->getTarget()->HasAura(SPELL_ICEBOLT))
                                         targets.push_back((*i)->getTarget());
 
@@ -358,8 +358,8 @@ class boss_sapphiron : public CreatureScript
             {
                 DoZoneInCombat(); // make sure everyone is in threatlist
                 std::vector<Unit*> targets;
-                std::list<HostileReference*>::const_iterator i = me->getThreatManager().getThreatList().begin();
-                for (; i != me->getThreatManager().getThreatList().end(); ++i)
+                std::list<HostileReference*>::const_iterator i = me->GetThreatManager().getThreatList().begin();
+                for (; i != me->GetThreatManager().getThreatList().end(); ++i)
                 {
                     Unit* target = (*i)->getTarget();
                     if (target->GetTypeId() != TYPEID_PLAYER)

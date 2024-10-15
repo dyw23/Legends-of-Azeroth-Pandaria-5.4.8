@@ -461,7 +461,7 @@ class boss_veknilash : public CreatureScript
             void CastSpellOnBug(Creature* target) override
             {
                 target->SetFaction(14);
-                target->AI()->AttackStart(me->getThreatManager().getHostilTarget());
+                target->AI()->AttackStart(me->GetThreatManager().getHostilTarget());
                 target->AddAura(SPELL_MUTATE_BUG, target);
                 target->SetFullHealth();
             }

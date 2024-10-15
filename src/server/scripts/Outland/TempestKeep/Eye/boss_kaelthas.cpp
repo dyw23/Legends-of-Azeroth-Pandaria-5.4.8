@@ -802,7 +802,7 @@ class boss_kaelthas : public CreatureScript
 
                             if (MindControl_Timer <= diff)
                             {
-                                if (me->getThreatManager().getThreatList().size() >= 2)
+                                if (me->GetThreatManager().getThreatList().size() >= 2)
                                     for (uint32 i = 0; i < 3; ++i)
                                 {
                                     TC_LOG_DEBUG("scripts", "Kael'Thas mind control not supported.");
@@ -900,7 +900,7 @@ class boss_kaelthas : public CreatureScript
                             //GravityLapse_Timer
                             if (GravityLapse_Timer <= diff)
                             {
-                                ThreatContainer::StorageType threatlist = me->getThreatManager().getThreatList();
+                                ThreatContainer::StorageType threatlist = me->GetThreatManager().getThreatList();
                                 ThreatContainer::StorageType::const_iterator i = threatlist.begin();
 
                                 switch (GravityLapse_Phase)
@@ -1297,7 +1297,7 @@ class boss_grand_astromancer_capernian : public CreatureScript
                 {
                     bool InMeleeRange = false;
                     Unit* target = NULL;
-                    ThreatContainer::StorageType const &threatlist = me->getThreatManager().getThreatList();
+                    ThreatContainer::StorageType const &threatlist = me->GetThreatManager().getThreatList();
                     for (ThreatContainer::StorageType::const_iterator i = threatlist.begin(); i!= threatlist.end(); ++i)
                     {
                         Unit* unit = Unit::GetUnit(*me, (*i)->getUnitGuid());

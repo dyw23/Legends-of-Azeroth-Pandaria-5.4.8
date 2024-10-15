@@ -1472,7 +1472,7 @@ class npc_sergeant : public CreatureScript
                     return;
 
                 if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetGuidData(me->GetEntry() == NPC_GB_SKYBREAKER_SERGEANT ? DATA_GB_HIGH_OVERLORD_SAURFANG : DATA_GB_MURADIN_BRONZEBEARD)))
-                    me->getThreatManager().modifyThreatPercent(boss, -100);
+                    me->GetThreatManager().modifyThreatPercent(boss, -100);
 
                 UpdateVictim();
 
@@ -1568,7 +1568,7 @@ class npc_marine_or_reaver : public CreatureScript
                     return;
 
                 if (Creature* boss = ObjectAccessor::GetCreature(*me, instance->GetGuidData(me->GetEntry() == NPC_GB_SKYBREAKER_MARINE ? DATA_GB_HIGH_OVERLORD_SAURFANG : DATA_GB_MURADIN_BRONZEBEARD)))
-                    me->getThreatManager().modifyThreatPercent(boss, -100);
+                    me->GetThreatManager().modifyThreatPercent(boss, -100);
 
                 UpdateVictim();
 

@@ -638,7 +638,7 @@ public:
                         if (guid != dbGuid)
                             guid = dbGuid;
                     }
-                    float threat = attacker->getThreatManager().getThreat(unit, false);
+                    float threat = attacker->GetThreatManager().getThreat(unit, false);
                     handler->PSendSysMessage("guid: |cffffffff%u|r - id: |cffffffff%u|r - |cffffffff%s|r (%.2f)", guid, attacker->GetEntry(), attacker->GetName().c_str(), threat);
                 }
                 ++attackersCount;
@@ -688,7 +688,7 @@ public:
                         if (guid != dbGuid)
                             guid = dbGuid;
                     }
-                    float threat = hostile->getThreatManager().getThreat(unit, false);
+                    float threat = hostile->GetThreatManager().getThreat(unit, false);
                     handler->PSendSysMessage("guid: |cffffffff%u|r - id: |cffffffff%u|r - |cffffffff%s|r (%.2f)", guid, hostile->GetEntry(), hostile->GetName().c_str(), threat);
                 }
                 ++hostilesCount;
@@ -725,7 +725,7 @@ public:
 
             for (uint8 listType = 0; listType < 2; ++listType)
             {
-                ThreatContainer::StorageType const* list = listType ? &unit->getThreatManager().getOfflineThreatList() : &unit->getThreatManager().getThreatList();
+                ThreatContainer::StorageType const* list = listType ? &unit->GetThreatManager().getOfflineThreatList() : &unit->GetThreatManager().getThreatList();
                 char const* color = listType ? "|cff808080" : "";
                 char const* summary = listType ? "%u offline hostiles" : "%u online hostiles";
 

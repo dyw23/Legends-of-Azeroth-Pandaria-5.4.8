@@ -1197,7 +1197,7 @@ class boss_stormcaller_brundir : public CreatureScript
                                 DoStartMovement(me->GetVictim());
                             else
                                 AttackStart(SelectTarget(SELECT_TARGET_TOPAGGRO));
-                            me->getThreatManager().resetAllAggro();
+                            me->GetThreatManager().resetAllAggro();
                             events.ScheduleEvent(EVENT_LIGHTNING_TENDRILS_START, urand(40000, 80000));
                             break;
                         default:

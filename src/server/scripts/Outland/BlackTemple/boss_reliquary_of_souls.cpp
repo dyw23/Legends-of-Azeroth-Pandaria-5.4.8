@@ -244,14 +244,14 @@ class boss_reliquary_of_souls : public CreatureScript
                 if (!target)
                     return;
 
-                ThreatContainer::StorageType threatlist = target->getThreatManager().getThreatList();
+                ThreatContainer::StorageType threatlist = target->GetThreatManager().getThreatList();
                 for (ThreatContainer::StorageType::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
                 {
                     Unit* unit = Unit::GetUnit(*me, (*itr)->getUnitGuid());
                     if (unit)
                     {
                         DoModifyThreatPercent(unit, -100);
-                        float threat = target->getThreatManager().getThreat(unit);
+                        float threat = target->GetThreatManager().getThreat(unit);
                         me->AddThreat(unit, threat);       // This makes it so that the unit has the same amount of threat in Reliquary's threatlist as in the target creature's (One of the Essences).
                     }
                 }
@@ -274,7 +274,7 @@ class boss_reliquary_of_souls : public CreatureScript
 
                 scheduler.Update(diff);
 
-                if (me->getThreatManager().getThreatList().empty()) // Reset if event is begun and we don't have a threatlist
+                if (me->GetThreatManager().getThreatList().empty()) // Reset if event is begun and we don't have a threatlist
                 {
                     scheduler.CancelAll();
                     EnterEvadeMode();
@@ -473,7 +473,7 @@ class boss_essence_of_suffering : public CreatureScript
 
             void CastFixate()
             {
-                ThreatContainer::StorageType const& threatlist = me->getThreatManager().getThreatList();
+                ThreatContainer::StorageType const& threatlist = me->GetThreatManager().getThreatList();
                 if (threatlist.empty())
                     return; // No point continuing if empty threatlist.
                 std::list<Unit*> targets;

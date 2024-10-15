@@ -480,7 +480,7 @@ class npc_sticky_bomb : public CreatureScript
 
             ObjectGuid GetTarget()
             {
-                ThreatContainer::StorageType const& threatlist = me->getThreatManager().getThreatList();
+                ThreatContainer::StorageType const& threatlist = me->GetThreatManager().getThreatList();
 
                 for (ThreatContainer::StorageType::const_iterator i = threatlist.begin(); i != threatlist.end(); ++i)
                     if (Unit* target = ObjectAccessor::GetUnit((*me), (*i)->getUnitGuid()))

@@ -767,7 +767,7 @@ class boss_li_fei_fight : public CreatureScript
 
                 // copy, just to make sure that kill credit that phases players out
                 // does not modify this threat list
-                auto const threatList = me->getThreatManager().getThreatList();
+                auto const threatList = me->GetThreatManager().getThreatList();
                 for (auto&& hostileRef : threatList)
                 {
                     auto unit = hostileRef->getTarget();

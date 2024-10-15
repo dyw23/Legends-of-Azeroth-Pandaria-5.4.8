@@ -185,7 +185,7 @@ class boss_supremus : public CreatureScript
                 uint32 health = 0;
                 Unit* target = nullptr;
 
-                ThreatContainer::StorageType const& threatlist = me->getThreatManager().getThreatList();
+                ThreatContainer::StorageType const& threatlist = me->GetThreatManager().getThreatList();
                 ThreatContainer::StorageType::const_iterator i = threatlist.begin();
                 for (i = threatlist.begin(); i!= threatlist.end(); ++i)
                 {

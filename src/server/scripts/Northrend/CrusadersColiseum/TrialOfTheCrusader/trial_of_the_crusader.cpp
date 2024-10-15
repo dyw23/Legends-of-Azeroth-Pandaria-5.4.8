@@ -635,7 +635,7 @@ class npc_tirion_toc : public CreatureScript
                             break;
                         case 400:
                             Talk(SAY_STAGE_0_06);
-                            me->getThreatManager().clearReferences();
+                            me->GetThreatManager().clearReferences();
                             _updateTimer = 5*IN_MILLISECONDS;
                             _instance->SetData(TYPE_EVENT, 0);
                             break;

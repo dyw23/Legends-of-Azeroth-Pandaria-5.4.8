@@ -177,7 +177,7 @@ class boss_shade_of_aran : public CreatureScript
             void FlameWreathEffect()
             {
                 std::vector<Unit*> targets;
-                std::list<HostileReference *> t_list = me->getThreatManager().getThreatList();
+                std::list<HostileReference *> t_list = me->GetThreatManager().getThreatList();
 
                 if (t_list.empty())
                     return;

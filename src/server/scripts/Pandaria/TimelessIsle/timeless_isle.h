@@ -472,7 +472,7 @@ static void RewardPlayers(Creature* me)
 {
     std::set<uint32> rewardedGuilds;
 
-    for (auto&& itr : me->getThreatManager().getThreatList())
+    for (auto&& itr : me->GetThreatManager().getThreatList())
     {
         if (Player* target = ObjectAccessor::GetPlayer(*me, itr->getUnitGuid()))
         {
@@ -508,7 +508,7 @@ static void HandleDoor(Creature* me, uint32 go, bool open)
 static void UpdateHealth(Creature* me)
 {
     uint8 count = 0;
-    for (auto&& threat : me->getThreatManager().getThreatList())
+    for (auto&& threat : me->GetThreatManager().getThreatList())
         if (Player* player = Unit::GetPlayer(*me, threat->getUnitGuid()))
             if (player->IsWithinDist(me, 100.0f))
                 count++;
