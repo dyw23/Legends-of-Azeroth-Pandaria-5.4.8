@@ -17663,6 +17663,7 @@ void Player::AreaExploredOrEventHappens(uint32 questId)
             {
                 q_status.Explored = true;
                 m_QuestStatusSave[questId] = true;
+                SetQuestSlotState(log_slot, QUEST_STATE_COMPLETE);
                 // m_QuestStatusSave[questId] = QUEST_DEFAULT_SAVE_TYPE;
                 // Todo 
 
