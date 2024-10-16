@@ -1210,6 +1210,9 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
                         }
                     }
 
+                    if (quest->HasFlag(QUEST_FLAGS_COMPLETION_AREA_TRIGGER))
+                        player->AreaExploredOrEventHappens(questId);
+
                     if (player->CanCompleteQuest(questId))
                         player->CompleteQuest(questId);
                 }

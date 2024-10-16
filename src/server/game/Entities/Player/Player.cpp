@@ -17658,13 +17658,18 @@ void Player::AreaExploredOrEventHappens(uint32 questId)
         {
             QuestStatusData& q_status = m_QuestStatus[questId];
 
-            if (!q_status.Explored)
+            // Dont complete failed quest
+            if (!q_status.Explored && q_status.Status != QUEST_STATUS_FAILED)
             {
                 q_status.Explored = true;
                 m_QuestStatusSave[questId] = true;
+                SetQuestSlotState(log_slot, QUEST_STATE_COMPLETE);
+                // m_QuestStatusSave[questId] = QUEST_DEFAULT_SAVE_TYPE;
+                // Todo 
+
+                SendQuestComplete(questId);
             }
         }
-
         if (CanCompleteQuest(questId))
             CompleteQuest(questId);
     }
@@ -18125,6 +18130,16 @@ void Player::SendQuestComplete(Quest const* quest)
         WorldPackets::Quest::QuestUpdateComplete packet;
         packet.QuestID = quest->GetQuestId();
         SendDirectMessage(packet.Write());
+    }
+}
+
+void Player::SendQuestComplete(uint32 questId) const
+{
+    if (questId)
+    {
+        WorldPackets::Quest::QuestUpdateComplete data;
+        data.QuestID = questId;
+        SendDirectMessage(data.Write());
     }
 }
 
